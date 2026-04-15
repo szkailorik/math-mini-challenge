@@ -34,6 +34,13 @@ v22.4 expands misconception coverage in the generator pools:
 - Regrouping: whole-ten-thousand and whole-million subtraction with long borrow chains.
 - Fraction meaning: fraction of a whole number, cross-canceling, and sixteenths/fortieths conversions.
 
+v22.5 adds more diagnostic practice:
+
+- Two-step equations that require undoing addition/subtraction before multiplication/division.
+- Reverse distributive patterns that require identifying the shared factor.
+- Unit-fraction application tasks that force "one part first, then several parts" reasoning.
+- Parentheses-first mixed operations for catching left-to-right overgeneralization.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

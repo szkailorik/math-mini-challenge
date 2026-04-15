@@ -6,6 +6,7 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v25';
 
 const store = new Map();
 const localStorage = {
@@ -113,11 +114,47 @@ function assertPaper(setNumber) {
   if (paper.includes('undefined')) {
     throw new Error(`Generated paper for set ${setNumber} contains undefined`);
   }
+  assertSetData(setNumber);
   return sheetCount;
 }
 
+function stripHtml(value) {
+  return String(value || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function assertSetData(setNumber) {
+  const raw = store.get(`${cachePrefix}_${setNumber}`);
+  if (!raw) throw new Error(`Missing cached set data for set ${setNumber}`);
+  const data = JSON.parse(raw);
+  const expectedCounts = {
+    k_m: 4, k_d: 4, k_s: 4, k_c: 8, k_f: 12, k_o: 4,
+    l_m: 4, l_d: 4, l_s: 4, l_c: 8, l_f: 12, l_o: 4,
+  };
+  const seen = new Set();
+
+  for (const [section, expected] of Object.entries(expectedCounts)) {
+    const items = data[section];
+    if (!Array.isArray(items) || items.length !== expected) {
+      throw new Error(`Set ${setNumber} section ${section} expected ${expected}, got ${items?.length ?? 'missing'}`);
+    }
+    items.forEach((item, index) => {
+      const location = `set ${setNumber} ${section}[${index}]`;
+      if (!item || !item.tag) throw new Error(`${location} missing tag`);
+      if (!stripHtml(item.q)) throw new Error(`${location} missing question`);
+      if (!stripHtml(item.a)) throw new Error(`${location} missing answer`);
+      const combined = `${item.q} ${item.a} ${item.step || ''}`;
+      if (/undefined|NaN|Infinity/.test(combined)) {
+        throw new Error(`${location} contains invalid output: ${combined}`);
+      }
+      const signature = `${item.tag}:${stripHtml(item.q)}`;
+      if (seen.has(signature)) throw new Error(`${location} duplicates ${signature}`);
+      seen.add(signature);
+    });
+  }
+}
+
 const checked = [];
-for (let setNumber = 73; setNumber <= 79; setNumber += 1) {
+for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
   context.window.renderPaper();
   checked.push(`${setNumber}:${assertPaper(setNumber)}`);

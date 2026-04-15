@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v22.4 (题型质量增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v22.5 (诊断训练增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -176,7 +176,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v22.4</h3>
+            <h3>🧠 专家私教引擎 v22.5</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -192,7 +192,7 @@
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 22.4 题型质量增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+                💡 22.5 诊断训练增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
             </div>
         </div>
 
@@ -218,7 +218,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v22.4 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v22.5 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -329,12 +329,12 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v22.4 GitHub Gist 云同步 =================
+        // ================= v22.5 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v24';
+        const SET_CACHE_PREFIX = 'MathSetData_v25';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -397,7 +397,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.4', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.5', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -442,7 +442,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v22.4'
+                    version: 'v22.5'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -567,7 +567,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v22.4 存储层（local + optional Gist 同步） =================
+        // ================= v22.5 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             cache: {
@@ -833,7 +833,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v22.4 Gist 云同步 =================
+        // ================= 数据备份 + v22.5 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -903,7 +903,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v22.4 Gist 连接 UI 逻辑
+        // v22.5 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1113,10 +1113,13 @@
             "k_sub_near_million": { name: "减法-整百万连续借位", advice: "从最高位借位后，中间所有0都会变9，最后一位变10。建议逐位写借位标记。" },
             "k_eq_sub": { name: "方程-减数/除数求知", advice: "孩子极易顺手将两者相加。需反复强化公式：被减数-差=减数（或被除数÷商=除数）。" },
             "k_eq_divisor": { name: "方程-未知数在除数", advice: "a÷x=b 时，未知数是除数，必须用 x=a÷b，不能把 x 直接移到右边相乘后停住。" },
+            "k_eq_twostep": { name: "方程-两步逆运算", advice: "先把加减项移走，再处理乘除。每一步只做一个逆运算，避免跳步丢分。" },
             "k_fcalc_muldiv": { name: "分数-除法变乘法易错", advice: "看到连除或乘除混合，第一步必须强制要求把所有除号改为乘号，并将后面的分数严格颠倒。" },
             "k_fcalc_cancel": { name: "分数-先约分再计算", advice: "连乘分数题先找能交叉约分的数，减少大数运算负担，再乘分子分母。" },
             "k_oly_dist": { name: "简算-乘法分配律隐蔽项", advice: "通过小数点反向移位统一公因数，提取至括号外，剩余数字连同原符号放入括号。" },
             "k_oly_balance": { name: "简算-补偿凑整", advice: "看到99、101、999这类接近整十整百的数，先凑成整百，再补加或补减差额。" },
+            "k_oly_reverse": { name: "简算-逆向分配律", advice: "看到两项都有相同因数时先提取公因数，再把括号内做加减。" },
+            "k_oly_unit_fraction": { name: "分数应用-单位量转换", advice: "先把总量按分母平均分成若干份，再按分子取份数，最后再做加减。" },
             "boss_sequence": { name: "数列找规律(等差)", advice: "观察相邻数字差值。牢记公式：第n项 = 首项 + (n-1)×公差。" },
             "boss_remainder": { name: "剩余定理(画图法)", advice: "遇到'剩下钱的几分之几'，必须画 Bar Model 线段图，把剩余部分重新定义为一个整体切块。" },
             "l_mul_near100": { name: "乘法-接近整百补偿", advice: "把98看成100-2，把102看成100+2，先算整百倍，再补偿。" },
@@ -1125,7 +1128,8 @@
             "l_fmix_sub": { name: "异分母相减", advice: "基础通分运算不熟练。需要强化寻找最小公倍数的能力。" },
             "l_fmix_ofwhole": { name: "分数-求一个数的几分之几", advice: "先用总数除以分母求一份，再乘分子，避免直接大数乘分数。" },
             "l_bmix_125": { name: "125凑整", advice: "背熟好朋友数字：125找8，25找4。看到12.5就要从另一个因数里拆出8。" },
-            "l_bmix_near100": { name: "简算-接近整百", advice: "99×a+a 或 101×a-a 都是在凑100个a，先识别整体结构。" }
+            "l_bmix_near100": { name: "简算-接近整百", advice: "99×a+a 或 101×a-a 都是在凑100个a，先识别整体结构。" },
+            "l_bmix_paren": { name: "混合运算-括号优先级", advice: "括号先算，再乘除，最后加减。每一步写等号，防止顺手从左到右全算。" }
         };
         const FallbackAdvice = { name: "综合推导与解题规范", advice: "未严格遵守运算顺序或存在明显跳步。要求孩子在题纸上标出优先级底线，一步一等号。" };
 
@@ -1232,6 +1236,11 @@
                         let lhs=ans.mul(rhs);
                         return {tag:"k_eq_divisor", q:`${lhs.toHTML()} &divide; <i class="var">x</i> = ${rhs.toHTML()}`, a:`<i class="var">x</i> = ${ans.toHTML()}`, step:`未知数是除数: <i class="var">x</i> = ${lhs.toHTML()} &divide; ${rhs.toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>`};
                     } },
+                    { tag: "k_eq_twostep", gen: () => {
+                        let div=Engine.randChoice([3,4,5,6,8]), ans=Engine.randInt(2,12), add=new Frac(Engine.randInt(1,3), Engine.randChoice([5,7,9,10]));
+                        let rhs=new Frac(ans, div).add(add);
+                        return {tag:"k_eq_twostep", q:`<i class="var">x</i> &divide; ${div} + ${add.toHTML()} = ${rhs.toHTML()}`, a:`<i class="var">x</i> = ${ans}`, step:`先减去${add.toHTML()}: <i class="var">x</i>&divide;${div}=${new Frac(ans, div).toHTML()}，再两边乘${div}，得 <strong class="highlight">${ans}</strong>`};
+                    } },
                     { tag: "k_eq_prop", gen: () => {
                         let a=Engine.randInt(2,9), b=Engine.randInt(5,15);
                         return {tag:"k_eq_prop", q:`<div class="frac"><span><i class="var">x</i></span><span class="bottom">${b}</span></div> = ${a}`, a:`<i class="var">x</i> = ${a*b}`, step:`比例方程两边同乘分母: <i class="var">x</i> = ${a} &times; ${b} = <strong class="highlight">${a*b}</strong>`};
@@ -1264,6 +1273,16 @@
                     let ans = near === 999 ? a*1000 : a*100;
                     let q = near === 101 ? `${near} &times; ${a} &minus; ${a}` : `${near} &times; ${a} + ${a}`;
                     return {tag:"k_oly_balance", q, a:`${ans}`, step:`把${near}个${a}和${sign === '+' ? '1个' : '减去1个'}${a}合成整百或整千个${a}: <strong class="highlight">${ans}</strong>`};
+                } },
+                { tag: "k_oly_reverse", gen: () => {
+                    let a=Engine.randInt(24,96), b=Engine.randInt(11,39), c=Engine.randInt(41,79);
+                    let ans=a*(b+c);
+                    return {tag:"k_oly_reverse", q:`${a} &times; ${b} + ${a} &times; ${c}`, a:`${ans}`, step:`提取相同因数${a}: ${a}&times;(${b}+${c}) = ${a}&times;${b+c} = <strong class="highlight">${ans}</strong>`};
+                } },
+                { tag: "k_oly_unit_fraction", gen: () => {
+                    let d=Engine.randChoice([6,8,9,12]), n=Engine.randInt(2,d-2), unit=Engine.randInt(8,18), total=d*unit;
+                    let ans=total - unit*n;
+                    return {tag:"k_oly_unit_fraction", q:`${total} &minus; ${total} &times; <div class="frac"><span>${n}</span><span class="bottom">${d}</span></div>`, a:`${ans}`, step:`先求${total}的${n}/${d}: ${total}&divide;${d}&times;${n}=${unit*n}，再用总量相减得 <strong class="highlight">${ans}</strong>`};
                 } },
                 { tag: "k_oly_frac2", gen: () => {
                     let n=Engine.randInt(13,29), n2=Engine.randInt(7,15), n3=Engine.randInt(4,11);
@@ -1393,6 +1412,11 @@
                     let a=Engine.randInt(12,89), mode=Engine.randChoice([99,101]);
                     let q = mode === 99 ? `99 &times; ${a} + ${a}` : `101 &times; ${a} &minus; ${a}`;
                     return {tag:"l_bmix_near100", q, a:`${100*a}`, step:`合成100个${a}: <strong class="highlight">${100*a}</strong>`};
+                } },
+                { tag: "l_bmix_paren", gen: () => {
+                    let a=Engine.randInt(12,48), b=Engine.randInt(13,49), c=Engine.randInt(3,8), d=Engine.randInt(11,59);
+                    let ans=(a+b)*c-d;
+                    return {tag:"l_bmix_paren", q:`<span class="paren-l"></span>${a} + ${b}<span class="paren-r"></span> &times; ${c} &minus; ${d}`, a:`${ans}`, step:`先算括号 ${a}+${b}=${a+b}，再乘${c}，最后减${d}: <strong class="highlight">${ans}</strong>`};
                 } }
             ], "Lorik", 4)
         };
@@ -1437,7 +1461,7 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {

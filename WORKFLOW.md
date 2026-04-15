@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.4 Iteration Notes
+## Current v22.5 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added two-step equations, reverse distributive shortcuts, unit-fraction application, and parentheses-priority mixed operations.
+- Open questions: none.
+- Risks: more diagnostic variety may increase perceived difficulty on some days.
+- Next steps: watch whether error-book tags cluster around two-step equations or unit fractions.
+
+### Iteration 2
+
+- What I changed: upgraded set cache prefix to v25 so newly generated sets use the expanded pools immediately.
+- Open questions: none.
+- Risks: previously cached v24 sets remain in local storage but are no longer used for current generation.
+- Next steps: keep cache prefix changes tied to generator-pool releases.
+
+### Iteration 3
+
+- What I changed: expanded runtime validation to sets 73-102 and added checks for section counts, empty outputs, duplicate items, and invalid strings.
+- Open questions: none.
+- Risks: validation is still structural and does not prove every arithmetic answer semantically.
+- Next steps: add targeted arithmetic invariants for generator families when they are extracted from the single file.
+
+## Previous v22.4 Iteration Notes
 
 ### Iteration 1
 

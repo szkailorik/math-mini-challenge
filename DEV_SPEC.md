@@ -40,7 +40,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM and checks that the default set renders sheets and answer pages.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, and invalid strings.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
