@@ -1,0 +1,80 @@
+# Product Spec
+
+## Goal
+
+Mini Challenge is a printable and local-first math fluency trainer for grades 3-4. It generates short, high-density practice sets for two learners, records grading outcomes, and turns mistakes into a durable error book.
+
+## Learners
+
+- Grade 3-4 students who need daily numerical fluency practice.
+- Parent or tutor who prints sheets, grades answers, and reviews weak spots.
+
+## Core User Stories
+
+- As a tutor, I can generate a stable numbered set so a printed sheet and answer sheet match.
+- As a tutor, I can mark each answer as perfect, careless, or concept error.
+- As a learner, I get repeated retrieval of weak or recently forgotten concepts without seeing the exact same paper every time.
+- As a tutor, I can open an error book grouped by knowledge point and mark items as mastered.
+- As a family using multiple devices, I can sync progress through a private GitHub Gist and still keep a JSON backup.
+
+## Learning Model
+
+The app is designed around three learning science principles:
+
+- Retrieval practice: students solve from memory before checking the answer sheet.
+- Spacing and forgetting review: each tag stores `lastSeen`; older tags receive a selection bonus.
+- Interleaving and discrimination: each set mixes arithmetic, fraction conversion, equations, and shortcut problems so students must choose methods instead of following a fixed block routine.
+
+Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
+
+## Practice Flow
+
+1. Tutor opens a numbered set.
+2. Student completes the printed challenge sheet.
+3. Tutor uses the answer sheet to grade each row.
+4. App saves a session record, updates adaptive weights, and writes durable error-book entries.
+5. Student later reviews the active error book, then mastered items move to the archive.
+
+## Data Model
+
+```js
+profile = {
+  weights: { [tag]: number },
+  lastSeen: { [tag]: setNumber },
+  history: [
+    {
+      set,
+      date,
+      ts,
+      details: [{ tag, grade, info, uid }],
+      allGrades: [{ tag, grade }],
+      weightAdjustments: [{ tag, delta }]
+    }
+  ],
+  errorBook: {
+    [uid]: {
+      tag,
+      info,
+      grade,
+      count,
+      firstSet,
+      firstDate,
+      lastSet,
+      lastDate,
+      mastered,
+      masteredDate
+    }
+  }
+}
+```
+
+`details` stores non-perfect items for archives and error-book rollback. `allGrades` and `weightAdjustments` make resubmission deterministic without repeatedly inflating weak-topic weights.
+
+## Acceptance Criteria
+
+- Generated question and answer pairs are mathematically consistent.
+- Reopening the same set keeps question data stable.
+- Regrading the same set replaces the previous session contribution.
+- Error-book entries survive history trimming and can be marked mastered.
+- Local mode works without a server beyond static file serving.
+- Gist sync failure does not block local practice.

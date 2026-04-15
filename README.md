@@ -1,4 +1,4 @@
-# Mini Challenge · 专家私教引擎 v22.2
+# Mini Challenge · 专家私教引擎 v22.3
 
 小学数学高密度训练单页应用：基于遗忘曲线的智能出题 + 永久错题本 + GitHub Gist 多设备同步。
 
@@ -32,7 +32,16 @@
 
 核心错题唯一 ID：`tag + FNV-1a(normalized(q))`，不同题不会碰撞，同题跨 set 稳定命中。
 
-## 其他优化
+## v22.3 稳定性优化
+
+- 修正 `k_ddiv_basic` 小数除法生成器：被除数保留 3 位，避免四舍五入后题面与答案不一致。
+- 加固分数引擎：构造 `Frac` 时先把小数转换为整数比，降低浮点误差导致的异常约分风险。
+- 重复提交同一套题时会回滚旧权重、应用新权重，让自适应弱点画像保持一致。
+- 本地存储写入失败时会清理旧试卷快照并重试，减少 localStorage 配额满导致的保存失败。
+- 避免 Lorik 异分母相减生成负数答案。
+- 图片导出组件未加载完成时给出明确提示，而不是静默报错。
+
+## v22.0-v22.2 优化
 
 - `Frac` 构造函数：加固 `n=0` / `d=0` 边界，避免 NaN 污染
 - `localStorage` 超配额：快照写入失败时自动清理其他版本缓存后重试
@@ -46,7 +55,12 @@
 profile = {
   weights:   { tag: number },        // 掌握度加权
   lastSeen:  { tag: setNum },        // 遗忘曲线
-  history:   [ { set, date, ts, details:[{tag, grade, info, uid}] } ],  // 保留 60 套
+  history:   [ {
+    set, date, ts,
+    details:[{tag, grade, info, uid}],         // 错题明细
+    allGrades:[{tag, grade}],                  // 本套完整批改摘要
+    weightAdjustments:[{tag, delta}]           // 重交批改时用于回滚画像
+  } ],  // 保留 60 套
   errorBook: {                        // ★ 永久，不裁剪
     [uid]: {
       tag, info: {q,a,step,sec},
@@ -80,8 +94,9 @@ npx serve .
 ## 浏览器要求
 
 - Chrome / Edge / Safari 最近两个大版本
-- 需要 ES Modules 支持（用于 Firebase 动态导入）
-- 依赖 `localStorage`；云端同步依赖页面注入的 `__firebase_config`
+- 需要 ES Modules 支持
+- 依赖 `localStorage`；云端同步使用 GitHub Gist API，需要用户提供具备 `gist` scope 的 GitHub PAT
+- 图片导出依赖 CDN 加载 `html2canvas`
 
 ## 数据安全
 

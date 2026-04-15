@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Mini Challenge - 专家私教引擎 v22.0 (错题本永久存档版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mini Challenge - 专家私教引擎 v22.3 (稳定性增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -175,7 +176,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v22.0</h3>
+            <h3>🧠 专家私教引擎 v22.3</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -191,7 +192,7 @@
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 22.0 错题本永久存档版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+                💡 22.3 稳定性增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
             </div>
         </div>
 
@@ -217,10 +218,15 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v22.2 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v22.3 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
-        window.currentSetNumber = parseInt(localStorage.getItem('MathEngine_LastSetNum')) || 73;
+        function getStoredSetNumber() {
+            const stored = Number.parseInt(localStorage.getItem('MathEngine_LastSetNum'), 10);
+            return Number.isInteger(stored) && stored > 0 ? stored : 73;
+        }
+
+        window.currentSetNumber = getStoredSetNumber();
         let prngState = 0;
 
         function random() {
@@ -231,13 +237,61 @@
         }
         function setSeed(seed) { prngState = seed; }
 
+        function formatDecimal(value, maxPlaces = 8) {
+            if (!Number.isFinite(value)) return '0';
+            return Number(value.toFixed(maxPlaces)).toString();
+        }
+
+        function gcdInt(a, b) {
+            a = Math.abs(Math.round(a));
+            b = Math.abs(Math.round(b));
+            while (b !== 0) {
+                const t = b;
+                b = a % b;
+                a = t;
+            }
+            return a || 1;
+        }
+
+        function numberToRatio(value) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return { n: 0, d: 1 };
+            if (Number.isInteger(n)) return { n, d: 1 };
+            const fixed = n.toFixed(10).replace(/0+$/, '').replace(/\.$/, '');
+            const places = fixed.includes('.') ? fixed.split('.')[1].length : 0;
+            const d = 10 ** places;
+            return { n: Math.round(n * d), d };
+        }
+
+        function safeLocalSetItem(key, value) {
+            try {
+                localStorage.setItem(key, value);
+                return true;
+            } catch (e) {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.startsWith('MathSetData_') && k !== key) localStorage.removeItem(k);
+                });
+                try {
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e2) {
+                    console.warn('localStorage 写入失败:', key, e2);
+                    return false;
+                }
+            }
+        }
+
         // ================= v21 彻底优化的分式运算引擎 (防负数、防除不尽、防浮点误差) =================
         class Frac {
             constructor(n, d) {
-                if (d === 0) { this.n = 0; this.d = 1; return; }
-                if (n === 0) { this.n = 0; this.d = 1; return; }
-                let g = Engine.gcd(n, d);
-                this.n = n / g; this.d = d / g;
+                const nr = numberToRatio(n);
+                const dr = numberToRatio(d);
+                const nn = nr.n * dr.d;
+                const dd = nr.d * dr.n;
+                if (dd === 0) { this.n = 0; this.d = 1; return; }
+                if (nn === 0) { this.n = 0; this.d = 1; return; }
+                let g = gcdInt(nn, dd);
+                this.n = nn / g; this.d = dd / g;
                 if (this.d < 0) { this.n *= -1; this.d *= -1; }
             }
             add(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
@@ -275,7 +329,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v22.2 GitHub Gist 云同步 =================
+        // ================= v22.3 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -342,7 +396,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.2', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.3', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -387,7 +441,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v22.2'
+                    version: 'v22.3'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -450,6 +504,14 @@
             merged.history = Array.from(hMap.values()).sort((a,b) => (a.ts||0) - (b.ts||0));
             if (merged.history.length > 60) merged.history = merged.history.slice(-60);
 
+            const historyErrorCounts = new Map();
+            merged.history.forEach(h => {
+                (h.details || []).forEach(d => {
+                    const uid = d.uid || (d.info && d.tag ? computeErrorUid(d.tag, d.info.q) : '');
+                    if (uid) historyErrorCounts.set(uid, (historyErrorCounts.get(uid) || 0) + 1);
+                });
+            });
+
             // errorBook：按 uid 并集，数字字段取安全合并
             let ebUids = new Set([
                 ...Object.keys(local.errorBook||{}),
@@ -465,7 +527,7 @@
                     tag: a.tag || b.tag,
                     info: (a.lastSet||0) >= (b.lastSet||0) ? a.info : b.info,
                     grade: (a.grade === 'wrong' || b.grade === 'wrong') ? 'wrong' : 'careless',
-                    count: Math.max(a.count||1, b.count||1),
+                    count: Math.max(a.count||1, b.count||1, historyErrorCounts.get(uid)||0),
                     firstSet: Math.min(a.firstSet||a.lastSet, b.firstSet||b.lastSet),
                     firstDate: (a.firstSet||0) <= (b.firstSet||0) ? (a.firstDate||b.firstDate) : (b.firstDate||a.firstDate),
                     lastSet: Math.max(a.lastSet||0, b.lastSet||0),
@@ -504,7 +566,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v22.2 存储层（local + optional Gist 同步） =================
+        // ================= v22.3 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             cache: {
@@ -525,12 +587,12 @@
                             this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
                             this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
                             // 合并结果写回本地
-                            localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
-                            localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
+                            safeLocalSetItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
+                            safeLocalSetItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
                             // 如果云端带了 lastSetNum 且本地未设置，采用云端的
                             if (cloud.meta && cloud.meta.lastSetNum && !localStorage.getItem('MathEngine_LastSetNum')) {
                                 window.currentSetNumber = cloud.meta.lastSetNum;
-                                localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+                                safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
                             }
                         }
                         this.mode = 'gist';
@@ -553,6 +615,12 @@
                     history: data.history || [],
                     errorBook: data.errorBook || {}
                 };
+                profile.history = profile.history.map(session => ({
+                    ...session,
+                    details: session.details || [],
+                    allGrades: session.allGrades || [],
+                    weightAdjustments: session.weightAdjustments || []
+                }));
                 // v22 迁移：如果旧数据只有 history 没有 errorBook，从 history 重建
                 if (Object.keys(profile.errorBook).length === 0 && profile.history.length > 0) {
                     profile.history.forEach(session => {
@@ -576,6 +644,12 @@
                         });
                     });
                 }
+                Object.keys(profile.errorBook).forEach(uid => {
+                    let entry = profile.errorBook[uid] || {};
+                    entry.count = Math.max(1, Number.parseInt(entry.count, 10) || 1);
+                    entry.mastered = !!entry.mastered;
+                    profile.errorBook[uid] = entry;
+                });
                 return profile;
             },
             fallbackLocal: function() {
@@ -590,7 +664,7 @@
             // 统一写入：1) 本地 localStorage 2) 若连云端，debounce 推到 gist
             forceSave: async function(student) {
                 let profile = this.getProfile(student);
-                localStorage.setItem(`MathProfile_master_${student}`, JSON.stringify(profile));
+                safeLocalSetItem(`MathProfile_master_${student}`, JSON.stringify(profile));
                 if (this.mode === 'gist' && GistSync.getToken() && GistSync.getGistId()) {
                     GistSync.pushDebounced(() => ({ KAI: this.cache.KAI, Lorik: this.cache.Lorik }));
                 }
@@ -607,8 +681,8 @@
                     if (cloud) {
                         this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
                         this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
-                        localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
-                        localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
+                        safeLocalSetItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
+                        safeLocalSetItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
                     }
                 } catch(e) { console.warn('拉云端失败:', e); }
                 // 再推最终版本
@@ -650,7 +724,18 @@
                 let profile = this.getProfile(student);
                 if (!profile.errorBook) profile.errorBook = {};
                 let today = new Date().toLocaleDateString();
-                let sessionRecord = { date: today, ts: Date.now(), set: setNum, details: [] };
+                let sessionRecord = { date: today, ts: Date.now(), set: setNum, details: [], allGrades: [], weightAdjustments: [] };
+
+                const applyWeightDelta = (tag, delta) => {
+                    if (!tag || !delta) return;
+                    profile.weights[tag] = Math.max(0, (profile.weights[tag] || 0) + delta);
+                };
+
+                const gradeDelta = (grade) => {
+                    if (grade === 'perfect') return -2;
+                    if (grade === 'wrong') return 2;
+                    return 0;
+                };
 
                 let allTagsInSet = [...new Set(records.map(r => r.tag))];
                 allTagsInSet.forEach(t => profile.lastSeen[t] = setNum);
@@ -659,6 +744,13 @@
                 let existingIndex = profile.history.findIndex(h => h.set === setNum);
                 if (existingIndex !== -1) {
                     let old = profile.history[existingIndex];
+                    if (old.weightAdjustments && old.weightAdjustments.length) {
+                        old.weightAdjustments.forEach(adj => applyWeightDelta(adj.tag, -adj.delta));
+                    } else {
+                        (old.details || []).forEach(d => {
+                            if (d.grade === 'wrong') applyWeightDelta(d.tag, -2);
+                        });
+                    }
                     (old.details || []).forEach(d => {
                         if (d.uid && profile.errorBook[d.uid]) {
                             let eb = profile.errorBook[d.uid];
@@ -673,13 +765,11 @@
 
                 // 应用新记录
                 records.forEach(r => {
-                    // weights：只在首次批改该 set 时更新，避免反复提交把分数卷成负或爆炸
-                    if (existingIndex === -1) {
-                        let w = profile.weights[r.tag] || 0;
-                        if (r.grade === 'perfect') w = Math.max(0, w - 2);
-                        else if (r.grade === 'wrong') w += 2;
-                        profile.weights[r.tag] = w;
-                    }
+                    let before = profile.weights[r.tag] || 0;
+                    applyWeightDelta(r.tag, gradeDelta(r.grade));
+                    let appliedDelta = (profile.weights[r.tag] || 0) - before;
+                    sessionRecord.allGrades.push({ tag: r.tag, grade: r.grade });
+                    if (appliedDelta !== 0) sessionRecord.weightAdjustments.push({ tag: r.tag, delta: appliedDelta });
 
                     if (r.grade !== 'perfect') {
                         let uid = computeErrorUid(r.tag, r.info.q);
@@ -742,7 +832,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v22.2 Gist 云同步 =================
+        // ================= 数据备份 + v22.3 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -812,7 +902,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v22.2 Gist 连接 UI 逻辑
+        // v22.3 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -825,8 +915,8 @@
                 if (cloud) {
                     StorageDB.cache.KAI   = mergeProfiles(StorageDB.cache.KAI,   StorageDB.migrateProfile(cloud.KAI));
                     StorageDB.cache.Lorik = mergeProfiles(StorageDB.cache.Lorik, StorageDB.migrateProfile(cloud.Lorik));
-                    localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(StorageDB.cache.KAI));
-                    localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(StorageDB.cache.Lorik));
+                    safeLocalSetItem('MathProfile_master_KAI',   JSON.stringify(StorageDB.cache.KAI));
+                    safeLocalSetItem('MathProfile_master_Lorik', JSON.stringify(StorageDB.cache.Lorik));
                 }
                 StorageDB.mode = 'gist';
                 // 推合并后版本
@@ -925,7 +1015,7 @@
                             StorageDB.cache.KAI   = StorageDB.migrateProfile(parsed.KAI);
                             StorageDB.cache.Lorik = StorageDB.migrateProfile(parsed.Lorik);
                             window.currentSetNumber = parsed.lastSetNum || window.currentSetNumber;
-                            localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+                            safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
                             await StorageDB.forceSave('KAI'); await StorageDB.forceSave('Lorik');
                             alert('✅ 数据完美恢复！'); window.renderPaper(); window.closeReportModal();
                         } else { alert('❌ 数据格式似乎不正确。'); }
@@ -1028,12 +1118,12 @@
             decimalsMult: () => Engine.weightedSelect([
                 { tag: "k_dmul_basic", gen: () => { let a=Engine.randInt(201,999)/100, b=Engine.randInt(301,999)/100; return { tag:"k_dmul_basic", q:`${a.toFixed(2)} &times; ${b.toFixed(2)}`, a:((a*100)*(b*100)/10000).toFixed(4).replace(/0+$/,'')}; } },
                 { tag: "k_dmul_trap0", gen: () => { let a=Engine.randInt(11,99)/1000, b=Engine.randInt(101,999)/100; return { tag:"k_dmul_trap0", q:`${a.toFixed(3)} &times; ${b.toFixed(2)}`, a:((a*1000)*(b*100)/100000).toFixed(5).replace(/0+$/,'')}; } },
-                { tag: "k_dmul_end0", gen: () => { let a=Engine.randInt(11,99)*10+5, b=Engine.randInt(11,49)*2/10; return { tag:"k_dmul_end0", q:`${a} &times; ${b.toFixed(1)}`, a:((a*(b*10))/10).toString()}; } },
-                { tag: "k_dmul_125", gen: () => { let b=Engine.randInt(11,99)*8/10; return { tag:"k_dmul_125", q:`1.25 &times; ${b.toFixed(1)}`, a:(125*(b*10)/1000).toString()}; } },
+                { tag: "k_dmul_end0", gen: () => { let a=Engine.randInt(11,99)*10+5, b=Engine.randInt(11,49)*2/10; return { tag:"k_dmul_end0", q:`${a} &times; ${b.toFixed(1)}`, a:formatDecimal((a*(b*10))/10)}; } },
+                { tag: "k_dmul_125", gen: () => { let b=Engine.randInt(11,99)*8/10; return { tag:"k_dmul_125", q:`1.25 &times; ${b.toFixed(1)}`, a:formatDecimal(125*(b*10)/1000)}; } },
                 { tag: "k_dmul_int", gen: () => { let a=Engine.randInt(401,999), b=Engine.randInt(201,999); return { tag:"k_dmul_int", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
             ], "KAI", 4),
             decimalsDiv: () => Engine.weightedSelect([
-                { tag: "k_ddiv_basic", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_basic", q:`${((ans*d)/1000).toFixed(2)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`}; } },
+                { tag: "k_ddiv_basic", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_basic", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`}; } },
                 { tag: "k_ddiv_mid0", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"k_ddiv_mid0", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/10}`}; } },
                 { tag: "k_ddiv_pure", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_pure", q:`${((ans*d)/100).toFixed(2)} &divide; ${(d/100).toFixed(2)}`, a:`${ans}`}; } },
                 { tag: "k_ddiv_shift", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(101,199); return {tag:"k_ddiv_shift", q:`${((ans*d)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/100}`}; } },
@@ -1176,6 +1266,7 @@
                     { tag: "l_fmix_sub", gen: () => {
                         let d1=Engine.randChoice([8,10,12,14,16]); let d2=Engine.randChoice([4,5,6,7]);
                         let f1=new Frac(Engine.randInt(Math.floor(d1/2)+1, d1-1), d1), f2=new Frac(Engine.randInt(1, Math.floor(d2/2)), d2);
+                        if (f1.n * f2.d < f2.n * f1.d) [f1, f2] = [f2, f1];
                         let ans = f1.sub(f2);
                         return {tag:"l_fmix_sub", q:`${f1.toHTML()} &minus; ${f2.toHTML()} = `, a:ans.toHTML(), step:`通分相减运算: ${f1.toHTML()} &minus; ${f2.toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>`};
                     } },
@@ -1248,7 +1339,7 @@
                 { tag: "l_bmix_comb", gen: () => {
                     let m=Engine.randInt(11,49)*8, s=Engine.randInt(11,99)/10;
                     let ans = ((1.25 * m * 10) - (s * 10)) / 10;
-                    return {tag:"l_bmix_comb", q:`1.25 &times; ${m} &minus; ${s}`, a:`${ans}`, step:`乘法结合律拆分: (1.25 &times; 8) &times; ${m/8} &minus; ${s} = 10 &times; ${m/8} &minus; ${s} = <strong class="highlight">${ans}</strong>`};
+                    return {tag:"l_bmix_comb", q:`1.25 &times; ${m} &minus; ${s}`, a:formatDecimal(ans), step:`乘法结合律拆分: (1.25 &times; 8) &times; ${m/8} &minus; ${s} = 10 &times; ${m/8} &minus; ${s} = <strong class="highlight">${formatDecimal(ans)}</strong>`};
                 } }
             ], "Lorik", 4)
         };
@@ -1340,11 +1431,7 @@
                 l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
                 stateLabel: state.label
             };
-            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {
-                // 若超出配额，清理其他旧快照后重试一次
-                Object.keys(localStorage).forEach(k => { if (k.startsWith('MathSetData_') && k !== cacheKey) localStorage.removeItem(k); });
-                try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e2) {}
-            }
+            safeLocalSetItem(cacheKey, JSON.stringify(data));
             return data;
         }
 
@@ -1763,7 +1850,7 @@
         window.changeSet = function(delta) {
             if (window.currentSetNumber + delta < 1) return;
             window.currentSetNumber += delta;
-            localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+            safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
             window.renderPaper();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -1813,6 +1900,10 @@
         };
 
         window.downloadAllSheetsAsImages = async function() {
+            if (typeof window.html2canvas !== 'function') {
+                alert('图片导出组件还没有加载完成，请稍后重试，或检查网络后刷新页面。');
+                return;
+            }
             const btn = document.querySelector('.export-btn') || document.getElementById('download-btn');
             const originalText = btn.innerText;
             btn.innerText = "正在生成图片..."; btn.style.backgroundColor = "#666"; btn.disabled = true;
