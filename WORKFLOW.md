@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.3 Iteration Notes
+## Current v22.4 Iteration Notes
+
+### Iteration 1
+
+- What I changed: expanded misconception tags and fixed answer formatting for conversion and decimal arithmetic items.
+- Open questions: none.
+- Risks: broader pools make periodic generator sampling more important.
+- Next steps: keep the runtime validator in the release checklist.
+
+### Iteration 2
+
+- What I changed: added higher-diagnostic KAI items for tiny decimal products, decimal quotients, unknown divisors, long borrow chains, and compensation shortcuts.
+- Open questions: whether future sets should expose per-topic difficulty sliders.
+- Risks: advanced KAI items may need manual tuning if daily sessions feel too dense.
+- Next steps: watch error-book clustering after several sessions.
+
+### Iteration 3
+
+- What I changed: added Lorik items for near-100 multiplication, 25/scale division, whole-number fraction meaning, and a Node runtime validation script.
+- Open questions: none.
+- Risks: the stubbed DOM validator is a smoke test, not a visual layout test.
+- Next steps: add browser-based screenshot tests if the project later adopts Playwright.
+
+## Previous v22.3 Iteration Notes
 
 ### Iteration 1
 

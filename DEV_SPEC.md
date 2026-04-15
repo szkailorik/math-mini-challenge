@@ -30,6 +30,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 ├── DEV_SPEC.md
 ├── WORKFLOW.md
 ├── AGENTS.md
+├── scripts/validate-runtime.mjs
 └── .github/workflows/pages.yml
 ```
 
@@ -39,6 +40,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM and checks that the default set renders sheets and answer pages.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -57,6 +59,7 @@ Run these checks before shipping:
 ```bash
 sed -n '/<script type="module">/,/<\/script>/p' index.html | sed '1d;$d' > /tmp/math-mini-challenge-script.mjs
 node --check /tmp/math-mini-challenge-script.mjs
+node scripts/validate-runtime.mjs
 ```
 
 2. Start a local server and load the page:

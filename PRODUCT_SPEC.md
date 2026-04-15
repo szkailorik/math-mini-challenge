@@ -27,6 +27,13 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v22.4 expands misconception coverage in the generator pools:
+
+- Decimal place value: tiny products, decimal quotients, and estimation checks.
+- Operation structure: unknown divisors, compensation around 99/101/999, and common scale-down division.
+- Regrouping: whole-ten-thousand and whole-million subtraction with long borrow chains.
+- Fraction meaning: fraction of a whole number, cross-canceling, and sixteenths/fortieths conversions.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

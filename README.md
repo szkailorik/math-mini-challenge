@@ -1,4 +1,4 @@
-# Mini Challenge · 专家私教引擎 v22.3
+# Mini Challenge · 专家私教引擎 v22.4
 
 小学数学高密度训练单页应用：基于遗忘曲线的智能出题 + 永久错题本 + GitHub Gist 多设备同步。
 
@@ -31,6 +31,14 @@
 | 数据迁移 | — | 从旧版 `history` 自动重建 errorBook |
 
 核心错题唯一 ID：`tag + FNV-1a(normalized(q))`，不同题不会碰撞，同题跨 set 稳定命中。
+
+## v22.4 题型质量增强
+
+- KAI 新增极小数乘法、小数商、未知数作除数、整百万连续借位、补偿凑整等诊断题型。
+- Lorik 新增接近整百乘法、25/末尾0除法、整万连续借位、求一个数的几分之几等题型。
+- 关键基础题补充解析步骤，让答案页不只给结果，也能提示孩子检查位值、估算和凑整策略。
+- 互化题修正小数答案格式，统一用稳定格式输出，减少 `0.30000000004` 这类浮点显示风险。
+- 新增 `scripts/validate-runtime.mjs`，可在 Node 中生成整套试卷做轻量运行时验证。
 
 ## v22.3 稳定性优化
 
@@ -86,6 +94,14 @@ npx serve .
 ```
 
 浏览器访问 `http://localhost:8080/`。
+
+## 本地验证
+
+```bash
+sed -n '/<script type="module">/,/<\/script>/p' index.html | sed '1d;$d' > /tmp/math-mini-challenge-script.mjs
+node --check /tmp/math-mini-challenge-script.mjs
+node scripts/validate-runtime.mjs
+```
 
 ## 部署
 
