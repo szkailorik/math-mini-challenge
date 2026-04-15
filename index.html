@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Challenge - 专家私教引擎 v22.0 (错题本永久存档版)</title>
+    <!-- 引入 html2canvas 库用于一键生成图片 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* ================= 一、 绝对物理分页与安全打印准则 ================= */
+        @page { size: A4; margin: 0 !important; }
+        @media print {
+            body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .sheet { box-shadow: none !important; margin: 0 !important; }
+            .no-print { display: none !important; }
+        }
+        body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
+
+        .sheet { width: 210mm !important; height: 297mm !important; box-sizing: border-box; padding: 12mm 15mm; page-break-after: always; overflow: hidden; background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin: 0 auto 25px auto; position: relative; }
+        .sheet.ans-sheet { height: auto !important; min-height: 297mm !important; overflow: visible !important; padding-bottom: 20mm;}
+        .sheet:last-child { page-break-after: auto; margin-bottom: 0; }
+
+        /* ================= 二、 视觉与双语排版系统 ================= */
+        .header { text-align: center; margin-bottom: 12px; border-bottom: 3px double #002D72; padding-bottom: 8px; position: relative; }
+        .header h1 { margin: 0 0 8px 0; font-size: 28px; color: #002D72; letter-spacing: 2px; font-weight: bold; }
+        .info-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; padding: 0 10px; font-family: 'KaiTi', '楷体', serif; }
+        .score-box { position: absolute; top: 0; right: 0; border: 2px solid #d32f2f; color: #d32f2f; padding: 5px 15px; font-size: 16px; font-weight: bold; border-radius: 4px; transform: rotate(-3deg); }
+
+        .completed-stamp {
+            position: absolute; top: 60px; right: 40px; font-size: 34px; font-weight: bold; color: rgba(76, 175, 80, 0.4);
+            border: 4px solid rgba(76, 175, 80, 0.4); padding: 8px 25px; border-radius: 12px; transform: rotate(-15deg);
+            pointer-events: none; z-index: 100; font-family: 'KaiTi', '楷体', serif; letter-spacing: 2px; box-shadow: 0 0 15px rgba(76, 175, 80, 0.1) inset;
+        }
+
+        .section { margin-bottom: 12px; }
+        .section-title { font-size: 17px; font-weight: bold; margin: 0 0 12px 0; padding-left: 10px; border-left: 5px solid #002D72; color: #002D72; display: flex; justify-content: space-between; align-items: flex-end; font-family: 'KaiTi', '楷体', serif; }
+        .title-text { display: flex; flex-direction: column; line-height: 1.3; }
+        .title-en { font-size: 13px; color: #64748b; font-weight: normal; font-family: 'Times New Roman', serif; }
+        .points { font-size: 14px; font-weight: normal; color: #d32f2f; letter-spacing: 1px; font-family: 'Times New Roman', 'SimSun', serif; white-space: nowrap; margin-left: 15px;}
+
+        .grid { display: grid; gap: 16px 12px; width: 100%; }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+        .q-badge { font-size: 11px; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: middle; font-family: 'KaiTi', '楷体', serif; font-weight: normal; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .badge-weak { background-color: #ef4444; }
+        .badge-forget { background-color: #3b82f6; }
+
+        .item { display: flex; align-items: flex-start; font-size: 20px; }
+        .q-num { font-family: 'Times New Roman', serif; font-weight: bold; margin-right: 6px; }
+        .math-row { display: inline-flex; align-items: center; flex-wrap: wrap; font-family: 'Times New Roman', serif; letter-spacing: 1px; }
+
+        /* ================= V21 终极修正：纯排版级分数与完美大括号 ================= */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 6px;
+            font-size: 18px;
+            vertical-align: middle; /* 彻底修复分数基线对齐问题 */
+        }
+        .frac > span { display: flex; align-items: center; justify-content: center; height: 1.25em; padding: 0 4px; line-height: 1; }
+        .frac > span.bottom { border-top: 1.5px solid currentColor; width: 100%; box-sizing: border-box; }
+        .mixed { display: inline-flex; align-items: center; font-size: 20px; }
+        i.var { font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; margin: 0 4px; }
+
+        /* 彻底废弃边框画括号，采用真·大括号字符，保证任何环境绝对不乱码、出错位！ */
+        .paren-l, .paren-r {
+            display: inline-block;
+            font-size: 38px;
+            font-family: 'Times New Roman', serif;
+            font-weight: 300;
+            vertical-align: middle;
+            color: currentColor;
+            line-height: 1;
+            margin: 0 2px;
+            transform: translateY(-3px); /* 精确微调像素，保证与分数线完美水平对齐 */
+        }
+        .paren-l::before { content: '('; }
+        .paren-r::before { content: ')'; }
+
+        .h-vert   { height: 140px; } .h-sub    { height: 75px; } .h-frac   { height: 115px; } .h-mixed  { height: 135px; }
+        .h-conv { display: flex; align-items: center; height: 42px; width: 100%; font-size: 19px; }
+        .h-conv .math-row { align-items: center; }
+        .blank { flex-grow: 1; border-bottom: 1.5px solid currentColor; margin-left: 6px; margin-right: 6px; height: 16px; min-width: 40px; }
+        .dot-top { position: relative; }
+        .dot-top::after { content: '•'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 16px; }
+        .circle-blank { display: inline-block; width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid currentColor; margin: 0 12px; align-self: center; }
+
+        /* ================= 错题本与交互 UI ================= */
+        .error-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px; }
+        .error-card { border: 1.5px dashed #94a3b8; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; background: #fafafa; min-height: 140px; position: relative; }
+        .error-meta { font-size: 13px; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; flex-wrap: wrap; gap: 6px; }
+        .error-q { font-size: 20px; font-family: 'Times New Roman', serif; flex-grow: 1; }
+        .error-type-badge { padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .badge-careless { background: #fef3c7; color: #d97706; }
+        .badge-wrong { background: #fee2e2; color: #ef4444; }
+        .badge-count { background: #fecaca; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 12px; font-family: sans-serif; border: 1px solid #f87171; }
+        .master-btn { position: absolute; top: 8px; right: 8px; background: #10b981; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+        .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
+        .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+        .eb-tag-header .tag-count { background: rgba(255,255,255,0.25); padding: 2px 10px; border-radius: 10px; font-size: 13px; }
+        .eb-summary { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-size: 14px; }
+        .eb-summary .eb-stat { display: flex; gap: 18px; align-items: center; }
+        .eb-summary .eb-stat b { font-size: 20px; color: #002D72; margin-right: 4px; }
+        .eb-filter-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.15s; font-family: sans-serif;}
+        .eb-filter-btn:hover { background: #002D72; color: white; border-color: #002D72;}
+        .eb-filter-btn.active { background: #002D72; color: white; border-color: #002D72;}
+
+        .ans-sheet { font-size: 14.5px; }
+        .ans-sheet .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .ans-grid-block { margin-bottom: 12px; }
+        .ans-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fc; border-left: 3px solid #002D72; padding: 8px 10px; margin-bottom: 6px; border-radius: 0 4px 4px 0; transition: background 0.2s;}
+        .ans-content { display: flex; flex-direction: column; flex: 1; padding-right: 15px; gap: 6px;}
+        .ans-q-line { font-size: 14px; color: #555; display: flex; align-items: center; }
+        .ans-a-line { font-size: 15.5px; color: #002D72; margin-left: 25px;}
+        .ans-num { font-weight: bold; color: #002D72; width: 25px; flex-shrink: 0; font-family: 'Times New Roman', serif;}
+        .highlight { color: #d32f2f; font-weight: bold; margin: 0 4px; }
+
+        .grade-area { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+        .grade-btn { width: 34px; height: 34px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 16px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .grade-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .grade-btn.perfect:hover, .grade-btn.perfect.active { background: #4caf50; color: white; border-color: #4caf50; }
+        .grade-btn.careless:hover, .grade-btn.careless.active { background: #ff9800; color: white; border-color: #ff9800; }
+        .grade-btn.wrong:hover, .grade-btn.wrong.active { background: #f44336; color: white; border-color: #f44336; }
+        .submit-grades-btn { display: block; width: 100%; padding: 12px; background: #002D72; color: #fff; font-size: 16px; font-weight: bold; text-align: center; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .submit-grades-btn:hover { filter: brightness(1.1); }
+
+        .step-box { background: #f8f9fc; border-left: 4px solid #002D72; padding: 6px 10px; margin-bottom: 8px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
+        .step-title { font-weight: bold; color: #002D72; margin-right: 6px; font-family: 'Times New Roman', serif; }
+        .step-detail { color: #222; line-height: 1.5; margin-bottom: 4px; border-bottom: 1px dashed #c0c5d8; padding-bottom: 4px; display: block; }
+        .step-detail:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+        .reason-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: normal; vertical-align: middle; }
+        .reason-weak { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5;}
+        .reason-forget { background: #e0e7ff; color: #0284c7; border: 1px solid #93c5fd;}
+
+        /* ================= 控制面板 ================= */
+        .control-panel { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; backdrop-filter: blur(5px); width: 280px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 6px;}
+        .panel-header h3 { margin: 0; font-size: 15px; text-align: left; flex: 1;}
+        .toggle-btn { background: none; border: none; color: white; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
+        .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: #ffde99;}
+        .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px;}
+        .ctrl-btn { background: #fff; color: #002D72; border: none; padding: 6px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; flex:1; text-align:center; font-size: 13px;}
+        .ctrl-btn:hover { background: #d32f2f; color: #fff; transform: scale(1.05); }
+        .set-indicator { font-size: 16px; font-weight: bold; color: #ffde99; white-space: nowrap;}
+
+        #toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: sans-serif; opacity: 0; transition: opacity 0.3s; z-index: 10000; pointer-events: none;}
+        #cloud-status { font-size: 11px; color: #bbf7d0; text-align: center; margin-top: 2px; font-weight: normal; }
+
+        .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999; cursor: pointer; font-family: sans-serif; font-weight: bold; font-size: 14px; backdrop-filter: blur(5px); display: none; }
+        .export-btn { position: fixed; top: 20px; right: 320px; background-color: #002D72; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: 0.2s; }
+        .export-btn:hover { background-color: #d32f2f; transform: scale(1.05); }
+
+        /* 报告弹窗 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; backdrop-filter: blur(3px); }
+        .modal-content { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 25px; border-radius: 12px; width: 680px; max-height: 88vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-family: 'KaiTi', '楷体', sans-serif; color: #222;}
+        .report-section { margin-bottom: 25px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .report-section h3 { background: #002D72; margin:0; padding: 10px 15px; color: #fff; font-size: 17px; font-family: sans-serif; }
+        .vuln-item { border: 1px solid #fecaca; border-radius: 8px; padding: 15px; margin-bottom: 12px; background: #fffaf0;}
+        .vuln-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; font-family: sans-serif; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;}
+        .modal-btns { display: flex; justify-content: center; margin-top: 20px; }
+        .modal-btn.confirm { background: #002D72; color: #fff; width: 100%; padding: 12px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px;}
+
+        .archive-table { width: 100%; border-collapse: collapse; text-align: center; font-family: sans-serif; font-size: 14px; margin-bottom: 15px;}
+        .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
+        .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <button class="export-btn no-print" onclick="downloadAllSheetsAsImages()">📸 下载为图片 / Download as Images</button>
+
+    <div class="control-panel no-print" id="main-control-panel">
+        <div class="panel-header">
+            <h3>🧠 专家私教引擎 v22.0</h3>
+            <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
+        </div>
+        <div id="cloud-status">正在检查云端状态...</div>
+
+        <div id="normal-ctrls">
+            <div class="ctrl-row" style="margin-top: 5px;">
+                <button class="ctrl-btn" onclick="window.changeSet(-1)">上一套 (Prev)</button>
+                <span class="set-indicator">第 <span id="set-num-display">--</span> 套</span>
+                <button class="ctrl-btn" onclick="window.changeSet(1)">下一套 (Next)</button>
+            </div>
+
+            <button class="ctrl-btn" style="background:#059669; color:white; width:100%; margin-top:8px;" onclick="window.showDataModal()">💾 数据备份 / Data Backup</button>
+            <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
+            <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
+            <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
+                💡 22.0 错题本永久存档版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+            </div>
+        </div>
+
+        <div id="error-book-ctrls" style="display:none; margin-top: 10px;">
+            <button class="ctrl-btn" style="background:#4caf50; color:white; width:100%; margin-bottom:8px;" onclick="window.downloadAllSheetsAsImages()">📸 导出错题本用于打印</button>
+            <button class="ctrl-btn" style="background:#8b5cf6; color:white; width:100%; margin-bottom:8px;" onclick="window.showMasteredList()">🏆 已掌握列表 / Mastered</button>
+            <button class="ctrl-btn" style="background:#64748b; color:white; width:100%;" onclick="window.exitErrorBook()">🔙 返回常规试卷训练</button>
+        </div>
+    </div>
+
+    <div class="mini-panel-btn no-print" id="mini-control-panel" onclick="window.togglePanel()">⚙️ 展开面板</div>
+
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-content" id="report-modal-content">
+            <h2 id="modal-title" style="margin: 0 0 15px 0; color: #002D72; font-size: 24px; border-bottom: 2px solid #eee; padding-bottom: 10px; text-align: center; font-weight: bold;">📉 数据中心</h2>
+            <div id="report-content-area"></div>
+            <div class="modal-btns"><button class="modal-btn confirm" onclick="window.closeReportModal()">关闭 (Close)</button></div>
+        </div>
+    </div>
+
+    <div id="toast-msg">✅ 批改数据已作为历史记录永久存档！</div>
+
+    <div id="paper-container"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.currentSetNumber = parseInt(localStorage.getItem('MathEngine_LastSetNum')) || 73;
+        let prngState = 0;
+
+        function random() {
+            let t = prngState += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+        function setSeed(seed) { prngState = seed; }
+
+        // ================= v21 彻底优化的分式运算引擎 (防负数、防除不尽、防浮点误差) =================
+        class Frac {
+            constructor(n, d) {
+                if (d === 0) { this.n = 0; this.d = 1; return; }
+                if (n === 0) { this.n = 0; this.d = 1; return; }
+                let g = Engine.gcd(n, d);
+                this.n = n / g; this.d = d / g;
+                if (this.d < 0) { this.n *= -1; this.d *= -1; }
+            }
+            add(o) { return new Frac(this.n * o.d + o.n * this.d, this.d * o.d); }
+            sub(o) { return new Frac(this.n * o.d - o.n * this.d, this.d * o.d); }
+            mul(o) { return new Frac(this.n * o.n, this.d * o.d); }
+            div(o) { return new Frac(this.n * o.d, this.d * o.n); }
+            toHTML() {
+                if (this.d === 1 || this.n === 0) return `${this.n}`;
+                return `<div class="frac"><span>${this.n}</span><span class="bottom">${this.d}</span></div>`;
+            }
+            toMixedHTML() {
+                if (this.d === 1 || this.n === 0) return `${this.n}`;
+                if (Math.abs(this.n) > this.d) {
+                    let w = Math.floor(Math.abs(this.n) / this.d) * (this.n < 0 ? -1 : 1); let rem = Math.abs(this.n) % this.d;
+                    if (rem === 0) return `${w}`;
+                    return `<div class="mixed">${w}<div class="frac"><span>${rem}</span><span class="bottom">${this.d}</span></div></div>`;
+                }
+                return this.toHTML();
+            }
+        }
+
+        // ================= v22 新增：错题唯一ID哈希（稳定、碰撞率低） =================
+        function hashString(s) {
+            // FNV-1a 32-bit
+            let h = 0x811c9dc5;
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
+                h = Math.imul(h, 0x01000193) >>> 0;
+            }
+            return h.toString(36);
+        }
+        function computeErrorUid(tag, q) {
+            // 去除空格/HTML实体差异，保证同题稳定命中
+            let normalized = String(q || '').replace(/\s+/g, '').replace(/&[a-z]+;/gi, '#');
+            return `${tag}_${hashString(normalized)}`;
+        }
+
+        // ================= 云端双引擎 =================
+        const StorageDB = {
+            mode: 'local', db: null, auth: null, userId: null,
+            appId: typeof __app_id !== 'undefined' ? __app_id : 'math-engine-app',
+            // v22: 新增 errorBook 独立存储（不受 history 容量限制）
+            cache: {
+                KAI:   { weights: {}, lastSeen: {}, history: [], errorBook: {} },
+                Lorik: { weights: {}, lastSeen: {}, history: [], errorBook: {} }
+            },
+
+            init: async function() {
+                try {
+                    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                        const config = JSON.parse(__firebase_config);
+                        const app = initializeApp(config);
+                        this.auth = getAuth(app); this.db = getFirestore(app);
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(this.auth, __initial_auth_token);
+                        } else { await signInAnonymously(this.auth); }
+                        return new Promise((resolve) => {
+                            onAuthStateChanged(this.auth, async (user) => {
+                                if (user) {
+                                    this.userId = user.uid; this.mode = 'cloud';
+                                    await this.loadFromCloud('KAI'); await this.loadFromCloud('Lorik');
+                                    document.getElementById('cloud-status').innerText = "☁️ 云端同步已连接 / Cloud Synced";
+                                    document.getElementById('cloud-status').style.color = "#4ade80";
+                                    resolve();
+                                } else { this.fallbackLocal(); resolve(); }
+                            });
+                        });
+                    } else { this.fallbackLocal(); }
+                } catch(e) { this.fallbackLocal(); }
+            },
+            migrateProfile: function(data) {
+                if (!data || typeof data !== 'object') {
+                    return { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+                }
+                let profile = {
+                    weights: data.weights || {},
+                    lastSeen: data.lastSeen || {},
+                    history: data.history || [],
+                    errorBook: data.errorBook || {}
+                };
+                // v22 迁移：如果旧数据只有 history 没有 errorBook，从 history 重建
+                if (Object.keys(profile.errorBook).length === 0 && profile.history.length > 0) {
+                    profile.history.forEach(session => {
+                        (session.details || []).forEach(detail => {
+                            if (!detail.info || !detail.tag) return;
+                            let uid = computeErrorUid(detail.tag, detail.info.q);
+                            if (profile.errorBook[uid]) {
+                                profile.errorBook[uid].count += 1;
+                                if (detail.grade === 'wrong') profile.errorBook[uid].grade = 'wrong';
+                                profile.errorBook[uid].lastSet = session.set;
+                                profile.errorBook[uid].lastDate = session.date;
+                            } else {
+                                profile.errorBook[uid] = {
+                                    tag: detail.tag, info: detail.info, grade: detail.grade,
+                                    count: 1,
+                                    firstSet: session.set, firstDate: session.date,
+                                    lastSet: session.set, lastDate: session.date,
+                                    mastered: false
+                                };
+                            }
+                        });
+                    });
+                }
+                return profile;
+            },
+            fallbackLocal: function() {
+                this.mode = 'local'; document.getElementById('cloud-status').innerText = "💾 本地防丢模式 / Local Storage"; document.getElementById('cloud-status').style.color = "#ccc";
+                let k = localStorage.getItem("MathProfile_master_KAI"); let l = localStorage.getItem("MathProfile_master_Lorik");
+                try { this.cache.KAI = this.migrateProfile(JSON.parse(k)); } catch(e) { this.cache.KAI = this.migrateProfile(null); }
+                try { this.cache.Lorik = this.migrateProfile(JSON.parse(l)); } catch(e) { this.cache.Lorik = this.migrateProfile(null); }
+            },
+            loadFromCloud: async function(student) {
+                if(!this.userId) return;
+                try {
+                    const snap = await getDoc(doc(this.db, 'artifacts', this.appId, 'users', this.userId, 'math_profiles_master', student));
+                    if(snap.exists()) this.cache[student] = this.migrateProfile(snap.data());
+                    else this.cache[student] = this.migrateProfile(null);
+                } catch(e) {}
+            },
+            getProfile: function(student) { return this.cache[student]; },
+
+            forceSave: async function(student) {
+                let profile = this.getProfile(student);
+                if (this.mode === 'cloud' && this.userId) {
+                    try { await setDoc(doc(this.db, 'artifacts', this.appId, 'users', this.userId, 'math_profiles_master', student), profile, { merge: true }); } catch(e) {}
+                }
+                localStorage.setItem(`MathProfile_master_${student}`, JSON.stringify(profile));
+            },
+
+            scanLegacyLocalData: function(student) {
+                let profile = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+                let historyMap = new Map();
+                const oldKeys = ['KAI', 'Lorik', 'v10_KAI', 'v10_Lorik', 'v11_KAI', 'v12_KAI', 'v13_KAI', 'v14_KAI', 'v15_KAI', 'v16_KAI', 'v17_KAI', 'v18_KAI', 'v11_Lorik', 'v12_Lorik', 'v13_Lorik', 'v14_Lorik', 'v15_Lorik', 'v16_Lorik', 'v17_Lorik', 'v18_Lorik'];
+
+                oldKeys.forEach(k => {
+                    if (k.includes(student)) {
+                        let data = localStorage.getItem(`MathProfile_${k}`);
+                        if(data) {
+                            try {
+                                let parsed = JSON.parse(data);
+                                if (!parsed.weights && !parsed.history) {
+                                    for (let tag in parsed) {
+                                        if (typeof parsed[tag] === 'number') { profile.weights[tag] = Math.max(profile.weights[tag] || 0, parsed[tag]); }
+                                    }
+                                } else {
+                                    if(parsed.weights) Object.assign(profile.weights, parsed.weights);
+                                    if(parsed.lastSeen) Object.assign(profile.lastSeen, parsed.lastSeen);
+                                    if(parsed.history) parsed.history.forEach(h => historyMap.set(h.set, h));
+                                    if(parsed.errorBook) Object.assign(profile.errorBook, parsed.errorBook);
+                                }
+                            } catch(e) {}
+                        }
+                    }
+                });
+                profile.history = Array.from(historyMap.values()).sort((a,b) => a.ts - b.ts);
+                return profile;
+            },
+
+            // v22：写入时同时维护 errorBook（可回滚的递增计数）
+            saveSession: async function(student, records, setNum) {
+                let profile = this.getProfile(student);
+                if (!profile.errorBook) profile.errorBook = {};
+                let today = new Date().toLocaleDateString();
+                let sessionRecord = { date: today, ts: Date.now(), set: setNum, details: [] };
+
+                let allTagsInSet = [...new Set(records.map(r => r.tag))];
+                allTagsInSet.forEach(t => profile.lastSeen[t] = setNum);
+
+                // 若本 set 已提交过，先回滚其对 errorBook 的贡献与 weights
+                let existingIndex = profile.history.findIndex(h => h.set === setNum);
+                if (existingIndex !== -1) {
+                    let old = profile.history[existingIndex];
+                    (old.details || []).forEach(d => {
+                        if (d.uid && profile.errorBook[d.uid]) {
+                            let eb = profile.errorBook[d.uid];
+                            eb.count -= 1;
+                            if (eb.count <= 0) {
+                                delete profile.errorBook[d.uid];
+                            }
+                        }
+                    });
+                    profile.history.splice(existingIndex, 1);
+                }
+
+                // 应用新记录
+                records.forEach(r => {
+                    // weights：只在首次批改该 set 时更新，避免反复提交把分数卷成负或爆炸
+                    if (existingIndex === -1) {
+                        let w = profile.weights[r.tag] || 0;
+                        if (r.grade === 'perfect') w = Math.max(0, w - 2);
+                        else if (r.grade === 'wrong') w += 2;
+                        profile.weights[r.tag] = w;
+                    }
+
+                    if (r.grade !== 'perfect') {
+                        let uid = computeErrorUid(r.tag, r.info.q);
+                        sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid });
+
+                        if (profile.errorBook[uid]) {
+                            let eb = profile.errorBook[uid];
+                            eb.count += 1;
+                            eb.lastSet = setNum;
+                            eb.lastDate = today;
+                            // 概念错覆盖粗心错（更严重的错误状态优先）
+                            if (r.grade === 'wrong') eb.grade = 'wrong';
+                            // 再次错了 → 自动取消"已掌握"状态
+                            if (eb.mastered) {
+                                eb.mastered = false;
+                                eb.masteredDate = null;
+                            }
+                            // 更新题面与解析到最新版本（兼容题库生成器变化）
+                            eb.info = r.info;
+                        } else {
+                            profile.errorBook[uid] = {
+                                tag: r.tag, info: r.info, grade: r.grade,
+                                count: 1,
+                                firstSet: setNum, firstDate: today,
+                                lastSet: setNum, lastDate: today,
+                                mastered: false
+                            };
+                        }
+                    }
+                });
+
+                profile.history.push(sessionRecord);
+                if (profile.history.length > 60) profile.history.shift(); // history 仍裁剪，但 errorBook 不受影响
+
+                this.cache[student] = profile;
+                await this.forceSave(student);
+            },
+
+            // v22：标记已掌握（不删除、保留归档）
+            masterError: async function(student, uid) {
+                let profile = this.getProfile(student);
+                if (profile.errorBook && profile.errorBook[uid]) {
+                    profile.errorBook[uid].mastered = true;
+                    profile.errorBook[uid].masteredDate = new Date().toLocaleDateString();
+                    await this.forceSave(student);
+                    return true;
+                }
+                return false;
+            },
+            unmasterError: async function(student, uid) {
+                let profile = this.getProfile(student);
+                if (profile.errorBook && profile.errorBook[uid]) {
+                    profile.errorBook[uid].mastered = false;
+                    profile.errorBook[uid].masteredDate = null;
+                    await this.forceSave(student);
+                    return true;
+                }
+                return false;
+            }
+        };
+        window.StorageDB = StorageDB;
+
+        // ================= V19 数据备份与寻回接口 =================
+        window.showDataModal = function() {
+            document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup';
+            let html = `
+                <div class="report-section">
+                    <h3>🔍 1. 寻回昨日丢失数据 (Recover Legacy Data)</h3>
+                    <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
+                        如果您发现进度或错题本丢失，通常是因为浏览器清空了"访客ID"。<br>
+                        点击下方按钮，系统将深度扫描浏览器的底层缓存，尝试找回历史版本的遗留记录并进行合并。
+                        <button class="modal-btn" style="background:#f59e0b; color:#fff; width:100%; margin-top:12px;" onclick="window.recoverLegacyData()">🔍 深度扫描并合并残留数据</button>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3>🛡️ 2. 终极防丢：导出/导入备份 (Export & Import)</h3>
+                    <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
+                        这是最安全的防丢方式。建议您每次训练结束后，将数据导出备份到电脑中。当进度丢失时，一键导入即可满血复活！
+                        <div style="display:flex; gap:10px; margin-top:12px;">
+                            <button class="modal-btn" style="background:#0284c7; color:#fff; flex:1;" onclick="window.exportData()">⬇️ 导出进度数据 (JSON)</button>
+                            <button class="modal-btn" style="background:#10b981; color:#fff; flex:1;" onclick="window.importData()">⬆️ 导入进度恢复</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('report-content-area').innerHTML = html;
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.recoverLegacyData = async function() {
+            let btn = (window.event && window.event.target) ? window.event.target : null;
+            if (btn) { btn.innerText = "⏳ 正在全盘扫描并同步云端..."; btn.style.opacity = 0.7; btn.disabled = true; }
+
+            try {
+                let k_legacy = StorageDB.scanLegacyLocalData('KAI');
+                let l_legacy = StorageDB.scanLegacyLocalData('Lorik');
+
+                const mergeProfile = (current, legacy) => {
+                    current = current || { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+                    legacy  = legacy  || { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+                    let merged = {
+                        weights: {...legacy.weights, ...current.weights},
+                        lastSeen: {...legacy.lastSeen, ...current.lastSeen},
+                        history: [],
+                        errorBook: {...(legacy.errorBook||{}), ...(current.errorBook||{})}
+                    };
+                    let hMap = new Map();
+                    if (legacy.history)  legacy.history.forEach(h => hMap.set(h.set, h));
+                    if (current.history) current.history.forEach(h => hMap.set(h.set, h));
+                    merged.history = Array.from(hMap.values()).sort((a,b) => a.ts - b.ts);
+                    return merged;
+                };
+
+                StorageDB.cache.KAI   = mergeProfile(StorageDB.cache.KAI,   k_legacy);
+                StorageDB.cache.Lorik = mergeProfile(StorageDB.cache.Lorik, l_legacy);
+
+                await Promise.all([StorageDB.forceSave('KAI'), StorageDB.forceSave('Lorik')]);
+
+                alert('✅ 扫描完毕！\n已尝试将历史遗留的记忆、错题与当前数据进行合并。');
+                window.renderPaper(); window.closeReportModal();
+            } catch (e) {
+                alert('❌ 数据扫描发生错误。');
+            } finally {
+                if (btn) { btn.innerText = "🔍 深度扫描并合并残留数据"; btn.style.opacity = 1; btn.disabled = false; }
+            }
+        };
+
+        window.exportData = function() {
+            let data = {
+                KAI: StorageDB.cache.KAI,
+                Lorik: StorageDB.cache.Lorik,
+                lastSetNum: window.currentSetNumber,
+                exportVersion: 'v22',
+                exportTs: Date.now()
+            };
+            let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+            let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url;
+            a.download = `MathEngine_Backup_Set${window.currentSetNumber}_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        };
+
+        window.importData = function() {
+            let input = document.createElement('input'); input.type = 'file'; input.accept = 'application/json';
+            input.onchange = e => {
+                let file = e.target.files[0]; let reader = new FileReader();
+                reader.onload = async event => {
+                    try {
+                        let parsed = JSON.parse(event.target.result);
+                        if (parsed.KAI && parsed.Lorik) {
+                            // 通过 migrateProfile 自动重建 errorBook（若是旧版备份）
+                            StorageDB.cache.KAI   = StorageDB.migrateProfile(parsed.KAI);
+                            StorageDB.cache.Lorik = StorageDB.migrateProfile(parsed.Lorik);
+                            window.currentSetNumber = parsed.lastSetNum || window.currentSetNumber;
+                            localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+                            await StorageDB.forceSave('KAI'); await StorageDB.forceSave('Lorik');
+                            alert('✅ 数据完美恢复！'); window.renderPaper(); window.closeReportModal();
+                        } else { alert('❌ 数据格式似乎不正确。'); }
+                    } catch(err) { alert('❌ 文件读取失败或格式错误。'); }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        };
+
+        // ================= 三、 真实遗忘曲线与出题算法 =================
+        const Engine = {
+            randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
+            randChoice: (arr) => arr[Math.floor(random() * arr.length)],
+            shuffle: (array) => {
+                let newArr = [...array]; let curr = newArr.length, rnd;
+                while (curr != 0) { rnd = Math.floor(random() * curr); curr--; [newArr[curr], newArr[rnd]] = [newArr[rnd], newArr[curr]]; }
+                return newArr;
+            },
+            gcd: (a, b) => { a = Math.abs(a); b = Math.abs(b); if (b === 0) return a; return Engine.gcd(b, a % b); },
+            getCycleState: () => {
+                const c = window.currentSetNumber % 7;
+                if(c===1 || c===2) return { code: 1, label: "[Phase: New Concept Consolidation]" };
+                if(c===3 || c===5) return { code: 2, label: "[Phase: Trap Avoidance]" };
+                if(c===4) return { code: 3, label: "[Phase: Forgetting Curve Interception]" };
+                if(c===6 || c===0) return { code: 4, label: "[Phase: Extreme Challenge]" };
+                return { code: 1, label: "[Phase: Foundation Building]" };
+            },
+            // v22.1 反套路增强：
+            // 1. 题面字符串跨卷去重（避免数字巧合撞题）
+            // 2. 池内选择增加大幅随机扰动，防止同一 tag 组合总在固定位置
+            // 3. 生成失败时回退到其他 tag，而不是强行重复
+            weightedSelect: (pool, student, count) => {
+                let profile = StorageDB.getProfile(student);
+                let currentSet = window.currentSetNumber;
+                let recent = window._recentQuestions || new Set();
+                let usedThisPaper = window._paperQuestions || new Set();
+
+                let scoredPool = pool.map(item => {
+                    let weight = profile.weights[item.tag] || 0;
+                    let lastSeenSet = profile.lastSeen[item.tag] || 0;
+                    let setsSinceSeen = currentSet - lastSeenSet;
+                    if (lastSeenSet === 0) setsSinceSeen = 5;
+                    let forgettingBonus = Math.min(setsSinceSeen * 0.15, 1.5);
+                    // 随机扰动占主导（权重 1.4），避免 tag 顺序固定
+                    let score = random() * 1.4 + (weight * 0.5) + forgettingBonus * 0.7;
+                    let selectReason = 'random';
+                    if (weight > 0 && (weight * 0.5) > forgettingBonus * 0.7) selectReason = 'weak';
+                    else if (forgettingBonus > 0.8) selectReason = 'forget';
+                    return { item, score, weight, selectReason };
+                });
+                scoredPool.sort((a, b) => b.score - a.score);
+
+                let selected = []; let maxHard = Math.ceil(count * 0.3); let hardCount = 0;
+                for (let p of scoredPool) {
+                    if (selected.length >= count) break;
+                    if (p.weight > 0) { if (hardCount < maxHard) { selected.push(p); hardCount++; } } else { selected.push(p); }
+                }
+                if (selected.length < count) {
+                    for (let p of scoredPool) { if (selected.length >= count) break; if (!selected.includes(p)) selected.push(p); }
+                }
+
+                // 生成阶段：每道题最多重试 15 次避免撞已出过的题面
+                let result = selected.map(x => {
+                    let genItem = null;
+                    for (let t = 0; t < 15; t++) {
+                        let candidate = x.item.gen();
+                        if (!candidate || !candidate.q) continue;
+                        if (!recent.has(candidate.q) && !usedThisPaper.has(candidate.q)) {
+                            genItem = candidate; break;
+                        }
+                        // 兜底：就算仍有冲突，至少保留最后一次结果
+                        genItem = candidate;
+                    }
+                    genItem.reason = x.selectReason;
+                    usedThisPaper.add(genItem.q);
+                    return genItem;
+                });
+                return Engine.shuffle(result);
+            }
+        };
+
+        const KnowledgeBase = {
+            "k_dmul_trap0": { name: "小数乘法-高位补0", advice: "数清因数总小数位数，结果需保留相同位数，不够在前面补0。" },
+            "k_ddiv_mid0": { name: "除法-商中间补0", advice: "画格子列竖式，确保数位对齐。遇到不够除坚决在商写0占位。" },
+            "k_ddiv_shift": { name: "除法-移位易错", advice: "当被除数位数少于除数时，移动小数点后必须在被除数末尾补0。" },
+            "k_sub_inner0": { name: "减法-跨零连续借位", advice: "极其经典的陷阱。列竖式时，直接在被减数中间连续的'0'上方全部写'9'，最后有效位写'10'。" },
+            "k_eq_sub": { name: "方程-减数/除数求知", advice: "孩子极易顺手将两者相加。需反复强化公式：被减数-差=减数（或被除数÷商=除数）。" },
+            "k_fcalc_muldiv": { name: "分数-除法变乘法易错", advice: "看到连除或乘除混合，第一步必须强制要求把所有除号改为乘号，并将后面的分数严格颠倒。" },
+            "k_oly_dist": { name: "简算-乘法分配律隐蔽项", advice: "通过小数点反向移位统一公因数，提取至括号外，剩余数字连同原符号放入括号。" },
+            "boss_sequence": { name: "数列找规律(等差)", advice: "观察相邻数字差值。牢记公式：第n项 = 首项 + (n-1)×公差。" },
+            "boss_remainder": { name: "剩余定理(画图法)", advice: "遇到'剩下钱的几分之几'，必须画 Bar Model 线段图，把剩余部分重新定义为一个整体切块。" },
+            "l_fmix_sub": { name: "异分母相减", advice: "基础通分运算不熟练。需要强化寻找最小公倍数的能力。" },
+            "l_bmix_125": { name: "125凑整", advice: "背熟好朋友数字：125找8，25找4。看到12.5就要从另一个因数里拆出8。" }
+        };
+        const FallbackAdvice = { name: "综合推导与解题规范", advice: "未严格遵守运算顺序或存在明显跳步。要求孩子在题纸上标出优先级底线，一步一等号。" };
+
+        // ================= V21 彻底重写的生成器 (完美验算、注入原数据到步骤) =================
+        const GenKAI = {
+            decimalsMult: () => Engine.weightedSelect([
+                { tag: "k_dmul_basic", gen: () => { let a=Engine.randInt(201,999)/100, b=Engine.randInt(301,999)/100; return { tag:"k_dmul_basic", q:`${a.toFixed(2)} &times; ${b.toFixed(2)}`, a:((a*100)*(b*100)/10000).toFixed(4).replace(/0+$/,'')}; } },
+                { tag: "k_dmul_trap0", gen: () => { let a=Engine.randInt(11,99)/1000, b=Engine.randInt(101,999)/100; return { tag:"k_dmul_trap0", q:`${a.toFixed(3)} &times; ${b.toFixed(2)}`, a:((a*1000)*(b*100)/100000).toFixed(5).replace(/0+$/,'')}; } },
+                { tag: "k_dmul_end0", gen: () => { let a=Engine.randInt(11,99)*10+5, b=Engine.randInt(11,49)*2/10; return { tag:"k_dmul_end0", q:`${a} &times; ${b.toFixed(1)}`, a:((a*(b*10))/10).toString()}; } },
+                { tag: "k_dmul_125", gen: () => { let b=Engine.randInt(11,99)*8/10; return { tag:"k_dmul_125", q:`1.25 &times; ${b.toFixed(1)}`, a:(125*(b*10)/1000).toString()}; } },
+                { tag: "k_dmul_int", gen: () => { let a=Engine.randInt(401,999), b=Engine.randInt(201,999); return { tag:"k_dmul_int", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+            ], "KAI", 4),
+            decimalsDiv: () => Engine.weightedSelect([
+                { tag: "k_ddiv_basic", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_basic", q:`${((ans*d)/1000).toFixed(2)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`}; } },
+                { tag: "k_ddiv_mid0", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"k_ddiv_mid0", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/10}`}; } },
+                { tag: "k_ddiv_pure", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_pure", q:`${((ans*d)/100).toFixed(2)} &divide; ${(d/100).toFixed(2)}`, a:`${ans}`}; } },
+                { tag: "k_ddiv_shift", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(101,199); return {tag:"k_ddiv_shift", q:`${((ans*d)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/100}`}; } },
+                { tag: "k_ddiv_int2dec", gen: () => { let d=Engine.randChoice([25,75,125]), ans=Engine.randInt(11,49); return {tag:"k_ddiv_int2dec", q:`${ans*d} &divide; ${(d/100).toFixed(2)}`, a:`${ans*100}`}; } }
+            ], "KAI", 4),
+            bigSub: () => Engine.weightedSelect([
+                { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                { tag: "k_sub_100k", gen: () => { let b=Engine.randInt(21111,88888); return {tag:"k_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`}; } },
+                { tag: "k_sub_6digit", gen: () => { let a=Engine.randInt(30,60)*10000+Engine.randInt(111,999), b=Engine.randInt(4,6)*10000+Engine.randInt(111,999); return {tag:"k_sub_6digit", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+            ], "KAI", 4),
+            fracEquations: () => {
+                let calcs = [
+                    { tag: "k_fcalc_addsub", gen: () => {
+                        let d1=Engine.randChoice([8,12,15,18,20,24]), d2=Engine.randChoice([4,6,9,10]), d3=Engine.randChoice([3,4,5,6]);
+                        let f1=new Frac(Engine.randInt(Math.floor(d1/2)+1, d1-1),d1), f2=new Frac(Engine.randInt(1,d2-1),d2), f3=new Frac(1,d3);
+                        return {tag:"k_fcalc_addsub", q:`${f1.toHTML()} + ${f2.toHTML()} &minus; ${f3.toHTML()}`, a:f1.add(f2).sub(f3).toHTML(), step:`按顺序通分: ${f1.toHTML()} + ${f2.toHTML()} &minus; ${f3.toHTML()} = <strong class="highlight">${f1.add(f2).sub(f3).toHTML()}</strong>`};
+                    } },
+                    { tag: "k_fcalc_paren", gen: () => {
+                        let f1=new Frac(Engine.randInt(2,8),Engine.randChoice([7,9,11])), f2=new Frac(Engine.randInt(11,29),Engine.randChoice([32,40,48])), f3=new Frac(Engine.randInt(2,7),Engine.randChoice([5,8,10]));
+                        let ans=f1.mul(f2.div(f3));
+                        return {tag:"k_fcalc_paren", q:`${f1.toHTML()} &times; <span class="paren-l"></span>${f2.toHTML()} &divide; ${f3.toHTML()}<span class="paren-r"></span>`, a:ans.toMixedHTML(), step:`先算括号(除变乘): ${f2.toHTML()} &times; ${new Frac(f3.d,f3.n).toHTML()} = ${f2.div(f3).toHTML()} &rarr; 再连乘: ${f1.toHTML()} &times; ${f2.div(f3).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "k_fcalc_dist", gen: () => {
+                        let w=Engine.randChoice([24,36,48,60]);
+                        let f1=new Frac(Engine.randInt(8,11),12), f2=new Frac(Engine.randInt(1,3),8);
+                        let ans = f1.sub(f2).mul(new Frac(w,1));
+                        return {tag:"k_fcalc_dist", q:`<span class="paren-l"></span>${f1.toHTML()} &minus; ${f2.toHTML()}<span class="paren-r"></span> &times; ${w}`, a:ans.toMixedHTML(), step:`分配律: ${f1.toHTML()}&times;${w} &minus; ${f2.toHTML()}&times;${w} = ${f1.mul(new Frac(w,1)).toMixedHTML()} &minus; ${f2.mul(new Frac(w,1)).toMixedHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "k_fcalc_muldiv", gen: () => {
+                        let f1=new Frac(Engine.randInt(3,9), Engine.randInt(11,19)), f2=new Frac(Engine.randInt(11,29), Engine.randInt(21,39)), f3=new Frac(Engine.randInt(2,9), Engine.randInt(3,9));
+                        let ans=f1.div(f2).mul(f3);
+                        return {tag:"k_fcalc_muldiv", q:`${f1.toHTML()} &divide; ${f2.toHTML()} &times; ${f3.toHTML()}`, a:ans.toMixedHTML(), step:`连除连乘法则(变号倒数): ${f1.toHTML()} &times; ${new Frac(f2.d,f2.n).toHTML()} &times; ${f3.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "k_fcalc_fd1", gen: () => {
+                        let dec = Engine.randInt(1,9)/10; let f1=new Frac(dec*10,10), f2=new Frac(Engine.randInt(3,7),8), f3=new Frac(Engine.randInt(1,5),6);
+                        let ans = f1.mul(f2).div(f3);
+                        return { tag:"k_fcalc_fd1", q: `${dec} &times; ${f2.toHTML()} &divide; ${f3.toHTML()}`, a: ans.toMixedHTML(), step: `小数化分数再连乘倒数: ${f1.toHTML()} &times; ${f2.toHTML()} &times; ${new Frac(f3.d,f3.n).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>` };
+                    } },
+                    { tag: "k_fcalc_fd2", gen: () => {
+                        let dec = Engine.randInt(11,29)/10; let f1=new Frac(dec*10,10), f2=new Frac(Engine.randInt(2,8),9), f3=new Frac(Engine.randInt(1,5),9);
+                        let ans = f1.mul(f2.add(f3));
+                        return { tag:"k_fcalc_fd2", q: `${dec} &times; <span class="paren-l"></span>${f2.toHTML()} + ${f3.toHTML()}<span class="paren-r"></span>`, a: ans.toMixedHTML(), step: `括号内先加得 ${f2.add(f3).toHTML()}, 小数化分数相乘: ${f1.toHTML()} &times; ${f2.add(f3).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>` };
+                    } },
+                    { tag: "k_fcalc_fd3", gen: () => {
+                        let dec = Engine.randInt(1,2)*25/100; let f1=new Frac(dec*100,100), f2=new Frac(Engine.randInt(6,9),10), f3=new Frac(Engine.randInt(1,5),10);
+                        let ans = f2.sub(f1).add(f3);
+                        return { tag:"k_fcalc_fd3", q: `${f2.toHTML()} &minus; ${dec} + ${f3.toHTML()}`, a: ans.toMixedHTML(), step: `化为分数通分计算: ${f2.toHTML()} &minus; ${f1.toHTML()} + ${f3.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>` };
+                    } },
+                    { tag: "k_fcalc_fd4", gen: () => {
+                        let dec = Engine.randInt(11,19)/10; let f1=new Frac(dec*10,10), f2=new Frac(Engine.randInt(1,11),12), f3=new Frac(1,2);
+                        let ans = f1.mul(f2).add(f3);
+                        return { tag:"k_fcalc_fd4", q: `${dec} &times; ${f2.toHTML()} + 0.5`, a: ans.toMixedHTML(), step: `小数化为分数: ${f1.toHTML()} &times; ${f2.toHTML()} + ${f3.toHTML()} &rarr; 先乘后加 = <strong class="highlight">${ans.toMixedHTML()}</strong>` };
+                    } }
+                ];
+                let eqs = [
+                    { tag: "k_eq_move", gen: () => {
+                        let d1=Engine.randChoice([5,7,8,9,11,12]), d2=Engine.randChoice([4,6,10,14,15]);
+                        let f1=new Frac(Engine.randInt(1,d1-1),d1), f2=new Frac(Engine.randInt(1,d2-1),d2);
+                        let ans=f1.add(f2);
+                        return {tag:"k_eq_move", q:`<i class="var">x</i> &minus; ${f1.toHTML()} = ${f2.toHTML()}`, a:`<i class="var">x</i> = ${ans.toMixedHTML()}`, step:`移项变号: <i class="var">x</i> = ${f2.toHTML()} + ${f1.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "k_eq_coeff", gen: () => {
+                        let f1=new Frac(Engine.randInt(2,6),7), f2=new Frac(Engine.randInt(11,24),35);
+                        let ans=f2.div(f1);
+                        return {tag:"k_eq_coeff", q:`${f1.toHTML()}<i class="var">x</i> = ${f2.toHTML()}`, a:`<i class="var">x</i> = ${ans.toMixedHTML()}`, step:`等式两边同乘倒数: <i class="var">x</i> = ${f2.toHTML()} &times; ${new Frac(f1.d,f1.n).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "k_eq_merge", gen: () => {
+                        let d=Engine.randChoice([4,5,6,7,8,9]), w=Engine.randInt(3,9)*d*(d+1);
+                        let ans=new Frac(w*d, d+1);
+                        return {tag:"k_eq_merge", q:`<i class="var">x</i> + <div class="frac"><span>1</span><span class="bottom">${d}</span></div><i class="var">x</i> = ${w}`, a:`<i class="var">x</i> = ${ans.toHTML()}`, step:`合并同类项: <div class="frac"><span>${d+1}</span><span class="bottom">${d}</span></div><i class="var">x</i> = ${w} &rarr; <i class="var">x</i> = ${w} &times; <div class="frac"><span>${d}</span><span class="bottom">${d+1}</span></div> = <strong class="highlight">${ans.toHTML()}</strong>`};
+                    } },
+                    { tag: "k_eq_sub", gen: () => {
+                        let f1=new Frac(Engine.randInt(7,8),9), f2=new Frac(Engine.randInt(1,7),18);
+                        let ans=f1.sub(f2);
+                        return {tag:"k_eq_sub", q:`${f1.toHTML()} &minus; <i class="var">x</i> = ${f2.toHTML()}`, a:`<i class="var">x</i> = ${ans.toHTML()}`, step:`求减数: <i class="var">x</i> = ${f1.toHTML()} &minus; ${f2.toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>`};
+                    } },
+                    { tag: "k_eq_prop", gen: () => {
+                        let a=Engine.randInt(2,9), b=Engine.randInt(5,15);
+                        return {tag:"k_eq_prop", q:`<div class="frac"><span><i class="var">x</i></span><span class="bottom">${b}</span></div> = ${a}`, a:`<i class="var">x</i> = ${a*b}`, step:`比例方程两边同乘分母: <i class="var">x</i> = ${a} &times; ${b} = <strong class="highlight">${a*b}</strong>`};
+                    } }
+                ];
+                let selCalcs = Engine.weightedSelect(calcs, "KAI", 8);
+                let selEqs = Engine.weightedSelect(eqs, "KAI", 4);
+                return Engine.shuffle(selCalcs.concat(selEqs));
+            },
+            olympiad: () => Engine.weightedSelect([
+                { tag: "k_oly_dist", gen: () => {
+                    let a=Engine.randInt(3,9), b=Engine.randInt(15,85), c=(100-b)/10;
+                    let ans = `${a}${10-a}0`;
+                    return {tag:"k_oly_dist", q:`${a}.${10-a} &times; ${b} + ${a}${10-a} &times; ${c}`, a:ans, step:`积不变移位: ${a}${10-a}&times;${b/10} + ${a}${10-a}&times;${c} &rarr; 提取公因数: ${a}${10-a}&times;(${b/10}+${c}) = <strong class="highlight">${ans}</strong>`};
+                } },
+                { tag: "k_oly_frac1", gen: () => {
+                    let s=Engine.randInt(2,10), k=Engine.randInt(3,5); let terms=[];
+                    for(let i=0;i<k;i++) terms.push(`<div class="frac"><span>1</span><span class="bottom">${s+i}&times;${s+i+1}</span></div>`);
+                    let ans = new Frac(1,s).sub(new Frac(1,s+k)).toHTML();
+                    return {tag:"k_oly_frac1", q:terms.join(' + '), a:ans, step:`裂项相消抵消中间项, 首尾相减: 1/${s} &minus; 1/${s+k} = <strong class="highlight">${ans}</strong>`};
+                } },
+                { tag: "k_oly_125", gen: () => {
+                    let k=Engine.randInt(3,19); let mid = k * 8;
+                    let ans = 100 * k * 0.25;
+                    return {tag:"k_oly_125", q:`12.5 &times; ${mid} &times; 0.25`, a:`${ans}`, step:`拆解数字凑整: (12.5 &times; 8) &times; (${k} &times; 0.25) = 100 &times; ${k*0.25} = <strong class="highlight">${ans}</strong>`};
+                } },
+                { tag: "k_oly_frac2", gen: () => {
+                    let n=Engine.randInt(13,29), n2=Engine.randInt(7,15), n3=Engine.randInt(4,11);
+                    let ans = new Frac(n3,n).toHTML();
+                    return {tag:"k_oly_frac2", q:`<div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; <div class="frac"><span>${n2-1}</span><span class="bottom">${n2}</span></div> + <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &divide; <div class="frac"><span>${n2}</span><span class="bottom">1</span></div>`, a:ans, step:`除法转乘倒数后, 提取公因数: <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; (${new Frac(n2-1,n2).toHTML()} + 1/${n2}) = <strong class="highlight">${ans}</strong>`};
+                } }
+            ], "KAI", 4)
+        };
+
+        const GenLorik = {
+            mul: () => Engine.weightedSelect([
+                { tag: "l_mul_3x3", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(301,999); return {tag:"l_mul_3x3", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
+                { tag: "l_mul_3x20", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(11,99); return {tag:"l_mul_3x20", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
+                { tag: "l_mul_dec", gen: () => { let a=Engine.randInt(11,99)/10, b=Engine.randInt(11,99)/10; return {tag:"l_mul_dec", q:`${a.toFixed(1)} &times; ${b.toFixed(1)}`, a:`${(a*b).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}`}; } },
+                { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
+                { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+            ], "Lorik", 4),
+            div: () => Engine.weightedSelect([
+                { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } },
+                { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } },
+                { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
+            ], "Lorik", 4),
+            sub: () => Engine.weightedSelect([
+                { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                { tag: "l_sub_jump0", gen: () => { let a=Engine.randInt(60,90)*1000+Engine.randInt(1,5)*100+Engine.randInt(1,6), b=Engine.randInt(18,29)*1000+Engine.randInt(100,999); return {tag:"l_sub_jump0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                { tag: "l_sub_norm", gen: () => { let a=Engine.randInt(50,90)*1000+Engine.randInt(100,400), b=Engine.randInt(11,49)*1000+Engine.randInt(500,999); return {tag:"l_sub_norm", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+            ], "Lorik", 4),
+            fracMix: () => {
+                let pool = [
+                    { tag: "l_fmix_add", gen: () => {
+                        let d=Engine.randChoice([11,13,17,19,23]); let a=Engine.randInt(1,5), b=Engine.randInt(1,5), c=Engine.randInt(1,5);
+                        let ans=new Frac(a+b+c,d);
+                        return {tag:"l_fmix_add", q:`<div class="frac"><span>${a}</span><span class="bottom">${d}</span></div> + <div class="frac"><span>${b}</span><span class="bottom">${d}</span></div> + <div class="frac"><span>${c}</span><span class="bottom">${d}</span></div> = `, a:ans.toMixedHTML(), step:`同分母连加: ${a+b+c}/${d} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_sub", gen: () => {
+                        let d1=Engine.randChoice([8,10,12,14,16]); let d2=Engine.randChoice([4,5,6,7]);
+                        let f1=new Frac(Engine.randInt(Math.floor(d1/2)+1, d1-1), d1), f2=new Frac(Engine.randInt(1, Math.floor(d2/2)), d2);
+                        let ans = f1.sub(f2);
+                        return {tag:"l_fmix_sub", q:`${f1.toHTML()} &minus; ${f2.toHTML()} = `, a:ans.toHTML(), step:`通分相减运算: ${f1.toHTML()} &minus; ${f2.toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_muldiv", gen: () => {
+                        let f1=new Frac(Engine.randInt(2,5), Engine.randInt(6,9)), f2=new Frac(Engine.randInt(5,9), Engine.randInt(10,15)), f3=new Frac(1, Engine.randInt(3,6));
+                        let ans = f1.mul(f2).div(f3);
+                        return {tag:"l_fmix_muldiv", q:`${f1.toHTML()} &times; ${f2.toHTML()} &divide; ${f3.toHTML()} = `, a:ans.toMixedHTML(), step:`除号变乘倒数, 交叉约分: ${f1.toHTML()} &times; ${f2.toHTML()} &times; ${new Frac(f3.d,f3.n).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_seq", gen: () => {
+                        let f1=new Frac(Engine.randInt(2,7), Engine.randInt(8,11)), f2=new Frac(1, Engine.randInt(4,9)), m=Engine.randInt(2,5);
+                        let ans = f1.div(f2).mul(new Frac(m,1));
+                        return {tag:"l_fmix_seq", q:`${f1.toHTML()} &divide; ${f2.toHTML()} &times; ${m} = `, a:ans.toMixedHTML(), step:`按顺序计算: ${f1.toHTML()} &times; ${new Frac(f2.d,f2.n).toHTML()} &times; ${m} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_madd", gen: () => {
+                        let w=Engine.randInt(1,3), f1=new Frac(1,Engine.randChoice([6,8,10])), f2=new Frac(Engine.randInt(3,7),12);
+                        let ans = new Frac(w*f1.d+f1.n,f1.d).add(f2);
+                        return {tag:"l_fmix_madd", q:`<div class="mixed">${w}${f1.toHTML()}</div> + ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`化假分数或直接带分数通分: <div class="mixed">${w}<div class="frac"><span>${f1.n*(12/Engine.gcd(f1.d,12))}</span><span class="bottom">${f1.d*(12/Engine.gcd(f1.d,12))}</span></div></div> + <div class="frac"><span>${f2.n*(f1.d/Engine.gcd(f1.d,12))}</span><span class="bottom">${f2.d*(f1.d/Engine.gcd(f1.d,12))}</span></div> = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_msub", gen: () => {
+                        let w=Engine.randInt(2,5), f1=new Frac(1,Engine.randChoice([8,10,12])), f2=new Frac(1,Engine.randChoice([3,4,5]));
+                        let ans=new Frac(w*f1.d+f1.n,f1.d).sub(f2);
+                        return {tag:"l_fmix_msub", q:`<div class="mixed">${w}${f1.toHTML()}</div> &minus; ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`通分借位: <div class="mixed">${w-1}<div class="frac"><span>...</span><span class="bottom">...</span></div></div> &minus; ${f2.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_paren1", gen: () => {
+                        let f1=new Frac(Engine.randInt(2,7), Engine.randChoice([8,9,11])), f2=new Frac(Engine.randInt(7,11),12), f3=new Frac(1,Engine.randInt(2,6));
+                        let ans = f1.mul(f2.div(f3));
+                        return {tag:"l_fmix_paren1", q:`${f1.toHTML()} &times; <span class="paren-l"></span>${f2.toHTML()} &divide; ${f3.toHTML()}<span class="paren-r"></span> = `, a:ans.toMixedHTML(), step:`先计算括号内除法: ${f2.toHTML()} &times; ${new Frac(f3.d,f3.n).toHTML()} = ${f2.div(f3).toHTML()} &rarr; 再乘: ${f1.toHTML()} &times; ${f2.div(f3).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_paren2", gen: () => {
+                        let f1=new Frac(Engine.randInt(5,9), Engine.randChoice([14,16,18])), f2=new Frac(Engine.randInt(5,9),10), f3=new Frac(1,Engine.randInt(3,5));
+                        let ans = f1.div(f2.mul(f3));
+                        return {tag:"l_fmix_paren2", q:`${f1.toHTML()} &divide; <span class="paren-l"></span>${f2.toHTML()} &times; ${f3.toHTML()}<span class="paren-r"></span> = `, a:ans.toMixedHTML(), step:`先算括号乘法: ${f2.mul(f3).toHTML()} &rarr; 再相除: ${f1.toHTML()} &times; ${new Frac(f2.mul(f3).d,f2.mul(f3).n).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_paren3", gen: () => {
+                        let f1=new Frac(Engine.randInt(15,17),18), f2=new Frac(1,Engine.randChoice([6,7])), f3=new Frac(Engine.randInt(2,4),9);
+                        let ans = f1.sub(f2.add(f3));
+                        return {tag:"l_fmix_paren3", q:`${f1.toHTML()} &minus; <span class="paren-l"></span>${f2.toHTML()} + ${f3.toHTML()}<span class="paren-r"></span> = `, a:ans.toMixedHTML(), step:`先算括号内加法: ${f2.add(f3).toHTML()} &rarr; ${f1.toHTML()} &minus; ${f2.add(f3).toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_3mul", gen: () => {
+                        let m=Engine.randInt(12,25), f1=new Frac(Engine.randInt(3,7),24), f2=new Frac(Engine.randInt(3,7),9);
+                        let ans = (new Frac(m,1)).mul(f1).mul(f2);
+                        return {tag:"l_fmix_3mul", q:`${m} &times; ${f1.toHTML()} &times; ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`连乘多重交叉约分: ${m} &times; ${f1.toHTML()} &times; ${f2.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                    } },
+                    { tag: "l_fmix_fd1", gen: () => {
+                        let d=Engine.randChoice([4,8,20]); let dec=Engine.randInt(1,9)*5;
+                        let f_dec = new Frac(dec, 100); let f_frac = new Frac(3, d); let ans = f_dec.add(f_frac);
+                        return { tag:"l_fmix_fd1", q: `${dec/100} + <div class="frac"><span>1</span><span class="bottom">${d}</span></div> + <div class="frac"><span>2</span><span class="bottom">${d}</span></div> = `, a: ans.toMixedHTML(), step: `化为分数通分相加: ${f_dec.toHTML()} + ${f_frac.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>` };
+                    } },
+                    { tag: "l_fmix_fd2", gen: () => {
+                        let dec=Engine.randChoice([0.25, 0.2, 0.5]); let f=new Frac(Engine.randInt(9,11),12);
+                        let ans = f.sub(new Frac(dec*100,100));
+                        return { tag:"l_fmix_fd2", q: `${f.toHTML()} &minus; ${dec} = `, a: ans.toHTML(), step: `小数化为分数后通分相减: ${f.toHTML()} &minus; ${new Frac(dec*100,100).toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>` };
+                    } }
+                ];
+                return Engine.weightedSelect(pool, "Lorik", 12);
+            },
+            basicMixed: () => Engine.weightedSelect([
+                { tag: "l_bmix_125", gen: () => {
+                    let m=Engine.randInt(21,99)/10;
+                    return {tag:"l_bmix_125", q:`8 &times; ${m} &times; 12.5`, a:`${Math.round(m*100)}`, step:`乘法交换律凑整: (8 &times; 12.5) &times; ${m} = 100 &times; ${m} = <strong class="highlight">${Math.round(m*100)}</strong>`};
+                } },
+                { tag: "l_bmix_order", gen: () => {
+                    let a=Engine.randInt(31,99), m=Engine.randInt(3,9);
+                    return {tag:"l_bmix_order", q:`${a} + 14 &times; ${m}`, a:`${a+14*m}`, step:`法则：先乘除后加减: ${a} + ${14*m} = <strong class="highlight">${a+14*m}</strong>`};
+                } },
+                { tag: "l_bmix_dist", gen: () => {
+                    let a=Engine.randInt(2,7), d=Engine.randChoice([11,13,14,17,19]), w=Engine.randInt(21,49);
+                    return {tag:"l_bmix_dist", q:`<div class="frac"><span>${a}</span><span class="bottom">${d}</span></div> &times; ${w} + <div class="frac"><span>${d-a}</span><span class="bottom">${d}</span></div> &times; ${w}`, a:`${w}`, step:`乘法分配律逆用: (${a}/${d} + ${d-a}/${d}) &times; ${w} = 1 &times; ${w} = <strong class="highlight">${w}</strong>`};
+                } },
+                { tag: "l_bmix_comb", gen: () => {
+                    let m=Engine.randInt(11,49)*8, s=Engine.randInt(11,99)/10;
+                    let ans = ((1.25 * m * 10) - (s * 10)) / 10;
+                    return {tag:"l_bmix_comb", q:`1.25 &times; ${m} &minus; ${s}`, a:`${ans}`, step:`乘法结合律拆分: (1.25 &times; 8) &times; ${m/8} &minus; ${s} = 10 &times; ${m/8} &minus; ${s} = <strong class="highlight">${ans}</strong>`};
+                } }
+            ], "Lorik", 4)
+        };
+
+        const getConversions = () => Engine.weightedSelect([
+            { tag: "k_conv_1", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "k_conv_1", q:`${v}% =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
+            { tag: "k_conv_2", gen: () => { let v = Engine.randInt(1,49)*2; return { tag: "k_conv_2", q:`${(v/10).toFixed(1)}% =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } },
+            { tag: "k_conv_3", gen: () => { let v = Engine.randInt(1,8); return { tag: "k_conv_3", q:`0.<span class="dot-top">${v}</span> =<div class="blank"></div>`, a: new Frac(v, 9).toHTML() }; } },
+            { tag: "k_conv_4", gen: () => { let v1 = Engine.randInt(1,5); let v2 = Engine.randInt(1,8); if(v1===v2)v2++; return { tag: "k_conv_4", q:`0.${v1}<span class="dot-top">${v2}</span> =<div class="blank"></div>`, a: new Frac(v1*9+v2, 90).toHTML() }; } },
+            { tag: "k_conv_5", gen: () => { let v = Engine.randInt(1,24); return { tag: "k_conv_5", q:`<div class="frac"><span>${v}</span><span class="bottom">25</span></div> =<div class="blank"></div>%`, a: `${v*4}` }; } },
+            { tag: "k_conv_6", gen: () => { let w = Engine.randInt(1,9), v = Engine.randInt(1,9); return { tag: "k_conv_6", q:`${w}.0${v} =<div class="blank"></div>`, a: `<div class="mixed">${w}${new Frac(v, 100).toHTML()}</div>` }; } },
+            { tag: "k_conv_7", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "k_conv_7", q:`${(v/10000).toFixed(4).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 10000).toHTML() }; } },
+            { tag: "k_conv_8", gen: () => { let n = Engine.randInt(1,39); if(n%2===0)n++; if(n%5===0)n++; return { tag: "k_conv_8", q:`<div class="frac"><span>${n}</span><span class="bottom">40</span></div> =<div class="blank"></div>`, a: `${n * 0.025}` }; } }
+        ], "KAI", 8);
+
+        const getLorikConv = () => Engine.weightedSelect([
+            { tag: "l_conv_1", gen: () => { let v = Engine.randInt(1,7); if(v%2===0)v++; return { tag: "l_conv_1", q:`<div class="frac"><span>${v}</span><span class="bottom">8</span></div> =<div class="blank"></div>`, a: `${v * 0.125}` }; } },
+            { tag: "l_conv_2", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "l_conv_2", q:`0.${v} =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } },
+            { tag: "l_conv_3", gen: () => { let v = Engine.randInt(1,19); if(v%2===0)v++; if(v%5===0)v++; return { tag: "l_conv_3", q:`<div class="frac"><span>${v}</span><span class="bottom">20</span></div> =<div class="blank"></div>`, a: `${v * 0.05}` }; } },
+            { tag: "l_conv_4", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "l_conv_4", q:`${(v/100).toFixed(2).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
+            { tag: "l_conv_5", gen: () => { let v = Engine.randInt(61, 99); let isGt = (80 > v) ? '&gt;' : '&lt;'; return { tag: "l_conv_5", q:`<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.${v}`, a: isGt }; } },
+            { tag: "l_conv_6", gen: () => { let v = Engine.randInt(31, 69); let isGt = (v > 50) ? '&gt;' : '&lt;'; return { tag: "l_conv_6", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>1</span><span class="bottom">2</span></div>`, a: isGt }; } },
+            { tag: "l_conv_7", gen: () => { let v = Engine.randInt(51, 79); let isGt = (625 > v*10) ? '&gt;' : '&lt;'; return { tag: "l_conv_7", q:`<div class="frac"><span>5</span><span class="bottom">8</span></div><span class="circle-blank"></span>0.${v}`, a: isGt }; } },
+            { tag: "l_conv_8", gen: () => { let v = Engine.randInt(61, 89); let isGt = (v*10 > 750) ? '&gt;' : '&lt;'; return { tag: "l_conv_8", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>3</span><span class="bottom">4</span></div>`, a: isGt }; } }
+        ], "Lorik", 8);
+
+        // ================= 五、 快照与渲染引擎 =================
+        // v22.1 收集"最近 N 套 + 错题本"里出现过的题面，作为生成时的去重黑名单
+        function collectRecentQuestions(lookbackSets = 8) {
+            const recent = new Set();
+            // 1) 从历史 session 收集
+            ['KAI', 'Lorik'].forEach(student => {
+                let prof = StorageDB.getProfile(student);
+                if (!prof) return;
+                (prof.history || []).slice(-lookbackSets).forEach(h => {
+                    (h.details || []).forEach(d => { if (d.info && d.info.q) recent.add(d.info.q); });
+                });
+                // 错题本里的题也要避免重复
+                Object.values(prof.errorBook || {}).forEach(e => { if (e.info && e.info.q) recent.add(e.info.q); });
+            });
+            // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
+            for (let i = 1; i <= lookbackSets; i++) {
+                let key = `MathSetData_v22_${window.currentSetNumber - i}`;
+                let raw = localStorage.getItem(key);
+                if (!raw) continue;
+                try {
+                    let d = JSON.parse(raw);
+                    Object.values(d).forEach(arr => {
+                        if (Array.isArray(arr)) arr.forEach(q => { if (q && q.q) recent.add(q.q); });
+                    });
+                } catch (e) {}
+            }
+            return recent;
+        }
+
+        // v22.1 每个 section 独立洗牌：即便题目不变，位置也不会形成固定套路
+        function sectionShuffle(arr, sectionSalt) {
+            let local = [...arr];
+            // salt 独立于全局 PRNG，避免污染后续生成
+            let s = ((window.currentSetNumber * 2654435761) ^ (sectionSalt * 1597334677)) >>> 0;
+            let rand = () => {
+                s = Math.imul(s ^ (s >>> 15), s | 1) >>> 0;
+                s = (s ^ s + Math.imul(s ^ (s >>> 7), s | 61)) >>> 0;
+                return ((s ^ (s >>> 14)) >>> 0) / 0x100000000;
+            };
+            for (let i = local.length - 1; i > 0; i--) {
+                let j = Math.floor(rand() * (i + 1));
+                [local[i], local[j]] = [local[j], local[i]];
+            }
+            return local;
+        }
+
+        function generateOrLoadSetData() {
+            let cacheKey = `MathSetData_v22_${window.currentSetNumber}`;
+            let cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try { return JSON.parse(cached); } catch(e) {}
+            }
+
+            // v22.1：装载最近出过的题面作为去重黑名单，并为本张卷子开一个"本卷已用"集合
+            window._recentQuestions = collectRecentQuestions(8);
+            window._paperQuestions = new Set();
+
+            const state = Engine.getCycleState();
+            let data = {
+                k_m: GenKAI.decimalsMult(), k_d: GenKAI.decimalsDiv(), k_s: GenKAI.bigSub(),
+                k_c: getConversions(), k_f: GenKAI.fracEquations(), k_o: GenKAI.olympiad(),
+                l_m: GenLorik.mul(), l_d: GenLorik.div(), l_s: GenLorik.sub(),
+                l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
+                stateLabel: state.label
+            };
+            try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e) {
+                // 若超出配额，清理其他旧快照后重试一次
+                Object.keys(localStorage).forEach(k => { if (k.startsWith('MathSetData_') && k !== cacheKey) localStorage.removeItem(k); });
+                try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e2) {}
+            }
+            return data;
+        }
+
+        const buildAnsRow = (q, i, student, secName, sessionData) => {
+            let infoObj = { sec: secName, num: i + 1, q: q.q, a: q.a, step: q.step || '' };
+            let encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
+
+            let reasonBadge = '';
+            if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
+            else if (q.reason === 'forget') reasonBadge = `<span class="reason-badge reason-forget">🔄 遗忘唤醒 / Memory Review</span>`;
+
+            let gradeType = '';
+            if (sessionData) {
+                let detail = sessionData.details.find(d => d.tag === q.tag && (!d.uid || d.uid === computeErrorUid(q.tag, q.q)));
+                gradeType = detail ? detail.grade : 'perfect';
+            }
+
+            let bgStyle = '', pAct = '', cAct = '', wAct = '';
+            if (gradeType === 'perfect') { bgStyle = 'background-color: #f1f8e9;'; pAct = 'active'; }
+            if (gradeType === 'careless') { bgStyle = 'background-color: #fff8e1;'; cAct = 'active'; }
+            if (gradeType === 'wrong') { bgStyle = 'background-color: #ffebee;'; wAct = 'active'; }
+
+            let qColor = '';
+            if (q.reason === 'weak') qColor = 'color: #d32f2f; font-weight:bold;';
+            else if (q.reason === 'forget') qColor = 'color: #0284c7; font-weight:bold;';
+
+            return `
+            <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
+                <div class="ans-content">
+                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] ${q.q}</span> ${reasonBadge}</div>
+                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${q.step ? q.step + ' &rarr; ' : ''}<strong class="highlight">${q.a}</strong></div>
+                </div>
+                <div class="grade-area no-print">
+                    <button class="grade-btn perfect ${pAct}" title="完美掌握 Perfect" onclick="window.markAnswer(this, 'perfect')">✓</button>
+                    <button class="grade-btn careless ${cAct}" title="粗心失误 Careless" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                    <button class="grade-btn wrong ${wAct}" title="概念错误 Wrong" onclick="window.markAnswer(this, 'wrong')">✗</button>
+                </div>
+            </div>`;
+        };
+
+        const buildAnsGrid = (questions, student, secName, sessionData) => {
+            return `<div class="ans-grid-block">` + questions.map((q, i) => buildAnsRow(q, i, student, secName, sessionData)).join('') + `</div>`;
+        };
+
+        // 双语标题处理
+        const buildQSection = (cnTitle, enTitle, pointsStr, items, heightClass, cols) => {
+            return `
+            <div class="section">
+                <div class="section-title">
+                    <div class="title-text">
+                        <span>${cnTitle}</span>
+                        <span class="title-en">${enTitle}</span>
+                    </div>
+                    <span class="points">${pointsStr}</span>
+                </div>
+                <div class="grid grid-${cols}">
+                    ${items.map((q,i) => {
+                        let suffix = (heightClass !== 'h-conv' && !q.q.includes('=')) ? ' =' : '';
+                        let colorStyle = '';
+                        if (q.reason === 'weak') colorStyle = 'color: #d32f2f; font-weight: bold;';
+                        else if (q.reason === 'forget') colorStyle = 'color: #0284c7; font-weight: bold;';
+                        return `<div class="item ${heightClass}"><div class="math-row" style="${colorStyle}"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix}</div></div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+        };
+
+        window.renderPaper = function() {
+            document.getElementById('set-num-display').innerText = window.currentSetNumber;
+            setSeed(window.currentSetNumber * 12345);
+            let data = generateOrLoadSetData();
+            // v22.1 二次洗牌：在缓存题目的基础上，每个 section 用独立 salt 重排位置
+            // 这样相同的 set 多次打开顺序也会变，打破"第N题永远是X类型"的套路
+            // 网格视图与答案视图共用相同顺序（用 salt 保证一致）
+            data = {
+                ...data,
+                k_m: sectionShuffle(data.k_m, 101), k_d: sectionShuffle(data.k_d, 102), k_s: sectionShuffle(data.k_s, 103),
+                k_c: sectionShuffle(data.k_c, 104), k_f: sectionShuffle(data.k_f, 105), k_o: sectionShuffle(data.k_o, 106),
+                l_m: sectionShuffle(data.l_m, 201), l_d: sectionShuffle(data.l_d, 202), l_s: sectionShuffle(data.l_s, 203),
+                l_c: sectionShuffle(data.l_c, 204), l_f: sectionShuffle(data.l_f, 205), l_o: sectionShuffle(data.l_o, 206),
+            };
+            let totalScore = 8 + 8 + 8 + 4 + 12 + 10;
+
+            let kaiProfile = StorageDB.getProfile("KAI") || {history:[]};
+            let lorikProfile = StorageDB.getProfile("Lorik") || {history:[]};
+            let kaiSession = kaiProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
+            let lorikSession = lorikProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
+
+            let stampKAI = kaiSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
+            let stampLorik = lorikSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
+
+            let k_p1 = buildQSection(`一、 复杂小数与多位数乘法`, `I. Complex Decimal & Multi-Digit Multiplication`, '(每小题2分 / 2 pts each)', data.k_m, 'h-vert', 2) +
+                       buildQSection(`二、 复杂小数与多位数除法`, `II. Complex Decimal & Multi-Digit Division`, '(每小题2分 / 2 pts each)', data.k_d, 'h-vert', 2) +
+                       buildQSection(`三、 大数跨位退位减法`, `III. Large Number Subtraction with Regrouping`, '(列竖式 / Draft in blank)', data.k_s, 'h-sub', 2);
+            let k_p2 = buildQSection(`四、 分数、小数与百分数互化`, `IV. Fraction, Decimal & Percentage Conversion`, '(每空0.5分 / 0.5 pts each)', data.k_c, 'h-conv', 4) +
+                       buildQSection(`五、 繁分数与方程进阶`, `V. Complex Fractions & Advanced Equations`, '(混合抽题，求x / Solve for x)', data.k_f, 'h-frac', 3) +
+                       buildQSection(`六、 奥数级混合运算`, `VI. Olympiad-Level Mixed Operations`, '(2-3分题 / 2-3 pts each)', data.k_o, 'h-mixed', 2);
+
+            let k_ans = `<div class="ans-section"><div class="ans-section-title">一、复杂乘法 (Multiplication)</div>${buildAnsGrid(data.k_m, 'KAI', '复杂乘法', kaiSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">二、复杂除法 (Division)</div>${buildAnsGrid(data.k_d, 'KAI', '复杂除法', kaiSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.k_s, 'KAI', '大数减法', kaiSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">四、互化结果 (Conversions)</div>${buildAnsGrid(data.k_c, 'KAI', '互化结果', kaiSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">五、繁分数与方程 (Fractions & Eqs)</div>${buildAnsGrid(data.k_f, 'KAI', '繁分数与方程', kaiSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">六、简便运算 (Shortcut Math)</div>${buildAnsGrid(data.k_o, 'KAI', '奥数混合运算', kaiSession)}</div>`;
+
+            let l_p1 = buildQSection(`一、 进阶竖式乘法`, `I. Advanced Vertical Multiplication`, '(每题2分 / 2 pts each)', data.l_m, 'h-vert', 2) +
+                       buildQSection(`二、 进阶竖式除法`, `II. Advanced Vertical Division`, '(注意商中间0 / Watch for 0 in quotient)', data.l_d, 'h-vert', 2) +
+                       buildQSection(`三、 大数跨位退位减法`, `III. Large Number Subtraction with Regrouping`, '(列竖式 / Draft in blank)', data.l_s, 'h-sub', 2);
+            let l_p2 = buildQSection(`四、 分数与小数互化及大小比较`, `IV. Fraction & Decimal Conversion and Comparison`, '(每空0.5分 / 0.5 pts each)', data.l_c, 'h-conv', 4) +
+                       buildQSection(`五、 多步混合分数运算`, `V. Multi-Step Fraction Operations`, '(顺序已洗牌 / Shuffled order)', data.l_f, 'h-frac', 3) +
+                       buildQSection(`六、 基础简便运算`, `VI. Basic Shortcut Calculations`, '(2-3分题 / 2-3 pts each)', data.l_o, 'h-mixed', 2);
+
+            let l_ans = `<div class="ans-section"><div class="ans-section-title">一、进阶乘法 (Multiplication)</div>${buildAnsGrid(data.l_m, 'Lorik', '进阶乘法', lorikSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">二、进阶除法 (Division)</div>${buildAnsGrid(data.l_d, 'Lorik', '进阶除法', lorikSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.l_s, 'Lorik', '大数减法', lorikSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">四、互化与比较 (Conversions)</div>${buildAnsGrid(data.l_c, 'Lorik', '互化与比较', lorikSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">五、分数四则运算 (Fraction Ops)</div>${buildAnsGrid(data.l_f, 'Lorik', '分数四则运算', lorikSession)}</div>` +
+                        `<div class="ans-section"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
+
+            const getSheetHTML = (title, name, content, tScore, stamp) => `
+                <div class="sheet">
+                    ${stamp}
+                    <div class="header">
+                        <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
+                        <h1>${title}</h1>
+                        <div class="engine-status">${data.stateLabel}</div>
+                        <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
+                    </div>
+                    ${content}
+                </div>`;
+
+            const getAnsSheetHTML = (name, content, isCompleted) => {
+                let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
+                let btnText = isCompleted ? `✅ 重新提交 ${name} 的批改并覆盖记录 (Resubmit & Overwrite)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
+                let btnStyle = isCompleted ? `background: #4caf50;` : ``;
+                return `
+                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
+                    ${ansStamp}
+                    <div class="header"><h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
+                    ${content}
+                    <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
+                </div>`;
+            };
+
+            document.getElementById('paper-container').innerHTML =
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, totalScore, stampKAI) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, totalScore, stampLorik) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik) +
+                getAnsSheetHTML('KAI', k_ans, !!kaiSession) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession);
+        }
+
+        // ================= v22 重写：错题本渲染（独立存储 · 去重计数 · 分组 · 一键掌握） =================
+        window._ebFilter = 'active'; // 'active' | 'mastered'
+
+        window.renderErrorBook = function() {
+            document.getElementById('normal-ctrls').style.display = 'none';
+            document.getElementById('error-book-ctrls').style.display = 'block';
+            window._ebFilter = 'active';
+            renderErrorBookInternal();
+        };
+
+        window.showMasteredList = function() {
+            window._ebFilter = 'mastered';
+            renderErrorBookInternal();
+        };
+
+        function renderErrorBookInternal() {
+            const filter = window._ebFilter;
+            let kai = StorageDB.getProfile("KAI");
+            let lorik = StorageDB.getProfile("Lorik");
+
+            let finalHTML = '';
+            finalHTML += buildStudentErrorSection('KAI', kai, filter);
+            finalHTML += buildStudentErrorSection('Lorik', lorik, filter);
+            document.getElementById('paper-container').innerHTML = finalHTML;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function buildStudentErrorSection(name, profile, filter) {
+            let eb = (profile && profile.errorBook) ? profile.errorBook : {};
+            let allEntries = Object.entries(eb).map(([uid, v]) => ({ uid, ...v }));
+            let activeEntries = allEntries.filter(e => !e.mastered);
+            let masteredEntries = allEntries.filter(e => e.mastered);
+            let entries = filter === 'mastered' ? masteredEntries : activeEntries;
+
+            let filterTitle = filter === 'mastered'
+                ? `🏆 ${name} 已掌握错题（Mastered Archive）`
+                : `📓 ${name} 专属错题本（Active Error Book）`;
+
+            if (entries.length === 0) {
+                let msg = filter === 'mastered'
+                    ? '🎯 还没有已掌握的错题，加油攻克当前错题吧！'
+                    : '🎉 太棒了！当前没有活跃错题！(No active errors!)';
+                return `<div class="sheet"><div class="header"><h1>${filterTitle}</h1></div>
+                    <div class="eb-summary"><div class="eb-stat"><span><b>${activeEntries.length}</b> 待攻克</span><span><b>${masteredEntries.length}</b> 已掌握</span></div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
+                        <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
+                    </div></div>
+                    <h2 style="text-align:center; margin-top:50px; color:#4caf50;">${msg}</h2></div>`;
+            }
+
+            // 按 tag 分组，组内按 count 降序再按 lastSet 降序
+            let byTag = {};
+            entries.forEach(e => {
+                if (!byTag[e.tag]) byTag[e.tag] = [];
+                byTag[e.tag].push(e);
+            });
+            // tag 按组内总错次降序
+            let sortedTags = Object.keys(byTag).sort((a, b) => {
+                let sa = byTag[a].reduce((s, x) => s + x.count, 0);
+                let sb = byTag[b].reduce((s, x) => s + x.count, 0);
+                return sb - sa;
+            });
+            Object.keys(byTag).forEach(t => byTag[t].sort((a, b) => b.count - a.count || b.lastSet - a.lastSet));
+
+            // 每页最多 8 张错题卡（每个分组标题占一行 col-span all）
+            // 为简化分页：把 [tagHeader, ...cards] 序列化后按 8 卡一页切分
+            let flatItems = [];
+            sortedTags.forEach(tag => {
+                flatItems.push({ type: 'header', tag, total: byTag[tag].reduce((s, x) => s + x.count, 0), kinds: byTag[tag].length });
+                byTag[tag].forEach(e => flatItems.push({ type: 'card', entry: e }));
+            });
+
+            // 分页：每页最多 N 个卡片（header 不占卡片名额但占网格一行）
+            const cardsPerPage = 8;
+            let pages = [];
+            let cur = []; let cardCount = 0;
+            flatItems.forEach(it => {
+                if (it.type === 'card') {
+                    if (cardCount >= cardsPerPage) { pages.push(cur); cur = []; cardCount = 0; }
+                    cur.push(it); cardCount++;
+                } else {
+                    cur.push(it);
+                }
+            });
+            if (cur.length) pages.push(cur);
+
+            let html = '';
+            pages.forEach((pageItems, pageIdx) => {
+                let innerHtml = pageItems.map(it => {
+                    if (it.type === 'header') {
+                        let kb = KnowledgeBase[it.tag] || FallbackAdvice;
+                        return `<div class="eb-tag-header"><span>🎯 ${kb.name} <span style="opacity:0.7; font-size:12px; margin-left:6px;">[${it.tag}]</span></span><span class="tag-count">${it.kinds} 题 / 累计 ${it.total} 次</span></div>`;
+                    } else {
+                        let err = it.entry;
+                        let badgeClass = err.grade === 'careless' ? 'badge-careless' : 'badge-wrong';
+                        let badgeText = err.grade === 'careless' ? '⚠️ 粗心 (Careless)' : '❌ 概念错 (Concept)';
+                        let suffix = (!err.info.q.includes('=')) ? ' =' : '';
+                        let masterBtn = filter === 'mastered'
+                            ? `<button class="master-btn" style="background:#94a3b8;" title="移回错题本 Re-activate" onclick="window.unmasterErrorUI('${name}','${err.uid}')">↩</button>`
+                            : `<button class="master-btn" title="标记已掌握 Mark as Mastered" onclick="window.masterErrorUI('${name}','${err.uid}')">✓</button>`;
+                        let countBadge = err.count > 1 ? `<span class="badge-count">错 ${err.count} 次</span>` : '';
+                        let dateRange = err.firstSet === err.lastSet
+                            ? `Set ${err.lastSet} · ${err.lastDate}`
+                            : `Set ${err.firstSet}→${err.lastSet} · ${err.lastDate}`;
+                        return `
+                        <div class="error-card">
+                            ${masterBtn}
+                            <div class="error-meta">
+                                <span>[${dateRange}]</span>
+                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge}</span>
+                            </div>
+                            <div class="error-q math-row">${err.info.q}${suffix}</div>
+                        </div>`;
+                    }
+                }).join('');
+
+                let summary = pageIdx === 0 ? `
+                    <div class="eb-summary">
+                        <div class="eb-stat">
+                            <span><b>${activeEntries.length}</b> 待攻克</span>
+                            <span><b>${masteredEntries.length}</b> 已掌握</span>
+                            <span><b>${allEntries.reduce((s,x)=>s+x.count,0)}</b> 累计错次</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
+                            <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
+                        </div>
+                    </div>` : '';
+
+                html += `
+                <div class="sheet">
+                    <div class="header" style="margin-bottom:15px;">
+                        <h1>${filterTitle}</h1>
+                        <div class="info-row" style="font-weight:normal; font-size:14px;">
+                            <span>共 ${entries.length} 道题（按知识点分组）</span>
+                            <span>第 ${pageIdx + 1} / ${pages.length} 页</span>
+                        </div>
+                    </div>
+                    ${summary}
+                    <div class="error-grid">${innerHtml}</div>
+                </div>`;
+            });
+
+            // 答案解析页
+            let ansHtml = `<div class="sheet ans-sheet"><div class="header"><h1>${name} ${filter === 'mastered' ? '已掌握错题' : '专属错题本'} - 解析 (Solutions)</h1></div><div class="ans-grid-block">`;
+            let idx = 1;
+            sortedTags.forEach(tag => {
+                let kb = KnowledgeBase[tag] || FallbackAdvice;
+                ansHtml += `<div class="eb-tag-header" style="grid-column: auto;">🎯 ${kb.name}</div>`;
+                byTag[tag].forEach(err => {
+                    ansHtml += `
+                    <div class="step-box" style="margin-bottom:12px; padding:10px;">
+                        <div class="step-detail">
+                            <span class="step-title" style="font-size:16px; width:35px;">${idx}.</span>
+                            <div style="flex:1;">
+                                <div class="math-row" style="color:#64748b; font-size:14.5px; margin-bottom:6px;">[原题 Q · 错 ${err.count} 次] ${err.info.q}</div>
+                                <div class="math-row" style="color:#002D72; margin-bottom:8px; font-size:15.5px;">[正解 A] ${err.info.step ? err.info.step + ' &rarr; ' : ''}<strong class="highlight">${err.info.a}</strong></div>
+                                <div style="color:#d32f2f; font-size:14px; font-family:'KaiTi', serif;">💡 攻克建议 (Advice)：${kb.advice}</div>
+                            </div>
+                        </div>
+                    </div>`;
+                    idx++;
+                });
+            });
+            ansHtml += `</div></div>`;
+
+            return html + ansHtml;
+        }
+
+        window.setEbFilter = function(f) {
+            window._ebFilter = f;
+            renderErrorBookInternal();
+        };
+
+        window.masterErrorUI = async function(student, uid) {
+            let ok = await StorageDB.masterError(student, uid);
+            if (ok) {
+                const toast = document.getElementById('toast-msg');
+                toast.innerHTML = `🏆 已标记为"已掌握"，从错题本移除！`;
+                toast.style.background = '#10b981';
+                toast.style.opacity = 1;
+                setTimeout(() => toast.style.opacity = 0, 2000);
+                renderErrorBookInternal();
+            }
+        };
+
+        window.unmasterErrorUI = async function(student, uid) {
+            let ok = await StorageDB.unmasterError(student, uid);
+            if (ok) {
+                const toast = document.getElementById('toast-msg');
+                toast.innerHTML = `↩ 已移回错题本继续练习`;
+                toast.style.background = '#f59e0b';
+                toast.style.opacity = 1;
+                setTimeout(() => toast.style.opacity = 0, 2000);
+                renderErrorBookInternal();
+            }
+        };
+
+        window.exitErrorBook = function() {
+            document.getElementById('normal-ctrls').style.display = 'block';
+            document.getElementById('error-book-ctrls').style.display = 'none';
+            window.renderPaper();
+        };
+
+        // ================= 云端学习档案表 =================
+        window.showCloudArchive = function() {
+            let kp = StorageDB.getProfile("KAI");
+            let lp = StorageDB.getProfile("Lorik");
+
+            document.getElementById('modal-title').innerText = '🗄️ 学习进度档案表 (Learning Archives)';
+
+            const buildTable = (name, profile) => {
+                if (!profile || !profile.history || profile.history.length === 0) {
+                    return `<div class="report-section"><h3>👨‍🎓 ${name}</h3><div style="padding:15px; text-align:center;">暂无提交记录 (No records found).</div></div>`;
+                }
+
+                let ebTotal = profile.errorBook ? Object.keys(profile.errorBook).length : 0;
+                let ebActive = profile.errorBook ? Object.values(profile.errorBook).filter(e => !e.mastered).length : 0;
+                let ebMastered = ebTotal - ebActive;
+
+                let rows = profile.history.slice().reverse().map((h, i) => {
+                    let isLatest = i === 0 ? '<span style="color:#ef4444; font-size:12px; font-weight:bold;">(最新 Latest)</span>' : '';
+                    let errCount = h.details.length;
+                    let errText = errCount === 0 ? '<span style="color:#10b981; font-weight:bold;">0 题 (全对🎉 Perfect)</span>' : `<span style="color:#ef4444; font-weight:bold;">${errCount} 题 (Errors)</span>`;
+                    return `
+                    <tr style="${i % 2 === 0 ? 'background:#f8fafc;' : 'background:#fff;'}">
+                        <td>Set ${h.set} ${isLatest}</td>
+                        <td>${h.date}</td>
+                        <td>${errText}</td>
+                    </tr>`;
+                }).join('');
+
+                return `
+                <div class="report-section">
+                    <h3>👨‍🎓 ${name} 的提交历史 (Submission History)</h3>
+                    <div style="padding:12px 15px; background:#f8fafc; border-bottom: 1px solid #e2e8f0; font-size:13.5px;">
+                        📓 错题本：<b>${ebActive}</b> 题待攻克 · <b>${ebMastered}</b> 题已掌握 · 独立永久存储
+                    </div>
+                    <div style="padding:15px; max-height: 250px; overflow-y: auto;">
+                        <table class="archive-table">
+                            <tr><th>卷号 (Set)</th><th>提交日期 (Date)</th><th>错题数 (Errors)</th></tr>
+                            ${rows}
+                        </table>
+                    </div>
+                </div>`;
+            };
+
+            let html = buildTable("KAI", kp) + buildTable("Lorik", lp);
+            document.getElementById('report-content-area').innerHTML = html;
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.closeReportModal = function() { document.getElementById('report-modal').style.display = 'none'; };
+
+        window.togglePanel = function() {
+            const mainPanel = document.getElementById('main-control-panel');
+            const miniPanel = document.getElementById('mini-control-panel');
+            if (mainPanel.style.display !== 'none') { mainPanel.style.display = 'none'; miniPanel.style.display = 'block'; }
+            else { mainPanel.style.display = 'flex'; miniPanel.style.display = 'none'; }
+        };
+
+        // ================= 交互控制与数据编码闭环 =================
+        window.changeSet = function(delta) {
+            if (window.currentSetNumber + delta < 1) return;
+            window.currentSetNumber += delta;
+            localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+            window.renderPaper();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.markAnswer = function(btn, type) {
+            let container = btn.closest('.grade-area');
+            let btns = container.querySelectorAll('.grade-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            let row = btn.closest('.ans-row');
+            row.setAttribute('data-grade', type);
+
+            if(type === 'perfect') row.style.backgroundColor = '#f1f8e9';
+            else if(type === 'careless') row.style.backgroundColor = '#fff8e1';
+            else if(type === 'wrong') row.style.backgroundColor = '#ffebee';
+        };
+
+        window.submitGrades = async function(student) {
+            let sheetId = student === 'KAI' ? 'kai-ans-sheet' : 'lorik-ans-sheet';
+            let rows = document.querySelectorAll(`#${sheetId} .ans-row`);
+            let records = [];
+
+            rows.forEach(row => {
+                let tag = row.getAttribute('data-tag');
+                let finalGrade = row.getAttribute('data-grade');
+                if (!finalGrade) finalGrade = 'perfect';
+                let infoStr = row.getAttribute('data-info');
+
+                if (tag && infoStr) {
+                    records.push({ tag: tag, grade: finalGrade, info: JSON.parse(decodeURIComponent(infoStr)) });
+                }
+            });
+
+            if (records.length > 0) {
+                await StorageDB.saveSession(student, records, window.currentSetNumber);
+                const toast = document.getElementById('toast-msg');
+                let errCount = records.filter(r => r.grade !== 'perfect').length;
+                toast.innerHTML = `✅ ${student} 已归档！新增/更新 ${errCount} 道错题到永久错题本。`;
+                toast.style.background = '#4caf50';
+                toast.style.opacity = 1;
+                setTimeout(() => toast.style.opacity = 0, 3000);
+
+                window.renderPaper();
+            } else {
+                alert(`请为 ${student} 批改哦！ (Please grade first!)`);
+            }
+        };
+
+        window.downloadAllSheetsAsImages = async function() {
+            const btn = document.querySelector('.export-btn') || document.getElementById('download-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "正在生成图片..."; btn.style.backgroundColor = "#666"; btn.disabled = true;
+            const sheets = document.querySelectorAll('.sheet');
+            for (let i = 0; i < sheets.length; i++) {
+                btn.innerText = `正在生成 ${i + 1} / ${sheets.length} ...`;
+                const canvas = await html2canvas(sheets[i], { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+                const link = document.createElement('a');
+                link.download = `Math_Page_${i + 1}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            btn.innerText = "✅ 下载完成！ (Done)"; btn.style.backgroundColor = "#002D72";
+            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = "#002D72"; btn.disabled = false; }, 3000);
+        };
+
+        // Initialize directly using an async function since module scripts execute after DOM has parsed
+        async function startEngine() {
+            const container = document.getElementById('paper-container');
+            if (container) {
+                container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";
+            }
+            try {
+                await StorageDB.init();
+            } catch (e) {
+                console.error("Engine initialization error:", e);
+            }
+            if (typeof window.renderPaper === 'function') {
+                window.renderPaper();
+            }
+        }
+
+        // Execute immediately
+        startEngine();
+
+    </script>
+</body>
+</html>
