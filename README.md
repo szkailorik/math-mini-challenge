@@ -1,10 +1,20 @@
-# Mini Challenge · 专家私教引擎 v22.0
+# Mini Challenge · 专家私教引擎 v22.2
 
-小学数学高密度训练单页应用：基于遗忘曲线的智能出题 + 永久错题本 + 本地/云端双写。
+小学数学高密度训练单页应用：基于遗忘曲线的智能出题 + 永久错题本 + GitHub Gist 多设备同步。
 
-## 在线试用
+## 在线访问
 
-GitHub Pages 部署后访问：`https://szkailorik.github.io/math-mini-challenge/`
+**https://szkailorik.github.io/math-mini-challenge/**
+
+## 多设备同步设置（一次，30 秒）
+
+1. 打开 https://github.com/settings/tokens/new?scopes=gist&description=math-mini-challenge （已预勾 gist 权限）
+2. Expiration 选 **No expiration**，点底部 **Generate token**
+3. 复制 token（形如 `ghp_xxxx...`）
+4. 在应用右上角控制面板点 **💾 数据备份** → 粘贴 token → **🔗 连接云同步**
+5. 换设备（iPad/电脑/其他浏览器）时粘贴同一 token → 数据自动合并同步
+
+数据存在你自己 GitHub 账号下一个**私有 gist** 里（描述为 `math-mini-challenge-sync-v1`）。随时可在 https://gist.github.com 查看/删除/导出。不走任何第三方服务器，Anthropic / 其他云服务商看不到你的数据。
 
 ## v22.0 重点：错题本永久存档版
 
@@ -76,5 +86,7 @@ npx serve .
 ## 数据安全
 
 - 默认仅本地存储（localStorage）
-- 如需跨设备同步：宿主环境需要注入 `__firebase_config` + `__initial_auth_token`
-- 数据保险箱：支持 JSON 导出/导入作为终极防丢手段
+- 跨设备同步：GitHub Gist（PAT 存本地，不发到任何第三方服务器）
+- 冲突处理：多端并发修改时按 uid/ts 安全合并，不会丢数据
+- 本地始终是主副本，断网也能用，恢复网络后自动 debounce 回推
+- 数据保险箱：JSON 导出/导入作为终极离线备份

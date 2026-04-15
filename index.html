@@ -217,9 +217,8 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // v22.2 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         window.currentSetNumber = parseInt(localStorage.getItem('MathEngine_LastSetNum')) || 73;
         let prngState = 0;
@@ -276,38 +275,273 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= 云端双引擎 =================
+        // ================= v22.2 GitHub Gist 云同步 =================
+        // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
+        // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
+        const GIST_DESC = 'math-mini-challenge-sync-v1';
+        const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
+
+        const GistSync = {
+            TOKEN_KEY: 'MathGistSync_token',
+            GIST_ID_KEY: 'MathGistSync_gistId',
+            LAST_PUSH_KEY: 'MathGistSync_lastPushTs',
+            _pushTimer: null,
+            _lastError: null,
+
+            getToken: () => localStorage.getItem('MathGistSync_token'),
+            setToken: (t) => localStorage.setItem('MathGistSync_token', t),
+            clearCreds: () => {
+                localStorage.removeItem('MathGistSync_token');
+                localStorage.removeItem('MathGistSync_gistId');
+                localStorage.removeItem('MathGistSync_lastPushTs');
+            },
+            getGistId: () => localStorage.getItem('MathGistSync_gistId'),
+            setGistId: (id) => localStorage.setItem('MathGistSync_gistId', id),
+
+            _headers: function() {
+                return {
+                    'Authorization': `Bearer ${this.getToken()}`,
+                    'Accept': 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28',
+                    'Content-Type': 'application/json'
+                };
+            },
+
+            // 校验 token 有效 + 定位/创建同步用的 gist
+            connect: async function() {
+                if (!this.getToken()) throw new Error('未配置 token');
+                // 先验证 token 本身
+                let who = await fetch('https://api.github.com/user', { headers: this._headers() });
+                if (who.status === 401) throw new Error('Token 无效或已失效');
+                if (!who.ok) throw new Error(`GitHub API ${who.status}`);
+                let user = await who.json();
+
+                // 已记录 gist ID 就复用
+                let gid = this.getGistId();
+                if (gid) {
+                    let r = await fetch(`https://api.github.com/gists/${gid}`, { headers: this._headers() });
+                    if (r.status === 200) return { gistId: gid, login: user.login, gist: await r.json() };
+                    if (r.status === 404) this.setGistId(''); // 用户在 GitHub 手动删了，重建
+                }
+
+                // 扫描用户 gist 列表找同步 gist
+                let list = await fetch('https://api.github.com/gists?per_page=100', { headers: this._headers() });
+                if (!list.ok) throw new Error(`列出 gist 失败 ${list.status}`);
+                let gists = await list.json();
+                let found = gists.find(g => g.description === GIST_DESC);
+                if (found) {
+                    this.setGistId(found.id);
+                    let r = await fetch(`https://api.github.com/gists/${found.id}`, { headers: this._headers() });
+                    return { gistId: found.id, login: user.login, gist: await r.json() };
+                }
+
+                // 新建
+                let create = await fetch('https://api.github.com/gists', {
+                    method: 'POST', headers: this._headers(),
+                    body: JSON.stringify({
+                        description: GIST_DESC,
+                        public: false,
+                        files: {
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.2', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                        }
+                    })
+                });
+                if (!create.ok) throw new Error(`创建 gist 失败 ${create.status}`);
+                let g = await create.json();
+                this.setGistId(g.id);
+                return { gistId: g.id, login: user.login, gist: g };
+            },
+
+            // 从 gist 拉取数据
+            pull: async function() {
+                let gid = this.getGistId();
+                if (!gid) return null;
+                let r = await fetch(`https://api.github.com/gists/${gid}`, { headers: this._headers() });
+                if (!r.ok) {
+                    this._lastError = `拉取失败 HTTP ${r.status}`;
+                    return null;
+                }
+                let g = await r.json();
+                let out = { KAI: null, Lorik: null, meta: null };
+                for (let fn of ['KAI.json', 'Lorik.json', 'meta.json']) {
+                    let f = g.files[fn];
+                    if (!f) continue;
+                    try {
+                        // 内容可能被 GitHub 截断：fetch raw_url
+                        let content = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
+                        out[fn.replace('.json','')] = JSON.parse(content);
+                    } catch(e) {}
+                }
+                return out;
+            },
+
+            // 推送整份数据到 gist（PATCH，会覆盖对应文件）
+            push: async function(payload) {
+                let gid = this.getGistId();
+                if (!gid) throw new Error('未连接');
+                let files = {};
+                let nowTs = Date.now();
+                if (payload.KAI)   files['KAI.json']   = { content: JSON.stringify({...payload.KAI,   _ts: nowTs}, null, 2) };
+                if (payload.Lorik) files['Lorik.json'] = { content: JSON.stringify({...payload.Lorik, _ts: nowTs}, null, 2) };
+                files['meta.json'] = { content: JSON.stringify({
+                    lastSetNum: window.currentSetNumber,
+                    pushedAt: nowTs,
+                    pushedFrom: navigator.userAgent.slice(0, 80),
+                    version: 'v22.2'
+                }, null, 2) };
+
+                let r = await fetch(`https://api.github.com/gists/${gid}`, {
+                    method: 'PATCH', headers: this._headers(),
+                    body: JSON.stringify({ files })
+                });
+                if (!r.ok) {
+                    this._lastError = `推送失败 HTTP ${r.status}`;
+                    throw new Error(this._lastError);
+                }
+                this._lastError = null;
+                localStorage.setItem(this.LAST_PUSH_KEY, String(nowTs));
+                return true;
+            },
+
+            // 防抖推送：2 秒内多次触发只会真正请求 1 次
+            pushDebounced: function(payloadGetter, delay = 2500) {
+                clearTimeout(this._pushTimer);
+                this._pushTimer = setTimeout(async () => {
+                    if (!this.getToken() || !this.getGistId()) return;
+                    try {
+                        await this.push(typeof payloadGetter === 'function' ? payloadGetter() : payloadGetter);
+                        updateCloudStatus();
+                    } catch(e) {
+                        console.warn('Gist 推送失败:', e);
+                        updateCloudStatus();
+                    }
+                }, delay);
+            },
+
+            // 手动立即同步（忽略 debounce）
+            pushNow: async function(payload) {
+                clearTimeout(this._pushTimer);
+                if (!this.getToken() || !this.getGistId()) throw new Error('未连接');
+                return await this.push(payload);
+            }
+        };
+        window.GistSync = GistSync;
+
+        // 把 local 与 cloud 两份 profile 做安全合并（不丢失任一端的数据）
+        function mergeProfiles(local, cloud) {
+            if (!cloud) return local;
+            if (!local) return cloud;
+            let merged = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+
+            Object.keys({...local.weights, ...cloud.weights}).forEach(k => {
+                merged.weights[k] = Math.max(local.weights[k]||0, cloud.weights[k]||0);
+            });
+            Object.keys({...local.lastSeen, ...cloud.lastSeen}).forEach(k => {
+                merged.lastSeen[k] = Math.max(local.lastSeen[k]||0, cloud.lastSeen[k]||0);
+            });
+
+            // history：按 set 合并，保留 ts 更新的那份
+            let hMap = new Map();
+            (local.history||[]).forEach(h => hMap.set(h.set, h));
+            (cloud.history||[]).forEach(h => {
+                let existing = hMap.get(h.set);
+                if (!existing || (h.ts||0) > (existing.ts||0)) hMap.set(h.set, h);
+            });
+            merged.history = Array.from(hMap.values()).sort((a,b) => (a.ts||0) - (b.ts||0));
+            if (merged.history.length > 60) merged.history = merged.history.slice(-60);
+
+            // errorBook：按 uid 并集，数字字段取安全合并
+            let ebUids = new Set([
+                ...Object.keys(local.errorBook||{}),
+                ...Object.keys(cloud.errorBook||{})
+            ]);
+            ebUids.forEach(uid => {
+                let a = (local.errorBook||{})[uid];
+                let b = (cloud.errorBook||{})[uid];
+                if (!a) { merged.errorBook[uid] = b; return; }
+                if (!b) { merged.errorBook[uid] = a; return; }
+                // 两端都有 → 取保守合并
+                merged.errorBook[uid] = {
+                    tag: a.tag || b.tag,
+                    info: (a.lastSet||0) >= (b.lastSet||0) ? a.info : b.info,
+                    grade: (a.grade === 'wrong' || b.grade === 'wrong') ? 'wrong' : 'careless',
+                    count: Math.max(a.count||1, b.count||1),
+                    firstSet: Math.min(a.firstSet||a.lastSet, b.firstSet||b.lastSet),
+                    firstDate: (a.firstSet||0) <= (b.firstSet||0) ? (a.firstDate||b.firstDate) : (b.firstDate||a.firstDate),
+                    lastSet: Math.max(a.lastSet||0, b.lastSet||0),
+                    lastDate: (a.lastSet||0) >= (b.lastSet||0) ? (a.lastDate||b.lastDate) : (b.lastDate||a.lastDate),
+                    mastered: !!a.mastered && !!b.mastered, // 双方都标记掌握才算掌握
+                    masteredDate: (a.mastered && b.mastered) ? (a.masteredDate || b.masteredDate) : null
+                };
+            });
+            return merged;
+        }
+        window.mergeProfiles = mergeProfiles;
+
+        // 更新右上角云端状态徽章
+        function updateCloudStatus() {
+            let el = document.getElementById('cloud-status');
+            if (!el) return;
+            let token = GistSync.getToken();
+            let gid = GistSync.getGistId();
+            if (token && gid) {
+                let lastPush = parseInt(localStorage.getItem(GistSync.LAST_PUSH_KEY)) || 0;
+                let ago = lastPush ? `${Math.max(1, Math.floor((Date.now() - lastPush) / 1000))}s 前` : '尚未推送';
+                if (GistSync._lastError) {
+                    el.innerText = `⚠️ Gist 同步异常：${GistSync._lastError}`;
+                    el.style.color = '#fca5a5';
+                } else {
+                    el.innerText = `☁️ Gist 同步已连接 · 最近同步 ${ago}`;
+                    el.style.color = '#4ade80';
+                }
+            } else if (token && !gid) {
+                el.innerText = `🔌 Token 已设置，等待连接...`;
+                el.style.color = '#fde68a';
+            } else {
+                el.innerText = '💾 本地模式 · 未连云端 / Local Only';
+                el.style.color = '#ccc';
+            }
+        }
+        window.updateCloudStatus = updateCloudStatus;
+
+        // ================= v22.2 存储层（local + optional Gist 同步） =================
         const StorageDB = {
-            mode: 'local', db: null, auth: null, userId: null,
-            appId: typeof __app_id !== 'undefined' ? __app_id : 'math-engine-app',
-            // v22: 新增 errorBook 独立存储（不受 history 容量限制）
+            mode: 'local', // 'local' | 'gist'
             cache: {
                 KAI:   { weights: {}, lastSeen: {}, history: [], errorBook: {} },
                 Lorik: { weights: {}, lastSeen: {}, history: [], errorBook: {} }
             },
 
+            // 启动流程：1) 读本地 2) 如果有 token，拉云端并合并
             init: async function() {
-                try {
-                    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                        const config = JSON.parse(__firebase_config);
-                        const app = initializeApp(config);
-                        this.auth = getAuth(app); this.db = getFirestore(app);
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(this.auth, __initial_auth_token);
-                        } else { await signInAnonymously(this.auth); }
-                        return new Promise((resolve) => {
-                            onAuthStateChanged(this.auth, async (user) => {
-                                if (user) {
-                                    this.userId = user.uid; this.mode = 'cloud';
-                                    await this.loadFromCloud('KAI'); await this.loadFromCloud('Lorik');
-                                    document.getElementById('cloud-status').innerText = "☁️ 云端同步已连接 / Cloud Synced";
-                                    document.getElementById('cloud-status').style.color = "#4ade80";
-                                    resolve();
-                                } else { this.fallbackLocal(); resolve(); }
-                            });
-                        });
-                    } else { this.fallbackLocal(); }
-                } catch(e) { this.fallbackLocal(); }
+                this.fallbackLocal();
+                updateCloudStatus();
+                if (GistSync.getToken()) {
+                    try {
+                        // 确保 gistId 有效；如无则查找或新建
+                        await GistSync.connect();
+                        let cloud = await GistSync.pull();
+                        if (cloud) {
+                            this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
+                            this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
+                            // 合并结果写回本地
+                            localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
+                            localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
+                            // 如果云端带了 lastSetNum 且本地未设置，采用云端的
+                            if (cloud.meta && cloud.meta.lastSetNum && !localStorage.getItem('MathEngine_LastSetNum')) {
+                                window.currentSetNumber = cloud.meta.lastSetNum;
+                                localStorage.setItem('MathEngine_LastSetNum', window.currentSetNumber);
+                            }
+                        }
+                        this.mode = 'gist';
+                        // 把合并后的最终状态回推到云端，保证两端一致
+                        GistSync.pushDebounced(() => ({ KAI: this.cache.KAI, Lorik: this.cache.Lorik }), 500);
+                    } catch(e) {
+                        console.warn('Gist 同步启动失败，回退本地模式:', e);
+                        GistSync._lastError = e.message || String(e);
+                    }
+                }
+                updateCloudStatus();
             },
             migrateProfile: function(data) {
                 if (!data || typeof data !== 'object') {
@@ -345,27 +579,41 @@
                 return profile;
             },
             fallbackLocal: function() {
-                this.mode = 'local'; document.getElementById('cloud-status').innerText = "💾 本地防丢模式 / Local Storage"; document.getElementById('cloud-status').style.color = "#ccc";
-                let k = localStorage.getItem("MathProfile_master_KAI"); let l = localStorage.getItem("MathProfile_master_Lorik");
+                this.mode = 'local';
+                let k = localStorage.getItem("MathProfile_master_KAI");
+                let l = localStorage.getItem("MathProfile_master_Lorik");
                 try { this.cache.KAI = this.migrateProfile(JSON.parse(k)); } catch(e) { this.cache.KAI = this.migrateProfile(null); }
                 try { this.cache.Lorik = this.migrateProfile(JSON.parse(l)); } catch(e) { this.cache.Lorik = this.migrateProfile(null); }
             },
-            loadFromCloud: async function(student) {
-                if(!this.userId) return;
-                try {
-                    const snap = await getDoc(doc(this.db, 'artifacts', this.appId, 'users', this.userId, 'math_profiles_master', student));
-                    if(snap.exists()) this.cache[student] = this.migrateProfile(snap.data());
-                    else this.cache[student] = this.migrateProfile(null);
-                } catch(e) {}
-            },
             getProfile: function(student) { return this.cache[student]; },
 
+            // 统一写入：1) 本地 localStorage 2) 若连云端，debounce 推到 gist
             forceSave: async function(student) {
                 let profile = this.getProfile(student);
-                if (this.mode === 'cloud' && this.userId) {
-                    try { await setDoc(doc(this.db, 'artifacts', this.appId, 'users', this.userId, 'math_profiles_master', student), profile, { merge: true }); } catch(e) {}
-                }
                 localStorage.setItem(`MathProfile_master_${student}`, JSON.stringify(profile));
+                if (this.mode === 'gist' && GistSync.getToken() && GistSync.getGistId()) {
+                    GistSync.pushDebounced(() => ({ KAI: this.cache.KAI, Lorik: this.cache.Lorik }));
+                }
+            },
+
+            // 手动触发立即同步（忽略 debounce）
+            syncNow: async function() {
+                if (!GistSync.getToken() || !GistSync.getGistId()) {
+                    throw new Error('未连接云端');
+                }
+                // 先拉云端合并一次，避免覆盖另一台设备的新数据
+                try {
+                    let cloud = await GistSync.pull();
+                    if (cloud) {
+                        this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
+                        this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
+                        localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
+                        localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
+                    }
+                } catch(e) { console.warn('拉云端失败:', e); }
+                // 再推最终版本
+                await GistSync.pushNow({ KAI: this.cache.KAI, Lorik: this.cache.Lorik });
+                updateCloudStatus();
             },
 
             scanLegacyLocalData: function(student) {
@@ -494,32 +742,123 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= V19 数据备份与寻回接口 =================
+        // ================= 数据备份 + v22.2 Gist 云同步 =================
         window.showDataModal = function() {
-            document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup';
+            document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
+
+            let token = GistSync.getToken();
+            let gid = GistSync.getGistId();
+            let lastPush = parseInt(localStorage.getItem(GistSync.LAST_PUSH_KEY)) || 0;
+            let connected = !!(token && gid);
+
+            let cloudSection = connected ? `
+                <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.7;">
+                    <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:10px 14px; border-radius:6px; margin-bottom:12px;">
+                        ✅ <b style="color:#065f46;">已连接</b> · Gist ID: <code style="background:#fff; padding:1px 6px; border-radius:3px;">${gid.slice(0,8)}...</code>
+                        ${lastPush ? `<br>⏱ 最近推送：${new Date(lastPush).toLocaleString()}` : ''}
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="modal-btn" style="background:#10b981; color:#fff; flex:1;" onclick="window.gistSyncNow()">🔄 立即双向同步</button>
+                        <button class="modal-btn" style="background:#64748b; color:#fff; flex:1;" onclick="window.gistDisconnect()">🔌 断开并清除 token</button>
+                    </div>
+                    <div style="margin-top:10px; font-size:12.5px; color:#94a3b8;">
+                        💡 正常使用无需点击"立即同步"，每次提交批改后会自动推送到云端（约 2.5 秒 debounce）。
+                    </div>
+                </div>
+            ` : `
+                <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.7;">
+                    <b>多设备同步使用步骤：</b>
+                    <ol style="padding-left:22px; margin:10px 0;">
+                        <li>打开 <a href="https://github.com/settings/tokens/new?scopes=gist&description=math-mini-challenge" target="_blank" style="color:#0284c7;">GitHub Token 生成页</a>（已预勾 gist 权限）</li>
+                        <li>Expiration 选 <b>No expiration</b>，点页面底部 <b>Generate token</b></li>
+                        <li>复制生成的 token（形如 <code>ghp_xxxx...</code>），粘贴到下面输入框</li>
+                        <li>点连接。换设备时粘贴同一 token 即可同步。</li>
+                    </ol>
+                    <input type="password" id="gist-token-input" placeholder="粘贴 GitHub PAT (gist scope)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; font-size:13px; box-sizing:border-box;" />
+                    <button class="modal-btn" style="background:#0284c7; color:#fff; width:100%; margin-top:10px;" onclick="window.gistConnect()">🔗 连接云同步</button>
+                    <div style="margin-top:10px; font-size:12.5px; color:#94a3b8; line-height:1.6;">
+                        🔒 Token 只保存在当前设备的 localStorage，不会发送到任何第三方服务器。<br>
+                        📦 数据会存在你 GitHub 账号下一个<b>私有 gist</b> 里，随时可到 <a href="https://gist.github.com" target="_blank" style="color:#0284c7;">gist.github.com</a> 查看/删除。
+                    </div>
+                </div>
+            `;
+
             let html = `
                 <div class="report-section">
-                    <h3>🔍 1. 寻回昨日丢失数据 (Recover Legacy Data)</h3>
+                    <h3>☁️ 1. 云同步 / Multi-Device Sync (GitHub Gist)</h3>
+                    ${cloudSection}
+                </div>
+
+                <div class="report-section">
+                    <h3>🛡️ 2. 本地导出/导入备份 (Export & Import)</h3>
                     <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
-                        如果您发现进度或错题本丢失，通常是因为浏览器清空了"访客ID"。<br>
-                        点击下方按钮，系统将深度扫描浏览器的底层缓存，尝试找回历史版本的遗留记录并进行合并。
-                        <button class="modal-btn" style="background:#f59e0b; color:#fff; width:100%; margin-top:12px;" onclick="window.recoverLegacyData()">🔍 深度扫描并合并残留数据</button>
+                        手动备份作为最后一道保险（即便云端同步开了，也建议每月导出一份存 iCloud）。
+                        <div style="display:flex; gap:10px; margin-top:12px;">
+                            <button class="modal-btn" style="background:#0284c7; color:#fff; flex:1;" onclick="window.exportData()">⬇️ 导出 JSON</button>
+                            <button class="modal-btn" style="background:#10b981; color:#fff; flex:1;" onclick="window.importData()">⬆️ 导入恢复</button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="report-section">
-                    <h3>🛡️ 2. 终极防丢：导出/导入备份 (Export & Import)</h3>
+                    <h3>🔍 3. 寻回历史遗留数据 (Recover Legacy Data)</h3>
                     <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
-                        这是最安全的防丢方式。建议您每次训练结束后，将数据导出备份到电脑中。当进度丢失时，一键导入即可满血复活！
-                        <div style="display:flex; gap:10px; margin-top:12px;">
-                            <button class="modal-btn" style="background:#0284c7; color:#fff; flex:1;" onclick="window.exportData()">⬇️ 导出进度数据 (JSON)</button>
-                            <button class="modal-btn" style="background:#10b981; color:#fff; flex:1;" onclick="window.importData()">⬆️ 导入进度恢复</button>
-                        </div>
+                        从旧版本残留的 localStorage 键中扫描合并。
+                        <button class="modal-btn" style="background:#f59e0b; color:#fff; width:100%; margin-top:12px;" onclick="window.recoverLegacyData()">🔍 深度扫描并合并残留数据</button>
                     </div>
                 </div>
             `;
             document.getElementById('report-content-area').innerHTML = html;
             document.getElementById('report-modal').style.display = 'block';
+        };
+
+        // v22.2 Gist 连接 UI 逻辑
+        window.gistConnect = async function() {
+            let input = document.getElementById('gist-token-input');
+            let token = input ? input.value.trim() : '';
+            if (!token || token.length < 30) { alert('请粘贴有效的 GitHub Personal Access Token (形如 ghp_...)'); return; }
+            GistSync.setToken(token);
+            try {
+                let res = await GistSync.connect();
+                // 拉云端并合并
+                let cloud = await GistSync.pull();
+                if (cloud) {
+                    StorageDB.cache.KAI   = mergeProfiles(StorageDB.cache.KAI,   StorageDB.migrateProfile(cloud.KAI));
+                    StorageDB.cache.Lorik = mergeProfiles(StorageDB.cache.Lorik, StorageDB.migrateProfile(cloud.Lorik));
+                    localStorage.setItem('MathProfile_master_KAI',   JSON.stringify(StorageDB.cache.KAI));
+                    localStorage.setItem('MathProfile_master_Lorik', JSON.stringify(StorageDB.cache.Lorik));
+                }
+                StorageDB.mode = 'gist';
+                // 推合并后版本
+                await GistSync.pushNow({ KAI: StorageDB.cache.KAI, Lorik: StorageDB.cache.Lorik });
+                alert(`✅ 云同步已连接！\n账号：${res.login}\nGist ID：${res.gistId}\n\n本机数据已与云端合并，换设备粘贴同一 token 即可同步。`);
+                updateCloudStatus();
+                window.showDataModal(); // 刷新模态框显示已连接状态
+                window.renderPaper();
+            } catch(e) {
+                GistSync.clearCreds();
+                alert(`❌ 连接失败：${e.message}\n\nToken 已清除。请检查：\n• 权限是否勾选了 gist\n• 是否复制完整（通常 40+ 字符）`);
+                updateCloudStatus();
+            }
+        };
+
+        window.gistDisconnect = function() {
+            if (!confirm('确定断开云同步吗？\n\n本地数据会保留，但换设备将不再自动同步。')) return;
+            GistSync.clearCreds();
+            StorageDB.mode = 'local';
+            updateCloudStatus();
+            window.showDataModal();
+        };
+
+        window.gistSyncNow = async function() {
+            try {
+                await StorageDB.syncNow();
+                alert('✅ 同步完成！');
+                window.showDataModal();
+                window.renderPaper();
+            } catch(e) {
+                alert(`❌ 同步失败：${e.message}`);
+            }
         };
 
         window.recoverLegacyData = async function() {
