@@ -41,6 +41,12 @@ v22.5 adds more diagnostic practice:
 - Unit-fraction application tasks that force "one part first, then several parts" reasoning.
 - Parentheses-first mixed operations for catching left-to-right overgeneralization.
 
+v22.6 improves feedback quality:
+
+- Every answer row includes an actionable misconception tip.
+- Exact knowledge tags use tailored advice; uncatalogued tags fall back to family-level advice before using the generic fallback.
+- Error-book review and regular answer sheets share the same advice resolver, so practice and remediation stay aligned.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

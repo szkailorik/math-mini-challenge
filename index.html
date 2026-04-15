@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v22.5 (诊断训练增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v22.6 (反馈质量增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -116,6 +116,7 @@
         .ans-content { display: flex; flex-direction: column; flex: 1; padding-right: 15px; gap: 6px;}
         .ans-q-line { font-size: 14px; color: #555; display: flex; align-items: center; }
         .ans-a-line { font-size: 15.5px; color: #002D72; margin-left: 25px;}
+        .ans-tip { margin-left: 25px; font-size: 12.5px; line-height: 1.45; color: #9a3412; background: #fff7ed; border-left: 3px solid #fb923c; padding: 5px 8px; border-radius: 0 4px 4px 0; font-family: 'KaiTi','楷体',sans-serif; }
         .ans-num { font-weight: bold; color: #002D72; width: 25px; flex-shrink: 0; font-family: 'Times New Roman', serif;}
         .highlight { color: #d32f2f; font-weight: bold; margin: 0 4px; }
 
@@ -176,7 +177,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v22.5</h3>
+            <h3>🧠 专家私教引擎 v22.6</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -192,7 +193,7 @@
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 22.5 诊断训练增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+                💡 22.6 反馈质量增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
             </div>
         </div>
 
@@ -218,7 +219,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v22.5 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v22.6 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -329,12 +330,12 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v22.5 GitHub Gist 云同步 =================
+        // ================= v22.6 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v25';
+        const SET_CACHE_PREFIX = 'MathSetData_v26';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -397,7 +398,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.5', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.6', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -442,7 +443,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v22.5'
+                    version: 'v22.6'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -567,7 +568,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v22.5 存储层（local + optional Gist 同步） =================
+        // ================= v22.6 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             cache: {
@@ -833,7 +834,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v22.5 Gist 云同步 =================
+        // ================= 数据备份 + v22.6 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -903,7 +904,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v22.5 Gist 连接 UI 逻辑
+        // v22.6 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1132,6 +1133,29 @@
             "l_bmix_paren": { name: "混合运算-括号优先级", advice: "括号先算，再乘除，最后加减。每一步写等号，防止顺手从左到右全算。" }
         };
         const FallbackAdvice = { name: "综合推导与解题规范", advice: "未严格遵守运算顺序或存在明显跳步。要求孩子在题纸上标出优先级底线，一步一等号。" };
+        const KnowledgeFamilies = [
+            { prefix: "k_conv_", name: "互化-分数小数百分数", advice: "先认清分母对应的小数位：8、16、20、25、40、100、1000 是高频基准，必要时先约分再互化。" },
+            { prefix: "l_conv_", name: "互化与比较-基准数", advice: "把1/2、3/4、4/5、5/8等常用基准先化成小数，再做比较或填空。" },
+            { prefix: "k_dmul_", name: "小数乘法-位值与估算", advice: "先按整数乘法计算，再根据小数位数点小数点，最后用估算检查答案数量级。" },
+            { prefix: "k_ddiv_", name: "小数除法-同倍扩大", advice: "除数是小数时，被除数和除数同乘10、100或1000，让除数变整数后再算。" },
+            { prefix: "k_sub_", name: "减法-借位链", advice: "遇到中间连续0，必须逐位标借位。写完后用加法反查差是否正确。" },
+            { prefix: "k_eq_", name: "方程-逆运算", advice: "先判断未知数的位置，再做逆运算。未知数在减数、除数、分母位置时尤其不能套普通移项套路。" },
+            { prefix: "k_fcalc_", name: "分数运算-顺序与约分", advice: "先处理括号和除法变乘法，连乘时优先交叉约分，最后再化成最简分数或带分数。" },
+            { prefix: "k_oly_", name: "简算-结构识别", advice: "先找共同因数、接近整百整千的数、或可裂项的结构，再决定用分配律、补偿法还是约分。" },
+            { prefix: "l_mul_", name: "乘法-位值与补偿", advice: "多位数乘法先估数量级；遇到25、99、101、末尾0时优先考虑凑整或补偿。" },
+            { prefix: "l_div_", name: "除法-缩放与反推", advice: "先观察除数是否能缩放或凑整，再用乘法反推检查商是否合理。" },
+            { prefix: "l_sub_", name: "减法-退位检查", advice: "跨0退位时每一位都要写借位标记，算完用差加减数反查。" },
+            { prefix: "l_fmix_", name: "分数混合-通分与顺序", advice: "同分母直接算，异分母先通分；混合运算先括号，再乘除，最后加减。" },
+            { prefix: "l_bmix_", name: "混合简算-优先级", advice: "先看括号和乘除优先级，再找125、25、99、101等凑整结构。" }
+        ];
+        function getKnowledgeTip(tag) {
+            if (KnowledgeBase[tag]) return KnowledgeBase[tag];
+            return KnowledgeFamilies.find(k => String(tag || '').startsWith(k.prefix)) || FallbackAdvice;
+        }
+        window.KnowledgeBase = KnowledgeBase;
+        window.KnowledgeFamilies = KnowledgeFamilies;
+        window.FallbackAdvice = FallbackAdvice;
+        window.getKnowledgeTip = getKnowledgeTip;
 
         // ================= V21 彻底重写的生成器 (完美验算、注入原数据到步骤) =================
         const GenKAI = {
@@ -1461,7 +1485,7 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {
@@ -1518,6 +1542,7 @@
         const buildAnsRow = (q, i, student, secName, sessionData) => {
             let infoObj = { sec: secName, num: i + 1, q: q.q, a: q.a, step: q.step || '' };
             let encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
+            let kb = getKnowledgeTip(q.tag);
 
             let reasonBadge = '';
             if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
@@ -1543,6 +1568,7 @@
                 <div class="ans-content">
                     <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] ${q.q}</span> ${reasonBadge}</div>
                     <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${q.step ? q.step + ' &rarr; ' : ''}<strong class="highlight">${q.a}</strong></div>
+                    <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
                 </div>
                 <div class="grade-area no-print">
                     <button class="grade-btn perfect ${pAct}" title="完美掌握 Perfect" onclick="window.markAnswer(this, 'perfect')">✓</button>
@@ -1755,7 +1781,7 @@
             pages.forEach((pageItems, pageIdx) => {
                 let innerHtml = pageItems.map(it => {
                     if (it.type === 'header') {
-                        let kb = KnowledgeBase[it.tag] || FallbackAdvice;
+                        let kb = getKnowledgeTip(it.tag);
                         return `<div class="eb-tag-header"><span>🎯 ${kb.name} <span style="opacity:0.7; font-size:12px; margin-left:6px;">[${it.tag}]</span></span><span class="tag-count">${it.kinds} 题 / 累计 ${it.total} 次</span></div>`;
                     } else {
                         let err = it.entry;
@@ -1812,7 +1838,7 @@
             let ansHtml = `<div class="sheet ans-sheet"><div class="header"><h1>${name} ${filter === 'mastered' ? '已掌握错题' : '专属错题本'} - 解析 (Solutions)</h1></div><div class="ans-grid-block">`;
             let idx = 1;
             sortedTags.forEach(tag => {
-                let kb = KnowledgeBase[tag] || FallbackAdvice;
+                let kb = getKnowledgeTip(tag);
                 ansHtml += `<div class="eb-tag-header" style="grid-column: auto;">🎯 ${kb.name}</div>`;
                 byTag[tag].forEach(err => {
                     ansHtml += `

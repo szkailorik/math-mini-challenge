@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.5 Iteration Notes
+## Current v22.6 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added per-answer misconception tips to the answer sheet.
+- Open questions: none.
+- Risks: answer sheets are slightly longer because each row now includes feedback text.
+- Next steps: watch print density on smaller browser print settings.
+
+### Iteration 2
+
+- What I changed: introduced family-level advice resolution so every generated tag receives targeted feedback.
+- Open questions: none.
+- Risks: family advice is less precise than exact tag advice, but still much better than a generic fallback.
+- Next steps: promote frequently missed family-level tips into exact tag advice over time.
+
+### Iteration 3
+
+- What I changed: expanded runtime validation to fail when generated tags only resolve to the generic fallback.
+- Open questions: none.
+- Risks: validation still runs in a stubbed DOM, so visual overflow needs separate manual or screenshot review.
+- Next steps: add visual regression testing if layout changes continue.
+
+## Previous v22.5 Iteration Notes
 
 ### Iteration 1
 

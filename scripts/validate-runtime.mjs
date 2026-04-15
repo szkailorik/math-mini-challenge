@@ -6,7 +6,7 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v25';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v26';
 
 const store = new Map();
 const localStorage = {
@@ -131,6 +131,8 @@ function assertSetData(setNumber) {
     l_m: 4, l_d: 4, l_s: 4, l_c: 8, l_f: 12, l_o: 4,
   };
   const seen = new Set();
+  const getKnowledgeTip = context.window.getKnowledgeTip;
+  const fallbackName = context.window.FallbackAdvice?.name;
 
   for (const [section, expected] of Object.entries(expectedCounts)) {
     const items = data[section];
@@ -140,6 +142,8 @@ function assertSetData(setNumber) {
     items.forEach((item, index) => {
       const location = `set ${setNumber} ${section}[${index}]`;
       if (!item || !item.tag) throw new Error(`${location} missing tag`);
+      const tip = typeof getKnowledgeTip === 'function' ? getKnowledgeTip(item.tag) : null;
+      if (!tip || tip.name === fallbackName) missingAdvice.add(item.tag);
       if (!stripHtml(item.q)) throw new Error(`${location} missing question`);
       if (!stripHtml(item.a)) throw new Error(`${location} missing answer`);
       const combined = `${item.q} ${item.a} ${item.step || ''}`;
@@ -154,10 +158,14 @@ function assertSetData(setNumber) {
 }
 
 const checked = [];
+const missingAdvice = new Set();
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
   context.window.renderPaper();
   checked.push(`${setNumber}:${assertPaper(setNumber)}`);
+}
+if (missingAdvice.size) {
+  throw new Error(`Missing KnowledgeBase advice for tags: ${[...missingAdvice].sort().join(', ')}`);
 }
 
 console.log(`Runtime validation passed for sets ${checked.join(', ')}.`);
