@@ -60,6 +60,13 @@ v22.8 improves training quality governance:
 - The knowledge map adds a domain profile across decimal place value, integer algorithms, fractions/conversions, equations, and strategy problems.
 - Active weak tags now show both domain and L1-L4 level, turning mistakes into a clearer next training target.
 
+v22.9 improves adaptive transfer across related knowledge points:
+
+- Domain-level weakness signals are computed from tag weights and active error-book counts.
+- Related tags in a weak domain receive a moderate selection bonus, helping practice transfer beyond the exact missed tag.
+- Answer sheets mark domain-boosted items so the tutor can see why a related item appeared.
+- Domain profile cards show training priority, active error count, and mastered count.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

@@ -6,7 +6,7 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v28';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v29';
 
 const store = new Map();
 const localStorage = {
@@ -175,6 +175,19 @@ const checked = [];
 const missingAdvice = new Set();
 const missingDomain = new Set();
 const observedLevels = new Set();
+const sampleSignal = context.window.getDomainSignal?.(
+  { weights: { k_dmul_basic: 2 }, errorBook: { e1: { tag: 'k_dmul_trap0', count: 2, mastered: false } } },
+  'k_dmul_scale'
+);
+if (!sampleSignal || sampleSignal.domain?.id !== 'decimal' || sampleSignal.score <= 0) {
+  throw new Error('Domain signal scoring is not available for decimal tags');
+}
+const sampleSummary = context.window.summarizeDomainSignals?.([
+  { weights: { k_fcalc_muldiv: 3 }, errorBook: { e2: { tag: 'l_fmix_sub', count: 1, mastered: false } } }
+]);
+if (!Array.isArray(sampleSummary) || !sampleSummary.some(item => item.domain.id === 'fraction' && item.score > 0)) {
+  throw new Error('Domain signal summary is not reporting fraction weakness');
+}
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
   context.window.renderPaper();

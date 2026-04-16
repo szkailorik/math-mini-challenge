@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.8 Iteration Notes
+## Current v22.9 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added domain-level weakness scoring from weights and active error-book counts.
+- Open questions: none.
+- Risks: domain boosts must stay moderate so one weak area does not monopolize the whole paper.
+- Next steps: tune boost size after several graded sessions.
+
+### Iteration 2
+
+- What I changed: connected domain signals to adaptive selection and added a Domain Boost answer badge.
+- Open questions: none.
+- Risks: the badge explains intent, but students still need tutor guidance to link related tags.
+- Next steps: add short domain-specific remediation routines if repeated clusters persist.
+
+### Iteration 3
+
+- What I changed: upgraded the knowledge map priority labels and runtime validation for domain-signal scoring.
+- Open questions: none.
+- Risks: priority labels are based on app-local data, not standardized mastery scores.
+- Next steps: consider historical trend charts once enough sessions accumulate.
+
+## Previous v22.8 Iteration Notes
 
 ### Iteration 1
 
