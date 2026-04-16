@@ -39,11 +39,13 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `currentSetNumber`: drives deterministic seeding and set cache keys.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
+- `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
-- `showKnowledgeMap`: renders current weak tags and knowledge-family coverage.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, and invalid levels.
+- `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
+- `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, and missing domain coverage.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety

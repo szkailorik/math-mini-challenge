@@ -53,6 +53,13 @@ v22.7 improves training level control:
 - The seven-set training cycle biases selection toward suitable levels for consolidation, trap avoidance, forgetting review, or challenge days.
 - The knowledge map exposes active weak tags and the knowledge-family coverage behind the generator pools.
 
+v22.8 improves training quality governance:
+
+- Each sheet shows a phase focus strip with the current learning goal, target level band, and learning principle reminder.
+- L4 challenge items are capped on non-challenge phases so difficult transfer work does not crowd out consolidation.
+- The knowledge map adds a domain profile across decimal place value, integer algorithms, fractions/conversions, equations, and strategy problems.
+- Active weak tags now show both domain and L1-L4 level, turning mistakes into a clearer next training target.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

@@ -6,7 +6,7 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v26';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v28';
 
 const store = new Map();
 const localStorage = {
@@ -111,6 +111,12 @@ function assertPaper(setNumber) {
   if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Detailed Solutions')) {
     throw new Error(`Generated paper for set ${setNumber} is missing challenge or answer sections`);
   }
+  if (!paper.includes('focus-strip') || !paper.includes('Retrieval · Spacing · Interleaving')) {
+    throw new Error(`Generated paper for set ${setNumber} is missing the training focus strip`);
+  }
+  if (!paper.includes('level-badge')) {
+    throw new Error(`Generated paper for set ${setNumber} is missing level badges`);
+  }
   if (paper.includes('undefined')) {
     throw new Error(`Generated paper for set ${setNumber} contains undefined`);
   }
@@ -132,6 +138,7 @@ function assertSetData(setNumber) {
   };
   const seen = new Set();
   const getKnowledgeTip = context.window.getKnowledgeTip;
+  const getKnowledgeDomain = context.window.getKnowledgeDomain;
   const fallbackName = context.window.FallbackAdvice?.name;
 
   for (const [section, expected] of Object.entries(expectedCounts)) {
@@ -144,10 +151,13 @@ function assertSetData(setNumber) {
       if (!item || !item.tag) throw new Error(`${location} missing tag`);
       const tip = typeof getKnowledgeTip === 'function' ? getKnowledgeTip(item.tag) : null;
       if (!tip || tip.name === fallbackName) missingAdvice.add(item.tag);
+      const domain = typeof getKnowledgeDomain === 'function' ? getKnowledgeDomain(item.tag) : null;
+      if (!domain) missingDomain.add(item.tag);
       const level = item.level || context.window.inferDifficulty?.(item.tag);
       if (!Number.isInteger(level) || level < 1 || level > 4) {
         throw new Error(`${location} has invalid level ${level}`);
       }
+      observedLevels.add(level);
       if (!stripHtml(item.q)) throw new Error(`${location} missing question`);
       if (!stripHtml(item.a)) throw new Error(`${location} missing answer`);
       const combined = `${item.q} ${item.a} ${item.step || ''}`;
@@ -163,6 +173,8 @@ function assertSetData(setNumber) {
 
 const checked = [];
 const missingAdvice = new Set();
+const missingDomain = new Set();
+const observedLevels = new Set();
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
   context.window.renderPaper();
@@ -170,6 +182,14 @@ for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
 }
 if (missingAdvice.size) {
   throw new Error(`Missing KnowledgeBase advice for tags: ${[...missingAdvice].sort().join(', ')}`);
+}
+if (missingDomain.size) {
+  throw new Error(`Missing KnowledgeDomains coverage for tags: ${[...missingDomain].sort().join(', ')}`);
+}
+for (const level of [1, 2, 3, 4]) {
+  if (!observedLevels.has(level)) {
+    throw new Error(`No generated items observed for training level L${level}`);
+  }
 }
 
 console.log(`Runtime validation passed for sets ${checked.join(', ')}.`);

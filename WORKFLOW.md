@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.7 Iteration Notes
+## Current v22.8 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a visible phase focus plan and capped L4 challenge density outside challenge phases.
+- Open questions: none.
+- Risks: challenge caps are heuristic and should be tuned after observing several real graded sessions.
+- Next steps: compare perceived difficulty across consolidation and challenge days.
+
+### Iteration 2
+
+- What I changed: added curriculum-domain grouping for generated tags and upgraded the knowledge map to show domain coverage and weak-point levels.
+- Open questions: none.
+- Risks: domains are app-specific learning domains, not a full external curriculum standard.
+- Next steps: expand domain descriptors if formal syllabus reporting becomes necessary.
+
+### Iteration 3
+
+- What I changed: updated documentation and runtime validation to check focus strips, level badges, knowledge advice, and domain coverage.
+- Open questions: none.
+- Risks: validation remains structural; visual overflow still needs browser-based checking when layout changes grow.
+- Next steps: consider Playwright screenshots for modal and print layouts.
+
+## Previous v22.7 Iteration Notes
 
 ### Iteration 1
 
