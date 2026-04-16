@@ -212,6 +212,9 @@ if (!sampleReplay?.isErrorReplay || sampleReplay.q !== '2 &times; 3' || !sampleR
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
 }
+if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
+  throw new Error('Automatic cloud pull helpers are not available');
+}
 context.window.StorageDB.cache.KAI = {
   weights: { k_dmul_basic: 50 },
   lastSeen: {},

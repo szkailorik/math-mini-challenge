@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.1 Iteration Notes
+## Current v23.2 Iteration Notes
+
+### Iteration 1
+
+- What I changed: clarified that cloud records live in a private GitHub Gist, while GitHub Pages only serves the app.
+- Open questions: none.
+- Risks: users must connect the same token on each device; without token the app remains local-only.
+- Next steps: keep the data backup modal as the primary sync onboarding surface.
+
+### Iteration 2
+
+- What I changed: added automatic remote pull on page focus, visibility return, and a light interval.
+- Open questions: none.
+- Risks: GitHub API rate limits are possible with excessive open tabs, so pulls are throttled.
+- Next steps: observe whether the interval needs tuning after real family use.
+
+### Iteration 3
+
+- What I changed: improved sync status timestamps and validation coverage for auto-pull helpers.
+- Open questions: none.
+- Risks: native browser storage can still be cleared by the user, so JSON backup remains recommended.
+- Next steps: add a visible cloud conflict log only if sync issues appear in practice.
+
+## Previous v23.1 Iteration Notes
 
 ### Iteration 1
 

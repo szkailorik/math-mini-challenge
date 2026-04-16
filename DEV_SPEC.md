@@ -48,7 +48,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
 - `printQuestionSheets` / `printAnswerSheets`: temporarily applies print-only body modes so daily AB sheets and answer sheets can be printed separately from the long page.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, and the four printable question sheets.
+- `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, four printable question sheets, and cloud auto-pull helpers.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety

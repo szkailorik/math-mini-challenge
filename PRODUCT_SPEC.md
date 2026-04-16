@@ -80,6 +80,13 @@ v23.1 improves the daily print workflow:
 - Answer sheets can be printed separately, reducing accidental answer leakage.
 - The four question sheets are explicitly marked for stable A4 pagination.
 
+v23.2 clarifies and strengthens cross-device sync:
+
+- Records are local-only until the tutor connects a GitHub PAT with gist scope.
+- Connected devices use one private GitHub Gist as the cloud store and merge local/cloud profiles on startup.
+- Grading writes push automatically; focus/visibility changes and a light interval pull remote updates.
+- The backup modal explains where data lives and shows separate pull/push timestamps.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

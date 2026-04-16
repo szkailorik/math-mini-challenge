@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.1 (打印四页优化版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.2 (跨设备同步增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -195,7 +195,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v23.1</h3>
+            <h3>🧠 专家私教引擎 v23.2</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -216,7 +216,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.1 打印四页优化版：<br><strong>AB四页一键打印<br>原题回炉 · 同类变式</strong>
+                💡 23.2 跨设备同步增强版：<br><strong>AB四页一键打印<br>自动云端合并同步</strong>
             </div>
         </div>
 
@@ -242,7 +242,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v23.1 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.2 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -353,7 +353,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.1 GitHub Gist 云同步 =================
+        // ================= v23.2 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -364,6 +364,7 @@
             TOKEN_KEY: 'MathGistSync_token',
             GIST_ID_KEY: 'MathGistSync_gistId',
             LAST_PUSH_KEY: 'MathGistSync_lastPushTs',
+            LAST_PULL_KEY: 'MathGistSync_lastPullTs',
             _pushTimer: null,
             _lastError: null,
 
@@ -373,6 +374,7 @@
                 localStorage.removeItem('MathGistSync_token');
                 localStorage.removeItem('MathGistSync_gistId');
                 localStorage.removeItem('MathGistSync_lastPushTs');
+                localStorage.removeItem('MathGistSync_lastPullTs');
             },
             getGistId: () => localStorage.getItem('MathGistSync_gistId'),
             setGistId: (id) => localStorage.setItem('MathGistSync_gistId', id),
@@ -421,7 +423,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.1', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.2', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -451,6 +453,7 @@
                         out[fn.replace('.json','')] = JSON.parse(content);
                     } catch(e) {}
                 }
+                localStorage.setItem(this.LAST_PULL_KEY, String(Date.now()));
                 return out;
             },
 
@@ -466,7 +469,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v23.1'
+                    version: 'v23.2'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -573,12 +576,14 @@
             let gid = GistSync.getGistId();
             if (token && gid) {
                 let lastPush = parseInt(localStorage.getItem(GistSync.LAST_PUSH_KEY)) || 0;
-                let ago = lastPush ? `${Math.max(1, Math.floor((Date.now() - lastPush) / 1000))}s 前` : '尚未推送';
+                let lastPull = parseInt(localStorage.getItem(GistSync.LAST_PULL_KEY)) || 0;
+                let lastSync = Math.max(lastPush, lastPull);
+                let ago = lastSync ? `${Math.max(1, Math.floor((Date.now() - lastSync) / 1000))}s 前` : '尚未同步';
                 if (GistSync._lastError) {
                     el.innerText = `⚠️ Gist 同步异常：${GistSync._lastError}`;
                     el.style.color = '#fca5a5';
                 } else {
-                    el.innerText = `☁️ Gist 同步已连接 · 最近同步 ${ago}`;
+                    el.innerText = `☁️ Gist 自动同步已连接 · 最近读/写 ${ago}`;
                     el.style.color = '#4ade80';
                 }
             } else if (token && !gid) {
@@ -591,9 +596,10 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.1 存储层（local + optional Gist 同步） =================
+        // ================= v23.2 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
+            _lastAutoPull: 0,
             cache: {
                 KAI:   { weights: {}, lastSeen: {}, history: [], errorBook: {} },
                 Lorik: { weights: {}, lastSeen: {}, history: [], errorBook: {} }
@@ -695,6 +701,28 @@
                 }
             },
 
+            pullRemoteChanges: async function({ render = false, minInterval = 0 } = {}) {
+                if (!GistSync.getToken() || !GistSync.getGistId()) return false;
+                const now = Date.now();
+                if (minInterval && now - this._lastAutoPull < minInterval) return false;
+                this._lastAutoPull = now;
+                let before = JSON.stringify({ KAI: this.cache.KAI, Lorik: this.cache.Lorik });
+                let cloud = await GistSync.pull();
+                if (!cloud) return false;
+                this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
+                this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
+                safeLocalSetItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
+                safeLocalSetItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
+                if (cloud.meta && cloud.meta.lastSetNum && !localStorage.getItem('MathEngine_LastSetNum')) {
+                    window.currentSetNumber = cloud.meta.lastSetNum;
+                    safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
+                }
+                let changed = before !== JSON.stringify({ KAI: this.cache.KAI, Lorik: this.cache.Lorik });
+                if (changed && render && typeof window.renderPaper === 'function') window.renderPaper();
+                updateCloudStatus();
+                return changed;
+            },
+
             // 手动触发立即同步（忽略 debounce）
             syncNow: async function() {
                 if (!GistSync.getToken() || !GistSync.getGistId()) {
@@ -702,13 +730,7 @@
                 }
                 // 先拉云端合并一次，避免覆盖另一台设备的新数据
                 try {
-                    let cloud = await GistSync.pull();
-                    if (cloud) {
-                        this.cache.KAI   = mergeProfiles(this.cache.KAI,   this.migrateProfile(cloud.KAI));
-                        this.cache.Lorik = mergeProfiles(this.cache.Lorik, this.migrateProfile(cloud.Lorik));
-                        safeLocalSetItem('MathProfile_master_KAI',   JSON.stringify(this.cache.KAI));
-                        safeLocalSetItem('MathProfile_master_Lorik', JSON.stringify(this.cache.Lorik));
-                    }
+                    await this.pullRemoteChanges({ render: false });
                 } catch(e) { console.warn('拉云端失败:', e); }
                 // 再推最终版本
                 await GistSync.pushNow({ KAI: this.cache.KAI, Lorik: this.cache.Lorik });
@@ -857,13 +879,14 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.1 Gist 云同步 =================
+        // ================= 数据备份 + v23.2 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
             let token = GistSync.getToken();
             let gid = GistSync.getGistId();
             let lastPush = parseInt(localStorage.getItem(GistSync.LAST_PUSH_KEY)) || 0;
+            let lastPull = parseInt(localStorage.getItem(GistSync.LAST_PULL_KEY)) || 0;
             let connected = !!(token && gid);
 
             let cloudSection = connected ? `
@@ -871,13 +894,14 @@
                     <div style="background:#ecfdf5; border:1px solid #a7f3d0; padding:10px 14px; border-radius:6px; margin-bottom:12px;">
                         ✅ <b style="color:#065f46;">已连接</b> · Gist ID: <code style="background:#fff; padding:1px 6px; border-radius:3px;">${gid.slice(0,8)}...</code>
                         ${lastPush ? `<br>⏱ 最近推送：${new Date(lastPush).toLocaleString()}` : ''}
+                        ${lastPull ? `<br>📥 最近拉取：${new Date(lastPull).toLocaleString()}` : ''}
                     </div>
                     <div style="display:flex; gap:10px;">
                         <button class="modal-btn" style="background:#10b981; color:#fff; flex:1;" onclick="window.gistSyncNow()">🔄 立即双向同步</button>
                         <button class="modal-btn" style="background:#64748b; color:#fff; flex:1;" onclick="window.gistDisconnect()">🔌 断开并清除 token</button>
                     </div>
                     <div style="margin-top:10px; font-size:12.5px; color:#94a3b8;">
-                        💡 正常使用无需点击"立即同步"，每次提交批改后会自动推送到云端（约 2.5 秒 debounce）。
+                        💡 数据存放在你 GitHub 账号下的<b>私有 Gist</b>。打开网页会自动拉取云端；提交批改会自动推送；切回页面或页面保持打开时会自动轻量拉取。刚在另一台设备提交后，也可以点"立即双向同步"马上刷新。
                     </div>
                 </div>
             ` : `
@@ -887,7 +911,7 @@
                         <li>打开 <a href="https://github.com/settings/tokens/new?scopes=gist&description=math-mini-challenge" target="_blank" style="color:#0284c7;">GitHub Token 生成页</a>（已预勾 gist 权限）</li>
                         <li>Expiration 选 <b>No expiration</b>，点页面底部 <b>Generate token</b></li>
                         <li>复制生成的 token（形如 <code>ghp_xxxx...</code>），粘贴到下面输入框</li>
-                        <li>点连接。换设备时粘贴同一 token 即可同步。</li>
+                        <li>点连接。换设备时粘贴同一 token，即会连接同一个私有 gist 并自动合并数据。</li>
                     </ol>
                     <input type="password" id="gist-token-input" placeholder="粘贴 GitHub PAT (gist scope)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:monospace; font-size:13px; box-sizing:border-box;" />
                     <button class="modal-btn" style="background:#0284c7; color:#fff; width:100%; margin-top:10px;" onclick="window.gistConnect()">🔗 连接云同步</button>
@@ -927,7 +951,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.1 Gist 连接 UI 逻辑
+        // v23.2 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -975,6 +999,21 @@
                 alert(`❌ 同步失败：${e.message}`);
             }
         };
+
+        function setupAutoCloudPull() {
+            const pull = () => {
+                if (document.hidden || StorageDB.mode !== 'gist') return;
+                StorageDB.pullRemoteChanges({ render: true, minInterval: 20000 }).catch(e => {
+                    console.warn('自动拉取云端更新失败:', e);
+                    GistSync._lastError = e.message || String(e);
+                    updateCloudStatus();
+                });
+            };
+            if (typeof window.addEventListener === 'function') window.addEventListener('focus', pull);
+            if (typeof document.addEventListener === 'function') document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+            if (typeof setInterval === 'function') setInterval(pull, 60000);
+        }
+        window.setupAutoCloudPull = setupAutoCloudPull;
 
         window.recoverLegacyData = async function() {
             let btn = (window.event && window.event.target) ? window.event.target : null;
@@ -2450,6 +2489,7 @@
             if (typeof window.renderPaper === 'function') {
                 window.renderPaper();
             }
+            setupAutoCloudPull();
         }
 
         // Execute immediately
