@@ -144,6 +144,10 @@ function assertSetData(setNumber) {
       if (!item || !item.tag) throw new Error(`${location} missing tag`);
       const tip = typeof getKnowledgeTip === 'function' ? getKnowledgeTip(item.tag) : null;
       if (!tip || tip.name === fallbackName) missingAdvice.add(item.tag);
+      const level = item.level || context.window.inferDifficulty?.(item.tag);
+      if (!Number.isInteger(level) || level < 1 || level > 4) {
+        throw new Error(`${location} has invalid level ${level}`);
+      }
       if (!stripHtml(item.q)) throw new Error(`${location} missing question`);
       if (!stripHtml(item.a)) throw new Error(`${location} missing answer`);
       const combined = `${item.q} ${item.a} ${item.step || ''}`;

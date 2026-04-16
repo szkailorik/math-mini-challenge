@@ -47,6 +47,12 @@ v22.6 improves feedback quality:
 - Exact knowledge tags use tailored advice; uncatalogued tags fall back to family-level advice before using the generic fallback.
 - Error-book review and regular answer sheets share the same advice resolver, so practice and remediation stay aligned.
 
+v22.7 improves training level control:
+
+- Every generated item receives a level from L1 foundation to L4 challenge.
+- The seven-set training cycle biases selection toward suitable levels for consolidation, trap avoidance, forgetting review, or challenge days.
+- The knowledge map exposes active weak tags and the knowledge-family coverage behind the generator pools.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

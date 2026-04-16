@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.6 Iteration Notes
+## Current v22.7 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added L1-L4 training levels and phase-aware selection bonuses.
+- Open questions: none.
+- Risks: level inference is tag-based, so exact levels should be tuned as real error data accumulates.
+- Next steps: promote high-frequency misses into explicit tag-level difficulty overrides.
+
+### Iteration 2
+
+- What I changed: surfaced level badges on question and answer sheets.
+- Open questions: whether printed sheets feel too visually busy.
+- Risks: badges use horizontal space in dense sections.
+- Next steps: if print density becomes tight, hide level badges in print while keeping them on answer sheets.
+
+### Iteration 3
+
+- What I changed: added a knowledge map modal and runtime level validation.
+- Open questions: none.
+- Risks: knowledge map currently reflects generated families and active weak tags, not a full curriculum standard.
+- Next steps: expand it into a formal grade 3-4 scope map if the app needs curriculum reporting.
+
+## Previous v22.6 Iteration Notes
 
 ### Iteration 1
 

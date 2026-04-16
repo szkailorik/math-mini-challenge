@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v22.6 (反馈质量增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v22.7 (水准分层增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -137,6 +137,14 @@
         .reason-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px; font-weight: normal; vertical-align: middle; }
         .reason-weak { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5;}
         .reason-forget { background: #e0e7ff; color: #0284c7; border: 1px solid #93c5fd;}
+        .level-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-family: sans-serif; font-weight: bold; }
+        .knowledge-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 15px; }
+        .knowledge-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; font-family: sans-serif; }
+        .knowledge-card h4 { margin: 0 0 6px 0; color: #002D72; font-size: 15px; }
+        .knowledge-card p { margin: 0 0 8px 0; color: #475569; font-size: 12.5px; line-height: 1.5; }
+        .knowledge-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+        .knowledge-tag { font-size: 11px; background: #f1f5f9; color: #334155; border-radius: 4px; padding: 2px 5px; }
+        .knowledge-tag.weak { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
         /* ================= 控制面板 ================= */
         .control-panel { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; backdrop-filter: blur(5px); width: 280px; }
@@ -177,7 +185,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v22.6</h3>
+            <h3>🧠 专家私教引擎 v22.7</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -191,9 +199,10 @@
 
             <button class="ctrl-btn" style="background:#059669; color:white; width:100%; margin-top:8px;" onclick="window.showDataModal()">💾 数据备份 / Data Backup</button>
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
+            <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 22.6 反馈质量增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+                💡 22.7 水准分层增强版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
             </div>
         </div>
 
@@ -219,7 +228,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v22.6 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v22.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -330,12 +339,12 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v22.6 GitHub Gist 云同步 =================
+        // ================= v22.7 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v26';
+        const SET_CACHE_PREFIX = 'MathSetData_v27';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -398,7 +407,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.6', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.7', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -443,7 +452,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v22.6'
+                    version: 'v22.7'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -568,7 +577,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v22.6 存储层（local + optional Gist 同步） =================
+        // ================= v22.7 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             cache: {
@@ -834,7 +843,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v22.6 Gist 云同步 =================
+        // ================= 数据备份 + v22.7 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -904,7 +913,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v22.6 Gist 连接 UI 逻辑
+        // v22.7 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1029,6 +1038,35 @@
         };
 
         // ================= 三、 真实遗忘曲线与出题算法 =================
+        const TRAINING_LEVELS = {
+            1: { name: "L1 基础", desc: "核心技能稳固" },
+            2: { name: "L2 熟练", desc: "常规变式与速度" },
+            3: { name: "L3 易错", desc: "典型陷阱与辨析" },
+            4: { name: "L4 挑战", desc: "综合迁移与策略" }
+        };
+
+        function inferDifficulty(tag) {
+            const t = String(tag || '');
+            if (/oly|twostep|divisor|unit_fraction|cancel|near_million|paren|reverse/.test(t)) return 4;
+            if (/trap|shift|mid0|inner0|100k|all0|jump0|tiny|decimal_q|near100|ofwhole|125|fd|muldiv|dist|merge/.test(t)) return 3;
+            if (/conv|basic|pure|norm|3x20|dec1|dec2|scale10|25|order|addsub|move|coeff/.test(t)) return 2;
+            return 2;
+        }
+
+        function phaseLevelBonus(cycleCode, level) {
+            const target = {
+                1: [1, 2],
+                2: [2, 3],
+                3: [2, 3],
+                4: [3, 4]
+            }[cycleCode] || [2, 3];
+            if (target.includes(level)) return 0.45;
+            return -0.15 * Math.abs(level - target[0]);
+        }
+
+        window.TRAINING_LEVELS = TRAINING_LEVELS;
+        window.inferDifficulty = inferDifficulty;
+
         const Engine = {
             randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
             randChoice: (arr) => arr[Math.floor(random() * arr.length)],
@@ -1053,21 +1091,23 @@
             weightedSelect: (pool, student, count) => {
                 let profile = StorageDB.getProfile(student);
                 let currentSet = window.currentSetNumber;
+                let cycle = Engine.getCycleState();
                 let recent = window._recentQuestions || new Set();
                 let usedThisPaper = window._paperQuestions || new Set();
 
                 let scoredPool = pool.map(item => {
+                    let level = item.level || inferDifficulty(item.tag);
                     let weight = profile.weights[item.tag] || 0;
                     let lastSeenSet = profile.lastSeen[item.tag] || 0;
                     let setsSinceSeen = currentSet - lastSeenSet;
                     if (lastSeenSet === 0) setsSinceSeen = 5;
                     let forgettingBonus = Math.min(setsSinceSeen * 0.15, 1.5);
                     // 随机扰动占主导（权重 1.4），避免 tag 顺序固定
-                    let score = random() * 1.4 + (weight * 0.5) + forgettingBonus * 0.7;
+                    let score = random() * 1.2 + (weight * 0.5) + forgettingBonus * 0.7 + phaseLevelBonus(cycle.code, level);
                     let selectReason = 'random';
                     if (weight > 0 && (weight * 0.5) > forgettingBonus * 0.7) selectReason = 'weak';
                     else if (forgettingBonus > 0.8) selectReason = 'forget';
-                    return { item, score, weight, selectReason };
+                    return { item, score, weight, level, selectReason };
                 });
                 scoredPool.sort((a, b) => b.score - a.score);
 
@@ -1093,6 +1133,8 @@
                         genItem = candidate;
                     }
                     genItem.reason = x.selectReason;
+                    genItem.level = x.level;
+                    genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
                     usedThisPaper.add(genItem.q);
                     return genItem;
                 });
@@ -1547,6 +1589,7 @@
             let reasonBadge = '';
             if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
             else if (q.reason === 'forget') reasonBadge = `<span class="reason-badge reason-forget">🔄 遗忘唤醒 / Memory Review</span>`;
+            let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
 
             let gradeType = '';
             if (sessionData) {
@@ -1566,7 +1609,7 @@
             return `
             <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
                 <div class="ans-content">
-                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] ${q.q}</span> ${reasonBadge}</div>
+                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] ${q.q}</span> ${levelBadge} ${reasonBadge}</div>
                     <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${q.step ? q.step + ' &rarr; ' : ''}<strong class="highlight">${q.a}</strong></div>
                     <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
                 </div>
@@ -1599,7 +1642,8 @@
                         let colorStyle = '';
                         if (q.reason === 'weak') colorStyle = 'color: #d32f2f; font-weight: bold;';
                         else if (q.reason === 'forget') colorStyle = 'color: #0284c7; font-weight: bold;';
-                        return `<div class="item ${heightClass}"><div class="math-row" style="${colorStyle}"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix}</div></div>`;
+                        let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
+                        return `<div class="item ${heightClass}"><div class="math-row" style="${colorStyle}"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix} ${levelBadge}</div></div>`;
                     }).join('')}
                 </div>
             </div>`;
@@ -1939,6 +1983,64 @@
             };
 
             let html = buildTable("KAI", kp) + buildTable("Lorik", lp);
+            document.getElementById('report-content-area').innerHTML = html;
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.showKnowledgeMap = function() {
+            document.getElementById('modal-title').innerText = '🧭 知识点地图 / Knowledge Map';
+
+            const profiles = {
+                KAI: StorageDB.getProfile("KAI") || {},
+                Lorik: StorageDB.getProfile("Lorik") || {}
+            };
+            const weakTags = new Set();
+            Object.values(profiles).forEach(profile => {
+                Object.entries(profile.weights || {}).forEach(([tag, weight]) => {
+                    if (weight > 0) weakTags.add(tag);
+                });
+                Object.values(profile.errorBook || {}).forEach(entry => {
+                    if (entry && !entry.mastered && entry.tag) weakTags.add(entry.tag);
+                });
+            });
+
+            const knownTags = Object.keys(KnowledgeBase).sort();
+            const familyCards = KnowledgeFamilies.map(family => {
+                const tags = knownTags.filter(tag => tag.startsWith(family.prefix));
+                const weakCount = tags.filter(tag => weakTags.has(tag)).length;
+                const tagHtml = tags.length
+                    ? tags.map(tag => `<span class="knowledge-tag ${weakTags.has(tag) ? 'weak' : ''}">${tag}</span>`).join('')
+                    : `<span class="knowledge-tag">自动覆盖 ${family.prefix}*</span>`;
+                return `
+                    <div class="knowledge-card">
+                        <h4>${family.name} ${weakCount ? `<span style="color:#dc2626; font-size:12px;">· ${weakCount} 个弱项</span>` : ''}</h4>
+                        <p>${family.advice}</p>
+                        <div class="knowledge-tags">${tagHtml}</div>
+                    </div>`;
+            }).join('');
+
+            const weakHtml = weakTags.size
+                ? [...weakTags].sort().map(tag => {
+                    const tip = getKnowledgeTip(tag);
+                    return `<tr><td>${tag}</td><td>${tip.name}</td><td>${tip.advice}</td></tr>`;
+                }).join('')
+                : `<tr><td colspan="3" style="color:#10b981; font-weight:bold;">当前没有明显弱项。继续保持稳定练习。</td></tr>`;
+
+            const html = `
+                <div class="report-section">
+                    <h3>🎯 当前弱项 / Active Weak Points</h3>
+                    <div style="padding:15px; max-height:260px; overflow:auto;">
+                        <table class="archive-table">
+                            <tr><th>Tag</th><th>知识点</th><th>训练提醒</th></tr>
+                            ${weakHtml}
+                        </table>
+                    </div>
+                </div>
+                <div class="report-section">
+                    <h3>🧩 训练知识族 / Knowledge Families</h3>
+                    <div class="knowledge-grid">${familyCards}</div>
+                </div>`;
+
             document.getElementById('report-content-area').innerHTML = html;
             document.getElementById('report-modal').style.display = 'block';
         };
