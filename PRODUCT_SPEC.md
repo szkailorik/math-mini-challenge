@@ -87,6 +87,12 @@ v23.2 clarifies and strengthens cross-device sync:
 - Grading writes push automatically; focus/visibility changes and a light interval pull remote updates.
 - The backup modal explains where data lives and shows separate pull/push timestamps.
 
+v23.3 improves sync onboarding:
+
+- Local-only status now exposes a direct cloud-connect button in the main control panel.
+- The sync status line is clickable and opens the Gist connection panel.
+- Copy explicitly says the current device is not connected yet, instead of only saying "local mode".
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

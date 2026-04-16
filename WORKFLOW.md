@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.2 Iteration Notes
+## Current v23.3 Iteration Notes
+
+### Iteration 1
+
+- What I changed: made the local-only status actionable with a visible cloud-connect button.
+- Open questions: none.
+- Risks: users still need a valid GitHub PAT with gist scope on each device.
+- Next steps: keep setup instructions short and visible.
+
+### Iteration 2
+
+- What I changed: made the cloud status line clickable and clarified the not-connected state.
+- Open questions: none.
+- Risks: status text alone cannot confirm whether the browser has blocked localStorage.
+- Next steps: add localStorage diagnostics only if connection problems persist.
+
+### Iteration 3
+
+- What I changed: updated docs for the new sync onboarding flow.
+- Open questions: none.
+- Risks: GitHub token generation is still an external GitHub step.
+- Next steps: consider adding a small illustrated setup checklist later.
+
+## Previous v23.2 Iteration Notes
 
 ### Iteration 1
 

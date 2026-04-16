@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.2 (跨设备同步增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.3 (云端连接引导版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -195,10 +195,11 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v23.2</h3>
+            <h3>🧠 专家私教引擎 v23.3</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
-        <div id="cloud-status">正在检查云端状态...</div>
+        <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
+        <button id="cloud-connect-shortcut" class="ctrl-btn" style="display:none; background:#0ea5e9; color:white; width:100%;" onclick="window.showDataModal()">☁️ 连接云同步 / Connect Sync</button>
 
         <div id="normal-ctrls">
             <div class="ctrl-row" style="margin-top: 5px;">
@@ -216,7 +217,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.2 跨设备同步增强版：<br><strong>AB四页一键打印<br>自动云端合并同步</strong>
+                💡 23.3 云端连接引导版：<br><strong>AB四页一键打印<br>自动云端合并同步</strong>
             </div>
         </div>
 
@@ -242,7 +243,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v23.2 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.3 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -353,7 +354,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.2 GitHub Gist 云同步 =================
+        // ================= v23.3 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -423,7 +424,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.2', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.3', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -469,7 +470,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v23.2'
+                    version: 'v23.3'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -571,10 +572,12 @@
         // 更新右上角云端状态徽章
         function updateCloudStatus() {
             let el = document.getElementById('cloud-status');
+            let shortcut = document.getElementById('cloud-connect-shortcut');
             if (!el) return;
             let token = GistSync.getToken();
             let gid = GistSync.getGistId();
             if (token && gid) {
+                if (shortcut) shortcut.style.display = 'none';
                 let lastPush = parseInt(localStorage.getItem(GistSync.LAST_PUSH_KEY)) || 0;
                 let lastPull = parseInt(localStorage.getItem(GistSync.LAST_PULL_KEY)) || 0;
                 let lastSync = Math.max(lastPush, lastPull);
@@ -587,16 +590,24 @@
                     el.style.color = '#4ade80';
                 }
             } else if (token && !gid) {
-                el.innerText = `🔌 Token 已设置，等待连接...`;
+                if (shortcut) {
+                    shortcut.style.display = 'block';
+                    shortcut.innerText = '🔌 完成云同步连接';
+                }
+                el.innerText = `🔌 Token 已设置，但还未完成 Gist 连接 · 点击处理`;
                 el.style.color = '#fde68a';
             } else {
-                el.innerText = '💾 本地模式 · 未连云端 / Local Only';
-                el.style.color = '#ccc';
+                if (shortcut) {
+                    shortcut.style.display = 'block';
+                    shortcut.innerText = '☁️ 连接云同步 / Connect Sync';
+                }
+                el.innerText = '💾 本地模式 · 此设备尚未连接云端 · 点击连接';
+                el.style.color = '#fde68a';
             }
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.2 存储层（local + optional Gist 同步） =================
+        // ================= v23.3 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             _lastAutoPull: 0,
@@ -879,7 +890,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.2 Gist 云同步 =================
+        // ================= 数据备份 + v23.3 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -951,7 +962,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.2 Gist 连接 UI 逻辑
+        // v23.3 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
