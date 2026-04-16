@@ -67,6 +67,19 @@ v22.9 improves adaptive transfer across related knowledge points:
 - Answer sheets mark domain-boosted items so the tutor can see why a related item appeared.
 - Domain profile cards show training priority, active error count, and mastered count.
 
+v23.0 integrates the durable error book into regular training:
+
+- Active error-book entries return through a three-part bridge: exact replay, same-tag variation, and same-domain transfer.
+- Exact replay is capped per section so review is deliberate without crowding out new retrieval practice.
+- Same-tag variation is labeled on the paper, making it clear when a generated item is connected to an active mistake.
+- The knowledge map includes an Error-Book Bridge plan that explains how each active error will re-enter training.
+
+v23.1 improves the daily print workflow:
+
+- Tutors can print only the four student-facing AB question sheets from the long page.
+- Answer sheets can be printed separately, reducing accidental answer leakage.
+- The four question sheets are explicitly marked for stable A4 pagination.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

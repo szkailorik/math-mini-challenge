@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v22.9 (领域自适应版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.1 (打印四页优化版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -13,6 +13,11 @@
             body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .sheet { box-shadow: none !important; margin: 0 !important; }
             .no-print { display: none !important; }
+            body.print-questions-only .sheet:not(.question-sheet) { display: none !important; }
+            body.print-questions-only .question-sheet { display: block !important; page-break-after: always; break-after: page; }
+            body.print-questions-only .question-sheet.print-last-question { page-break-after: auto !important; break-after: auto !important; }
+            body.print-answers-only .question-sheet { display: none !important; }
+            body.print-answers-only .ans-sheet { display: block !important; }
         }
         body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
 
@@ -138,6 +143,8 @@
         .reason-weak { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5;}
         .reason-forget { background: #e0e7ff; color: #0284c7; border: 1px solid #93c5fd;}
         .reason-domain { background: #dcfce7; color: #15803d; border: 1px solid #86efac;}
+        .reason-replay { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74;}
+        .reason-variant { background: #fef9c3; color: #854d0e; border: 1px solid #fde047;}
         .level-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-family: sans-serif; font-weight: bold; }
         .focus-strip { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; font-family: sans-serif; font-size: 11px; color: #334155; }
         .focus-pill { border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 7px; background: #f8fafc; }
@@ -188,7 +195,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v22.9</h3>
+            <h3>🧠 专家私教引擎 v23.1</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status">正在检查云端状态...</div>
@@ -200,12 +207,16 @@
                 <button class="ctrl-btn" onclick="window.changeSet(1)">下一套 (Next)</button>
             </div>
 
+            <div class="ctrl-row" style="margin-top:8px;">
+                <button class="ctrl-btn" style="background:#16a34a; color:white;" onclick="window.printQuestionSheets()">🖨️ 打印AB四页</button>
+                <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printAnswerSheets()">🧾 打印答案</button>
+            </div>
             <button class="ctrl-btn" style="background:#059669; color:white; width:100%; margin-top:8px;" onclick="window.showDataModal()">💾 数据备份 / Data Backup</button>
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 22.9 领域自适应版：<br><strong>错题永久保存 · 自动去重计数<br>支持标记已掌握 · 按知识点分组</strong>
+                💡 23.1 打印四页优化版：<br><strong>AB四页一键打印<br>原题回炉 · 同类变式</strong>
             </div>
         </div>
 
@@ -231,7 +242,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v22.9 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.1 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -342,12 +353,12 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v22.9 GitHub Gist 云同步 =================
+        // ================= v23.1 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v29';
+        const SET_CACHE_PREFIX = 'MathSetData_v30';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -410,7 +421,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v22.9', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.1', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -455,7 +466,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v22.9'
+                    version: 'v23.1'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -580,7 +591,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v22.9 存储层（local + optional Gist 同步） =================
+        // ================= v23.1 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             cache: {
@@ -846,7 +857,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v22.9 Gist 云同步 =================
+        // ================= 数据备份 + v23.1 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -916,7 +927,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v22.9 Gist 连接 UI 逻辑
+        // v23.1 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1122,29 +1133,37 @@
                     let setsSinceSeen = currentSet - lastSeenSet;
                     if (lastSeenSet === 0) setsSinceSeen = 5;
                     let forgettingBonus = Math.min(setsSinceSeen * 0.15, 1.5);
+                    let errorSignal = getErrorBookSignal(profile, item.tag);
+                    let errorBookBonus = Math.min(errorSignal.score * 0.12, 1.1);
                     let domainSignal = getDomainSignal(profile, item.tag);
                     let domainBonus = Math.min(domainSignal.score * 0.08, 0.75);
                     // 随机扰动占主导（权重 1.4），避免 tag 顺序固定
-                    let score = random() * 1.2 + (weight * 0.5) + forgettingBonus * 0.7 + domainBonus + phaseLevelBonus(cycle.code, level);
+                    let score = random() * 1.2 + (weight * 0.5) + forgettingBonus * 0.7 + errorBookBonus + domainBonus + phaseLevelBonus(cycle.code, level);
                     let selectReason = 'random';
-                    if (weight > 0 && (weight * 0.5) >= Math.max(forgettingBonus * 0.7, domainBonus)) selectReason = 'weak';
+                    const shouldReplay = errorSignal.exactEntries.length > 0 && (errorSignal.exactCount >= 2 || cycle.code === 3 || random() < 0.45);
+                    if (shouldReplay) selectReason = 'replay';
+                    else if (errorSignal.exactEntries.length > 0) selectReason = 'variant';
+                    else if (weight > 0 && (weight * 0.5) >= Math.max(forgettingBonus * 0.7, domainBonus)) selectReason = 'weak';
                     else if (domainBonus >= 0.35) selectReason = 'domain';
                     else if (forgettingBonus > 0.8) selectReason = 'forget';
-                    return { item, score, weight, level, domainBonus, selectReason };
+                    return { item, score, weight, level, errorSignal, errorBookBonus, domainBonus, selectReason };
                 });
                 scoredPool.sort((a, b) => b.score - a.score);
 
                 let selected = [];
                 let maxWeak = Math.ceil(count * 0.45); let weakCount = 0;
+                let maxReplay = Math.max(1, Math.floor(count * 0.25)); let replayCount = 0;
                 let maxChallenge = cycle.code === 4 ? Math.ceil(count * 0.5) : Math.max(1, Math.floor(count * 0.25));
                 let challengeCount = 0;
                 for (let p of scoredPool) {
                     if (selected.length >= count) break;
+                    if (p.selectReason === 'replay' && replayCount >= maxReplay) p.selectReason = 'variant';
                     const isWeak = p.weight > 0;
                     const isChallenge = p.level >= 4;
                     if (isWeak && weakCount >= maxWeak) continue;
                     if (isChallenge && challengeCount >= maxChallenge && p.weight < 3) continue;
                     selected.push(p);
+                    if (p.selectReason === 'replay') replayCount++;
                     if (isWeak) weakCount++;
                     if (isChallenge) challengeCount++;
                 }
@@ -1155,16 +1174,22 @@
                 // 生成阶段：每道题最多重试 15 次避免撞已出过的题面
                 let result = selected.map(x => {
                     let genItem = null;
-                    for (let t = 0; t < 15; t++) {
-                        let candidate = x.item.gen();
-                        if (!candidate || !candidate.q) continue;
-                        if (!recent.has(candidate.q) && !usedThisPaper.has(candidate.q)) {
-                            genItem = candidate; break;
-                        }
-                        // 兜底：就算仍有冲突，至少保留最后一次结果
-                        genItem = candidate;
+                    if (x.selectReason === 'replay' && x.errorSignal?.exactEntries?.length) {
+                        const entry = pickErrorReplayEntry(x.errorSignal.exactEntries);
+                        if (entry && !usedThisPaper.has(entry.info.q)) genItem = buildErrorReplayItem(entry);
                     }
-                    genItem.reason = x.selectReason;
+                    if (!genItem) {
+                        for (let t = 0; t < 15; t++) {
+                            let candidate = x.item.gen();
+                            if (!candidate || !candidate.q) continue;
+                            if (!recent.has(candidate.q) && !usedThisPaper.has(candidate.q)) {
+                                genItem = candidate; break;
+                            }
+                            // 兜底：就算仍有冲突，至少保留最后一次结果
+                            genItem = candidate;
+                        }
+                    }
+                    genItem.reason = genItem.isErrorReplay ? 'replay' : x.selectReason;
                     genItem.level = x.level;
                     genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
                     usedThisPaper.add(genItem.q);
@@ -1236,6 +1261,69 @@
         function getKnowledgeDomain(tag) {
             return KnowledgeDomains.find(domain => tagMatchesPatterns(tag, domain.patterns)) || null;
         }
+        function getKnowledgeFamily(tag) {
+            return KnowledgeFamilies.find(family => String(tag || '').startsWith(family.prefix)) || null;
+        }
+        function getActiveErrorEntries(profile, tag) {
+            return Object.entries(profile?.errorBook || {})
+                .map(([uid, entry]) => ({ uid, ...entry }))
+                .filter(entry => entry && !entry.mastered && entry.tag === tag && entry.info && entry.info.q && entry.info.a)
+                .map(entry => {
+                    const count = Math.max(1, entry.count || 1);
+                    const severity = entry.grade === 'wrong' ? 2 : 1;
+                    const lastSet = Number(entry.lastSet || 0);
+                    const recency = lastSet ? Math.max(0, 10 - Math.max(0, (window.currentSetNumber || 0) - lastSet)) * 0.15 : 0;
+                    return { ...entry, priority: count * 2 + severity + recency };
+                })
+                .sort((a, b) => b.priority - a.priority || (b.lastSet || 0) - (a.lastSet || 0));
+        }
+        function getErrorBookSignal(profile, tag) {
+            const exactEntries = getActiveErrorEntries(profile, tag);
+            const family = getKnowledgeFamily(tag);
+            const domain = getKnowledgeDomain(tag);
+            let exactCount = 0;
+            let familyCount = 0;
+            let domainCount = 0;
+            Object.values(profile?.errorBook || {}).forEach(entry => {
+                if (!entry || entry.mastered || !entry.tag) return;
+                const count = Math.max(1, entry.count || 1);
+                if (entry.tag === tag) exactCount += count;
+                else if (family && String(entry.tag).startsWith(family.prefix)) familyCount += count;
+                else if (domain && getKnowledgeDomain(entry.tag)?.id === domain.id) domainCount += count;
+            });
+            return {
+                exactEntries,
+                exactCount,
+                familyCount,
+                domainCount,
+                score: Math.min(exactCount * 2.2 + familyCount * 0.9 + domainCount * 0.25, 10)
+            };
+        }
+        function pickErrorReplayEntry(entries) {
+            const valid = (entries || []).filter(entry => entry?.info?.q && entry?.info?.a);
+            if (!valid.length) return null;
+            const total = valid.reduce((sum, entry) => sum + Math.max(1, entry.priority || entry.count || 1), 0);
+            let roll = random() * total;
+            for (const entry of valid) {
+                roll -= Math.max(1, entry.priority || entry.count || 1);
+                if (roll <= 0) return entry;
+            }
+            return valid[0];
+        }
+        function buildErrorReplayItem(entry) {
+            const tip = getKnowledgeTip(entry.tag);
+            const step = entry.info.step || `先复盘上次错误，再按知识点重新解一遍。${tip.advice}`;
+            return {
+                tag: entry.tag,
+                q: entry.info.q,
+                a: entry.info.a,
+                step: `[错题回炉 Replay] ${step}`,
+                replayUid: entry.uid,
+                replayCount: Math.max(1, entry.count || 1),
+                sourceSet: entry.lastSet || entry.firstSet || '',
+                isErrorReplay: true
+            };
+        }
         function getDomainSignal(profile, tag) {
             const domain = getKnowledgeDomain(tag);
             if (!domain || !profile) return { domain, weightSum: 0, activeErrors: 0, score: 0 };
@@ -1288,6 +1376,8 @@
         window.KnowledgeDomains = KnowledgeDomains;
         window.FallbackAdvice = FallbackAdvice;
         window.getKnowledgeDomain = getKnowledgeDomain;
+        window.getErrorBookSignal = getErrorBookSignal;
+        window.buildErrorReplayItem = buildErrorReplayItem;
         window.getDomainSignal = getDomainSignal;
         window.summarizeDomainSignals = summarizeDomainSignals;
         window.getKnowledgeTip = getKnowledgeTip;
@@ -1699,6 +1789,8 @@
             if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
             else if (q.reason === 'forget') reasonBadge = `<span class="reason-badge reason-forget">🔄 遗忘唤醒 / Memory Review</span>`;
             else if (q.reason === 'domain') reasonBadge = `<span class="reason-badge reason-domain">🧭 领域补强 / Domain Boost</span>`;
+            else if (q.reason === 'replay') reasonBadge = `<span class="reason-badge reason-replay">🔥 错题回炉 / Error Replay</span>`;
+            else if (q.reason === 'variant') reasonBadge = `<span class="reason-badge reason-variant">🧩 同类变式 / Variant Practice</span>`;
             let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
 
             let gradeType = '';
@@ -1716,6 +1808,8 @@
             if (q.reason === 'weak') qColor = 'color: #d32f2f; font-weight:bold;';
             else if (q.reason === 'forget') qColor = 'color: #0284c7; font-weight:bold;';
             else if (q.reason === 'domain') qColor = 'color: #15803d; font-weight:bold;';
+            else if (q.reason === 'replay') qColor = 'color: #c2410c; font-weight:bold;';
+            else if (q.reason === 'variant') qColor = 'color: #854d0e; font-weight:bold;';
 
             return `
             <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
@@ -1754,6 +1848,8 @@
                         if (q.reason === 'weak') colorStyle = 'color: #d32f2f; font-weight: bold;';
                         else if (q.reason === 'forget') colorStyle = 'color: #0284c7; font-weight: bold;';
                         else if (q.reason === 'domain') colorStyle = 'color: #15803d; font-weight: bold;';
+                        else if (q.reason === 'replay') colorStyle = 'color: #c2410c; font-weight: bold;';
+                        else if (q.reason === 'variant') colorStyle = 'color: #854d0e; font-weight: bold;';
                         let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
                         return `<div class="item ${heightClass}"><div class="math-row" style="${colorStyle}"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix} ${levelBadge}</div></div>`;
                     }).join('')}
@@ -1815,8 +1911,8 @@
                         `<div class="ans-section"><div class="ans-section-title">五、分数四则运算 (Fraction Ops)</div>${buildAnsGrid(data.l_f, 'Lorik', '分数四则运算', lorikSession)}</div>` +
                         `<div class="ans-section"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
 
-            const getSheetHTML = (title, name, content, tScore, stamp) => `
-                <div class="sheet">
+            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '') => `
+                <div class="sheet question-sheet ${extraClass}">
                     ${stamp}
                     <div class="header">
                         <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
@@ -1851,7 +1947,7 @@
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI) +
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, totalScore, stampKAI) +
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, totalScore, stampLorik) +
-                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik, 'print-last-question') +
                 getAnsSheetHTML('KAI', k_ans, !!kaiSession) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession);
         }
 
@@ -2179,7 +2275,40 @@
                 }).join('')
                 : `<tr><td colspan="5" style="color:#10b981; font-weight:bold;">当前没有明显弱项。继续保持稳定练习。</td></tr>`;
 
+            const activeErrorEntries = Object.entries(profiles).flatMap(([student, profile]) =>
+                Object.entries(profile.errorBook || {})
+                    .filter(([, entry]) => entry && !entry.mastered && entry.tag)
+                    .map(([uid, entry]) => ({ student, uid, ...entry }))
+            ).sort((a, b) => (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0));
+            const bridgeHtml = activeErrorEntries.length
+                ? activeErrorEntries.slice(0, 16).map(entry => {
+                    const domain = getKnowledgeDomain(entry.tag);
+                    const profile = profiles[entry.student] || {};
+                    const signal = getErrorBookSignal(profile, entry.tag);
+                    const mode = (entry.count || 1) >= 2 ? "原题回炉 + 同类变式" : "同类变式 + 领域迁移";
+                    const pressure = signal.score >= 6 ? "高优先级" : signal.score >= 3 ? "中优先级" : "低优先级";
+                    return `<tr>
+                        <td>${entry.student}</td>
+                        <td>${entry.tag}</td>
+                        <td>${domain ? domain.name : "综合"}</td>
+                        <td>${entry.count || 1}</td>
+                        <td>Set ${entry.lastSet || "-"}</td>
+                        <td>${mode}</td>
+                        <td>${pressure}</td>
+                    </tr>`;
+                }).join('')
+                : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
+
             const html = `
+                <div class="report-section">
+                    <h3>🔥 错题联合训练计划 / Error-Book Bridge</h3>
+                    <div style="padding:15px; max-height:260px; overflow:auto;">
+                        <table class="archive-table">
+                            <tr><th>学生</th><th>Tag</th><th>领域</th><th>错次</th><th>最近</th><th>进入训练方式</th><th>优先级</th></tr>
+                            ${bridgeHtml}
+                        </table>
+                    </div>
+                </div>
                 <div class="report-section">
                     <h3>🎯 当前弱项 / Active Weak Points</h3>
                     <div style="padding:15px; max-height:260px; overflow:auto;">
@@ -2209,6 +2338,27 @@
             const miniPanel = document.getElementById('mini-control-panel');
             if (mainPanel.style.display !== 'none') { mainPanel.style.display = 'none'; miniPanel.style.display = 'block'; }
             else { mainPanel.style.display = 'flex'; miniPanel.style.display = 'none'; }
+        };
+
+        function clearPrintMode() {
+            document.body.classList.remove('print-questions-only', 'print-answers-only');
+        }
+
+        function runPrintMode(mode) {
+            clearPrintMode();
+            document.body.classList.add(mode);
+            setTimeout(() => {
+                window.print();
+                setTimeout(clearPrintMode, 1200);
+            }, 50);
+        }
+
+        window.printQuestionSheets = function() {
+            runPrintMode('print-questions-only');
+        };
+
+        window.printAnswerSheets = function() {
+            runPrintMode('print-answers-only');
         };
 
         // ================= 交互控制与数据编码闭环 =================

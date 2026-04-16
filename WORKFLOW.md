@@ -29,7 +29,53 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v22.9 Iteration Notes
+## Current v23.1 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a question-only print mode that hides answers and non-question sheets.
+- Open questions: none.
+- Risks: browser print dialogs still depend on user printer defaults such as scaling.
+- Next steps: recommend default scale or "fit to printable area" if a specific printer clips edges.
+
+### Iteration 2
+
+- What I changed: marked the four AB sheets as `question-sheet` and the fourth as `print-last-question` for stable A4 pagination.
+- Open questions: none.
+- Risks: if future sections grow taller, the fixed A4 sheet may overflow.
+- Next steps: keep runtime and visual checks tied to any future content-density changes.
+
+### Iteration 3
+
+- What I changed: added answer-only printing, docs, and validation that each generated set has exactly four printable question sheets.
+- Open questions: none.
+- Risks: validation is structural and does not open the native print dialog.
+- Next steps: add browser screenshot or PDF export checks if print layout changes often.
+
+## Previous v23.0 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added exact error-book replay scoring and capped replay per section.
+- Open questions: none.
+- Risks: exact replay should stay limited so students still practice retrieval transfer.
+- Next steps: tune replay rate after observing whether repeated misses clear faster.
+
+### Iteration 2
+
+- What I changed: added same-tag variation labels and kept domain transfer as the third bridge layer.
+- Open questions: none.
+- Risks: variant labels may need tutor explanation the first time students see them.
+- Next steps: add short parent-facing copy if the badge vocabulary feels unclear.
+
+### Iteration 3
+
+- What I changed: added the Error-Book Bridge plan to the knowledge map and validation coverage for replay bridging.
+- Open questions: none.
+- Risks: bridge priority is based on local app data, not a formal mastery scale.
+- Next steps: consider a weekly “错题清零” routine view once enough sessions accumulate.
+
+## Previous v22.9 Iteration Notes
 
 ### Iteration 1
 

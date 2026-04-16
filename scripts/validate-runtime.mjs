@@ -6,7 +6,7 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v29';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v30';
 
 const store = new Map();
 const localStorage = {
@@ -101,12 +101,16 @@ function assertPaper(setNumber) {
   const paper = elements.get('paper-container')?.innerHTML || '';
   const setDisplay = String(elements.get('set-num-display')?.innerText || '');
   const sheetCount = (paper.match(/class="sheet/g) || []).length;
+  const questionSheetCount = (paper.match(/question-sheet/g) || []).length;
 
   if (setDisplay !== String(setNumber)) {
     throw new Error(`Expected set ${setNumber}, got ${setDisplay || '(empty)'}`);
   }
   if (sheetCount < 6) {
     throw new Error(`Expected at least 6 sheets for set ${setNumber}, got ${sheetCount}`);
+  }
+  if (questionSheetCount !== 4 || !paper.includes('print-last-question')) {
+    throw new Error(`Expected exactly 4 printable question sheets for set ${setNumber}, got ${questionSheetCount}`);
   }
   if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Detailed Solutions')) {
     throw new Error(`Generated paper for set ${setNumber} is missing challenge or answer sections`);
@@ -188,6 +192,41 @@ const sampleSummary = context.window.summarizeDomainSignals?.([
 if (!Array.isArray(sampleSummary) || !sampleSummary.some(item => item.domain.id === 'fraction' && item.score > 0)) {
   throw new Error('Domain signal summary is not reporting fraction weakness');
 }
+const sampleErrorSignal = context.window.getErrorBookSignal?.(
+  { errorBook: { e3: { tag: 'k_dmul_basic', count: 4, mastered: false, info: { q: '2 &times; 3', a: '6' } } } },
+  'k_dmul_basic'
+);
+if (!sampleErrorSignal || sampleErrorSignal.exactCount < 4 || sampleErrorSignal.score <= 0) {
+  throw new Error('Error-book signal scoring is not reporting exact active errors');
+}
+const sampleReplay = context.window.buildErrorReplayItem?.({
+  uid: 'e3',
+  tag: 'k_dmul_basic',
+  count: 4,
+  lastSet: 72,
+  info: { q: '2 &times; 3', a: '6', step: '2乘3等于6。' },
+});
+if (!sampleReplay?.isErrorReplay || sampleReplay.q !== '2 &times; 3' || !sampleReplay.step.includes('Replay')) {
+  throw new Error('Error replay item builder is not producing replay items');
+}
+if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
+  throw new Error('Print helper functions are not available');
+}
+context.window.StorageDB.cache.KAI = {
+  weights: { k_dmul_basic: 50 },
+  lastSeen: {},
+  history: [],
+  errorBook: {
+    replay1: { tag: 'k_dmul_basic', grade: 'wrong', count: 5, lastSet: 72, mastered: false, info: { q: '2 &times; 3', a: '6', step: '2乘3等于6。' } },
+  },
+};
+context.window.currentSetNumber = 105;
+context.window.renderPaper();
+const replayPaper = elements.get('paper-container')?.innerHTML || '';
+if (!replayPaper.includes('2 &times; 3') || !replayPaper.includes('Error Replay')) {
+  throw new Error('Active error-book item was not bridged back into generated training');
+}
+context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
   context.window.renderPaper();
