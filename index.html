@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.3 (云端连接引导版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.4 (本套批改报告版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -195,7 +195,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v23.3</h3>
+            <h3>🧠 专家私教引擎 v23.4</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -213,11 +213,12 @@
                 <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printAnswerSheets()">🧾 打印答案</button>
             </div>
             <button class="ctrl-btn" style="background:#059669; color:white; width:100%; margin-top:8px;" onclick="window.showDataModal()">💾 数据备份 / Data Backup</button>
+            <button class="ctrl-btn" style="background:#dc2626; color:white; width:100%; margin-top:6px;" onclick="window.showSetReview()">📋 本套批改报告 / Set Review</button>
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.3 云端连接引导版：<br><strong>AB四页一键打印<br>自动云端合并同步</strong>
+                💡 23.4 本套批改报告版：<br><strong>AB四页一键打印<br>错题题号集中复盘</strong>
             </div>
         </div>
 
@@ -243,7 +244,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v23.3 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.4 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -354,7 +355,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.3 GitHub Gist 云同步 =================
+        // ================= v23.4 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -424,7 +425,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.3', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.4', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -470,7 +471,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v23.3'
+                    version: 'v23.4'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -607,7 +608,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.3 存储层（local + optional Gist 同步） =================
+        // ================= v23.4 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             _lastAutoPull: 0,
@@ -890,7 +891,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.3 Gist 云同步 =================
+        // ================= 数据备份 + v23.4 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -962,7 +963,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.3 Gist 连接 UI 逻辑
+        // v23.4 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -2383,6 +2384,70 @@
 
         window.closeReportModal = function() { document.getElementById('report-modal').style.display = 'none'; };
 
+        function findSetSession(profile, setNum) {
+            return (profile?.history || []).slice().reverse().find(session => session.set === setNum) || null;
+        }
+
+        function buildSetReviewSection(student, setNum, highlightStudent) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            const isHighlight = !highlightStudent || highlightStudent === student;
+            if (!session) {
+                return `
+                <div class="report-section">
+                    <h3>${isHighlight ? '📋' : '🗂️'} ${student} · Set ${setNum}</h3>
+                    <div style="padding:15px; color:#64748b;">还没有提交这套卷子的批改记录。</div>
+                </div>`;
+            }
+
+            const details = (session.details || []).slice().sort((a, b) => {
+                const ia = a.info || {}, ib = b.info || {};
+                return String(ia.sec || '').localeCompare(String(ib.sec || '')) || (ia.num || 0) - (ib.num || 0);
+            });
+            const allGrades = session.allGrades || [];
+            const wrongCount = details.filter(item => item.grade === 'wrong').length;
+            const carelessCount = details.filter(item => item.grade === 'careless').length;
+            const perfectCount = Math.max(0, allGrades.length - details.length);
+
+            const rows = details.length ? details.map((detail, idx) => {
+                const info = detail.info || {};
+                const tip = getKnowledgeTip(detail.tag);
+                const gradeText = detail.grade === 'wrong' ? '概念错误' : '粗心失误';
+                const gradeColor = detail.grade === 'wrong' ? '#dc2626' : '#b45309';
+                return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${info.sec || '-'}</td>
+                        <td>${info.num ? `第 ${info.num} 题` : '-'}</td>
+                        <td><span style="color:${gradeColor}; font-weight:bold;">${gradeText}</span></td>
+                        <td><div class="math-row">${info.q || '-'}</div></td>
+                        <td><div class="math-row"><strong class="highlight">${info.a || '-'}</strong></div></td>
+                        <td>${tip.name}<br><span style="color:#9a3412; font-size:12px;">${info.step || tip.advice}</span></td>
+                    </tr>`;
+            }).join('') : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">本套没有错题。可以进入下一套，或做少量口算保持手感。</td></tr>`;
+
+            return `
+            <div class="report-section" style="${isHighlight ? 'border-color:#dc2626;' : ''}">
+                <h3>${isHighlight ? '📋' : '🗂️'} ${student} · Set ${setNum} 批改报告</h3>
+                <div style="padding:12px 15px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:13.5px;">
+                    ✅ 正确 ${perfectCount} 题 · ⚠️ 粗心 ${carelessCount} 题 · ❌ 概念 ${wrongCount} 题 · 📓 错题已进入错题本和后续训练
+                </div>
+                <div style="padding:15px; max-height:360px; overflow:auto;">
+                    <table class="archive-table">
+                        <tr><th>#</th><th>分区</th><th>纸面题号</th><th>类型</th><th>原题</th><th>正确答案</th><th>复盘提醒</th></tr>
+                        ${rows}
+                    </table>
+                </div>
+            </div>`;
+        }
+
+        window.showSetReview = function(setNum = window.currentSetNumber, highlightStudent = null) {
+            document.getElementById('modal-title').innerText = `📋 Set ${setNum} 本套批改报告 / Set Review`;
+            const html = buildSetReviewSection('KAI', setNum, highlightStudent) + buildSetReviewSection('Lorik', setNum, highlightStudent);
+            document.getElementById('report-content-area').innerHTML = html;
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
         window.togglePanel = function() {
             const mainPanel = document.getElementById('main-control-panel');
             const miniPanel = document.getElementById('mini-control-panel');
@@ -2459,6 +2524,7 @@
                 setTimeout(() => toast.style.opacity = 0, 3000);
 
                 window.renderPaper();
+                window.showSetReview(window.currentSetNumber, student);
             } else {
                 alert(`请为 ${student} 批改哦！ (Please grade first!)`);
             }

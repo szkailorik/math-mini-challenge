@@ -215,6 +215,9 @@ if (typeof context.window.printQuestionSheets !== 'function' || typeof context.w
 if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
   throw new Error('Automatic cloud pull helpers are not available');
 }
+if (typeof context.window.showSetReview !== 'function') {
+  throw new Error('Set review report helper is not available');
+}
 context.window.StorageDB.cache.KAI = {
   weights: { k_dmul_basic: 50 },
   lastSeen: {},
@@ -228,6 +231,20 @@ context.window.renderPaper();
 const replayPaper = elements.get('paper-container')?.innerHTML || '';
 if (!replayPaper.includes('2 &times; 3') || !replayPaper.includes('Error Replay')) {
   throw new Error('Active error-book item was not bridged back into generated training');
+}
+context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+context.window.StorageDB.cache.KAI.history = [{
+  set: 106,
+  date: 'validator',
+  ts: Date.now(),
+  details: [{ tag: 'k_dmul_basic', grade: 'wrong', uid: 'r1', info: { sec: '复杂乘法', num: 2, q: '2 &times; 3', a: '6', step: '2乘3等于6。' } }],
+  allGrades: [{ tag: 'k_dmul_basic', grade: 'wrong' }, { tag: 'k_dmul_scale', grade: 'perfect' }],
+  weightAdjustments: [],
+}];
+context.window.showSetReview(106, 'KAI');
+const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
+if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('第 2 题') || !reviewHtml.includes('2 &times; 3') || !reviewHtml.includes('6')) {
+  throw new Error('Set review report is missing set number, paper number, question, or answer');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {

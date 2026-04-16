@@ -49,7 +49,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
 - `printQuestionSheets` / `printAnswerSheets`: temporarily applies print-only body modes so daily AB sheets and answer sheets can be printed separately from the long page.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, four printable question sheets, and cloud auto-pull helpers.
+- `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, four printable question sheets, cloud auto-pull helpers, and set-review report output.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety

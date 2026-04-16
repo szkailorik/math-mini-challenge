@@ -93,6 +93,12 @@ v23.3 improves sync onboarding:
 - The sync status line is clickable and opens the Gist connection panel.
 - Copy explicitly says the current device is not connected yet, instead of only saying "local mode".
 
+v23.4 adds a current-set grading report:
+
+- After a tutor submits grades, a modal report summarizes the exact wrong or careless items in that set.
+- Each row includes learner, section, paper question number, error type, original question, correct answer, and review advice.
+- The report can also be reopened from the control panel for paper-to-screen review with the child.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

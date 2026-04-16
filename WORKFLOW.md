@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.3 Iteration Notes
+## Current v23.4 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a current-set review report button to the control panel.
+- Open questions: none.
+- Risks: reports only show submitted grading records, so unsubmitted learners are clearly marked as pending.
+- Next steps: keep the report tied to the paper question number for easy parent-child review.
+
+### Iteration 2
+
+- What I changed: automatically opens the set report after grade submission.
+- Open questions: none.
+- Risks: the modal adds one more step after submit, but it directly supports paper correction.
+- Next steps: consider a print-friendly set-review summary if parents want a separate correction slip.
+
+### Iteration 3
+
+- What I changed: added validation and docs for set-review output including question number, original question, and correct answer.
+- Open questions: none.
+- Risks: the report depends on `info.num` stored by answer rows; future answer-row changes must preserve it.
+- Next steps: include report checks in every runtime validation pass.
+
+## Previous v23.3 Iteration Notes
 
 ### Iteration 1
 
