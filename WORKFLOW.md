@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.4 Iteration Notes
+## Current v23.5 Iteration Notes
+
+### Iteration 1
+
+- What I changed: replaced timer-only print cleanup with `afterprint` and print media lifecycle cleanup, and updated print CSS so visible sheets own pagination during print.
+- Open questions: none.
+- Risks: browser print engines still depend on user scaling and printer hardware margins, so a manual preview check remains part of release confirmation.
+- Next steps: if print regressions keep recurring, add browser PDF snapshot checks in CI.
+
+### Iteration 2
+
+- What I changed: guaranteed Lorik section II includes decimal-dividend, decimal-divisor, and double-decimal division practice on every generated set.
+- Open questions: none.
+- Risks: more decimal division in one section raises local density slightly, so future tuning may rebalance difficulty if Lorik sets feel too narrow.
+- Next steps: monitor whether the three-way decimal mix should rotate by phase or remain fixed every set.
+
+### Iteration 3
+
+- What I changed: updated README, product/development docs, and runtime validation for print lifecycle and Lorik decimal-division coverage.
+- Open questions: none.
+- Risks: validation confirms structure and helper behavior, but native print preview still needs occasional manual verification.
+- Next steps: keep the print-preview smoke test in every release checklist that touches layout or print CSS.
+
+## Previous v23.4 Iteration Notes
 
 ### Iteration 1
 

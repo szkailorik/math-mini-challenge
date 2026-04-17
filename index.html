@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.4 (本套批改报告版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.5 (打印修复版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -11,13 +11,31 @@
         @page { size: A4; margin: 0 !important; }
         @media print {
             body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .sheet { box-shadow: none !important; margin: 0 !important; }
+            .sheet {
+                width: 210mm !important;
+                min-height: 297mm !important;
+                height: auto !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            .sheet.question-sheet { overflow: hidden !important; }
+            .sheet.ans-sheet { overflow: visible !important; }
             .no-print { display: none !important; }
+            .modal-overlay, #toast-msg { display: none !important; }
             body.print-questions-only .sheet:not(.question-sheet) { display: none !important; }
-            body.print-questions-only .question-sheet { display: block !important; page-break-after: always; break-after: page; }
+            body.print-questions-only .question-sheet {
+                display: block !important;
+                page-break-after: always !important;
+                break-after: page !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid-page !important;
+            }
             body.print-questions-only .question-sheet.print-last-question { page-break-after: auto !important; break-after: auto !important; }
             body.print-answers-only .question-sheet { display: none !important; }
-            body.print-answers-only .ans-sheet { display: block !important; }
+            body.print-answers-only .ans-sheet { display: block !important; page-break-after: always !important; break-after: page !important; }
+            body.print-answers-only .ans-sheet:last-of-type { page-break-after: auto !important; break-after: auto !important; }
         }
         body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
 
@@ -195,7 +213,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v23.4</h3>
+            <h3>🧠 专家私教引擎 v23.5</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -218,7 +236,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.4 本套批改报告版：<br><strong>AB四页一键打印<br>错题题号集中复盘</strong>
+                💡 23.5 打印修复版：<br><strong>AB四页稳定打印<br>Lorik 小数除法补强</strong>
             </div>
         </div>
 
@@ -244,7 +262,7 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v23.4 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.5 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -355,7 +373,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.4 GitHub Gist 云同步 =================
+        // ================= v23.5 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -425,7 +443,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.4', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.5', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -471,7 +489,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v23.4'
+                    version: 'v23.5'
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -608,7 +626,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.4 存储层（local + optional Gist 同步） =================
+        // ================= v23.5 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             _lastAutoPull: 0,
@@ -891,7 +909,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.4 Gist 云同步 =================
+        // ================= 数据备份 + v23.5 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -963,7 +981,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.4 Gist 连接 UI 逻辑
+        // v23.5 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1275,6 +1293,9 @@
             "boss_remainder": { name: "剩余定理(画图法)", advice: "遇到'剩下钱的几分之几'，必须画 Bar Model 线段图，把剩余部分重新定义为一个整体切块。" },
             "l_mul_near100": { name: "乘法-接近整百补偿", advice: "把98看成100-2，把102看成100+2，先算整百倍，再补偿。" },
             "l_div_scale10": { name: "除法-末尾0缩放", advice: "先划去被除数和除数共同的0，降低位数后再做除法。" },
+            "l_div_decimal_dividend": { name: "小数除法-被除数带小数点", advice: "先估商的大致范围，再按数位列式；被除数有小数点时，商上的小数点要和竖式对齐。" },
+            "l_div_decimal_divisor": { name: "小数除法-除数带小数点", advice: "除数有小数点时，被除数和除数同时扩大10或100倍，把除数先变成整数再算。" },
+            "l_div_decimal_both": { name: "小数除法-被除数和除数都有小数点", advice: "先统一扩大成整数除法，再回头检查商的小数点位置，最后用乘法验算。" },
             "l_sub_100k": { name: "减法-整万连续借位", advice: "整万数减法不能直接逐位相减，要从最高位连续借位。" },
             "l_fmix_sub": { name: "异分母相减", advice: "基础通分运算不熟练。需要强化寻找最小公倍数的能力。" },
             "l_fmix_ofwhole": { name: "分数-求一个数的几分之几", advice: "先用总数除以分母求一份，再乘分子，避免直接大数乘分数。" },
@@ -1293,13 +1314,14 @@
             { prefix: "k_fcalc_", name: "分数运算-顺序与约分", advice: "先处理括号和除法变乘法，连乘时优先交叉约分，最后再化成最简分数或带分数。" },
             { prefix: "k_oly_", name: "简算-结构识别", advice: "先找共同因数、接近整百整千的数、或可裂项的结构，再决定用分配律、补偿法还是约分。" },
             { prefix: "l_mul_", name: "乘法-位值与补偿", advice: "多位数乘法先估数量级；遇到25、99、101、末尾0时优先考虑凑整或补偿。" },
+            { prefix: "l_div_decimal_", name: "小数除法-同倍扩大与验算", advice: "先把除数变成整数，再检查商的小数点位置，最后用商乘除数反推被除数。" },
             { prefix: "l_div_", name: "除法-缩放与反推", advice: "先观察除数是否能缩放或凑整，再用乘法反推检查商是否合理。" },
             { prefix: "l_sub_", name: "减法-退位检查", advice: "跨0退位时每一位都要写借位标记，算完用差加减数反查。" },
             { prefix: "l_fmix_", name: "分数混合-通分与顺序", advice: "同分母直接算，异分母先通分；混合运算先括号，再乘除，最后加减。" },
             { prefix: "l_bmix_", name: "混合简算-优先级", advice: "先看括号和乘除优先级，再找125、25、99、101等凑整结构。" }
         ];
         const KnowledgeDomains = [
-            { id: "decimal", name: "小数与位值", patterns: ["k_dmul_", "k_ddiv_"], desc: "训练小数点移动、数量级估算、补0占位和同倍扩大。" },
+            { id: "decimal", name: "小数与位值", patterns: ["k_dmul_", "k_ddiv_", "l_div_decimal_"], desc: "训练小数点移动、数量级估算、补0占位和同倍扩大。" },
             { id: "integer", name: "整数乘除与退位", patterns: ["l_mul_", "l_div_", "k_sub_", "l_sub_"], desc: "训练竖式位值、退位链、商中间0和反推验算。" },
             { id: "fraction", name: "分数与互化", patterns: ["k_fcalc_", "l_fmix_", "k_conv_", "l_conv_"], desc: "训练通分、约分、分数小数百分数互化和分数意义。" },
             { id: "equation", name: "方程与未知数", patterns: ["k_eq_"], desc: "训练逆运算、未知数位置判断和两步方程顺序。" },
@@ -1602,15 +1624,57 @@
                 { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
                 { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
             ], "Lorik", 4),
-            div: () => Engine.weightedSelect([
-                { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
-                { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
-                { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
-                { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
-                { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } },
-                { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } },
-                { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
-            ], "Lorik", 4),
+            div: () => {
+                const integerDivision = Engine.weightedSelect([
+                    { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                    { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                    { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
+                    { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
+                    { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
+                ], "Lorik", 1);
+                const decimalDividend = Engine.weightedSelect([
+                    { tag: "l_div_decimal_dividend", gen: () => {
+                        let divisor = Engine.randInt(12,48);
+                        let quotient = Engine.randInt(12,96) / 10;
+                        let dividend = divisor * quotient;
+                        return {
+                            tag:"l_div_decimal_dividend",
+                            q:`${dividend.toFixed(1)} &divide; ${divisor}`,
+                            a:formatDecimal(quotient),
+                            step:`先估商在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间，再按整数除法列式，商的小数点与被除数对齐。`
+                        };
+                    } },
+                    { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } }
+                ], "Lorik", 1);
+                const decimalDivisor = Engine.weightedSelect([
+                    { tag: "l_div_decimal_divisor", gen: () => {
+                        let divisor = Engine.randChoice([0.2, 0.4, 0.5, 0.8, 1.2, 2.5]);
+                        let quotient = Engine.randChoice([12, 15, 18, 24, 32, 36, 45]);
+                        let dividend = divisor * quotient;
+                        return {
+                            tag:"l_div_decimal_divisor",
+                            q:`${formatDecimal(dividend)} &divide; ${divisor.toFixed(1)}`,
+                            a:formatDecimal(quotient),
+                            step:`把被除数和除数同时扩大10倍，先化成整数除法 ${formatDecimal(dividend * 10)} &divide; ${formatDecimal(divisor * 10)}。`
+                        };
+                    } }
+                ], "Lorik", 1);
+                const doubleDecimal = Engine.weightedSelect([
+                    { tag: "l_div_decimal_both", gen: () => {
+                        let divisor = Engine.randChoice([1.2, 1.5, 2.4, 2.5, 3.2]);
+                        let quotient = Engine.randChoice([1.5, 2.4, 3.5, 4.8, 6.4, 7.5]);
+                        let dividend = divisor * quotient;
+                        return {
+                            tag:"l_div_decimal_both",
+                            q:`${dividend.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')} &divide; ${divisor.toFixed(1)}`,
+                            a:formatDecimal(quotient),
+                            step:`被除数和除数都带小数点时，同乘10先变成 ${formatDecimal(dividend * 10)} &divide; ${formatDecimal(divisor * 10)}，再做整数除法。`
+                        };
+                    } },
+                    { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } }
+                ], "Lorik", 1);
+                return Engine.shuffle([...integerDivision, ...decimalDividend, ...decimalDivisor, ...doubleDecimal]);
+            },
             sub: () => Engine.weightedSelect([
                 { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
                 { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
@@ -1949,7 +2013,7 @@
                         `<div class="ans-section"><div class="ans-section-title">六、简便运算 (Shortcut Math)</div>${buildAnsGrid(data.k_o, 'KAI', '奥数混合运算', kaiSession)}</div>`;
 
             let l_p1 = buildQSection(`一、 进阶竖式乘法`, `I. Advanced Vertical Multiplication`, '(每题2分 / 2 pts each)', data.l_m, 'h-vert', 2) +
-                       buildQSection(`二、 进阶竖式除法`, `II. Advanced Vertical Division`, '(注意商中间0 / Watch for 0 in quotient)', data.l_d, 'h-vert', 2) +
+                       buildQSection(`二、 进阶竖式除法`, `II. Advanced Vertical Division`, '(含小数被除数/除数 / Includes decimal dividend & divisor)', data.l_d, 'h-vert', 2) +
                        buildQSection(`三、 大数跨位退位减法`, `III. Large Number Subtraction with Regrouping`, '(列竖式 / Draft in blank)', data.l_s, 'h-sub', 2);
             let l_p2 = buildQSection(`四、 分数与小数互化及大小比较`, `IV. Fraction & Decimal Conversion and Comparison`, '(每空0.5分 / 0.5 pts each)', data.l_c, 'h-conv', 4) +
                        buildQSection(`五、 多步混合分数运算`, `V. Multi-Step Fraction Operations`, '(顺序已洗牌 / Shuffled order)', data.l_f, 'h-frac', 3) +
@@ -2455,17 +2519,56 @@
             else { mainPanel.style.display = 'flex'; miniPanel.style.display = 'none'; }
         };
 
+        let printCleanupTimer = null;
+        let printMediaQuery = null;
+
         function clearPrintMode() {
+            if (printCleanupTimer) {
+                clearTimeout(printCleanupTimer);
+                printCleanupTimer = null;
+            }
             document.body.classList.remove('print-questions-only', 'print-answers-only');
         }
 
+        function schedulePrintCleanupFallback() {
+            if (printCleanupTimer) clearTimeout(printCleanupTimer);
+            printCleanupTimer = setTimeout(() => {
+                clearPrintMode();
+            }, 30000);
+        }
+
+        function ensurePrintLifecycleHooks() {
+            if (typeof window.addEventListener === 'function' && !window.__printCleanupBound) {
+                window.addEventListener('afterprint', clearPrintMode);
+                window.__printCleanupBound = true;
+            }
+            if (typeof window.matchMedia === 'function' && !printMediaQuery) {
+                printMediaQuery = window.matchMedia('print');
+                if (typeof printMediaQuery.addEventListener === 'function') {
+                    printMediaQuery.addEventListener('change', event => {
+                        if (!event.matches) clearPrintMode();
+                    });
+                } else if (typeof printMediaQuery.addListener === 'function') {
+                    printMediaQuery.addListener(event => {
+                        if (!event.matches) clearPrintMode();
+                    });
+                }
+            }
+        }
+
         function runPrintMode(mode) {
+            ensurePrintLifecycleHooks();
             clearPrintMode();
             document.body.classList.add(mode);
-            setTimeout(() => {
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
                 window.print();
-                setTimeout(clearPrintMode, 1200);
-            }, 50);
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(triggerPrint));
+            } else {
+                setTimeout(triggerPrint, 50);
+            }
         }
 
         window.printQuestionSheets = function() {

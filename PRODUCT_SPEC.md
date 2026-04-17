@@ -99,6 +99,12 @@ v23.4 adds a current-set grading report:
 - Each row includes learner, section, paper question number, error type, original question, correct answer, and review advice.
 - The report can also be reopened from the control panel for paper-to-screen review with the child.
 
+v23.5 strengthens print reliability and Lorik division coverage:
+
+- Question-sheet printing now uses print lifecycle cleanup instead of a short timer, reducing browser-dependent blank-page failures.
+- Print layout uses visible-sheet pagination during print, instead of relying on fixed page-height boxes alone.
+- Lorik section II now guarantees decimal division practice across three forms: decimal dividend, decimal divisor, and both dividend and divisor as decimals.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

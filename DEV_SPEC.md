@@ -47,10 +47,11 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
-- `printQuestionSheets` / `printAnswerSheets`: temporarily applies print-only body modes so daily AB sheets and answer sheets can be printed separately from the long page.
+- `printQuestionSheets` / `printAnswerSheets`: switches the body into print-only modes for question sheets or answer sheets, then relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
+- `GenLorik.div`: guarantees Lorik section II includes one whole-number division item plus decimal-dividend, decimal-divisor, and double-decimal division practice.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, four printable question sheets, cloud auto-pull helpers, and set-review report output.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, Lorik decimal-division coverage, print lifecycle helpers, four printable question sheets, cloud auto-pull helpers, and set-review report output.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -86,6 +87,8 @@ python3 -m http.server 8080
 - Open the error book, mark an item mastered, then move it back.
 - Export JSON and import it in a fresh browser profile.
 - Try image export after `html2canvas` has loaded.
+- Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
+- Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
 
 ## GitHub Connection
 

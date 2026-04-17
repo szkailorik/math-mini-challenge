@@ -23,13 +23,29 @@ const localStorage = {
 
 const elements = new Map();
 function makeElement(id) {
+  const classNames = new Set();
   return {
     id,
     style: {},
+    dataset: {},
     disabled: false,
     innerHTML: '',
     innerText: '',
     textContent: '',
+    classList: {
+      add(...names) {
+        names.forEach(name => classNames.add(name));
+      },
+      remove(...names) {
+        names.forEach(name => classNames.delete(name));
+      },
+      contains(name) {
+        return classNames.has(name);
+      },
+      toString() {
+        return [...classNames].join(' ');
+      },
+    },
     setAttribute() {},
     getAttribute() { return null; },
     closest() { return null; },
@@ -39,6 +55,20 @@ function makeElement(id) {
     removeChild() {},
     click() {},
   };
+}
+
+const listeners = new Map();
+function addListener(type, handler) {
+  if (!listeners.has(type)) listeners.set(type, new Set());
+  listeners.get(type).add(handler);
+}
+function removeListener(type, handler) {
+  listeners.get(type)?.delete(handler);
+}
+function emit(type, event = {}) {
+  for (const handler of listeners.get(type) || []) {
+    handler(event);
+  }
 }
 
 const document = {
@@ -62,6 +92,12 @@ const context = {
   console,
   setTimeout,
   clearTimeout,
+  requestAnimationFrame(callback) {
+    return setTimeout(callback, 0);
+  },
+  cancelAnimationFrame(handle) {
+    clearTimeout(handle);
+  },
   Math,
   Date,
   Number,
@@ -79,6 +115,22 @@ const context = {
   localStorage,
   document,
   navigator: { userAgent: 'math-mini-challenge-validator' },
+  addEventListener: addListener,
+  removeEventListener: removeListener,
+  matchMedia() {
+    return {
+      matches: false,
+      addEventListener(type, handler) {
+        addListener(`media:${type}`, handler);
+      },
+      removeEventListener(type, handler) {
+        removeListener(`media:${type}`, handler);
+      },
+    };
+  },
+  print() {
+    context.__printCalls = (context.__printCalls || 0) + 1;
+  },
   alert(message) {
     throw new Error(`Unexpected alert: ${message}`);
   },
@@ -144,6 +196,17 @@ function assertSetData(setNumber) {
   const getKnowledgeTip = context.window.getKnowledgeTip;
   const getKnowledgeDomain = context.window.getKnowledgeDomain;
   const fallbackName = context.window.FallbackAdvice?.name;
+  const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
+
+  if (![...lorikDivTags].some(tag => ['l_div_decimal_dividend', 'l_div_dec1'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-dividend division practice`);
+  }
+  if (![...lorikDivTags].some(tag => tag === 'l_div_decimal_divisor')) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-divisor division practice`);
+  }
+  if (![...lorikDivTags].some(tag => ['l_div_decimal_both', 'l_div_dec2'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik double-decimal division practice`);
+  }
 
   for (const [section, expected] of Object.entries(expectedCounts)) {
     const items = data[section];
@@ -211,6 +274,15 @@ if (!sampleReplay?.isErrorReplay || sampleReplay.q !== '2 &times; 3' || !sampleR
 }
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
+}
+context.window.printQuestionSheets();
+await new Promise(resolve => setTimeout(resolve, 10));
+if (!context.document.body.classList.contains('print-questions-only') || context.__printCalls !== 1) {
+  throw new Error('Question-sheet print mode did not activate correctly');
+}
+emit('afterprint');
+if (context.document.body.classList.contains('print-questions-only') || context.document.body.classList.contains('print-answers-only')) {
+  throw new Error('Print mode did not clear after afterprint');
 }
 if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
   throw new Error('Automatic cloud pull helpers are not available');
