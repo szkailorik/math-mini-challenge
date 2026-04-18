@@ -890,6 +890,32 @@ const sampleKaiVariant = context.window.buildErrorVariantItem?.({
 if (!sampleKaiVariant?.isErrorVariant || !sampleKaiVariant?.q.includes('&divide; <i class="var">x</i>') || !sampleKaiVariant.step.includes('Review Variant')) {
   throw new Error('Error variant item builder is not producing targeted KAI equation review variants');
 }
+if (typeof context.window.generateProgramSetData !== 'function') {
+  throw new Error('Program set generator is not exposed for runtime validation');
+}
+context.window.StorageDB.cache.KAI = {
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: {
+    hv1: {
+      tag: 'k_ddiv_shift',
+      count: 3,
+      lastSet: 104,
+      mastered: false,
+      info: { q: '1.7280 &divide; 0.24', a: '7.2', step: '先看商的位置，再把两数同乘100。' }
+    }
+  },
+  programs: {}
+};
+context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
+context.window.currentProgramId = 'advanced_fluency_v1';
+context.window.currentSetNumber = 107;
+const advancedQualityData = context.window.generateProgramSetData('advanced_fluency_v1');
+const advancedReplayItems = [...advancedQualityData.k_d, ...advancedQualityData.k_f, ...advancedQualityData.k_c].filter(item => item?.isAdvancedHighValueReplay);
+if (!advancedReplayItems.some(item => item.qualityFamily === 'decimal_division' && item.replayLevel === 'L2')) {
+  throw new Error('Advanced high-value replay slot is not injecting a decimal_division L2 review item');
+}
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
 }

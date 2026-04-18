@@ -2424,6 +2424,72 @@
                 qualityFamily: item.qualityFamily || getQualityFamilyForTag(item.tag || '')
             };
         }
+        const ADVANCED_HIGH_VALUE_SECTION_MAP = {
+            KAI: {
+                decimal_division: 'k_d',
+                fraction_operation: 'k_f',
+                conversion_bridge: 'k_c',
+            },
+            Lorik: {
+                decimal_division: 'l_d',
+                fraction_operation: 'l_f',
+                conversion_bridge: 'l_c',
+            }
+        };
+        function getAdvancedHighValueEntries(student) {
+            const profile = StorageDB.getProfile(student, ADVANCED_PROGRAM_ID) || createProgramProfile(ADVANCED_PROGRAM_ID);
+            return Object.entries(profile.errorBook || {})
+                .map(([uid, entry]) => ({ uid, ...entry }))
+                .filter(entry => !entry.mastered && entry.tag && entry.info?.q && entry.info?.a)
+                .map(entry => {
+                    const qualityFamily = getQualityFamilyForTag(entry.tag);
+                    if (!['decimal_division', 'fraction_operation', 'conversion_bridge'].includes(qualityFamily)) return null;
+                    const recency = Number(entry.lastSet || entry.firstSet || 0);
+                    return {
+                        ...entry,
+                        qualityFamily,
+                        priority: Math.max(1, entry.count || 1) * 4 + recency
+                    };
+                })
+                .filter(Boolean);
+        }
+        function buildAdvancedHighValueReplayItem(entry) {
+            const replayLevel = getReplayLevel(entry);
+            let nextItem = replayLevel === 'L1' ? buildErrorReplayItem(entry) : buildErrorVariantItem(entry);
+            if (!nextItem) nextItem = buildErrorReplayItem(entry);
+            if (!nextItem) return null;
+            return {
+                ...nextItem,
+                isAdvancedHighValueReplay: true
+            };
+        }
+        function injectAdvancedHighValueReplaySlot(data, student) {
+            const entries = getAdvancedHighValueEntries(student);
+            if (!entries.length) return data;
+            const chosen = pickErrorReplayEntry(entries);
+            if (!chosen) return data;
+            const sectionKey = ADVANCED_HIGH_VALUE_SECTION_MAP[student]?.[chosen.qualityFamily];
+            const section = Array.isArray(data?.[sectionKey]) ? [...data[sectionKey]] : null;
+            if (!section?.length) return data;
+            const replacement = buildAdvancedHighValueReplayItem(chosen);
+            if (!replacement) return data;
+            const replaceIndex = Math.max(0, section.length - 1);
+            const baseline = section[replaceIndex] || {};
+            const level = replacement.level || baseline.level || inferDifficulty(replacement.tag);
+            section[replaceIndex] = {
+                ...replacement,
+                level,
+                levelName: replacement.levelName || baseline.levelName || TRAINING_LEVELS[level]?.name || `L${level}`,
+                reason: replacement.reason || (replacement.isErrorReplay ? 'replay' : 'variant')
+            };
+            return { ...data, [sectionKey]: section };
+        }
+        function injectAdvancedHighValueReplay(data) {
+            let next = { ...data };
+            next = injectAdvancedHighValueReplaySlot(next, 'KAI');
+            next = injectAdvancedHighValueReplaySlot(next, 'Lorik');
+            return next;
+        }
 
         const KnowledgeBase = {
             "k_dmul_basic": { name: "小数乘法-位数核对", advice: "先按整数乘法算，再数两个因数共有几位小数。写完后用估算检查数量级。" },
@@ -4283,14 +4349,14 @@
         function generateProgramSetData(programId = getCurrentProgramId()) {
             if (programId === 'elementary_closure_v1') return buildClosureProgramSet();
             const state = Engine.getCycleState();
-            return {
+            return injectAdvancedHighValueReplay({
                 programId: 'advanced_fluency_v1',
                 k_m: GenKAI.decimalsMult(), k_d: GenKAI.decimalsDiv(), k_s: GenKAI.bigSub(),
                 k_c: getConversions(), k_f: GenKAI.fracEquations(), k_o: GenKAI.olympiad(),
                 l_m: GenLorik.mul(), l_d: GenLorik.div(), l_s: GenLorik.sub(),
                 l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
                 stateLabel: state.label
-            };
+            });
         }
 
         // v22.1 每个 section 独立洗牌：即便题目不变，位置也不会形成固定套路
