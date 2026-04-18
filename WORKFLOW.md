@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.6 Iteration Notes
+## Current v23.7 Iteration Notes
+
+### Iteration 1
+
+- What I changed: replaced pure random section selection in KAI decimal multiplication and division with must-cover coverage groups before shuffling.
+- Open questions: none.
+- Risks: fixed coverage reduces randomness slightly, but the gain in daily diagnostic consistency is worth that tradeoff.
+- Next steps: watch whether any one must-cover subtype starts to feel overrepresented after a month of use.
+
+### Iteration 2
+
+- What I changed: made Lorik basic mixed problems cover shortcut structure, operation order, distributive reasoning, and combination splitting every set.
+- Open questions: none.
+- Risks: stronger structure coverage may expose more misconception clusters at once, so answer tips should stay concise.
+- Next steps: if needed, tune weekly phase weights so one category gets lighter during challenge-heavy cycles.
+
+### Iteration 3
+
+- What I changed: updated runtime validation and docs so section-coverage guarantees are explicit and regression-protected.
+- Open questions: none.
+- Risks: future generator edits must preserve these guarantees or update the validation intentionally.
+- Next steps: consider adding similar must-cover scaffolding to KAI conversions if that section starts feeling too random.
+
+## Previous v23.6 Iteration Notes
 
 ### Iteration 1
 

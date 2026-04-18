@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.6 (备份与打印引导版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.7 (题型覆盖增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -213,7 +213,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.6</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.7</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -236,7 +236,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.6 备份与打印引导版：<br><strong>导出版本信息修正<br>打印前提示更明确</strong>
+                💡 23.7 题型覆盖增强版：<br><strong>KAI 小数题固定覆盖<br>Lorik 简算结构更均衡</strong>
             </div>
         </div>
 
@@ -262,11 +262,12 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.6';
-        const APP_RELEASE_LABEL = '备份与打印引导版';
+        const APP_VERSION = 'v23.7';
+        const APP_RELEASE_LABEL = '题型覆盖增强版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.7 题型覆盖增强版：<br><strong>KAI 小数题固定覆盖<br>Lorik 简算结构更均衡</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
-        // v23.6 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -377,7 +378,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.6 GitHub Gist 云同步 =================
+        // ================= v23.7 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -630,7 +631,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.6 存储层（local + optional Gist 同步） =================
+        // ================= v23.7 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             _lastAutoPull: 0,
@@ -913,7 +914,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.6 Gist 云同步 =================
+        // ================= 数据备份 + v23.7 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -985,7 +986,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.6 Gist 连接 UI 逻辑
+        // v23.7 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1276,6 +1277,14 @@
             }
         };
 
+        function buildCoveredSection(student, groups) {
+            return Engine.shuffle(
+                groups
+                    .map(group => Engine.weightedSelect(group, student, 1)[0])
+                    .filter(Boolean)
+            );
+        }
+
         const KnowledgeBase = {
             "k_dmul_basic": { name: "小数乘法-位数核对", advice: "先按整数乘法算，再数两个因数共有几位小数。写完后用估算检查数量级。" },
             "k_dmul_trap0": { name: "小数乘法-高位补0", advice: "数清因数总小数位数，结果需保留相同位数，不够在前面补0。" },
@@ -1465,24 +1474,40 @@
 
         // ================= V21 彻底重写的生成器 (完美验算、注入原数据到步骤) =================
         const GenKAI = {
-            decimalsMult: () => Engine.weightedSelect([
-                { tag: "k_dmul_basic", gen: () => { let a=Engine.randInt(201,999)/100, b=Engine.randInt(301,999)/100; return { tag:"k_dmul_basic", q:`${a.toFixed(2)} &times; ${b.toFixed(2)}`, a:formatDecimal((a*100)*(b*100)/10000), step:`先按整数算 ${Math.round(a*100)}&times;${Math.round(b*100)}，再点回4位小数。`}; } },
-                { tag: "k_dmul_trap0", gen: () => { let a=Engine.randInt(11,99)/1000, b=Engine.randInt(101,999)/100; return { tag:"k_dmul_trap0", q:`${a.toFixed(3)} &times; ${b.toFixed(2)}`, a:formatDecimal((a*1000)*(b*100)/100000), step:`共有5位小数，答案不够位时要在前面补0。`}; } },
-                { tag: "k_dmul_tiny", gen: () => { let a=Engine.randInt(12,98), b=Engine.randInt(12,98); return { tag:"k_dmul_tiny", q:`${(a/1000).toFixed(3)} &times; ${(b/100).toFixed(2)}`, a:formatDecimal(a*b/100000), step:`先算 ${a}&times;${b}=${a*b}，两个因数共有5位小数。`}; } },
-                { tag: "k_dmul_scale", gen: () => { let base=Engine.randChoice([0.25, 1.25, 2.5, 12.5]), k=Engine.randInt(12,48)*8; let ans=base*k; return { tag:"k_dmul_scale", q:`${base} &times; ${k}`, a:formatDecimal(ans), step:`把 ${k} 拆出8或4来凑整，再乘剩余倍数。`}; } },
-                { tag: "k_dmul_end0", gen: () => { let a=Engine.randInt(11,99)*10+5, b=Engine.randInt(11,49)*2/10; return { tag:"k_dmul_end0", q:`${a} &times; ${b.toFixed(1)}`, a:formatDecimal((a*(b*10))/10)}; } },
-                { tag: "k_dmul_125", gen: () => { let b=Engine.randInt(11,99)*8/10; return { tag:"k_dmul_125", q:`1.25 &times; ${b.toFixed(1)}`, a:formatDecimal(125*(b*10)/1000)}; } },
-                { tag: "k_dmul_int", gen: () => { let a=Engine.randInt(401,999), b=Engine.randInt(201,999); return { tag:"k_dmul_int", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
-            ], "KAI", 4),
-            decimalsDiv: () => Engine.weightedSelect([
-                { tag: "k_ddiv_basic", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_basic", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`, step:`两数同乘1000，变成 ${ans*d} &divide; ${d}。`}; } },
-                { tag: "k_ddiv_mid0", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"k_ddiv_mid0", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/100).toFixed(2)}`, a:formatDecimal(ans/10), step:`除数扩大100倍，被除数也扩大100倍，商为 ${formatDecimal(ans/10)}。`}; } },
-                { tag: "k_ddiv_pure", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_pure", q:`${((ans*d)/100).toFixed(2)} &divide; ${(d/100).toFixed(2)}`, a:`${ans}`}; } },
-                { tag: "k_ddiv_shift", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(101,199); return {tag:"k_ddiv_shift", q:`${((ans*d)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/100}`}; } },
-                { tag: "k_ddiv_unit", gen: () => { let d=Engine.randInt(2,9), ans=Engine.randInt(6,18); return {tag:"k_ddiv_unit", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`, step:`同乘1000，${ans*d} &divide; ${d} = ${ans}。`}; } },
-                { tag: "k_ddiv_decimal_q", gen: () => { let d=Engine.randInt(12,98), ans=Engine.randInt(25,250); return {tag:"k_ddiv_decimal_q", q:`${((d*ans)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:formatDecimal(ans/100), step:`构造成 ${d}&times;${ans/100}，商小于或接近1时注意写小数点。`}; } },
-                { tag: "k_ddiv_int2dec", gen: () => { let d=Engine.randChoice([25,75,125]), ans=Engine.randInt(11,49); return {tag:"k_ddiv_int2dec", q:`${ans*d} &divide; ${(d/100).toFixed(2)}`, a:`${ans*100}`}; } }
-            ], "KAI", 4),
+            decimalsMult: () => buildCoveredSection("KAI", [
+                [
+                    { tag: "k_dmul_basic", gen: () => { let a=Engine.randInt(201,999)/100, b=Engine.randInt(301,999)/100; return { tag:"k_dmul_basic", q:`${a.toFixed(2)} &times; ${b.toFixed(2)}`, a:formatDecimal((a*100)*(b*100)/10000), step:`先按整数算 ${Math.round(a*100)}&times;${Math.round(b*100)}，再点回4位小数。`}; } },
+                    { tag: "k_dmul_trap0", gen: () => { let a=Engine.randInt(11,99)/1000, b=Engine.randInt(101,999)/100; return { tag:"k_dmul_trap0", q:`${a.toFixed(3)} &times; ${b.toFixed(2)}`, a:formatDecimal((a*1000)*(b*100)/100000), step:`共有5位小数，答案不够位时要在前面补0。`}; } }
+                ],
+                [
+                    { tag: "k_dmul_tiny", gen: () => { let a=Engine.randInt(12,98), b=Engine.randInt(12,98); return { tag:"k_dmul_tiny", q:`${(a/1000).toFixed(3)} &times; ${(b/100).toFixed(2)}`, a:formatDecimal(a*b/100000), step:`先算 ${a}&times;${b}=${a*b}，两个因数共有5位小数。`}; } }
+                ],
+                [
+                    { tag: "k_dmul_scale", gen: () => { let base=Engine.randChoice([0.25, 1.25, 2.5, 12.5]), k=Engine.randInt(12,48)*8; let ans=base*k; return { tag:"k_dmul_scale", q:`${base} &times; ${k}`, a:formatDecimal(ans), step:`把 ${k} 拆出8或4来凑整，再乘剩余倍数。`}; } },
+                    { tag: "k_dmul_125", gen: () => { let b=Engine.randInt(11,99)*8/10; return { tag:"k_dmul_125", q:`1.25 &times; ${b.toFixed(1)}`, a:formatDecimal(125*(b*10)/1000), step:`把 1.25 看成 10 ÷ 8，优先从另一个因数里拆 8 来凑整。`}; } }
+                ],
+                [
+                    { tag: "k_dmul_end0", gen: () => { let a=Engine.randInt(11,99)*10+5, b=Engine.randInt(11,49)*2/10; return { tag:"k_dmul_end0", q:`${a} &times; ${b.toFixed(1)}`, a:formatDecimal((a*(b*10))/10), step:`先把 ${b.toFixed(1)} 看成 ${(b*10).toFixed(0)} ÷ 10，整数乘完再点回1位小数。`}; } },
+                    { tag: "k_dmul_int", gen: () => { let a=Engine.randInt(401,999), b=Engine.randInt(201,999); return { tag:"k_dmul_int", q:`${a} &times; ${b}`, a:`${a*b}`, step:`保持整式乘法手感，算完用估算核对百位数量级。`}; } }
+                ]
+            ]),
+            decimalsDiv: () => buildCoveredSection("KAI", [
+                [
+                    { tag: "k_ddiv_basic", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_basic", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`, step:`两数同乘1000，变成 ${ans*d} &divide; ${d}。`}; } },
+                    { tag: "k_ddiv_unit", gen: () => { let d=Engine.randInt(2,9), ans=Engine.randInt(6,18); return {tag:"k_ddiv_unit", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/1000).toFixed(3)}`, a:`${ans}`, step:`同乘1000，${ans*d} &divide; ${d} = ${ans}。`}; } }
+                ],
+                [
+                    { tag: "k_ddiv_mid0", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"k_ddiv_mid0", q:`${((ans*d)/1000).toFixed(3)} &divide; ${(d/100).toFixed(2)}`, a:formatDecimal(ans/10), step:`除数扩大100倍，被除数也扩大100倍，商为 ${formatDecimal(ans/10)}。`}; } },
+                    { tag: "k_ddiv_int2dec", gen: () => { let d=Engine.randChoice([25,75,125]), ans=Engine.randInt(11,49); return {tag:"k_ddiv_int2dec", q:`${ans*d} &divide; ${(d/100).toFixed(2)}`, a:`${ans*100}`, step:`把除数变成整数后，注意商会同步放大100倍。`}; } }
+                ],
+                [
+                    { tag: "k_ddiv_shift", gen: () => { let d=Engine.randInt(11,49), ans=Engine.randInt(101,199); return {tag:"k_ddiv_shift", q:`${((ans*d)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:`${ans/100}`, step:`商小于1时，个位必须先写 0 再点小数点。`}; } },
+                    { tag: "k_ddiv_decimal_q", gen: () => { let d=Engine.randInt(12,98), ans=Engine.randInt(25,250); return {tag:"k_ddiv_decimal_q", q:`${((d*ans)/10000).toFixed(4)} &divide; ${(d/100).toFixed(2)}`, a:formatDecimal(ans/100), step:`构造成 ${d}&times;${ans/100}，商小于或接近1时注意写小数点。`}; } }
+                ],
+                [
+                    { tag: "k_ddiv_pure", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_pure", q:`${((ans*d)/100).toFixed(2)} &divide; ${(d/100).toFixed(2)}`, a:`${ans}`, step:`被除数和除数一起扩大100倍，保持商不变。`}; } }
+                ]
+            ]),
             bigSub: () => Engine.weightedSelect([
                 { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
                 { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
@@ -1762,35 +1787,43 @@
                 ];
                 return Engine.weightedSelect(pool, "Lorik", 12);
             },
-            basicMixed: () => Engine.weightedSelect([
-                { tag: "l_bmix_125", gen: () => {
-                    let m=Engine.randInt(21,99)/10;
-                    return {tag:"l_bmix_125", q:`8 &times; ${m} &times; 12.5`, a:`${Math.round(m*100)}`, step:`乘法交换律凑整: (8 &times; 12.5) &times; ${m} = 100 &times; ${m} = <strong class="highlight">${Math.round(m*100)}</strong>`};
-                } },
-                { tag: "l_bmix_order", gen: () => {
-                    let a=Engine.randInt(31,99), m=Engine.randInt(3,9);
-                    return {tag:"l_bmix_order", q:`${a} + 14 &times; ${m}`, a:`${a+14*m}`, step:`法则：先乘除后加减: ${a} + ${14*m} = <strong class="highlight">${a+14*m}</strong>`};
-                } },
-                { tag: "l_bmix_dist", gen: () => {
-                    let a=Engine.randInt(2,7), d=Engine.randChoice([11,13,14,17,19]), w=Engine.randInt(21,49);
-                    return {tag:"l_bmix_dist", q:`<div class="frac"><span>${a}</span><span class="bottom">${d}</span></div> &times; ${w} + <div class="frac"><span>${d-a}</span><span class="bottom">${d}</span></div> &times; ${w}`, a:`${w}`, step:`乘法分配律逆用: (${a}/${d} + ${d-a}/${d}) &times; ${w} = 1 &times; ${w} = <strong class="highlight">${w}</strong>`};
-                } },
-                { tag: "l_bmix_comb", gen: () => {
-                    let m=Engine.randInt(11,49)*8, s=Engine.randInt(11,99)/10;
-                    let ans = ((1.25 * m * 10) - (s * 10)) / 10;
-                    return {tag:"l_bmix_comb", q:`1.25 &times; ${m} &minus; ${s}`, a:formatDecimal(ans), step:`乘法结合律拆分: (1.25 &times; 8) &times; ${m/8} &minus; ${s} = 10 &times; ${m/8} &minus; ${s} = <strong class="highlight">${formatDecimal(ans)}</strong>`};
-                } },
-                { tag: "l_bmix_near100", gen: () => {
-                    let a=Engine.randInt(12,89), mode=Engine.randChoice([99,101]);
-                    let q = mode === 99 ? `99 &times; ${a} + ${a}` : `101 &times; ${a} &minus; ${a}`;
-                    return {tag:"l_bmix_near100", q, a:`${100*a}`, step:`合成100个${a}: <strong class="highlight">${100*a}</strong>`};
-                } },
-                { tag: "l_bmix_paren", gen: () => {
-                    let a=Engine.randInt(12,48), b=Engine.randInt(13,49), c=Engine.randInt(3,8), d=Engine.randInt(11,59);
-                    let ans=(a+b)*c-d;
-                    return {tag:"l_bmix_paren", q:`<span class="paren-l"></span>${a} + ${b}<span class="paren-r"></span> &times; ${c} &minus; ${d}`, a:`${ans}`, step:`先算括号 ${a}+${b}=${a+b}，再乘${c}，最后减${d}: <strong class="highlight">${ans}</strong>`};
-                } }
-            ], "Lorik", 4)
+            basicMixed: () => buildCoveredSection("Lorik", [
+                [
+                    { tag: "l_bmix_125", gen: () => {
+                        let m=Engine.randInt(21,99)/10;
+                        return {tag:"l_bmix_125", q:`8 &times; ${m} &times; 12.5`, a:`${Math.round(m*100)}`, step:`乘法交换律凑整: (8 &times; 12.5) &times; ${m} = 100 &times; ${m} = <strong class="highlight">${Math.round(m*100)}</strong>`};
+                    } },
+                    { tag: "l_bmix_near100", gen: () => {
+                        let a=Engine.randInt(12,89), mode=Engine.randChoice([99,101]);
+                        let q = mode === 99 ? `99 &times; ${a} + ${a}` : `101 &times; ${a} &minus; ${a}`;
+                        return {tag:"l_bmix_near100", q, a:`${100*a}`, step:`合成100个${a}: <strong class="highlight">${100*a}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "l_bmix_order", gen: () => {
+                        let a=Engine.randInt(31,99), m=Engine.randInt(3,9);
+                        return {tag:"l_bmix_order", q:`${a} + 14 &times; ${m}`, a:`${a+14*m}`, step:`法则：先乘除后加减: ${a} + ${14*m} = <strong class="highlight">${a+14*m}</strong>`};
+                    } },
+                    { tag: "l_bmix_paren", gen: () => {
+                        let a=Engine.randInt(12,48), b=Engine.randInt(13,49), c=Engine.randInt(3,8), d=Engine.randInt(11,59);
+                        let ans=(a+b)*c-d;
+                        return {tag:"l_bmix_paren", q:`<span class="paren-l"></span>${a} + ${b}<span class="paren-r"></span> &times; ${c} &minus; ${d}`, a:`${ans}`, step:`先算括号 ${a}+${b}=${a+b}，再乘${c}，最后减${d}: <strong class="highlight">${ans}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "l_bmix_dist", gen: () => {
+                        let a=Engine.randInt(2,7), d=Engine.randChoice([11,13,14,17,19]), w=Engine.randInt(21,49);
+                        return {tag:"l_bmix_dist", q:`<div class="frac"><span>${a}</span><span class="bottom">${d}</span></div> &times; ${w} + <div class="frac"><span>${d-a}</span><span class="bottom">${d}</span></div> &times; ${w}`, a:`${w}`, step:`乘法分配律逆用: (${a}/${d} + ${d-a}/${d}) &times; ${w} = 1 &times; ${w} = <strong class="highlight">${w}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "l_bmix_comb", gen: () => {
+                        let m=Engine.randInt(11,49)*8, s=Engine.randInt(11,99)/10;
+                        let ans = ((1.25 * m * 10) - (s * 10)) / 10;
+                        return {tag:"l_bmix_comb", q:`1.25 &times; ${m} &minus; ${s}`, a:formatDecimal(ans), step:`乘法结合律拆分: (1.25 &times; 8) &times; ${m/8} &minus; ${s} = 10 &times; ${m/8} &minus; ${s} = <strong class="highlight">${formatDecimal(ans)}</strong>`};
+                    } }
+                ]
+            ])
         };
 
         const getConversions = () => Engine.weightedSelect([
@@ -2673,7 +2706,7 @@
             const versionLabel = document.getElementById('app-version-label');
             if (versionLabel) versionLabel.textContent = `🧠 专家私教引擎 ${APP_VERSION}`;
             const releaseLabel = document.getElementById('release-note-label');
-            if (releaseLabel) releaseLabel.innerHTML = `💡 ${APP_VERSION} ${APP_RELEASE_LABEL}：<br><strong>导出版本信息修正<br>打印前提示更明确</strong>`;
+            if (releaseLabel) releaseLabel.innerHTML = APP_RELEASE_NOTE_HTML;
             const container = document.getElementById('paper-container');
             if (container) {
                 container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";

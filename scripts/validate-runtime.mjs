@@ -196,7 +196,36 @@ function assertSetData(setNumber) {
   const getKnowledgeTip = context.window.getKnowledgeTip;
   const getKnowledgeDomain = context.window.getKnowledgeDomain;
   const fallbackName = context.window.FallbackAdvice?.name;
+  const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
+  const kaiDivTags = new Set((data.k_d || []).map(item => item?.tag));
   const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
+  const lorikMixedTags = new Set((data.l_o || []).map(item => item?.tag));
+
+  if (![...kaiMulTags].some(tag => ['k_dmul_basic', 'k_dmul_trap0'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-place multiplication coverage`);
+  }
+  if (![...kaiMulTags].some(tag => tag === 'k_dmul_tiny')) {
+    throw new Error(`Set ${setNumber} is missing KAI tiny-decimal multiplication coverage`);
+  }
+  if (![...kaiMulTags].some(tag => ['k_dmul_scale', 'k_dmul_125'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI multiplication strategy coverage`);
+  }
+  if (![...kaiMulTags].some(tag => ['k_dmul_end0', 'k_dmul_int'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI mixed whole-number multiplication coverage`);
+  }
+
+  if (![...kaiDivTags].some(tag => ['k_ddiv_basic', 'k_ddiv_unit'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-scaling division coverage`);
+  }
+  if (![...kaiDivTags].some(tag => ['k_ddiv_mid0', 'k_ddiv_int2dec'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI divisor-shift division coverage`);
+  }
+  if (![...kaiDivTags].some(tag => ['k_ddiv_shift', 'k_ddiv_decimal_q'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-quotient division coverage`);
+  }
+  if (![...kaiDivTags].some(tag => tag === 'k_ddiv_pure')) {
+    throw new Error(`Set ${setNumber} is missing KAI same-scale decimal division coverage`);
+  }
 
   if (![...lorikDivTags].some(tag => ['l_div_decimal_dividend', 'l_div_dec1'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik decimal-dividend division practice`);
@@ -206,6 +235,18 @@ function assertSetData(setNumber) {
   }
   if (![...lorikDivTags].some(tag => ['l_div_decimal_both', 'l_div_dec2'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik double-decimal division practice`);
+  }
+  if (![...lorikMixedTags].some(tag => ['l_bmix_125', 'l_bmix_near100'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik structure-shortcut mixed practice`);
+  }
+  if (![...lorikMixedTags].some(tag => ['l_bmix_order', 'l_bmix_paren'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik operation-order mixed practice`);
+  }
+  if (![...lorikMixedTags].some(tag => tag === 'l_bmix_dist')) {
+    throw new Error(`Set ${setNumber} is missing Lorik distributive mixed practice`);
+  }
+  if (![...lorikMixedTags].some(tag => tag === 'l_bmix_comb')) {
+    throw new Error(`Set ${setNumber} is missing Lorik combination-strategy mixed practice`);
   }
 
   for (const [section, expected] of Object.entries(expectedCounts)) {

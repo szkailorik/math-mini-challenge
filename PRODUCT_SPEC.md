@@ -111,6 +111,13 @@ v23.6 improves operator confidence around backup and printing:
 - Import success feedback now surfaces both the source version and the current app version.
 - Print actions show a brief preflight reminder for orientation, scaling, and header/footer settings before the system dialog opens.
 
+v23.7 strengthens training quality through must-cover item diversity:
+
+- KAI decimal multiplication and division sets now guarantee key misconception coverage instead of relying on random tag combinations alone.
+- Every KAI decimal set includes both procedural decimal-place work and strategy-oriented shortcut work.
+- Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
+- Runtime validation now treats these coverage guarantees as release-blocking checks.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

@@ -50,7 +50,10 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `printQuestionSheets` / `printAnswerSheets`: switches the body into print-only modes for question sheets or answer sheets, then relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
+- `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
 - `GenLorik.div`: guarantees Lorik section II includes one whole-number division item plus decimal-dividend, decimal-divisor, and double-decimal division practice.
+- `GenKAI.decimalsMult` / `GenKAI.decimalsDiv`: now enforce must-cover decimal subtypes before shuffling the four printed items.
+- `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
 - `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, Lorik decimal-division coverage, print lifecycle helpers, four printable question sheets, cloud auto-pull helpers, and set-review report output.
@@ -92,7 +95,10 @@ python3 -m http.server 8080
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
 - Confirm print buttons show the short print hint before the system print dialog opens.
+- Confirm KAI decimal multiplication covers place value, tiny decimal, strategy, and mixed whole-number practice in the same set.
+- Confirm KAI decimal division covers scale-up, divisor-shift, decimal-quotient, and same-scale decimal division in the same set.
 - Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
+- Confirm Lorik basic mixed problems cover shortcut structure, order/parentheses, distributive reasoning, and combination splitting each set.
 
 ## GitHub Connection
 
