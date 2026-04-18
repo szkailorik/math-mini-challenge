@@ -9,3 +9,7 @@
 ## Superpowers 设计稿
 
 - [2026-04-19-calculation-quick-review-design.md](./superpowers/specs/2026-04-19-calculation-quick-review-design.md) · 新增“计算知识总览页”设计稿，面向小朋友快速复习，强调高价值内容、阅读友好和可打印讲义风格
+
+## Superpowers 实施计划
+
+- [2026-04-19-calculation-quick-review-implementation-plan.md](./superpowers/plans/2026-04-19-calculation-quick-review-implementation-plan.md) · “计算知识总览页”实施计划，覆盖内容注册、页面入口、视觉层级、打印与校验
