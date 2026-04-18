@@ -504,3 +504,8 @@ profile = {
 - Error-book entries survive history trimming and can be marked mastered.
 - Local mode works without a server beyond static file serving.
 - Gist sync failure does not block local practice.
+- v23.59 improves the tutor workbench shell:
+
+- The floating expert-engine menu now removes long first-stage and second-stage explanatory copy and keeps only compact switch, status, and insight cues.
+- Shorter viewports no longer lose lower actions as easily because the menu now protects its height and scrolls internally when needed.
+- The tutor-facing shell stays easier to scan, while student-facing question pages and printable sheets remain unaffected.

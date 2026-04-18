@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.58 (计算知识总览页讲义感深化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.59 (计算知识总览页页头压缩)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -180,8 +180,9 @@
                 margin-bottom: 4mm !important;
             }
             body.print-quick-review #print-root .quick-review-usage-strip {
-                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-                gap: 4px !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 3px !important;
                 margin-top: 3mm !important;
             }
             body.print-quick-review #print-root .quick-review-nav-chip,
@@ -775,30 +776,32 @@
             font-weight: 700;
         }
         .quick-review-usage-strip {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+            margin-top: 12px;
         }
         .quick-review-usage-card {
-            border: 1px solid #d9e5e2;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.74);
-            padding: 9px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #dde5ea;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.78);
+            padding: 6px 10px;
         }
         .quick-review-usage-label {
-            display: block;
-            margin-bottom: 4px;
             color: #0f766e;
             font-size: 11px;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
+            flex-shrink: 0;
         }
         .quick-review-usage-text {
-            color: #234257;
-            font-size: 12px;
-            line-height: 1.5;
+            color: #365165;
+            font-size: 11.5px;
+            line-height: 1.45;
             font-weight: 600;
         }
         .quick-review-recommendations {
@@ -1235,28 +1238,37 @@
             right: 20px;
             background: linear-gradient(180deg, rgba(252, 248, 241, 0.98), rgba(245, 238, 227, 0.98));
             color: var(--desk-ink);
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-radius: 18px;
             border: 1px solid rgba(16, 35, 63, 0.12);
             box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             font-family: 'Georgia', 'Baskerville', serif;
             backdrop-filter: blur(10px);
             width: 348px;
+            max-height: calc(100vh - 28px);
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
+        }
+        .control-panel::-webkit-scrollbar { width: 8px; }
+        .control-panel::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.28);
+            border-radius: 999px;
         }
         .panel-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--desk-line);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
         .panel-header h3 {
             margin: 0;
-            font-size: 17px;
+            font-size: 16px;
             text-align: left;
             flex: 1;
             color: var(--desk-ink);
@@ -1269,28 +1281,28 @@
             background: #ffffff;
             color: var(--desk-ink);
             border: 1px solid rgba(16, 35, 63, 0.12);
-            padding: 8px 10px;
+            padding: 7px 10px;
             font-weight: 700;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s;
             flex:1;
             text-align:center;
-            font-size: 13px;
+            font-size: 12.5px;
             box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
         }
         .ctrl-btn:hover { background: var(--desk-accent); color: #fff; transform: translateY(-1px); border-color: var(--desk-accent); }
-        .set-indicator { font-size: 16px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
+        .set-indicator { font-size: 15px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
         .program-shell-card, .stage-status-card {
             background: rgba(255,255,255,0.72);
             border: 1px solid rgba(16, 35, 63, 0.1);
             border-radius: 14px;
-            padding: 12px 12px;
+            padding: 10px 11px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
-        .program-shell-card { margin-top: 8px; }
+        .program-shell-card { margin-top: 4px; }
         .program-shell-head, .stage-status-head {
             display: flex;
             justify-content: space-between;
@@ -1330,13 +1342,14 @@
             background: rgba(255,255,255,0.84);
             color: var(--desk-ink);
             border-radius: 12px;
-            padding: 10px 12px;
-            font-size: 13px;
+            padding: 8px 10px;
+            font-size: 12.5px;
             font-weight: 700;
             cursor: pointer;
             text-align: left;
             transition: all 0.2s ease;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+            line-height: 1.18;
         }
         .program-switch-btn:hover { transform: translateY(-1px); border-color: rgba(164, 74, 31, 0.35); }
         .program-switch-btn.is-active {
@@ -1353,21 +1366,16 @@
         .program-main-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .program-copy { min-width: 0; flex: 1; }
         .program-title {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 700;
             color: var(--desk-ink);
             line-height: 1.25;
-            margin-bottom: 3px;
-        }
-        .program-desc, .stage-status-body, .stage-status-action {
-            font-size: 12px;
-            line-height: 1.45;
-            color: #475569;
+            margin-bottom: 0;
         }
         .program-select { display: none; }
         .program-select:focus { outline: 2px solid rgba(191, 219, 254, 0.65); outline-offset: 1px; }
         .stage-status-title {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--desk-ink);
             line-height: 1.3;
@@ -1384,13 +1392,20 @@
         .stage-insight {
             font-size: 11px;
             line-height: 1.2;
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 999px;
             background: rgba(255,255,255,0.78);
             border: 1px solid rgba(16, 35, 63, 0.1);
             color: #334155;
             font-family: 'Arial Narrow', sans-serif;
             letter-spacing: 0.04em;
+        }
+        .release-note-compact {
+            font-size: 10.5px;
+            color: #64748b;
+            text-align: center;
+            margin-top: 4px;
+            line-height: 1.3;
         }
 
         #toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: sans-serif; opacity: 0; transition: opacity 0.3s; z-index: 10000; pointer-events: none;}
@@ -1426,7 +1441,6 @@
             .info-row { grid-template-columns: 1fr; text-align: left; }
         }
         @media (max-width: 780px) {
-            .quick-review-usage-strip,
             .quick-review-focus-strip,
             .quick-review-nav,
             .quick-review-flow,
@@ -1456,7 +1470,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.48</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.59</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1473,7 +1487,6 @@
             <div class="program-main-row">
                 <div class="program-copy">
                     <div class="program-title" id="program-title-label">Mini Challenge Advanced</div>
-                    <div class="program-desc" id="program-desc-label">持续强化核心算法、互化、方程和策略训练，由老师手动决定何时切到第二阶段。</div>
                 </div>
                 <select id="program-selector" class="program-select" onchange="window.changeProgram(this.value)" aria-hidden="true" tabindex="-1">
                     <option value="advanced_fluency_v1">Advanced</option>
@@ -1486,9 +1499,7 @@
                 <div class="stage-status-title" id="stage-status-title">第一阶段 · 核心算法稳态训练</div>
                 <span class="status-chip phase-1" id="stage-status-chip">手动切换</span>
             </div>
-            <div class="stage-status-body" id="stage-status-body">一阶段继续做核心算法、互化、方程和策略训练。阶段切换完全由老师手动决定，系统不再做晋级判断。</div>
             <div class="stage-insights" id="stage-status-insights"></div>
-            <div class="stage-status-action" id="stage-status-action">建议动作：如需查看第二阶段题卷，直接点上方“第二阶段”；底层数据会自动接续。</div>
         </div>
 
         <div id="normal-ctrls">
@@ -1508,8 +1519,8 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#0f766e; color:white; width:100%; margin-top:6px;" onclick="window.showCalculationQuickReview()">📘 计算知识总览 / Quick Review</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
-            <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.30 题目显示与打印对齐修正：<br><strong>修正题目显示不全、排列和序号错位<br>并单独压缩打印态，避免同类问题进入打印页</strong>
+            <div id="release-note-label" class="release-note-compact">
+                💡 菜单压缩与短屏可滚动优化
             </div>
         </div>
 
@@ -1536,9 +1547,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.58';
-        const APP_RELEASE_LABEL = '计算知识总览页讲义感深化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.58 计算知识总览页讲义感深化：<br><strong>把优先提示收成一句更清楚的话，并让主线更像步骤顺序<br>页面更安静，也更像真正可打印的复习单</strong>';
+        const APP_VERSION = 'v23.59';
+        const APP_RELEASE_LABEL = '悬浮菜单压缩与短屏修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.59 悬浮菜单压缩：去掉阶段长介绍，短屏自动滚动。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -1797,15 +1808,12 @@
             const selector = document.getElementById('program-selector');
             const phaseChip = document.getElementById('program-phase-chip');
             const titleLabel = document.getElementById('program-title-label');
-            const descLabel = document.getElementById('program-desc-label');
             const advancedSwitch = document.getElementById('program-switch-advanced');
             const closureSwitch = document.getElementById('program-switch-closure');
             const stageCard = document.getElementById('stage-status-card');
             const stageChip = document.getElementById('stage-status-chip');
             const stageTitle = document.getElementById('stage-status-title');
-            const stageBody = document.getElementById('stage-status-body');
             const stageInsights = document.getElementById('stage-status-insights');
-            const stageAction = document.getElementById('stage-status-action');
 
             if (selector) selector.value = programId;
             if (advancedSwitch) advancedSwitch.className = `program-switch-btn${programId === ADVANCED_PROGRAM_ID ? ' is-active' : ''}`;
@@ -1815,18 +1823,15 @@
                 phaseChip.className = `program-chip ${config.tone}`;
             }
             if (titleLabel) titleLabel.textContent = config.label;
-            if (descLabel) descLabel.textContent = config.desc;
             if (stageCard) stageCard.className = `stage-status-card ${snapshot.cardTone || (programId === CLOSURE_PROGRAM_ID ? 'is-closure' : 'is-advanced')}`;
             if (stageChip) {
                 stageChip.textContent = snapshot.statusChip;
                 stageChip.className = `status-chip ${config.tone}`;
             }
             if (stageTitle) stageTitle.textContent = snapshot.statusTitle;
-            if (stageBody) stageBody.textContent = snapshot.statusBody;
             if (stageInsights) {
                 stageInsights.innerHTML = (snapshot.insights || []).map(item => `<span class="stage-insight">${item}</span>`).join('');
             }
-            if (stageAction) stageAction.textContent = snapshot.statusAction;
         }
 
         window.changeProgram = function(programId) {

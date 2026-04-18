@@ -252,7 +252,7 @@ await new Promise(resolve => setTimeout(resolve, 25));
 const programSelector = elements.get('program-selector');
 const programTitleLabel = elements.get('program-title-label');
 const stageStatusTitle = elements.get('stage-status-title');
-const stageStatusAction = elements.get('stage-status-action');
+const stageStatusInsights = elements.get('stage-status-insights');
 if (!programSelector) {
   throw new Error('Program selector element was not initialized');
 }
@@ -265,8 +265,11 @@ if (!String(programTitleLabel?.textContent || '').includes('Mini Challenge Advan
 if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
   throw new Error('Stage status card did not render first-stage status text');
 }
-if (!String(stageStatusAction?.textContent || '').includes('第二阶段')) {
-  throw new Error('Stage status card did not render manual stage-switch guidance');
+if (elements.has('stage-status-action') || elements.has('stage-status-body') || elements.has('program-desc-label')) {
+  throw new Error('Floating control panel still renders retired long-form stage guidance blocks');
+}
+if (!String(stageStatusInsights?.innerHTML || '').includes('stage-insight')) {
+  throw new Error('Stage status card did not render compact insight pills');
 }
 if (typeof context.showCalculationQuickReview !== 'function') {
   throw new Error('Calculation Quick Review entrypoint was not exposed on window');

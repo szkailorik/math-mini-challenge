@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.59 Iteration Notes
+
+### Iteration 1
+
+- What I changed: compressed the floating teacher-workbench menu by removing long first-stage and second-stage explanatory copy, tightening card and button spacing, and adding short-viewport internal scrolling so lower actions remain reachable.
+- Open questions: whether the next shell pass should also further compress the release note and archive-entry area, or whether menu density is now in the right place.
+- Risks: over-compressing the tutor shell could make state harder to scan, so the menu should keep its phase chip, title, and insight pills even while long prose stays out.
+- Next steps: review the live menu on a shorter viewport, then decide whether to keep polishing shell density or return to content and worksheet quality work.
+
 ## Current v23.58 Iteration Notes
 
 ### Iteration 1
