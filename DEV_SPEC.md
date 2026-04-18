@@ -53,7 +53,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
 - `GenLorik.div`: guarantees Lorik section II includes one whole-number division item plus decimal-dividend, decimal-divisor, and double-decimal division practice.
 - `GenKAI.decimalsMult` / `GenKAI.decimalsDiv`: now enforce must-cover decimal subtypes before shuffling the four printed items.
-- `getConversions` / `GenKAI.fracEquations`: now guarantee key conversion families and equation archetypes instead of relying on unconstrained random picks.
+- `getConversions` / `GenKAI.fracEquations`: now guarantee key conversion families, fraction-calculation structures, and equation archetypes instead of relying on unconstrained random picks.
+- `GenLorik.fracMix`: now guarantees the full daily spread of core fraction-operation families instead of leaving that section to pool-level randomness.
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
@@ -99,8 +100,10 @@ python3 -m http.server 8080
 - Confirm KAI decimal multiplication covers place value, tiny decimal, strategy, and mixed whole-number practice in the same set.
 - Confirm KAI decimal division covers scale-up, divisor-shift, decimal-quotient, and same-scale decimal division in the same set.
 - Confirm KAI conversions cover percent, repeating decimals, benchmark denominators, and exact decimal-to-fraction practice in the same set.
+- Confirm KAI fraction calculations cover add/subtract, chained multiply-divide or parentheses, distributive reasoning, cross-canceling, and the decimal-fraction bridge items in the same set.
 - Confirm KAI equations cover inverse operation, multi-step, special-position unknown, and proportion archetypes in the same set.
 - Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
+- Confirm Lorik fraction mix covers the full daily spread of add/subtract, multiply/divide, fraction-of-whole, mixed-number, parentheses, triple-product, and decimal-fraction bridge practice.
 - Confirm Lorik basic mixed problems cover shortcut structure, order/parentheses, distributive reasoning, and combination splitting each set.
 
 ## GitHub Connection

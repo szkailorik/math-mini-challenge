@@ -201,6 +201,7 @@ function assertSetData(setNumber) {
   const kaiConvTags = new Set((data.k_c || []).map(item => item?.tag));
   const kaiFracEqTags = new Set((data.k_f || []).map(item => item?.tag));
   const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
+  const lorikFracTags = new Set((data.l_f || []).map(item => item?.tag));
   const lorikMixedTags = new Set((data.l_o || []).map(item => item?.tag));
 
   if (![...kaiMulTags].some(tag => ['k_dmul_basic', 'k_dmul_trap0'].includes(tag))) {
@@ -264,6 +265,30 @@ function assertSetData(setNumber) {
   if (![...kaiFracEqTags].some(tag => tag === 'k_eq_prop')) {
     throw new Error(`Set ${setNumber} is missing KAI proportion equation coverage`);
   }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_addsub')) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction add/subtract coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => ['k_fcalc_paren', 'k_fcalc_muldiv'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction chain-or-parentheses coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_dist')) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction distributive coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_cancel')) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction cross-cancel coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_fd1')) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-fraction chain coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_fd2')) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-times-fraction-sum coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_fd3')) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction-minus-decimal coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_fd4')) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-times-fraction-plus-half coverage`);
+  }
 
   if (![...lorikDivTags].some(tag => ['l_div_decimal_dividend', 'l_div_dec1'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik decimal-dividend division practice`);
@@ -273,6 +298,42 @@ function assertSetData(setNumber) {
   }
   if (![...lorikDivTags].some(tag => ['l_div_decimal_both', 'l_div_dec2'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik double-decimal division practice`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_add')) {
+    throw new Error(`Set ${setNumber} is missing Lorik same-denominator fraction addition`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_sub')) {
+    throw new Error(`Set ${setNumber} is missing Lorik unlike-denominator subtraction`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_muldiv')) {
+    throw new Error(`Set ${setNumber} is missing Lorik fraction multiply-divide coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_ofwhole')) {
+    throw new Error(`Set ${setNumber} is missing Lorik fraction-of-whole coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_seq')) {
+    throw new Error(`Set ${setNumber} is missing Lorik sequential divide-multiply coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_madd')) {
+    throw new Error(`Set ${setNumber} is missing Lorik mixed-number addition coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_msub')) {
+    throw new Error(`Set ${setNumber} is missing Lorik mixed-number subtraction coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_paren1')) {
+    throw new Error(`Set ${setNumber} is missing Lorik parentheses division coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_paren2')) {
+    throw new Error(`Set ${setNumber} is missing Lorik parentheses multiplication coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_paren3')) {
+    throw new Error(`Set ${setNumber} is missing Lorik parentheses addition coverage`);
+  }
+  if (![...lorikFracTags].some(tag => tag === 'l_fmix_3mul')) {
+    throw new Error(`Set ${setNumber} is missing Lorik triple-multiplication fraction coverage`);
+  }
+  if (![...lorikFracTags].some(tag => ['l_fmix_fd1', 'l_fmix_fd2'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-fraction bridge coverage`);
   }
   if (![...lorikMixedTags].some(tag => ['l_bmix_125', 'l_bmix_near100'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik structure-shortcut mixed practice`);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.7 (题型覆盖增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.9 (分数训练覆盖增强版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -213,7 +213,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.7</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.9</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -236,7 +236,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.7 题型覆盖增强版：<br><strong>KAI 小数题固定覆盖<br>Lorik 简算结构更均衡</strong>
+                💡 23.9 分数训练覆盖增强版：<br><strong>KAI 分数计算结构更稳定<br>Lorik 分数综合每日全覆盖</strong>
             </div>
         </div>
 
@@ -262,9 +262,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.7';
-        const APP_RELEASE_LABEL = '题型覆盖增强版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.7 题型覆盖增强版：<br><strong>KAI 小数题固定覆盖<br>Lorik 简算结构更均衡</strong>';
+        const APP_VERSION = 'v23.9';
+        const APP_RELEASE_LABEL = '分数训练覆盖增强版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.9 分数训练覆盖增强版：<br><strong>KAI 分数计算结构更稳定<br>Lorik 分数综合每日全覆盖</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
@@ -1601,7 +1601,16 @@
                         return {tag:"k_eq_prop", q:`<div class="frac"><span><i class="var">x</i></span><span class="bottom">${b}</span></div> = ${a}`, a:`<i class="var">x</i> = ${a*b}`, step:`比例方程两边同乘分母: <i class="var">x</i> = ${a} &times; ${b} = <strong class="highlight">${a*b}</strong>`};
                     } }
                 ];
-                let selCalcs = Engine.weightedSelect(calcs, "KAI", 8);
+                let selCalcs = buildCoveredSection("KAI", [
+                    [calcs[0]],
+                    [calcs[1], calcs[3]],
+                    [calcs[2]],
+                    [calcs[4]],
+                    [calcs[5]],
+                    [calcs[6]],
+                    [calcs[7]],
+                    [calcs[8]]
+                ]);
                 let selEqs = buildCoveredSection("KAI", [
                     [eqs[0], eqs[1]],
                     [eqs[2], eqs[5]],
@@ -1790,7 +1799,20 @@
                         return { tag:"l_fmix_fd2", q: `${f.toHTML()} &minus; ${dec} = `, a: ans.toHTML(), step: `小数化为分数后通分相减: ${f.toHTML()} &minus; ${new Frac(dec*100,100).toHTML()} = <strong class="highlight">${ans.toHTML()}</strong>` };
                     } }
                 ];
-                return Engine.weightedSelect(pool, "Lorik", 12);
+                return buildCoveredSection("Lorik", [
+                    [pool[0]],
+                    [pool[1]],
+                    [pool[2]],
+                    [pool[3]],
+                    [pool[4]],
+                    [pool[5]],
+                    [pool[6]],
+                    [pool[7]],
+                    [pool[8]],
+                    [pool[9]],
+                    [pool[10]],
+                    [pool[11]]
+                ]);
             },
             basicMixed: () => buildCoveredSection("Lorik", [
                 [

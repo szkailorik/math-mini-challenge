@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.9 strengthens fraction training reliability:
+
+- KAI fraction sets now guarantee a daily blend of add/subtract structure, chained multiply-divide reasoning, distributive reasoning, cross-canceling, and decimal-fraction bridge work.
+- Lorik fraction sets now guarantee all core forms appear every day, including mixed numbers, parentheses, fraction-of-whole, and decimal-fraction bridge practice.
+- The goal is to make the fraction block diagnostically trustworthy, so a tutor can expect the same misconception families to surface instead of hoping randomness hits them.
+
 v23.8 extends must-cover guarantees into conversion and equation reasoning:
 
 - KAI conversion sets now guarantee a balanced mix of percent, repeating decimal, benchmark denominator, and exact decimal-to-fraction work.

@@ -29,8 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.8 Iteration Notes
+## Current v23.9 Iteration Notes
 
+### Iteration 1
+
+- What I changed: replaced pure random KAI fraction-calculation selection with must-cover coverage groups, while keeping equation archetype coverage intact.
+- Open questions: none.
+- Risks: KAI fraction sections are more deliberately scaffolded now, so future new fraction tags should be assigned to a clear structure family instead of appended loosely.
+- Next steps: watch whether the `k_fcalc_paren` and `k_fcalc_muldiv` alternation feels balanced enough in daily use.
+
+### Iteration 2
+
+- What I changed: made Lorik fraction mix guarantee the full daily spread of its 12 fraction-operation families instead of sampling randomly from the pool.
+- Open questions: none.
+- Risks: this raises structural consistency and lowers tag-level randomness, so difficulty tuning should happen inside each family rather than by deleting daily families.
+- Next steps: consider a phase-aware rotation only if some family starts to feel over-practiced after longer use.
+
+### Iteration 3
+
+- What I changed: updated runtime validation and product/development docs so the new fraction coverage guarantees are explicit and regression-protected.
+- Open questions: none.
+- Risks: validator strictness is higher again, so any future fraction-pool refactor must update the expected coverage rules intentionally.
+- Next steps: if coverage rules keep growing, move the validator expectations into shared named manifests.
+
+## Previous v23.8 Iteration Notes
 ### Iteration 1
 
 - What I changed: extended must-cover generation into KAI conversions so each set now includes percent, repeating-decimal, benchmark-denominator, and decimal-to-fraction practice.
