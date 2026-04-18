@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.37 (去掉等号后答案横线)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.38 (等号颜色回归正文色)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -287,25 +287,25 @@
             display: flex;
             align-items: flex-start;
             flex-wrap: wrap;
-            gap: 0.16em 0.22em;
+            gap: 0.12em 0.18em;
             min-width: 0;
         }
         .math-row {
             display: inline-flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.16em 0.22em;
+            gap: 0.12em 0.18em;
             font-family: 'Times New Roman', serif;
             font-variant-numeric: lining-nums tabular-nums;
             letter-spacing: 0.02em;
-            line-height: 1.38;
+            line-height: 1.32;
             color: var(--math-ink);
         }
         .math-text {
             display: inline-flex;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.16em 0.22em;
+            gap: 0.12em 0.18em;
             min-width: 0;
         }
         .math-op, .math-eq, .math-compare {
@@ -318,8 +318,8 @@
             line-height: 1;
             transform: translateY(-0.01em);
         }
-        .math-op { color: var(--math-blue); font-size: 1.04em; }
-        .math-eq { color: var(--math-warm); min-width: 1em; font-size: 1.02em; }
+        .math-op { color: var(--math-blue); font-size: 1.02em; }
+        .math-eq { color: var(--math-ink); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
         .review-flag {
             position: absolute;
@@ -345,10 +345,10 @@
             justify-content: center;
             align-items: center;
             flex: 0 0 auto;
-            margin: 0 0.16em 0 0.12em;
+            margin: 0 0.1em 0 0.08em;
             min-width: 1.7em;
-            font-size: 0.92em;
-            vertical-align: -0.24em;
+            font-size: 0.88em;
+            vertical-align: -0.22em;
             line-height: 1;
         }
         .frac > span {
@@ -356,7 +356,7 @@
             align-items: center;
             justify-content: center;
             min-width: 100%;
-            padding: 0 0.28em;
+            padding: 0 0.22em;
             line-height: 1.04;
         }
         .frac > span.bottom { border-top: 1.6px solid currentColor; width: 100%; box-sizing: border-box; }
@@ -379,12 +379,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.9em;
+            font-size: 1.72em;
             font-family: 'Times New Roman', serif;
             font-weight: 300;
             color: currentColor;
-            line-height: 0.82;
-            margin: 0 -0.02em;
+            line-height: 0.86;
+            margin: 0 -0.03em;
             transform: none;
             flex: 0 0 auto;
         }
@@ -392,6 +392,15 @@
         .paren-r::before { content: ')'; }
 
         .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
+        .h-frac,
+        .h-mixed {
+            font-size: 18.6px;
+        }
+        .h-frac .math-text,
+        .h-mixed .math-text {
+            gap: 0.08em 0.14em;
+            line-height: 1.24;
+        }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -468,10 +477,10 @@
         }
         .math-write-gap {
             display: inline-block;
-            width: 1.35em;
-            min-width: 1.35em;
+            width: 0.78em;
+            min-width: 0.78em;
             height: 0.92em;
-            margin: 0 0.16em 0.06em 0.08em;
+            margin: 0 0.08em 0.05em 0.04em;
             vertical-align: baseline;
         }
         .dot-top { position: relative; }
@@ -769,7 +778,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.37</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.38</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -848,9 +857,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.37';
-        const APP_RELEASE_LABEL = '去掉等号后答案横线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.37 去掉等号后答案横线：<br><strong>删除所有等号后的下划线，只保留等号和轻量留白<br>重新减轻线条干扰，让卷面更容易排整齐</strong>';
+        const APP_VERSION = 'v23.38';
+        const APP_RELEASE_LABEL = '等号颜色回归正文色';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.38 等号颜色回归正文色：<br><strong>等号不再用红色强调，改成和题目正文一致的颜色<br>并继续收紧分数/方程题的行内间距，让卷面更稳</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

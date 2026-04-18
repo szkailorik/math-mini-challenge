@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.37 Iteration Notes
+## Current v23.38 Iteration Notes
+
+### Iteration 1
+
+- What I changed: continued tightening the inline worksheet layout after removing the answer underlines, focusing on the remaining visual looseness around fractions, parentheses, and write-gaps.
+- Open questions: none.
+- Risks: over-tightening can hurt legibility if the paper starts feeling cramped.
+- Next steps: keep spacing changes concentrated in fraction-heavy areas rather than globally shrinking the whole worksheet.
+
+### Iteration 2
+
+- What I changed: restored a more neutral operator treatment by changing the equals sign back to the same ink color as the rest of the math text.
+- Open questions: none.
+- Risks: if other operators remain visually over-emphasized, the page can still feel stylistically uneven.
+- Next steps: keep symbols visually subordinate to the mathematical structure they connect.
+
+### Iteration 3
+
+- What I changed: preserved the no-underline answer mode while tightening inline spacing, so the paper becomes cleaner without reintroducing line geometry.
+- Open questions: none.
+- Risks: future symbol-polish passes should check that they do not accidentally drift back toward decorative contrast.
+- Next steps: continue preferring restraint over ornament in worksheet typography.
+
+## Previous v23.37 Iteration Notes
 
 ### Iteration 1
 
