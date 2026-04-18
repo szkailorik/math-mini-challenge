@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.17 Iteration Notes
+## Current v23.18 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a high-value training priority layer so the engine now spends more daily paper budget on misconception families with higher leverage, not just on whatever currently has weight.
+- Open questions: none.
+- Risks: stronger prioritisation can make the paper feel more purposeful but slightly less uniform, which is intentional.
+- Next steps: keep observing whether additional high-value families should join this layer after live use.
+
+### Iteration 2
+
+- What I changed: extended targeted review variants into selected KAI decimal-division and equation traps, so remediation now checks transfer, not only exact memory.
+- Open questions: none.
+- Risks: stronger review variants increase cognitive demand, so answer-sheet explanations must remain explicit.
+- Next steps: if the new KAI review lane works well, expand it into a few fraction trap families later.
+
+### Iteration 3
+
+- What I changed: updated docs, validation, and cache versioning so the new global high-value focus logic is regression-protected.
+- Open questions: none.
+- Risks: validator can check that the new focus helpers and review variants exist, but live paper feel still matters.
+- Next steps: continue sharpening the highest-value training blocks after observing the new paper balance.
+
+## Previous v23.17 Iteration Notes
 
 ### Iteration 1
 

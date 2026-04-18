@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.18 improves global training efficiency, not only local item quality:
+
+- The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.
+- In practice, this means more time is spent on decimal-division placement, equation inversion traps, fraction mul/div and canceling, and benchmark conversion/comparison work.
+- Review variants now also cover selected KAI high-value traps, so remediation is less dependent on seeing the exact old item again.
+
 v23.17 raises the quality ceiling of Lorik Set B division:
 
 - Section II keeps the same decimal-division spine, but now more often requires genuine quotient estimation, `×10` versus `×100` scaling decisions, and post-solution verification.

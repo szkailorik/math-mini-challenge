@@ -516,6 +516,17 @@ const sampleErrorSignal = context.window.getErrorBookSignal?.(
 if (!sampleErrorSignal || sampleErrorSignal.exactCount < 4 || sampleErrorSignal.score <= 0) {
   throw new Error('Error-book signal scoring is not reporting exact active errors');
 }
+const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
+  {
+    lastSeen: { k_eq_divisor: 96 },
+    errorBook: { e5: { tag: 'k_eq_divisor', count: 3, mastered: false, info: { q: '1 &divide; x = 1/2', a: '2' } } },
+    weights: { k_eq_divisor: 4 }
+  },
+  'k_eq_divisor'
+);
+if (!sampleHighValueSignal || sampleHighValueSignal.tier < 3 || sampleHighValueSignal.score <= 0 || !sampleHighValueSignal.priority) {
+  throw new Error('High-value training signal is not prioritising core misconception tags');
+}
 const sampleReplay = context.window.buildErrorReplayItem?.({
   uid: 'e3',
   tag: 'k_dmul_basic',
@@ -535,6 +546,16 @@ const sampleVariant = context.window.buildErrorVariantItem?.({
 });
 if (!sampleVariant?.isErrorVariant || !sampleVariant?.isReviewItem || !sampleVariant.q.includes('circle-blank') || !sampleVariant.step.includes('Review Variant')) {
   throw new Error('Error variant item builder is not producing targeted review variants');
+}
+const sampleKaiVariant = context.window.buildErrorVariantItem?.({
+  uid: 'e6',
+  tag: 'k_eq_divisor',
+  count: 2,
+  lastSet: 99,
+  info: { q: '3/2 &divide; x = 3/4', a: 'x = 2' },
+});
+if (!sampleKaiVariant?.isErrorVariant || !sampleKaiVariant?.q.includes('&divide; <i class="var">x</i>') || !sampleKaiVariant.step.includes('Review Variant')) {
+  throw new Error('Error variant item builder is not producing targeted KAI equation review variants');
 }
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
