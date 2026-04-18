@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.53 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the child-facing `Calculation Quick Review` page so every topic now also surfaces a `最容易错` warning line, making the page more useful as a rapid pre-practice and post-practice anti-slip review aid.
+- Open questions: whether the next pass should tighten the wording of these warning lines, or shift back to print density and topic-copy refinement.
+- Risks: this new warning layer is useful only if it stays short and specific; if later edits make it verbose, it will stop functioning as a true fast-scan reminder.
+- Next steps: review the live page with real child use, then either sharpen the warning phrasing or continue refining typography and print-first balance.
+
 ## Current v23.52 Iteration Notes
 
 ### Iteration 1

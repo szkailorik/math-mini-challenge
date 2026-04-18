@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.52 (计算知识总览页记忆钉子句升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.53 (计算知识总览页防错提醒升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -219,7 +219,8 @@
             body.print-quick-review #print-root .quick-review-memory-route,
             body.print-quick-review #print-root .quick-review-focus-copy,
             body.print-quick-review #print-root .quick-review-focus-route,
-            body.print-quick-review #print-root .quick-review-hook {
+            body.print-quick-review #print-root .quick-review-hook,
+            body.print-quick-review #print-root .quick-review-mistake {
                 font-size: 11.2px !important;
             }
             body.print-quick-review #print-root .quick-review-footer-pins {
@@ -956,6 +957,25 @@
             text-transform: uppercase;
             font-size: 11px;
         }
+        .quick-review-mistake {
+            margin: 0 0 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid #f3c5ad;
+            background: linear-gradient(180deg, rgba(255,247,237,0.98), rgba(255,241,231,0.98));
+            color: #9a3412;
+            font-size: 12.5px;
+            line-height: 1.55;
+            font-weight: 800;
+        }
+        .quick-review-mistake-label {
+            display: inline-block;
+            margin-right: 8px;
+            color: #c2410c;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
         .quick-review-topic-kicker {
             display: inline-block;
             margin-bottom: 6px;
@@ -1390,9 +1410,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.52';
-        const APP_RELEASE_LABEL = '计算知识总览页记忆钉子句升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.52 计算知识总览页记忆钉子句升级：<br><strong>每个专题新增“先记住”一句核心提醒<br>让孩子更快抓到最值钱的那一句，再进入规则、技巧和例子</strong>';
+        const APP_VERSION = 'v23.53';
+        const APP_RELEASE_LABEL = '计算知识总览页防错提醒升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.53 计算知识总览页防错提醒升级：<br><strong>每个专题新增“最容易错”提醒<br>让孩子先避开最常见的坑，再进入规则、技巧和例子</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3365,6 +3385,7 @@
                     <h3>${topic.title}</h3>
                     <p class="quick-review-focus-copy">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
+                    <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
                     <div class="quick-review-focus-route">先按这个顺序扫：${topic.memoryRoute}</div>
                     <div class="quick-review-focus-pins">${(topic.pins || []).slice(0, 2).map(pin => `<span class="quick-review-focus-pin">${pin}</span>`).join('')}</div>
                     ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达这个专题</button>`}
@@ -3386,6 +3407,7 @@
                         <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     </div>
                     <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
+                    <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
                     <div class="quick-review-memory-route">
                         <span class="quick-review-memory-label">回想顺序</span>
                         <span>${topic.memoryRoute}</span>

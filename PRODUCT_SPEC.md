@@ -317,6 +317,12 @@ v23.52 makes the quick-review layer easier to remember:
 - This keeps the page aligned with its real purpose: not encyclopedic coverage, but rapid reactivation of the rule, norm, or trick that most needs to come back to mind.
 - Product-wise, this matters because many learners do not fail review for lack of material; they fail because the page does not surface the one sentence worth grabbing first.
 
+v23.53 makes the quick-review layer safer against repeat mistakes:
+
+- Each topic now also surfaces one `最容易错` line before the fuller rule/technique block.
+- This means the page now helps with two things in the first few seconds: what to remember first, and what to avoid first.
+- Product-wise, this matters because efficient review is not only “remember the right rule”, but also “avoid the one habitual slip that keeps coming back”.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
