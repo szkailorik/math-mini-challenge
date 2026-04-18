@@ -1277,6 +1277,12 @@
         .toggle-btn { background: none; border: none; color: #475569; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
         .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: var(--desk-accent);}
         .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px;}
+        .ctrl-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 6px;
+        }
         .ctrl-btn {
             background: #ffffff;
             color: var(--desk-ink);
@@ -1290,6 +1296,16 @@
             text-align:center;
             font-size: 12.5px;
             box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+        }
+        .ctrl-grid .ctrl-btn {
+            width: 100%;
+            min-height: 38px;
+            margin-top: 0 !important;
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
         }
         .ctrl-btn:hover { background: var(--desk-accent); color: #fff; transform: translateY(-1px); border-color: var(--desk-accent); }
         .set-indicator { font-size: 15px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
@@ -1409,7 +1425,18 @@
         }
 
         #toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: sans-serif; opacity: 0; transition: opacity 0.3s; z-index: 10000; pointer-events: none;}
-        #cloud-status { font-size: 11px; color: #475569; text-align: center; margin-top: 2px; font-weight: normal; }
+        #cloud-status {
+            font-size: 10.5px;
+            color: #475569;
+            text-align: center;
+            margin-top: 0;
+            font-weight: 600;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(16, 35, 63, 0.08);
+            border-radius: 999px;
+            padding: 5px 10px;
+            line-height: 1.2;
+        }
 
         .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(247, 241, 227, 0.96); color: var(--desk-ink); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(16,35,63,0.12); box-shadow: 0 8px 18px rgba(15,23,42,0.14); z-index: 9999; cursor: pointer; font-family: 'Georgia', serif; font-weight: 700; font-size: 14px; backdrop-filter: blur(8px); display: none; }
         .export-btn { position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
@@ -1439,6 +1466,7 @@
             .mini-panel-btn { top: 12px; right: 12px; }
             .export-btn { right: 12px; bottom: 12px; }
             .info-row { grid-template-columns: 1fr; text-align: left; }
+            .ctrl-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 780px) {
             .quick-review-focus-strip,
@@ -1470,7 +1498,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.59</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.60</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1513,14 +1541,13 @@
                 <button class="ctrl-btn" style="background:#16a34a; color:white;" onclick="window.printQuestionSheets()">🖨️ 打印AB四页</button>
                 <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printAnswerSheets()">🧾 打印答案</button>
             </div>
-            <button class="ctrl-btn" style="background:#059669; color:white; width:100%; margin-top:8px;" onclick="window.showDataModal()">💾 数据备份 / Data Backup</button>
-            <button class="ctrl-btn" style="background:#dc2626; color:white; width:100%; margin-top:6px;" onclick="window.showSetReview()">📋 本套批改报告 / Set Review</button>
-            <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
-            <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
-            <button class="ctrl-btn" style="background:#0f766e; color:white; width:100%; margin-top:6px;" onclick="window.showCalculationQuickReview()">📘 计算知识总览 / Quick Review</button>
-            <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
-            <div id="release-note-label" class="release-note-compact">
-                💡 菜单压缩与短屏可滚动优化
+            <div class="ctrl-grid">
+                <button class="ctrl-btn" style="background:#059669; color:white;" onclick="window.showDataModal()">💾 数据备份</button>
+                <button class="ctrl-btn" style="background:#dc2626; color:white;" onclick="window.showSetReview()">📋 本套报告</button>
+                <button class="ctrl-btn" style="background:#0284c7; color:white;" onclick="window.showCloudArchive()">🗄️ 学习档案</button>
+                <button class="ctrl-btn" style="background:#7c3aed; color:white;" onclick="window.showKnowledgeMap()">🧭 知识点地图</button>
+                <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.showCalculationQuickReview()">📘 计算总览</button>
+                <button class="ctrl-btn" style="background:#f59e0b; color:white;" onclick="window.renderErrorBook()">📓 专属错题本</button>
             </div>
         </div>
 
@@ -1547,9 +1574,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.59';
-        const APP_RELEASE_LABEL = '悬浮菜单压缩与短屏修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.59 悬浮菜单压缩：去掉阶段长介绍，短屏自动滚动。';
+        const APP_VERSION = 'v23.60';
+        const APP_RELEASE_LABEL = '悬浮菜单动作区再压缩';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.60 悬浮菜单动作区再压缩：常用入口改为双列，更容易一屏找到。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

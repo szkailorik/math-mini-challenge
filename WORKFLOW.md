@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.60 Iteration Notes
+
+### Iteration 1
+
+- What I changed: further compressed the floating teacher-workbench menu by turning the lower single-column action stack into a denser two-column grid and tightening the cloud-status area, so the same actions are easier to reach within one viewport.
+- Open questions: whether the next shell pass should also shorten a few button labels further, or whether the current balance between density and recognizability is already right.
+- Risks: packing actions more tightly helps height, but if labels are compressed too aggressively the tutor shell could become harder to scan.
+- Next steps: review the live menu at typical laptop and short-window heights, then decide whether to stop here or do one final label-polish pass.
+
 ## Current v23.59 Iteration Notes
 
 ### Iteration 1

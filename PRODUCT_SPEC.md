@@ -509,3 +509,9 @@ profile = {
 - The floating expert-engine menu now removes long first-stage and second-stage explanatory copy and keeps only compact switch, status, and insight cues.
 - Shorter viewports no longer lose lower actions as easily because the menu now protects its height and scrolls internally when needed.
 - The tutor-facing shell stays easier to scan, while student-facing question pages and printable sheets remain unaffected.
+
+- v23.60 further compresses the tutor workbench actions:
+
+- Secondary tutor actions now render in a denser two-column grid instead of one long vertical stack.
+- The shell keeps the same entry points, but they are easier to reach within one viewport.
+- Cloud-status presentation is also shorter, helping the menu stay more compact without removing useful actions.

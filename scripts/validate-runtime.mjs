@@ -66,7 +66,10 @@ if (!html.includes('window.showCalculationQuickReview = function()')) {
 if (!html.includes('window.printCalculationQuickReview = function()')) {
   throw new Error('Calculation Quick Review print function is missing from runtime script');
 }
-if (!html.includes('📘 计算知识总览 / Quick Review')) {
+if (!html.includes('window.showCalculationQuickReview()') && !html.includes("window.showCalculationQuickReview()")) {
+  throw new Error('Calculation Quick Review control-panel shortcut is missing its action binding');
+}
+if (!html.includes('📘 计算知识总览 / Quick Review') && !html.includes('📘 计算总览')) {
   throw new Error('Calculation Quick Review control-panel shortcut is missing');
 }
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
