@@ -941,28 +941,34 @@
         .quick-review-topic {
             border: 1px solid #dce4eb;
             border-radius: 16px;
-            padding: 14px 16px 15px;
+            padding: 13px 15px 14px;
             background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(250,250,248,0.99));
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
+            box-shadow: 0 7px 16px rgba(15, 23, 42, 0.04);
         }
         .quick-review-topic-head {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
             gap: 10px;
-            margin-bottom: 10px;
-            padding-bottom: 9px;
+            margin-bottom: 9px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #dde6ee;
         }
+        .quick-review-summary-strip {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+            gap: 8px 10px;
+            margin-bottom: 10px;
+        }
         .quick-review-hook {
-            margin: 0 0 10px;
-            padding: 8px 10px;
+            margin: 0;
+            padding: 7px 9px;
             border-radius: 12px;
             border: 1px solid #dde7e3;
             background: linear-gradient(180deg, rgba(250,252,252,0.98), rgba(245,249,248,0.98));
             color: #214d5a;
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 12.5px;
+            line-height: 1.48;
             font-weight: 800;
         }
         .quick-review-hook-label {
@@ -1055,26 +1061,31 @@
             text-align: right;
         }
         .quick-review-memory-route {
-            margin: 10px 0 0;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            margin: 0;
+            display: flex;
+            align-items: flex-start;
+            align-content: flex-start;
+            gap: 7px;
             flex-wrap: wrap;
-            font-size: 12px;
-            line-height: 1.5;
+            font-size: 11.5px;
+            line-height: 1.45;
             color: #5b4a2f;
             font-weight: 700;
+            padding: 7px 9px;
+            border-radius: 12px;
+            border: 1px solid #eadfce;
+            background: rgba(255, 251, 244, 0.9);
         }
         .quick-review-memory-label {
             color: #8a3412;
             letter-spacing: 0.04em;
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 10.5px;
         }
         .quick-review-flow {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px 14px;
+            gap: 8px 12px;
             margin-top: 10px;
         }
         .quick-review-flow-step {
@@ -1082,7 +1093,7 @@
             border-top: 3px solid #c4d4e4;
             border-radius: 12px;
             background: rgba(255,255,255,0.92);
-            padding: 10px 11px;
+            padding: 9px 10px;
             position: relative;
         }
         .quick-review-flow-step::after {
@@ -1101,9 +1112,9 @@
             display: none;
         }
         .quick-review-flow-label {
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             color: #123b73;
-            font-size: 11px;
+            font-size: 10.5px;
             letter-spacing: 0.06em;
             text-transform: uppercase;
             font-weight: 800;
@@ -1126,14 +1137,14 @@
         }
         .quick-review-flow-copy {
             color: #1e293b;
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 12.5px;
+            line-height: 1.48;
             font-weight: 700;
         }
         .quick-review-support-grid {
             display: grid;
             grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-            gap: 10px 14px;
+            gap: 9px 12px;
             margin-top: 10px;
         }
         .quick-review-support-block {
@@ -1141,7 +1152,7 @@
             border-left: 3px solid #d7e2ec;
             border-radius: 12px;
             background: rgba(252,252,251,0.9);
-            padding: 10px 11px;
+            padding: 9px 10px;
         }
         .quick-review-support-block h4,
         .quick-review-example h4 {
@@ -1155,7 +1166,7 @@
         .quick-review-support-columns {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px 12px;
+            gap: 8px 10px;
         }
         .quick-review-support-col h5 {
             margin: 0 0 6px;
@@ -1171,8 +1182,8 @@
         .quick-review-support-block li {
             margin: 0 0 5px;
             color: #1e293b;
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 12.5px;
+            line-height: 1.48;
         }
         .quick-review-support-block li:last-child { margin-bottom: 0; }
         .quick-review-example {
@@ -1180,7 +1191,7 @@
             border-left: 3px solid #d7e2dc;
             border-radius: 12px;
             background: linear-gradient(180deg, #fbfcfc, #f4f8f7);
-            padding: 11px 12px;
+            padding: 10px 11px;
         }
         .quick-review-example-row {
             font-family: 'STIX Two Text', 'Times New Roman', serif;
@@ -1192,8 +1203,8 @@
         .quick-review-topic-pins {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
+            gap: 5px;
+            margin-top: 8px;
         }
         .quick-review-topic-pin {
             display: inline-flex;
@@ -1490,6 +1501,7 @@
             .quick-review-hero-top,
             .quick-review-focus-strip,
             .quick-review-nav,
+            .quick-review-summary-strip,
             .quick-review-flow,
             .quick-review-support-grid,
             .quick-review-support-columns {
@@ -1517,7 +1529,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.63</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.64</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1593,9 +1605,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.63';
-        const APP_RELEASE_LABEL = '计算知识页页头与焦点区收轻';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.63 计算知识页页头与焦点区收轻：更快进入专题主体。';
+        const APP_VERSION = 'v23.64';
+        const APP_RELEASE_LABEL = '计算知识页专题卡再收顺';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.64 计算知识页专题卡再收顺：更像高质量速查卡。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3601,10 +3613,12 @@
                         </div>
                         <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     </div>
-                    <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
-                    <div class="quick-review-memory-route">
-                        <span class="quick-review-memory-label">回想顺序</span>
-                        <span>${topic.memoryRoute}</span>
+                    <div class="quick-review-summary-strip">
+                        <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
+                        <div class="quick-review-memory-route">
+                            <span class="quick-review-memory-label">回想顺序</span>
+                            <span>${topic.memoryRoute}</span>
+                        </div>
                     </div>
                     <div class="quick-review-flow">
                         <div class="quick-review-flow-step">

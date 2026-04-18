@@ -533,3 +533,9 @@ profile = {
 - The quick-review hero is now lighter and more cover-like, so learners reach the actual topic sections faster.
 - The `今日先看` focus cards are more compact, keeping the “what to scan first” guidance without delaying entry into the main content.
 - The page should now feel more like a concise review handout than a layered dashboard at the top.
+
+- v23.64 further sharpens topic-card readability on the child-facing quick-review page:
+
+- Each topic now behaves more like a compact review card: hook and recall route first, process flow second, support and example last.
+- The goal is to reduce scanning friction so children can recover the right method faster without feeling like they are reading stacked modules.
+- The same change also improves print readability by making each topic block feel more self-contained and orderly.
