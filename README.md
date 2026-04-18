@@ -11,6 +11,7 @@
 - [下一阶段计算训练模块开发文档](./docs/2026-04-18-next-stage-calculation-spec.md)
 - [第二阶段实施计划](./docs/2026-04-18-next-stage-calculation-implementation-plan.md)
 - [第二阶段前端体验设计文档](./docs/2026-04-18-phase-two-frontend-ux-spec.md)
+- [两个阶段共同训练质量优化设计文档](./docs/2026-04-19-shared-training-quality-spec.md)
 
 ## 多设备同步设置（一次，30 秒）
 
