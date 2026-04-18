@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.49 Iteration Notes
+## Current v23.50 Iteration Notes
+
+### Iteration 1
+
+- What I changed: refined the new child-facing `Calculation Quick Review` page so it now includes explicit usage guidance, numbered scan navigation, stage notes, and per-topic recall-order copy instead of only a list of review blocks.
+- Open questions: whether the next pass should focus more on tightening the actual wording inside each topic, or on further compressing the print layout into an even cleaner one-page-first output.
+- Risks: the page is now more guided and more teachable, but future additions must stay disciplined so it does not drift into a dense instruction panel or lose its “quick scan” character.
+- Next steps: review the live page with real child use, then either refine topic wording and example quality or keep polishing density and print balance.
+
+## Previous v23.49 Iteration Notes
 
 ### Iteration 1
 

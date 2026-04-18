@@ -297,6 +297,13 @@ v23.49 adds a child-facing quick-review layer for long-term calculation training
 - The page keeps its main content stable across time, but lightly adapts emphasis and “worth reviewing now” hints according to the current phase and active weak areas.
 - Product-wise, this matters because long-term fluency is not only generated practice. It also benefits from fast, repeatable review that helps the child remember what to pay attention to before or after practice.
 
+v23.50 turns that quick-review layer into a more usable study routine:
+
+- The page now tells the learner when to use it, not only what to read.
+- It now supports three practical moments: a brief pre-practice scan, a short post-practice reminder pass, and a very compressed pre-test review.
+- Each topic now exposes a stable “回想顺序”, which turns the page from a static content wall into a repeatable scanning routine.
+- Product-wise, this matters because review efficiency depends not only on picking the right content, but also on reducing hesitation: the learner should know how to move through the page quickly.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
