@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a promotion-state store; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, and gap-adaptive in `v23.25`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a promotion-state store; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, and focus-replay-aware in `v23.26`.
 
 ## Local Environment
 
@@ -47,12 +47,14 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getSetCacheKey`: namespaces cached set snapshots by program so closure papers do not collide with advanced papers.
 - `getClosurePhaseInfo`: maps the second-stage set counter to `收口期 / 收束期 / 毕业判定期`, and provides phase-specific cue text plus section labels.
 - `selectClosureFocus`: combines closure signal fields, active closure error-book counts, recent closure mistakes, and phase bias to choose the dominant learner-specific reinforcement lane.
+- `injectClosureFocusReview`: injects one closure exact replay or same-skill variant into section V when the chosen focus lane has active matching error-book entries.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
 - `generateProgramSetData`: isolates advanced and closure generation behind one runtime entry point.
 - `buildClosureProgramSet`: assembles the second-stage paper around two simultaneous goals: elementary calculation closure and first-stage skill maintenance, while also shifting emphasis by phase across the monthly arc and by learner-specific focus lane in section V.
+- `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
@@ -85,7 +87,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then validates promotion gating, defer-for-7-sets behavior, program-aware set counters, closure bootstrap, phase-aware closure generation, adaptive closure focus selection, isolated profile writes, closure signal updates, and print-sandbox behavior.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then validates promotion gating, defer-for-7-sets behavior, program-aware set counters, closure bootstrap, phase-aware closure generation, adaptive closure focus selection, focus-lane replay injection, isolated profile writes, closure signal updates, and print-sandbox behavior.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -130,6 +132,7 @@ python3 -m http.server 8080
 - Confirm `Closure` set 1 shows `收口期`, set 12 shows `收束期`, and set 26 shows `毕业判定期`, with matching cue text on the paper.
 - Grade and submit one `Closure` set, then confirm a closure-specific report appears and the first-stage profile remains untouched.
 - After creating a clear second-stage weak point, confirm the next `Closure` set turns section V into the matching `重点强化` lane instead of leaving it fixed.
+- After creating a clear second-stage weak point, confirm that matching section-V focus lane contains one `错题回炉` or `同类变式` item from that same gap family.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
 - Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.

@@ -156,6 +156,14 @@ v23.25 makes phase two more personally efficient:
   - another may get `重点强化：旧知稳态` or `结果检验`
 - Product-wise, this is important because the closure stage is not meant to be a generic harder worksheet. It should finish elementary-school calculation efficiently by concentrating more time on the most valuable current gap while still preserving the common closure spine.
 
+v23.26 deepens the closure coaching loop:
+
+- The learner-specific reinforcement lane in section V now does more than change theme; it also tries to bring back one active mistake from that same gap family.
+- The replay order is deliberate:
+  - first try the exact old item
+  - if that would duplicate the current paper, fall back to a same-skill variant
+- This matters product-wise because the closure stage is supposed to be efficient, not merely comprehensive. When the system already knows today's dominant gap, it should spend at least one visible slot proving that it remembers the learner's actual recent mistake pattern.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.

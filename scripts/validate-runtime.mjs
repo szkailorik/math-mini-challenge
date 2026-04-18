@@ -1027,6 +1027,9 @@ const closureAdaptiveData = JSON.parse(store.get(getProgramCacheKey('elementary_
 if (closureAdaptiveData.c_k_focusMeta?.field !== 'representationGap') {
   throw new Error(`Expected KAI adaptive closure focus to target representationGap, got ${closureAdaptiveData.c_k_focusMeta?.field || '(missing)'}`);
 }
+if (!closureAdaptiveData.c_k_mix?.some(item => (item?.isErrorReplay || item?.isErrorVariant) && String(item?.tag || '').startsWith('c2_bridge_'))) {
+  throw new Error('Adaptive closure focus did not inject a bridge replay/variant into the KAI focus lane');
+}
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：跨表示桥接')) {
   throw new Error('Adaptive closure focus title did not render on the next KAI closure paper');
 }

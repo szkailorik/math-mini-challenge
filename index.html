@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.25 (第二阶段 gap 自适应强化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.26 (第二阶段重点强化区回炉)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -391,7 +391,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.25</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.26</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -438,7 +438,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.25 第二阶段 gap 自适应强化：<br><strong>Closure 第五大题现在会按每个孩子最突出的 gap 动态强化<br>同样保持三段式收束 + 旧知保温</strong>
+                💡 23.26 第二阶段重点强化区回炉：<br><strong>Closure 第五大题现在会把当前重点 gap 里的错题原题或同类变式塞回当天训练<br>同样保持三段式收束 + 旧知保温</strong>
             </div>
         </div>
 
@@ -465,9 +465,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.25';
-        const APP_RELEASE_LABEL = '第二阶段 gap 自适应强化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.25 第二阶段 gap 自适应强化：<br><strong>Closure 第五大题现在会按每个孩子最突出的 gap 动态强化<br>同样保持三段式收束 + 旧知保温</strong>';
+        const APP_VERSION = 'v23.26';
+        const APP_RELEASE_LABEL = '第二阶段重点强化区回炉';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.26 第二阶段重点强化区回炉：<br><strong>Closure 第五大题现在会把当前重点 gap 里的错题原题或同类变式塞回当天训练<br>同样保持三段式收束 + 旧知保温</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3144,6 +3144,100 @@
             };
         }
 
+        function getClosureFocusEntries(student, focusField) {
+            const profile = StorageDB.getProfile(student, CLOSURE_PROGRAM_ID) || createProgramProfile(CLOSURE_PROGRAM_ID);
+            return Object.entries(profile?.errorBook || {})
+                .map(([uid, entry]) => ({ uid, ...entry }))
+                .filter(entry => entry && !entry.mastered && entry.tag && entry.info?.q && getClosureSignalField(entry.tag) === focusField)
+                .map(entry => {
+                    const count = Math.max(1, entry.count || 1);
+                    const severity = entry.grade === 'wrong' ? 2 : 1;
+                    const lastSet = Number(entry.lastSet || 0);
+                    const recency = lastSet ? Math.max(0, 10 - Math.max(0, (window.currentSetNumber || 0) - lastSet)) * 0.15 : 0;
+                    return { ...entry, priority: count * 2 + severity + recency };
+                })
+                .sort((a, b) => b.priority - a.priority || (b.lastSet || 0) - (a.lastSet || 0));
+        }
+
+        function buildClosureC2Variant(entry, reviewPrefix = '') {
+            const tip = getKnowledgeTip(entry?.tag);
+            switch (entry?.tag) {
+                case 'c2_bridge_pct_frac':
+                    return Engine.randChoice([
+                        { q:`0.35 =<div class="blank"></div>%`, a:`35`, step:`${reviewPrefix}0.35 乘 100，就得到 35%。${tip.advice}` },
+                        { q:`45% =<div class="blank"></div>`, a:new Frac(9, 20).toHTML(), step:`${reviewPrefix}45% = 45/100，再约成 ${new Frac(9, 20).toHTML()}。${tip.advice}` },
+                        { q:`0.125 =<div class="blank"></div>`, a:new Frac(1, 8).toHTML(), step:`${reviewPrefix}0.125 = 125/1000，再约成 ${new Frac(1, 8).toHTML()}。${tip.advice}` }
+                    ]);
+                case 'c2_bridge_ratio_frac':
+                    return Engine.randChoice([
+                        { q:`6 : 10 =<div class="blank"></div>`, a:`0.6`, step:`${reviewPrefix}把 6:10 看成 6÷10，结果是 0.6。${tip.advice}` },
+                        { q:`0.3 = 3 :<div class="blank"></div>`, a:`10`, step:`${reviewPrefix}0.3 = 3/10，所以对应 3:10。${tip.advice}` },
+                        { q:`<div class="frac"><span>7</span><span class="bottom">8</span></div> = 7 :<div class="blank"></div>`, a:`8`, step:`${reviewPrefix}分数 7/8 可以直接写成 7:8。${tip.advice}` }
+                    ]);
+                case 'c2_unit_length':
+                    return Engine.randChoice([
+                        { q:`0.72 km =<div class="blank"></div> m`, a:`720`, step:`${reviewPrefix}1 km = 1000 m，所以 0.72 km = 720 m。${tip.advice}` },
+                        { q:`450 cm =<div class="blank"></div> m`, a:`4.5`, step:`${reviewPrefix}450 cm 除以 100，得到 4.5 m。${tip.advice}` }
+                    ]);
+                case 'c2_unit_mass':
+                    return Engine.randChoice([
+                        { q:`4.08 kg =<div class="blank"></div> g`, a:`4080`, step:`${reviewPrefix}1 kg = 1000 g，所以 4.08 kg = 4080 g。${tip.advice}` },
+                        { q:`3200 g =<div class="blank"></div> kg`, a:`3.2`, step:`${reviewPrefix}3200 g 除以 1000，得到 3.2 kg。${tip.advice}` }
+                    ]);
+                case 'c2_rate_discount':
+                    return Engine.randChoice([
+                        { q:`一件商品原价 160 元，打七五折后是<div class="blank"></div>元`, a:`120`, step:`${reviewPrefix}七五折就是 75%，所以 160×0.75 = 120。${tip.advice}` },
+                        { q:`现价 84 元，是原价的 70%，原价是<div class="blank"></div>元`, a:`120`, step:`${reviewPrefix}原价看成整体 1，列式 84÷0.7 = 120。${tip.advice}` }
+                    ]);
+                case 'c2_eq_percent':
+                    return Engine.randChoice([
+                        { q:`x 的 15% 是 18，x =<div class="blank"></div>`, a:`120`, step:`${reviewPrefix}列式 x×15% = 18，所以 x = 18÷0.15 = 120。${tip.advice}` },
+                        { q:`x 的 62.5% 是 20，x =<div class="blank"></div>`, a:`32`, step:`${reviewPrefix}62.5% = 0.625，所以 x = 20÷0.625 = 32。${tip.advice}` }
+                    ]);
+                case 'c2_speed_mix':
+                    return Engine.randChoice([
+                        { q:`125 &times; 24 的结果是<div class="blank"></div>`, a:`3000`, step:`${reviewPrefix}125×8=1000，所以 125×24 = 3000。${tip.advice}` },
+                        { q:`一辆车 2.5 时行 175 千米，平均每时行<div class="blank"></div>千米`, a:`70`, step:`${reviewPrefix}速度 = 路程÷时间，所以 175÷2.5 = 70。${tip.advice}` }
+                    ]);
+                case 'c2_est_product':
+                    return Engine.randChoice([
+                        { q:`51 &times; 19 的结果更接近<div class="blank"></div>`, a:`1000`, step:`${reviewPrefix}51 约看成 50，19 约看成 20，所以结果约是 1000。${tip.advice}` },
+                        { q:`7.8 &divide; 0.39 的结果更接近<div class="blank"></div>`, a:`20`, step:`${reviewPrefix}7.8÷0.39 大约相当于 780÷39，结果接近 20。${tip.advice}` }
+                    ]);
+                default:
+                    return null;
+            }
+        }
+
+        function injectClosureFocusReview(student, focusMeta, focusItems) {
+            if (!focusMeta?.field || focusMeta.field === 'legacyMix') return focusItems;
+            const entries = getClosureFocusEntries(student, focusMeta.field);
+            if (!entries.length) return focusItems;
+            const chosen = pickErrorReplayEntry(entries);
+            if (!chosen) return focusItems;
+            const usedThisPaper = window._paperQuestions || new Set();
+            const recent = window._recentQuestions || new Set();
+            const nextItems = [...focusItems];
+            const replaceAt = Math.max(0, nextItems.length - 1);
+
+            if (!usedThisPaper.has(chosen.info.q)) {
+                const replayItem = buildErrorReplayItem(chosen);
+                replayItem.reason = 'replay';
+                nextItems[replaceAt] = replayItem;
+                usedThisPaper.add(replayItem.q);
+                return Engine.shuffle(nextItems);
+            }
+
+            const variantItem = buildErrorVariantItem(chosen, () => buildClosureC2Variant(chosen, '[同类变式 Review Variant] '));
+            if (variantItem && !usedThisPaper.has(variantItem.q) && !recent.has(variantItem.q)) {
+                variantItem.reason = 'variant';
+                nextItems[replaceAt] = variantItem;
+                usedThisPaper.add(variantItem.q);
+                return Engine.shuffle(nextItems);
+            }
+            return focusItems;
+        }
+
         function getLegacyClosureFocusMeta(phaseMeta) {
             return {
                 field: 'legacyMix',
@@ -3657,6 +3751,8 @@
             const phase = getClosurePhaseInfo();
             const kaiFocusMeta = selectClosureFocus('KAI', phase.key);
             const lorikFocusMeta = selectClosureFocus('Lorik', phase.key);
+            const kaiFocusItems = injectClosureFocusReview('KAI', kaiFocusMeta, buildClosureFocusSection('KAI', 'kai', phase.key, kaiFocusMeta.field));
+            const lorikFocusItems = injectClosureFocusReview('Lorik', lorikFocusMeta, buildClosureFocusSection('Lorik', 'lorik', phase.key, lorikFocusMeta.field));
             return {
                 programId: CLOSURE_PROGRAM_ID,
                 phaseKey: phase.key,
@@ -3668,14 +3764,14 @@
                 c_k_unit: buildClosureUnitSection('KAI', 'kai', phase.key),
                 c_k_maint_core: GenKAI.decimalsDiv(),
                 c_k_rate: buildClosureRateEqSection('KAI', 'kai', phase.key),
-                c_k_mix: buildClosureFocusSection('KAI', 'kai', phase.key, kaiFocusMeta.field),
+                c_k_mix: kaiFocusItems,
                 c_k_maint_mix: Engine.shuffle([...GenKAI.decimalsMult(), ...GenKAI.bigSub()]),
                 c_l_focusMeta: lorikFocusMeta,
                 c_l_bridge: buildClosureBridgeSection('Lorik', 'lorik', phase.key),
                 c_l_unit: buildClosureUnitSection('Lorik', 'lorik', phase.key),
                 c_l_maint_core: GenLorik.div(),
                 c_l_rate: buildClosureRateEqSection('Lorik', 'lorik', phase.key),
-                c_l_mix: buildClosureFocusSection('Lorik', 'lorik', phase.key, lorikFocusMeta.field),
+                c_l_mix: lorikFocusItems,
                 c_l_maint_mix: Engine.shuffle([...GenLorik.mul(), ...GenLorik.sub()]),
                 stateLabel: `[Phase: ${phase.label}]`
             };

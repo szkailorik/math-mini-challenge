@@ -29,8 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.25 Iteration Notes
+## Current v23.26 Iteration Notes
 
+### Iteration 1
+
+- What I changed: upgraded the second-stage learner-specific reinforcement lane so section V now tries to inject one exact replay or same-skill variant from the chosen closure gap family.
+- Open questions: none.
+- Risks: replay logic must stay bounded to one visible slot; otherwise the closure paper could drift from "guided closure" into a patchwork review sheet.
+- Next steps: keep the replay lane focused and expand variants only where exact replay would otherwise be too repetitive.
+
+### Iteration 2
+
+- What I changed: added closure-specific fallback variants for bridge, unit, rate, speed, and validation tags, so replay can still happen even when the original question would duplicate the current paper.
+- Open questions: none.
+- Risks: variant quality now matters more because it is part of the remediation contract, not just a backup path.
+- Next steps: continue improving the most frequently triggered closure variants based on real review sessions.
+
+### Iteration 3
+
+- What I changed: upgraded runtime validation so a seeded `representationGap` must produce both the adaptive focus title and an actual replay/variant item inside the next closure focus lane.
+- Open questions: none.
+- Risks: validator confirms the loop exists, but human review is still the final check for whether the replay item feels worth printing.
+- Next steps: continue into adaptive difficulty inside the chosen focus lane, not only adaptive topic selection.
+
+## Previous v23.25 Iteration Notes
 ### Iteration 1
 
 - What I changed: kept the second-stage six-section paper shape stable, but turned section V into a learner-specific `重点强化区` driven by the strongest current closure gap.
