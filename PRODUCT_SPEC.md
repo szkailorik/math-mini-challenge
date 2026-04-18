@@ -235,6 +235,12 @@ v23.38 removes colored emphasis from equals signs:
 - The equals sign now uses the same ink color as the surrounding math text instead of a highlighted accent color.
 - This matters because punctuation and operators should support the worksheet, not compete visually with the actual calculation.
 
+v23.39 prioritizes one-line fraction items:
+
+- Fraction-heavy sections now sacrifice horizontal density before sacrificing single-item integrity.
+- In practice, this means fewer items per row, tighter row gaps, and more vertical growth for the section when needed, so one problem can remain one clean line.
+- Product-wise, this matters because broken or staggered fraction expressions feel much messier than a slightly taller section.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

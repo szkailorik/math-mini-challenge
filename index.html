@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.38 (等号颜色回归正文色)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.39 (分数题单题单行优先)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -95,6 +95,9 @@
             body.print-sandbox-active #print-root .math-row {
                 line-height: 1.28 !important;
             }
+            body.print-sandbox-active #print-root .grid-frac-tight {
+                gap: 8px 10px !important;
+            }
             body.print-sandbox-active #print-root .frac {
                 font-size: 0.88em !important;
             }
@@ -106,6 +109,15 @@
                 width: 1.05em !important;
                 min-width: 1.05em !important;
                 margin-right: 0.1em !important;
+            }
+            body.print-sandbox-active #print-root .item.h-frac {
+                font-size: 15.9px !important;
+                line-height: 1.12 !important;
+            }
+            body.print-sandbox-active #print-root .h-frac .q-body,
+            body.print-sandbox-active #print-root .h-frac .math-text {
+                flex-wrap: nowrap !important;
+                white-space: nowrap !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
@@ -258,6 +270,7 @@
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-frac-tight { gap: 11px 12px; }
 
         .q-badge { font-size: 11px; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: middle; font-family: 'KaiTi', '楷体', serif; font-weight: normal; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-weak { background-color: #ef4444; }
@@ -396,10 +409,19 @@
         .h-mixed {
             font-size: 18.6px;
         }
+        .item.h-frac {
+            font-size: 17.1px;
+            line-height: 1.18;
+        }
         .h-frac .math-text,
         .h-mixed .math-text {
             gap: 0.08em 0.14em;
             line-height: 1.24;
+        }
+        .h-frac .q-body,
+        .h-frac .math-text {
+            flex-wrap: nowrap;
+            white-space: nowrap;
         }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
@@ -778,7 +800,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.38</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.39</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -857,9 +879,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.38';
-        const APP_RELEASE_LABEL = '等号颜色回归正文色';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.38 等号颜色回归正文色：<br><strong>等号不再用红色强调，改成和题目正文一致的颜色<br>并继续收紧分数/方程题的行内间距，让卷面更稳</strong>';
+        const APP_VERSION = 'v23.39';
+        const APP_RELEASE_LABEL = '分数题单题单行优先';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.39 分数题单题单行优先：<br><strong>分数题区域改成更宽列数和更紧行距，优先保证一道题完整排在一行<br>宁可整块往下长，也不让单题内部断开错位</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4268,6 +4290,7 @@
             const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
             const sectionIndex = match ? match[1] : '';
             const sectionTitle = match ? match[2] : cnTitle;
+            const gridClass = heightClass === 'h-frac' ? `grid grid-2 grid-frac-tight` : `grid grid-${cols}`;
             return `
             <div class="section">
                 <div class="section-title">
@@ -4280,7 +4303,7 @@
                     </div>
                     <span class="points">${pointsStr}</span>
                 </div>
-                <div class="grid grid-${cols}">
+                <div class="${gridClass}">
                     ${items.map((q,i) => {
                         let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';

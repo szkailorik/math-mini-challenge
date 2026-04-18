@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.38 Iteration Notes
+## Current v23.39 Iteration Notes
+
+### Iteration 1
+
+- What I changed: took the user's constraint literally for the fraction area: one problem should stay on one line even if the whole section needs more rows.
+- Open questions: none.
+- Risks: reducing columns increases total section height, so page balance must be watched.
+- Next steps: prefer a taller but cleaner fraction section over dense multi-line fraction items.
+
+### Iteration 2
+
+- What I changed: moved fraction sections to a wider per-item layout and tightened both row and column spacing inside that section specifically.
+- Open questions: none.
+- Risks: if future fraction generators become much longer, even two columns may not be enough.
+- Next steps: keep fraction layout rules section-specific instead of forcing the same density rules on every math block.
+
+### Iteration 3
+
+- What I changed: mirrored the fraction-section tightening into the print path so “single-line first” behavior is preserved on paper too.
+- Open questions: none.
+- Risks: print pagination should still be spot-checked because taller fraction sections can shift later content.
+- Next steps: keep watching paper balance after any further fraction-generator changes.
+
+## Previous v23.38 Iteration Notes
 
 ### Iteration 1
 
