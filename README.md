@@ -6,6 +6,10 @@
 
 **https://szkailorik.github.io/math-mini-challenge/**
 
+## 规划文档
+
+- [下一阶段计算训练模块开发文档](./docs/2026-04-18-next-stage-calculation-spec.md)
+
 ## 多设备同步设置（一次，30 秒）
 
 1. 打开 https://github.com/settings/tokens/new?scopes=gist&description=math-mini-challenge （已预勾 gist 权限）
