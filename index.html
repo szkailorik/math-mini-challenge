@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.36 (答案横线长度收紧)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.37 (去掉等号后答案横线)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -95,16 +95,17 @@
             body.print-sandbox-active #print-root .math-row {
                 line-height: 1.28 !important;
             }
-            body.print-sandbox-active #print-root .blank {
-                width: 2.9em !important;
-                min-width: 2.9em !important;
-            }
             body.print-sandbox-active #print-root .frac {
                 font-size: 0.88em !important;
             }
             body.print-sandbox-active #print-root .paren-l,
             body.print-sandbox-active #print-root .paren-r {
                 font-size: 1.78em !important;
+            }
+            body.print-sandbox-active #print-root .math-write-gap {
+                width: 1.05em !important;
+                min-width: 1.05em !important;
+                margin-right: 0.1em !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
@@ -465,6 +466,14 @@
             width: 3.4em;
             min-width: 3.4em;
         }
+        .math-write-gap {
+            display: inline-block;
+            width: 1.35em;
+            min-width: 1.35em;
+            height: 0.92em;
+            margin: 0 0.16em 0.06em 0.08em;
+            vertical-align: baseline;
+        }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
         .circle-blank { display: inline-block; width: 1.18em; height: 1.18em; border-radius: 50%; border: 1.7px solid var(--math-line); margin: 0 0.22em; align-self: center; flex: 0 0 auto; }
@@ -760,7 +769,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.36</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.37</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -839,9 +848,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.36';
-        const APP_RELEASE_LABEL = '答案横线长度收紧';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.36 答案横线长度收紧：<br><strong>把题面答案横线再收短一档，减少过长留白带来的卷面发散感<br>同时同步收紧打印态，让纸面更接近正式试卷</strong>';
+        const APP_VERSION = 'v23.37';
+        const APP_RELEASE_LABEL = '去掉等号后答案横线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.37 去掉等号后答案横线：<br><strong>删除所有等号后的下划线，只保留等号和轻量留白<br>重新减轻线条干扰，让卷面更容易排整齐</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2526,7 +2535,7 @@
         }
         function buildInlineAnswerHtml(tailSuffixHtml = '') {
             const suffixHtml = tailSuffixHtml ? ` ${beautifyMathHTML(tailSuffixHtml)}` : '';
-            return `<span class="math-eq">=</span><span class="blank math-inline-blank"></span>${suffixHtml}`;
+            return `<span class="math-eq">=</span><span class="math-write-gap"></span>${suffixHtml}`;
         }
         function normalizeQuestionPrompt(questionHtml = '', heightClass = '') {
             const raw = String(questionHtml || '').trim();

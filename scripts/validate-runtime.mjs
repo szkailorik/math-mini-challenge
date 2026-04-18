@@ -252,8 +252,8 @@ if (fractionPrompt.bodyHtml.includes('math-eq')) {
 if (!fractionPrompt.bodyHtml.includes('math-paren-group')) {
   throw new Error('Parenthesized fraction groups are not normalized into a stable inline wrapper');
 }
-if (!fractionPrompt.suffixHtml.includes('math-eq') || !fractionPrompt.suffixHtml.includes('math-inline-blank')) {
-  throw new Error('Inline answer rendering is missing the expected equals and blank markup');
+if (!fractionPrompt.suffixHtml.includes('math-eq') || !fractionPrompt.suffixHtml.includes('math-write-gap')) {
+  throw new Error('Inline answer rendering is missing the expected equals and write-gap markup');
 }
 
 const fractionNoEqualsPrompt = context.normalizeQuestionPrompt(
@@ -279,7 +279,7 @@ const blankTailPrompt = context.normalizeQuestionPrompt(
 if (blankTailPrompt.bodyHtml.includes('math-inline-blank')) {
   throw new Error('Inline blank equations should not keep the old blank inside the question body');
 }
-if (!blankTailPrompt.suffixHtml.includes('math-inline-blank') || !blankTailPrompt.suffixHtml.includes('%')) {
+if (!blankTailPrompt.suffixHtml.includes('math-write-gap') || !blankTailPrompt.suffixHtml.includes('%')) {
   throw new Error('Inline blank equations with unit suffix should keep their suffix in the inline answer suffix');
 }
 

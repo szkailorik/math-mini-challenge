@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.36 Iteration Notes
+## Current v23.37 Iteration Notes
+
+### Iteration 1
+
+- What I changed: accepted the new requirement that answer underlines after `=` should disappear entirely instead of being merely shortened.
+- Open questions: none.
+- Risks: removing the line changes the visual affordance of where to write, so the remaining gap must still feel intentional.
+- Next steps: keep the no-line approach simple and avoid replacing it with another decorative marker.
+
+### Iteration 2
+
+- What I changed: replaced the underlined answer segment after `=` with a borderless write-gap while keeping the rest of the inline question flow intact.
+- Open questions: none.
+- Risks: if the gap is too small, some items may look visually abrupt; if too large, the spacing problem returns.
+- Next steps: tune only the gap width if needed, not by reintroducing line art.
+
+### Iteration 3
+
+- What I changed: mirrored the borderless write-gap behavior into the print path and updated runtime checks so they expect a write-gap instead of an answer underline.
+- Open questions: none.
+- Risks: future refactors could accidentally restore underlined blanks unless validation continues to guard the new rule.
+- Next steps: keep answer-underlines and answer-gaps as mutually exclusive modes.
+
+## Previous v23.36 Iteration Notes
 
 ### Iteration 1
 

@@ -224,6 +224,12 @@ v23.36 tightens answer-line length:
 - This reduces the overly stretched look that made some items feel more like form fields than worksheet prompts.
 - Product-wise, this matters because answer space should feel sufficient but restrained; too much line length makes the page look loose and less exam-like.
 
+v23.37 removes the underline after equals:
+
+- The worksheet no longer draws an answer line after `=` for the affected prompt families.
+- Instead, it keeps only the equals sign and a small visual write-gap, reducing line clutter and making the page easier to typeset cleanly.
+- Product-wise, this matters because the underline itself had become part of the layout problem; removing it simplifies the paper and restores a cleaner exam-sheet feel.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
