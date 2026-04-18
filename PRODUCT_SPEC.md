@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.17 raises the quality ceiling of Lorik Set B division:
+
+- Section II keeps the same decimal-division spine, but now more often requires genuine quotient estimation, `×10` versus `×100` scaling decisions, and post-solution verification.
+- Decimal-division items now more deliberately include two-decimal dividends or divisors, plus both quotient-below-1 and quotient-above-1 cases.
+- Error-book review variants for the same division families now match this stronger standard instead of replaying only older easier patterns.
+
 v23.16 hardens the print path:
 
 - Print actions now stage a dedicated print-only DOM container instead of asking the browser to paginate the live long page directly.

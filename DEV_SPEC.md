@@ -63,7 +63,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenKAI.bigSub` / `GenKAI.olympiad`: now guarantee daily coverage of high-value subtraction and olympiad-structure families instead of relying on fully random subsets.
 - `getConversions` / `GenKAI.fracEquations`: now guarantee key conversion families, fraction-calculation structures, and equation archetypes instead of relying on unconstrained random picks.
 - `GenLorik.mul` / `GenLorik.sub` / `GenLorik.div`: now guarantee daily coverage of multiplication strategy, subtraction borrow-chain structure, and the full decimal-division trio in Lorik Set B.
-- Lorik decimal-division generators now mix both `商>1` and `商<1` scenarios so decimal-point placement is practiced as a decision, not a memorized routine.
+- Lorik decimal-division generators now mix both `商>1` and `商<1` scenarios, plus `×10` / `×100` scaling cases and some two-decimal dividends/divisors, so decimal-point placement is practiced as a decision, not a memorized routine.
 - `GenLorik.fracMix`: now guarantees the full daily spread of core fraction-operation families instead of leaving that section to pool-level randomness.
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
@@ -119,6 +119,8 @@ python3 -m http.server 8080
 - Confirm Lorik multiplication covers core vertical form, decimal multiplication, strategy multiplication, and trailing-zero place-value practice in the same set.
 - Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
 - Confirm Lorik section II regularly includes decimal-division cases where the quotient is below 1, so leading-zero decimal quotient placement is practiced.
+- Confirm Lorik section II also includes some decimal-division items with two-decimal dividends or divisors, so `×100` scaling is still being exercised.
+- Confirm Lorik section II still includes decimal-division cases where the quotient is above 1, so students must estimate the quotient band before placing the decimal point.
 - Confirm Lorik subtraction covers cross-borrow, zero-chain, jump-zero, and standard regrouping practice in the same set.
 - Confirm Lorik fraction mix covers the full daily spread of add/subtract, multiply/divide, fraction-of-whole, mixed-number, parentheses, triple-product, and decimal-fraction bridge practice.
 - Confirm Lorik basic mixed problems cover shortcut structure, order/parentheses, distributive reasoning, and combination splitting each set.

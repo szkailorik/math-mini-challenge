@@ -218,6 +218,19 @@ function stripHtml(value) {
   return String(value || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function extractDivisionParts(question) {
+  const parts = String(question || '').split('&divide;');
+  return {
+    dividend: stripHtml(parts[0] || ''),
+    divisor: stripHtml(parts[1] || ''),
+  };
+}
+
+function decimalPlacesFromText(value) {
+  const match = String(value || '').trim().match(/^-?\d+(?:\.(\d+))?$/);
+  return match?.[1]?.length || 0;
+}
+
 function assertSetData(setNumber) {
   const raw = store.get(`${cachePrefix}_${setNumber}`);
   if (!raw) throw new Error(`Missing cached set data for set ${setNumber}`);
@@ -237,6 +250,7 @@ function assertSetData(setNumber) {
   const kaiFracEqTags = new Set((data.k_f || []).map(item => item?.tag));
   const kaiOlyTags = new Set((data.k_o || []).map(item => item?.tag));
   const lorikMulTags = new Set((data.l_m || []).map(item => item?.tag));
+  const lorikDivItems = data.l_d || [];
   const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
   const lorikSubTags = new Set((data.l_s || []).map(item => item?.tag));
   const lorikFracTags = new Set((data.l_f || []).map(item => item?.tag));
@@ -373,6 +387,19 @@ function assertSetData(setNumber) {
   }
   if (![...lorikDivTags].some(tag => ['l_div_decimal_both', 'l_div_dec2'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik double-decimal division practice`);
+  }
+  const lorikDecimalDivItems = lorikDivItems.filter(item => ['l_div_decimal_dividend', 'l_div_dec1', 'l_div_decimal_divisor', 'l_div_decimal_both', 'l_div_dec2'].includes(item?.tag));
+  if (!lorikDecimalDivItems.some(item => Number.parseFloat(stripHtml(item.a)) < 1)) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-division items with quotient below 1`);
+  }
+  if (!lorikDecimalDivItems.some(item => Number.parseFloat(stripHtml(item.a)) > 1)) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-division items with quotient above 1`);
+  }
+  if (!lorikDecimalDivItems.some(item => decimalPlacesFromText(extractDivisionParts(item.q).dividend) >= 2)) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-division items with two-decimal dividends`);
+  }
+  if (!lorikDecimalDivItems.some(item => decimalPlacesFromText(extractDivisionParts(item.q).divisor) >= 2)) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal-division items with two-decimal divisors`);
   }
   if (![...lorikSubTags].some(tag => tag === 'l_sub_cross')) {
     throw new Error(`Set ${setNumber} is missing Lorik cross-borrow subtraction coverage`);

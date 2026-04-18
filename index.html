@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.16 (打印稳定修正版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.17 (B卷除法提质版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -246,7 +246,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.16</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.17</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -269,7 +269,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.16 打印稳定修正版：<br><strong>AB 四页改用独立打印舞台<br>重点修复空白偶数页</strong>
+                💡 23.17 B卷除法提质版：<br><strong>除法更重估商、移位和验算<br>B卷难度小幅上调</strong>
             </div>
         </div>
 
@@ -296,9 +296,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.16';
-        const APP_RELEASE_LABEL = '打印稳定修正版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.16 打印稳定修正版：<br><strong>AB 四页改用独立打印舞台<br>重点修复空白偶数页</strong>';
+        const APP_VERSION = 'v23.17';
+        const APP_RELEASE_LABEL = 'B卷除法提质版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.17 B卷除法提质版：<br><strong>除法更重估商、移位和验算<br>B卷难度小幅上调</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
 
@@ -418,7 +418,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v34';
+        const SET_CACHE_PREFIX = 'MathSetData_v35';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1181,8 +1181,9 @@
         function inferDifficulty(tag) {
             const t = String(tag || '');
             if (/oly|twostep|divisor|unit_fraction|cancel|near_million|paren|reverse/.test(t)) return 4;
+            if (/^l_div_decimal_(dividend|both)$/.test(t)) return 3;
             if (/trap|shift|mid0|inner0|100k|all0|jump0|tiny|decimal_q|near100|ofwhole|125|fd|muldiv|dist|merge/.test(t)) return 3;
-            if (/basic|pure|norm|3x20|dec1|dec2|scale10|order|move|coeff/.test(t) || /^k_conv_[1256]$/.test(t) || /^l_conv_[124]$/.test(t)) return 1;
+            if (/basic|pure|norm|3x20|scale10|order|move|coeff/.test(t) || /^k_conv_[1256]$/.test(t) || /^l_conv_[124]$/.test(t)) return 1;
             if (/^l_conv_[5678]$/.test(t) || /^k_conv_(4|8|9|10)$/.test(t)) return 3;
             if (/conv|25|addsub|scale|int|cross|6digit|prop/.test(t)) return 2;
             return 2;
@@ -1353,9 +1354,9 @@
             "boss_remainder": { name: "剩余定理(画图法)", advice: "遇到'剩下钱的几分之几'，必须画 Bar Model 线段图，把剩余部分重新定义为一个整体切块。" },
             "l_mul_near100": { name: "乘法-接近整百补偿", advice: "把98看成100-2，把102看成100+2，先算整百倍，再补偿。" },
             "l_div_scale10": { name: "除法-末尾0缩放", advice: "先划去被除数和除数共同的0，降低位数后再做除法。" },
-            "l_div_decimal_dividend": { name: "小数除法-被除数带小数点", advice: "先估商的大致范围，再按数位列式；被除数有小数点时，商上的小数点要和竖式对齐。" },
-            "l_div_decimal_divisor": { name: "小数除法-除数带小数点", advice: "除数有小数点时，被除数和除数同时扩大10或100倍，把除数先变成整数再算。" },
-            "l_div_decimal_both": { name: "小数除法-被除数和除数都有小数点", advice: "先统一扩大成整数除法，再回头检查商的小数点位置，最后用乘法验算。" },
+            "l_div_decimal_dividend": { name: "小数除法-被除数带小数点", advice: "先估商落在几和几之间；被除数有小数点时，商上的小数点要和竖式对齐，最后用商乘除数验算。" },
+            "l_div_decimal_divisor": { name: "小数除法-除数带小数点", advice: "除数有小数点时，被除数和除数同时扩大10或100倍，把除数先变成整数；再检查商的小数点并用乘法验算。" },
+            "l_div_decimal_both": { name: "小数除法-被除数和除数都有小数点", advice: "先统一扩大成整数除法，再回头检查商的小数点位置；商小于1时别忘记先写0，最后用乘法验算。" },
             "l_sub_100k": { name: "减法-整万连续借位", advice: "整万数减法不能直接逐位相减，要从最高位连续借位。" },
             "l_conv_5": { name: "比较-4/5 与近邻小数", advice: "先把 4/5 化成 0.8，再和接近 0.8 的小数逐位比较，别只看整数部分。" },
             "l_conv_6": { name: "比较-1/2 与近邻小数", advice: "把 1/2 看成 0.5，再比较十分位和百分位；遇到 0.49、0.51 这类题尤其要慢一点。" },
@@ -1378,7 +1379,7 @@
             { prefix: "k_fcalc_", name: "分数运算-顺序与约分", advice: "先处理括号和除法变乘法，连乘时优先交叉约分，最后再化成最简分数或带分数。" },
             { prefix: "k_oly_", name: "简算-结构识别", advice: "先找共同因数、接近整百整千的数、或可裂项的结构，再决定用分配律、补偿法还是约分。" },
             { prefix: "l_mul_", name: "乘法-位值与补偿", advice: "多位数乘法先估数量级；遇到25、99、101、末尾0时优先考虑凑整或补偿。" },
-            { prefix: "l_div_decimal_", name: "小数除法-同倍扩大与验算", advice: "先把除数变成整数，再检查商的小数点位置，最后用商乘除数反推被除数。" },
+            { prefix: "l_div_decimal_", name: "小数除法-同倍扩大与验算", advice: "先估商，再把除数变成整数，最后用商乘除数反推被除数，三步缺一不可。" },
             { prefix: "l_div_", name: "除法-缩放与反推", advice: "先观察除数是否能缩放或凑整，再用乘法反推检查商是否合理。" },
             { prefix: "l_sub_", name: "减法-退位检查", advice: "跨0退位时每一位都要写借位标记，算完用差加减数反查。" },
             { prefix: "l_fmix_", name: "分数混合-通分与顺序", advice: "同分母直接算，异分母先通分；混合运算先括号，再乘除，最后加减。" },
@@ -1462,6 +1463,89 @@
                 isReviewItem: true
             };
         }
+        const LORIK_DIV_DECIMAL_DIVIDEND_VARIANTS = [
+            { divisor: 18, quotient: 1.25 },
+            { divisor: 36, quotient: 1.6 },
+            { divisor: 28, quotient: 1.35 },
+            { divisor: 14, quotient: 2.75 },
+            { divisor: 32, quotient: 1.35 },
+            { divisor: 45, quotient: 1.24 }
+        ];
+        const LORIK_DIV_DECIMAL_DIVIDEND_FOUNDATION_VARIANTS = [
+            { divisor: 18, quotient: 2.4 },
+            { divisor: 24, quotient: 1.6 },
+            { divisor: 36, quotient: 1.4 },
+            { divisor: 48, quotient: 1.8 },
+            { divisor: 22, quotient: 1.7 },
+            { divisor: 32, quotient: 1.2 }
+        ];
+        const LORIK_DIV_DECIMAL_DIVISOR_VARIANTS = [
+            { divisor: 0.25, quotient: 4.8 },
+            { divisor: 0.75, quotient: 3.6 },
+            { divisor: 1.25, quotient: 0.48 },
+            { divisor: 0.15, quotient: 2.4 },
+            { divisor: 2.5, quotient: 0.84 },
+            { divisor: 2.4, quotient: 0.75 }
+        ];
+        const LORIK_DIV_DECIMAL_BOTH_VARIANTS = [
+            { divisor: 0.75, quotient: 0.48 },
+            { divisor: 1.25, quotient: 0.84 },
+            { divisor: 0.25, quotient: 0.84 },
+            { divisor: 0.25, quotient: 0.68 },
+            { divisor: 1.25, quotient: 0.68 },
+            { divisor: 0.75, quotient: 0.56 }
+        ];
+        const LORIK_DIV_DECIMAL_BOTH_FOUNDATION_VARIANTS = [
+            { divisor: 0.25, quotient: 0.84 },
+            { divisor: 0.75, quotient: 0.56 },
+            { divisor: 0.25, quotient: 0.68 },
+            { divisor: 1.25, quotient: 0.68 },
+            { divisor: 0.75, quotient: 0.48 }
+        ];
+        function buildLorikDecimalDividendDivision(tag, variants, reviewPrefix = '') {
+            const variant = Engine.randChoice(variants);
+            const divisor = variant.divisor;
+            const quotient = variant.quotient;
+            const dividend = divisor * quotient;
+            const tip = getKnowledgeTip(tag);
+            const estimate = quotient < 1
+                ? '先判断商小于1，要先写0再点小数点；'
+                : `先估商约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`;
+            return {
+                tag,
+                q: `${formatDecimal(dividend, 2)} &divide; ${divisor}`,
+                a: formatDecimal(quotient),
+                step: `${reviewPrefix}${estimate}再按整数除法逐位试商，最后用商&times;除数验算。${tip.advice}`
+            };
+        }
+        function buildLorikDecimalDivisorDivision(tag, variants, reviewPrefix = '') {
+            const variant = Engine.randChoice(variants);
+            const divisor = variant.divisor;
+            const quotient = variant.quotient;
+            const dividend = divisor * quotient;
+            const scale = Number.isInteger(divisor * 10) ? 10 : 100;
+            const tip = getKnowledgeTip(tag);
+            return {
+                tag,
+                q: `${formatDecimal(dividend, 2)} &divide; ${formatDecimal(divisor)}`,
+                a: formatDecimal(quotient),
+                step: `${reviewPrefix}先估商${quotient < 1 ? '小于1；' : `大约是 ${Math.round(quotient * 10) / 10} 左右；`}把被除数和除数同时扩大${scale}倍，再按整数除法求商，最后用商&times;除数验算。${tip.advice}`
+            };
+        }
+        function buildLorikDoubleDecimalDivision(tag, variants, reviewPrefix = '') {
+            const variant = Engine.randChoice(variants);
+            const divisor = variant.divisor;
+            const quotient = variant.quotient;
+            const dividend = divisor * quotient;
+            const scale = Number.isInteger(divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
+            const tip = getKnowledgeTip(tag);
+            return {
+                tag,
+                q: `${formatDecimal(dividend, 2)} &divide; ${formatDecimal(divisor)}`,
+                a: formatDecimal(quotient),
+                step: `${reviewPrefix}先判断商${quotient < 1 ? '小于1，要先写0；' : `大约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`}再把两数同乘${scale}化成整数除法，最后回头检查小数点并验算。${tip.advice}`
+            };
+        }
         function buildErrorVariantItem(entry, fallbackFactory = null) {
             if (!entry?.tag) return fallbackFactory ? fallbackFactory() : null;
             const tip = getKnowledgeTip(entry.tag);
@@ -1497,47 +1581,20 @@
                 }
                 case 'l_div_decimal_dividend':
                 case 'l_div_dec1': {
-                    const divisor = Engine.randInt(12, 48);
-                    const quotient = Engine.randChoice([0.6, 0.8, 1.2, 1.5, 2.4, 3.2]);
-                    const dividend = divisor * quotient;
-                    built = {
-                        q: `${formatDecimal(dividend, 2)} &divide; ${divisor}`,
-                        a: formatDecimal(quotient),
-                        step: `${reviewPrefix}先估商${quotient < 1 ? '小于1，要先写0再点小数点；' : `约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`}再列竖式。${tip.advice}`,
-                    };
+                    built = entry.tag === 'l_div_decimal_dividend'
+                        ? buildLorikDecimalDividendDivision(entry.tag, LORIK_DIV_DECIMAL_DIVIDEND_VARIANTS, reviewPrefix)
+                        : buildLorikDecimalDividendDivision(entry.tag, LORIK_DIV_DECIMAL_DIVIDEND_FOUNDATION_VARIANTS, reviewPrefix);
                     break;
                 }
                 case 'l_div_decimal_divisor': {
-                    const variant = Engine.randChoice([
-                        { divisor: 0.25, quotient: 3.2 },
-                        { divisor: 0.75, quotient: 0.8 },
-                        { divisor: 1.2, quotient: 1.5 },
-                        { divisor: 2.5, quotient: 0.6 }
-                    ]);
-                    const dividend = variant.divisor * variant.quotient;
-                    const scale = Number.isInteger(variant.divisor * 10) ? 10 : 100;
-                    built = {
-                        q: `${formatDecimal(dividend)} &divide; ${formatDecimal(variant.divisor)}`,
-                        a: formatDecimal(variant.quotient),
-                        step: `${reviewPrefix}把被除数和除数同时扩大${scale}倍，先化成整数除法，再检查商的小数点。${tip.advice}`,
-                    };
+                    built = buildLorikDecimalDivisorDivision(entry.tag, LORIK_DIV_DECIMAL_DIVISOR_VARIANTS, reviewPrefix);
                     break;
                 }
                 case 'l_div_decimal_both':
                 case 'l_div_dec2': {
-                    const variant = Engine.randChoice([
-                        { divisor: 0.25, quotient: 1.2 },
-                        { divisor: 0.75, quotient: 0.4 },
-                        { divisor: 1.5, quotient: 0.8 },
-                        { divisor: 2.4, quotient: 1.25 }
-                    ]);
-                    const dividend = variant.divisor * variant.quotient;
-                    const scale = Number.isInteger(variant.divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
-                    built = {
-                        q: `${formatDecimal(dividend)} &divide; ${formatDecimal(variant.divisor)}`,
-                        a: formatDecimal(variant.quotient),
-                        step: `${reviewPrefix}两数同乘${scale}化成整数除法，再根据商的大小决定是否先写0。${tip.advice}`,
-                    };
+                    built = entry.tag === 'l_div_decimal_both'
+                        ? buildLorikDoubleDecimalDivision(entry.tag, LORIK_DIV_DECIMAL_BOTH_VARIANTS, reviewPrefix)
+                        : buildLorikDoubleDecimalDivision(entry.tag, LORIK_DIV_DECIMAL_BOTH_FOUNDATION_VARIANTS, reviewPrefix);
                     break;
                 }
                 default:
@@ -1839,83 +1896,22 @@
             div: () => {
                 return buildCoveredSection("Lorik", [
                     [
-                        { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`先看最高位够不够除；商中间遇到不够除的位时，要在商里写0占位，再继续往下除。`}; } },
-                        { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`两位数除法先估商，再用“除到哪一位，商就写在哪一位”的竖式规则逐位试商。`}; } },
-                        { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
-                        { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
-                        { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`结果末尾会带0时，也要照样算出前面的商，再把这个位值上的0保留下来。`}; } }
+                        { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(3,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`先看最高位够不够除；商中间遇到不够除的位时，要在商里写0占位，再继续往下除，最后用商乘除数反推。`}; } },
+                        { tag: "l_div_2d", gen: () => { let a=Engine.randInt(18,68), q=Engine.randInt(124,386); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`两位数除法先估商的大致范围，再用“除到哪一位，商就写在哪一位”的竖式规则逐位试商。`}; } },
+                        { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(18,126)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除，再看商末尾0的位值有没有保住。`}; } },
+                        { tag: "l_div_25", gen: () => { let q=Engine.randInt(18,132)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推，算完后记得估商检查。`}; } },
+                        { tag: "l_div_end0", gen: () => { let a=Engine.randInt(12,68), q=Engine.randInt(14,64)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`结果末尾会带0时，也要先把前面的商算准，再把这个位值上的0保留下来。`}; } }
                     ],
                     [
-                        { tag: "l_div_decimal_dividend", gen: () => {
-                            let divisor = Engine.randInt(12,48);
-                            let quotient = Engine.randChoice([0.6, 0.8, 1.2, 1.5, 2.4, 3.6, 4.8, 5.4, 6.4]);
-                            let dividend = divisor * quotient;
-                            return {
-                                tag:"l_div_decimal_dividend",
-                                q:`${dividend.toFixed(1)} &divide; ${divisor}`,
-                                a:formatDecimal(quotient),
-                                step:`先估商${quotient < 1 ? '小于1，要先写0再点小数点；' : `大约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`}再按整数除法列式，商的小数点与被除数对齐。`
-                            };
-                        } },
-                        { tag: "l_div_dec1", gen: () => {
-                            let a=Engine.randInt(11,49), q=Engine.randChoice([0.4, 0.7, 0.9, 1.3, 1.6, 2.5, 3.2]);
-                            return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:formatDecimal(q), step:`被除数带小数时先估商，再按整数除法试商；如果商不到1，商上要先写0占位。`};
-                        } }
+                        { tag: "l_div_decimal_dividend", gen: () => buildLorikDecimalDividendDivision("l_div_decimal_dividend", LORIK_DIV_DECIMAL_DIVIDEND_VARIANTS) },
+                        { tag: "l_div_dec1", gen: () => buildLorikDecimalDividendDivision("l_div_dec1", LORIK_DIV_DECIMAL_DIVIDEND_FOUNDATION_VARIANTS) }
                     ],
                     [
-                        { tag: "l_div_decimal_divisor", gen: () => {
-                            let variant = Engine.randChoice([
-                                { divisor: 0.2, quotient: 18 },
-                                { divisor: 0.4, quotient: 7.5 },
-                                { divisor: 0.25, quotient: 3.2 },
-                                { divisor: 0.75, quotient: 1.6 },
-                                { divisor: 1.2, quotient: 3.5 },
-                                { divisor: 2.5, quotient: 1.2 }
-                            ]);
-                            let divisor = variant.divisor;
-                            let quotient = variant.quotient;
-                            let dividend = divisor * quotient;
-                            const scale = Number.isInteger(divisor * 10) ? 10 : 100;
-                            return {
-                                tag:"l_div_decimal_divisor",
-                                q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
-                                a:formatDecimal(quotient),
-                                step:`先把除数变成整数：被除数和除数同时扩大${scale}倍，化成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}；${quotient < 1 ? '商小于1时别忘了先写0。' : '再按整数除法求商。'}`
-                            };
-                        } }
+                        { tag: "l_div_decimal_divisor", gen: () => buildLorikDecimalDivisorDivision("l_div_decimal_divisor", LORIK_DIV_DECIMAL_DIVISOR_VARIANTS) }
                     ],
                     [
-                        { tag: "l_div_decimal_both", gen: () => {
-                            let variant = Engine.randChoice([
-                                { divisor: 0.8, quotient: 2.4 },
-                                { divisor: 1.2, quotient: 3.5 },
-                                { divisor: 1.5, quotient: 0.8 },
-                                { divisor: 2.4, quotient: 1.25 },
-                                { divisor: 0.25, quotient: 1.2 },
-                                { divisor: 0.75, quotient: 0.4 },
-                                { divisor: 2.5, quotient: 1.6 }
-                            ]);
-                            let divisor = variant.divisor;
-                            let quotient = variant.quotient;
-                            let dividend = divisor * quotient;
-                            const scale = Number.isInteger(divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
-                            return {
-                                tag:"l_div_decimal_both",
-                                q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
-                                a:formatDecimal(quotient),
-                                step:`被除数和除数都带小数点时，同乘${scale}先变成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}；${quotient < 1 ? '商小于1要先写0。' : '再按整数除法试商。'}`
-                            };
-                        } },
-                        { tag: "l_div_dec2", gen: () => {
-                            let variant = Engine.randChoice([
-                                { divisor: 0.6, quotient: 1.4 },
-                                { divisor: 1.8, quotient: 0.5 },
-                                { divisor: 2.4, quotient: 1.25 },
-                                { divisor: 0.25, quotient: 2.8 }
-                            ]);
-                            let a = variant.divisor, q = variant.quotient;
-                            return {tag:"l_div_dec2", q:`${formatDecimal(a*q)} &divide; ${formatDecimal(a)}`, a:formatDecimal(q), step:`先把两数同时扩大成整数除法，再根据商的大小决定是否先写0并点小数点。`};
-                        } }
+                        { tag: "l_div_decimal_both", gen: () => buildLorikDoubleDecimalDivision("l_div_decimal_both", LORIK_DIV_DECIMAL_BOTH_VARIANTS) },
+                        { tag: "l_div_dec2", gen: () => buildLorikDoubleDecimalDivision("l_div_dec2", LORIK_DIV_DECIMAL_BOTH_FOUNDATION_VARIANTS) }
                     ]
                 ]);
             },

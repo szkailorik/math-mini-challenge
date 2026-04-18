@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.16 Iteration Notes
+## Current v23.17 Iteration Notes
+
+### Iteration 1
+
+- What I changed: raised the diagnostic quality of Lorik Set B division by moving more items onto explicit estimate-then-scale-then-verify patterns instead of lighter decimal practice.
+- Open questions: none.
+- Risks: the section is slightly harder now, so future tuning should stay focused on misconception value rather than making numbers large for their own sake.
+- Next steps: watch whether the stronger quotient-estimation pattern should also expand into selected KAI decimal-division review variants.
+
+### Iteration 2
+
+- What I changed: upgraded Lorik decimal-division pools so sets now more reliably include `商<1`, `商>1`, `×10`, `×100`, and some two-decimal dividend/divisor cases.
+- Open questions: none.
+- Risks: stronger decimal-division structure reduces "easy win" items in that section, which is intentional but should remain only a slight difficulty increase.
+- Next steps: if needed later, separate daily B-roll difficulty by cycle phase rather than weakening the structure coverage.
+
+### Iteration 3
+
+- What I changed: updated error-book review variants, docs, cache versioning, and runtime validation so the stronger B卷除法 standard is applied consistently and regression-protected.
+- Open questions: none.
+- Risks: validator now expects higher-value decimal-division structure, so future generator edits must preserve this training spine intentionally.
+- Next steps: continue the next optimization pass on broader training quality after confirming the new division set feels right in live use.
+
+## Previous v23.16 Iteration Notes
 
 ### Iteration 1
 
