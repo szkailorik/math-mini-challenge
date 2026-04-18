@@ -200,6 +200,12 @@ v23.32 tightens exam-row math presentation:
 - Visible-equals detection now ignores HTML attributes, so fraction questions no longer lose their trailing `= ____` just because the source string contains markup like `class="frac"`.
 - Product-wise, this matters because missing equals signs and broken fraction rows make the paper feel inconsistent and reduce the credibility of the worksheet as an exam-like practice surface.
 
+v23.33 deepens dense worksheet typesetting for fraction sections:
+
+- The most crowded three-column fraction and mixed-operation items now use a tighter exam-density profile so the expression, equals sign, and answer line are more likely to survive on one line together.
+- The printed version mirrors that denser profile instead of re-expanding those items, which helps preserve the “formal worksheet” feel across both screen preview and paper.
+- Product-wise, this matters because a mathematically correct but cramped expression still reads as low-quality practice if the final answer area appears detached from the expression.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

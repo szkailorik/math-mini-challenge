@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.32 (试卷行内算式排版修正)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.33 (分数题试卷密排修正)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -106,6 +106,32 @@
             body.print-sandbox-active #print-root .paren-l,
             body.print-sandbox-active #print-root .paren-r {
                 font-size: 1.78em !important;
+            }
+            body.print-sandbox-active #print-root .h-frac,
+            body.print-sandbox-active #print-root .h-mixed {
+                font-size: 16.8px !important;
+            }
+            body.print-sandbox-active #print-root .h-frac .math-text.exam-expression,
+            body.print-sandbox-active #print-root .h-mixed .math-text.exam-expression {
+                font-size: 0.78em !important;
+                gap: 0.03em 0.06em !important;
+            }
+            body.print-sandbox-active #print-root .h-frac .math-answer-slot,
+            body.print-sandbox-active #print-root .h-mixed .math-answer-slot {
+                width: 2.7em !important;
+                min-width: 2.7em !important;
+            }
+            body.print-sandbox-active #print-root .h-frac .frac,
+            body.print-sandbox-active #print-root .h-mixed .frac {
+                min-width: 1.34em !important;
+                font-size: 0.72em !important;
+                margin: 0 0.06em 0 0.03em !important;
+            }
+            body.print-sandbox-active #print-root .h-frac .paren-l,
+            body.print-sandbox-active #print-root .h-frac .paren-r,
+            body.print-sandbox-active #print-root .h-mixed .paren-l,
+            body.print-sandbox-active #print-root .h-mixed .paren-r {
+                font-size: 1.42em !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
@@ -293,8 +319,8 @@
         .q-body.exam-inline {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto;
-            align-items: center;
-            column-gap: 0.18em;
+            align-items: end;
+            column-gap: 0.12em;
             row-gap: 0;
         }
         .math-row {
@@ -331,16 +357,16 @@
         .math-answer-tail {
             display: inline-flex;
             align-items: flex-end;
-            gap: 0.2em;
+            gap: 0.12em;
             flex: 0 0 auto;
             white-space: nowrap;
-            margin-left: 0.08em;
-            min-height: 1.08em;
+            margin-left: 0;
+            min-height: 1em;
         }
         .math-text.exam-expression {
             flex-wrap: nowrap;
             white-space: nowrap;
-            gap: 0.1em 0.14em;
+            gap: 0.04em 0.08em;
         }
         .review-flag {
             position: absolute;
@@ -413,14 +439,42 @@
         .paren-r::before { content: ')'; }
 
         .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
+        .h-frac,
+        .h-mixed {
+            font-size: 18.5px;
+        }
         .h-frac .q-body.exam-inline,
         .h-mixed .q-body.exam-inline {
             align-items: center;
         }
         .h-frac .math-text.exam-expression,
         .h-mixed .math-text.exam-expression {
-            font-size: 0.93em;
-            letter-spacing: 0.01em;
+            font-size: 0.82em;
+            letter-spacing: 0;
+            line-height: 1.16;
+        }
+        .h-frac .math-answer-slot,
+        .h-mixed .math-answer-slot {
+            width: 3.05em;
+            min-width: 3.05em;
+            margin-left: 0.04em;
+        }
+        .h-frac .frac,
+        .h-mixed .frac {
+            min-width: 1.48em;
+            font-size: 0.78em;
+            margin: 0 0.08em 0 0.04em;
+        }
+        .h-frac .frac > span,
+        .h-mixed .frac > span {
+            padding: 0 0.16em;
+        }
+        .h-frac .paren-l,
+        .h-frac .paren-r,
+        .h-mixed .paren-l,
+        .h-mixed .paren-r {
+            font-size: 1.56em;
+            margin: 0 -0.05em;
         }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
@@ -791,7 +845,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.32</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.33</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -870,9 +924,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.32';
-        const APP_RELEASE_LABEL = '试卷行内算式排版修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.32 试卷行内算式排版修正：<br><strong>修正分数题漏等号问题，并把分数/括号题收成更像试卷的一行算式<br>同步校正打印态，减少分数题断行和答题尾部漂移</strong>';
+        const APP_VERSION = 'v23.33';
+        const APP_RELEASE_LABEL = '分数题试卷密排修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.33 分数题试卷密排修正：<br><strong>继续压缩分数/括号重题的卷面密度，让等号和答题尾部更容易留在同一行<br>并同步优化打印态，减少三列分数题的断行与挤压</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

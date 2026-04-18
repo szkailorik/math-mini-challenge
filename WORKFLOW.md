@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.32 Iteration Notes
+## Current v23.33 Iteration Notes
+
+### Iteration 1
+
+- What I changed: treated the remaining complaint as a density problem instead of only a logic problem, because the missing-equals behavior could now also come from the answer tail being pushed out of sight in narrow three-column math items.
+- Open questions: none.
+- Risks: overly dense math can become hard to read if pushed too far.
+- Next steps: keep density changes targeted to the heaviest fraction sections instead of shrinking the whole worksheet.
+
+### Iteration 2
+
+- What I changed: tightened the exam-inline layout for fraction-heavy and mixed-operation items by shrinking the expression row, the answer slot, fraction blocks, and parentheses together.
+- Open questions: none.
+- Risks: extreme edge-case expressions may still need generator-side simplification if they exceed the visual budget of a three-column paper.
+- Next steps: continue checking the longest fraction patterns first whenever worksheet complaints mention “still not on one line”.
+
+### Iteration 3
+
+- What I changed: mirrored the same compaction strategy into the print sandbox so the on-screen improvement does not disappear during printing.
+- Open questions: none.
+- Risks: print-specific density rules are now more specialized, so future booklet tweaks should re-check these sections explicitly.
+- Next steps: keep fraction-heavy print layout as a release-sensitive area.
+
+## Previous v23.32 Iteration Notes
 
 ### Iteration 1
 
