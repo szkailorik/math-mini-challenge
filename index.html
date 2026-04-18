@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.46 (结果检验边界强化升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.47 (速度稳定边界强化升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.46</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.47</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.46';
-        const APP_RELEASE_LABEL = '结果检验边界强化升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.46 结果检验边界强化升级：<br><strong>Closure 的 validationGap L3 现在也会优先出真正的边界检验题<br>第二阶段不只是会算，还会更主动地检验结果是否可信</strong>';
+        const APP_VERSION = 'v23.47';
+        const APP_RELEASE_LABEL = '速度稳定边界强化升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.47 速度稳定边界强化升级：<br><strong>Closure 的 speedGap L3 现在也会优先出真正的边界强化题<br>第二阶段在速度与结构识别上也开始有更强的针对性追打</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3886,6 +3886,21 @@
                             q: `28.4 &divide; 0.92 的结果更接近<div class="blank"></div>`,
                             a: `30`,
                             step: `${reviewPrefix}先看除数接近 1、被除数约 30，所以商应先落在 30 左右，而不是只盯着精确竖式。${tip.advice}`
+                        }
+                    ]);
+                case 'c2_speed_mix':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `98 &times; 25 可以先算<div class="blank"></div>再调整`,
+                            a: `100 &times; 25 - 2 &times; 25`,
+                            step: `${reviewPrefix}先识别 25 和接近整百的 98，优先把 98 看成 100-2，再判断这种拆法比硬算更快。${tip.advice}`
+                        },
+                        {
+                            tag: entry.tag,
+                            q: `一辆车 2.4 时行 192 千米，平均每时大约行<div class="blank"></div>千米`,
+                            a: `80`,
+                            step: `${reviewPrefix}先判断 192÷2.4 可以看成 1920÷24，商应先稳定在 80 左右，再决定结果是否合理。${tip.advice}`
                         }
                     ]);
                 default:

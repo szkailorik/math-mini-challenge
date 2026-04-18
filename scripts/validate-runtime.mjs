@@ -1305,6 +1305,63 @@ if (!String(closureValidationReplay?.step || '').includes('[重点强化 Boundar
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：结果检验')) {
   throw new Error('Validation-gap closure focus title did not render on the next KAI closure paper');
 }
+closureProfile.representationGap = 0;
+closureProfile.methodGap = 0;
+closureProfile.stabilityGap = 0;
+closureProfile.speedGap = 9;
+closureProfile.validationGap = 0;
+Object.keys(closureProfile.errorBook || {}).forEach(uid => {
+  const entry = closureProfile.errorBook[uid];
+  if (!entry) return;
+  if (entry.tag === 'c2_speed_mix') {
+    entry.count = 4;
+    entry.lastSet = 106;
+    entry.mastered = false;
+  } else {
+    entry.mastered = true;
+  }
+});
+closureProfile.errorBook.speedL3 = {
+  tag: 'c2_speed_mix',
+  grade: 'wrong',
+  count: 4,
+  firstSet: 106,
+  lastSet: 106,
+  mastered: false,
+  info: {
+    q: '125 &times; 24 的结果是<div class="blank"></div>',
+    a: '3000',
+    step: '先找 125×8=1000 的结构。'
+  }
+};
+context.window.currentSetNumber = 107;
+context.window.renderPaper();
+const closureSpeedData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 107)) || '{}');
+if (closureSpeedData.c_k_focusMeta?.field !== 'speedGap') {
+  throw new Error(`Expected KAI closure focus to retarget speedGap, got ${closureSpeedData.c_k_focusMeta?.field || '(missing)'}`);
+}
+const closureSpeedReplay = closureSpeedData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+if (!closureSpeedReplay) {
+  throw new Error('Speed-gap closure focus did not inject an explicit closure focus replay item');
+}
+if (closureSpeedReplay?.qualityFamily !== 'unit_rate_speed') {
+  throw new Error(`Expected speed-gap closure focus replay to use unit_rate_speed, got ${closureSpeedReplay?.qualityFamily || '(missing)'}`);
+}
+if (closureSpeedReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected speed-gap closure focus replay to escalate to L3, got ${closureSpeedReplay?.replayLevel || '(missing)'}`);
+}
+if (closureSpeedReplay?.closureFocusMode !== 'L3_boundary') {
+  throw new Error(`Expected speed-gap closure focus replay to use L3_boundary mode, got ${closureSpeedReplay?.closureFocusMode || '(missing)'}`);
+}
+if (closureSpeedReplay?.explanationMode !== 'method') {
+  throw new Error(`Expected speed-gap closure focus replay to use method explanation mode, got ${closureSpeedReplay?.explanationMode || '(missing)'}`);
+}
+if (!String(closureSpeedReplay?.step || '').includes('[重点强化 Boundary]')) {
+  throw new Error('Expected speed-gap L3 closure focus replay to use a dedicated boundary-style explanation');
+}
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：速度稳定')) {
+  throw new Error('Speed-gap closure focus title did not render on the next KAI closure paper');
+}
 context.window.showSetReview(103, 'KAI');
 const closureReviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!closureReviewHtml.includes('第二阶段') || !closureReviewHtml.includes('表征切换') || !closureReviewHtml.includes('旧知保温')) {

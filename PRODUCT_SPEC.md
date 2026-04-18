@@ -278,6 +278,12 @@ v23.46 extends real boundary checks into result validation:
 - The `Closure` focus lane can now emit dedicated boundary-style result-check questions that foreground quantity sense and trustworthiness before exact computation.
 - Product-wise, this matters because a high-quality elementary calculation finisher should not only execute methods, but also reject implausible answers quickly.
 
+v23.47 extends real boundary checks into speed stability:
+
+- Speed-heavy closure items no longer stop at ordinary “same-skill faster variant” questions once they reach `L3`.
+- The `Closure` focus lane can now emit dedicated boundary-style speed questions that foreground structure recognition and fast-method choice before raw execution.
+- Product-wise, this matters because fluent calculation at the upper end is not just fast hands, but fast recognition of the best route.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
