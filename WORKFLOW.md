@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.35 Iteration Notes
+## Current v23.36 Iteration Notes
+
+### Iteration 1
+
+- What I changed: isolated the remaining worksheet complaint to answer-line proportion rather than expression layout or symbol rules.
+- Open questions: none.
+- Risks: if the line becomes too short, some items could feel cramped instead of tidy.
+- Next steps: keep answer-line tuning incremental and paper-focused.
+
+### Iteration 2
+
+- What I changed: reduced the default inline answer-line width for the active worksheet renderer.
+- Open questions: none.
+- Risks: different sections share the same answer-line primitive, so changes must still feel acceptable across conversion, computation, and equation items.
+- Next steps: keep checking real printed papers rather than only DOM structure.
+
+### Iteration 3
+
+- What I changed: mirrored the shorter width into print-specific rules so paper output stays aligned with on-screen tuning.
+- Open questions: none.
+- Risks: future print-density changes could accidentally stretch or compress the answer line again.
+- Next steps: treat screen and print answer-line widths as one linked setting.
+
+## Previous v23.35 Iteration Notes
 
 ### Iteration 1
 

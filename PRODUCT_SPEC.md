@@ -218,6 +218,12 @@ v23.35 restores an older worksheet rhythm:
 - This is intentionally closer to the older worksheet look that felt calmer and more paper-native in real printouts.
 - Product-wise, this matters because the app is not trying to invent a novel notation system; it should feel like a reliable exam sheet first.
 
+v23.36 tightens answer-line length:
+
+- The writable blank after `=` is now shorter on both screen and print.
+- This reduces the overly stretched look that made some items feel more like form fields than worksheet prompts.
+- Product-wise, this matters because answer space should feel sufficient but restrained; too much line length makes the page look loose and less exam-like.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

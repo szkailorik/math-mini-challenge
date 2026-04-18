@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.35 (恢复旧版题面行内规则)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.36 (答案横线长度收紧)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -96,8 +96,8 @@
                 line-height: 1.28 !important;
             }
             body.print-sandbox-active #print-root .blank {
-                width: 3.35em !important;
-                min-width: 3.35em !important;
+                width: 2.9em !important;
+                min-width: 2.9em !important;
             }
             body.print-sandbox-active #print-root .frac {
                 font-size: 0.88em !important;
@@ -453,8 +453,8 @@
         .math-answer-slot {
             display: inline-block;
             flex: 0 0 auto;
-            width: 4.6em;
-            min-width: 4.6em;
+            width: 3.4em;
+            min-width: 3.4em;
             height: 0.92em;
             border-bottom: 1.8px solid var(--math-line);
             margin: 0 0.2em 0.06em;
@@ -462,8 +462,8 @@
             transform: translateY(-0.02em);
         }
         .math-answer-slot {
-            width: 4.6em;
-            min-width: 4.6em;
+            width: 3.4em;
+            min-width: 3.4em;
         }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
@@ -760,7 +760,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.35</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.36</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -839,9 +839,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.35';
-        const APP_RELEASE_LABEL = '恢复旧版题面行内规则';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.35 恢复旧版题面行内规则：<br><strong>撤掉最近那套分离式答题尾部组件，改回更接近旧版的单一行内排版<br>让等号、空格线、分数和后缀重新按同一行节奏显示</strong>';
+        const APP_VERSION = 'v23.36';
+        const APP_RELEASE_LABEL = '答案横线长度收紧';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.36 答案横线长度收紧：<br><strong>把题面答案横线再收短一档，减少过长留白带来的卷面发散感<br>同时同步收紧打印态，让纸面更接近正式试卷</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
