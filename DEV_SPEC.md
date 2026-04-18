@@ -9,6 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`, but only `advanced_fluency_v1` is enabled in `v23.20`.
 
 ## Local Environment
 
@@ -37,6 +38,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 ## Key Runtime Concepts
 
 - `currentSetNumber`: drives deterministic seeding and set cache keys.
+- `TRAINING_PROGRAMS` / `currentProgramId`: establish the multi-program shell for future stage-two work while keeping the current advanced trainer as the only active runtime program in `v23.20`.
+- `renderProgramShell`: updates the control-panel program switcher and stage-status card without affecting printable question-sheet DOM.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
@@ -59,6 +62,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - Targeted review variants now also cover selected KAI decimal-division and equation trap tags, not only Lorik benchmark comparison and division tags.
 - `beautifyMathHTML`: normalizes the visual treatment of operators, equality signs, comparison signs, blanks, and circle choices so math layout stays more balanced across generated HTML strings.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
+- `PROGRAM_STORAGE_KEY`: persists the selected training program in `localStorage`, currently normalized back to `advanced_fluency_v1` if an unavailable program is requested.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
 - `GenLorik.div`: guarantees Lorik section II includes one whole-number division item plus decimal-dividend, decimal-divisor, and double-decimal division practice.
@@ -107,6 +111,7 @@ python3 -m http.server 8080
 - Open the error book, mark an item mastered, then move it back.
 - Export JSON and import it in a fresh browser profile.
 - Confirm exported backup JSON includes the current app version and export metadata fields.
+- Confirm the control panel now shows the program switcher and stage-status card, and that the switcher defaults to `Advanced`.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
 - Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.

@@ -124,6 +124,12 @@ v23.19 improves mathematical sheet readability and print polish:
 - The goal is to reduce visual friction: learners should parse the structure of the problem faster and with less symbol confusion.
 - The typography pass applies to both on-screen review and printed sheets, so visual quality supports the training model instead of fighting it.
 
+v23.20 lays the UI shell for phase two without disrupting the current trainer:
+
+- The control panel now shows a lightweight program switcher and stage-status card, so families can see that the app is preparing for a second-stage training program.
+- The current experience still defaults to `Mini Challenge Advanced`; no existing paper, grading, print, error-book, or sync flow is replaced in this release.
+- The second-stage program is intentionally visible as a future mode rather than half-enabled content, reducing confusion while the architecture is being put in place safely.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.

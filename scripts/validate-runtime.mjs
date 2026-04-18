@@ -15,6 +15,15 @@ if (!html.includes('body.print-sandbox-active > *:not(#print-root)')) {
 if (!html.includes('const PRINT_ROOT_ID = \'print-root\';')) {
   throw new Error('Print sandbox constant is missing from runtime script');
 }
+if (!html.includes('const TRAINING_PROGRAMS = {')) {
+  throw new Error('Program registry is missing from runtime script');
+}
+if (!html.includes('id="program-selector"')) {
+  throw new Error('Program selector is missing from control panel');
+}
+if (!html.includes('id="stage-status-card"')) {
+  throw new Error('Stage status card is missing from control panel');
+}
 if (!html.includes('function beautifyMathHTML')) {
   throw new Error('Math beautification helper is missing from runtime script');
 }
@@ -187,6 +196,22 @@ vm.createContext(context);
 vm.runInContext(match[1], context, { filename: 'index.html' });
 
 await new Promise(resolve => setTimeout(resolve, 25));
+
+const programSelector = elements.get('program-selector');
+const programTitleLabel = elements.get('program-title-label');
+const stageStatusTitle = elements.get('stage-status-title');
+if (!programSelector) {
+  throw new Error('Program selector element was not initialized');
+}
+if (programSelector.value !== 'advanced_fluency_v1') {
+  throw new Error(`Expected default program to be advanced_fluency_v1, got ${programSelector.value || '(empty)'}`);
+}
+if (!String(programTitleLabel?.textContent || '').includes('Mini Challenge Advanced')) {
+  throw new Error('Program shell did not render the advanced program label');
+}
+if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
+  throw new Error('Stage status card did not render first-stage status text');
+}
 
 function assertPaper(setNumber) {
   const paper = elements.get('paper-container')?.innerHTML || '';

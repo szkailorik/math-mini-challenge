@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.19 (数学排版美化版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.20 (第二阶段程序壳)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -252,7 +252,7 @@
         .knowledge-tag.weak { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
         /* ================= 控制面板 ================= */
-        .control-panel { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; backdrop-filter: blur(5px); width: 280px; }
+        .control-panel { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; backdrop-filter: blur(5px); width: 320px; }
         .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 6px;}
         .panel-header h3 { margin: 0; font-size: 15px; text-align: left; flex: 1;}
         .toggle-btn { background: none; border: none; color: white; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
@@ -261,12 +261,100 @@
         .ctrl-btn { background: #fff; color: #002D72; border: none; padding: 6px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; flex:1; text-align:center; font-size: 13px;}
         .ctrl-btn:hover { background: #d32f2f; color: #fff; transform: scale(1.05); }
         .set-indicator { font-size: 16px; font-weight: bold; color: #ffde99; white-space: nowrap;}
+        .program-shell-card, .stage-status-card {
+            background: rgba(255,255,255,0.11);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 10px;
+            padding: 10px 11px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .program-shell-card { margin-top: 8px; }
+        .program-shell-head, .stage-status-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .program-kicker {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #bfdbfe;
+        }
+        .program-chip, .status-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .program-chip.phase-1, .status-chip.phase-1 {
+            background: rgba(191, 219, 254, 0.22);
+            color: #dbeafe;
+            border: 1px solid rgba(191, 219, 254, 0.35);
+        }
+        .program-chip.phase-2, .status-chip.phase-2 {
+            background: rgba(16, 185, 129, 0.18);
+            color: #d1fae5;
+            border: 1px solid rgba(110, 231, 183, 0.35);
+        }
+        .program-main-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .program-copy { min-width: 0; flex: 1; }
+        .program-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.25;
+            margin-bottom: 3px;
+        }
+        .program-desc, .stage-status-body, .stage-status-action {
+            font-size: 12px;
+            line-height: 1.45;
+            color: #dbeafe;
+        }
+        .program-select {
+            width: 132px;
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.96);
+            color: #0f172a;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 8px;
+            cursor: pointer;
+        }
+        .program-select:focus { outline: 2px solid rgba(191, 219, 254, 0.65); outline-offset: 1px; }
+        .stage-status-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+        }
+        .stage-status-card.is-ready {
+            border-color: rgba(110, 231, 183, 0.45);
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.16), rgba(255,255,255,0.08));
+        }
+        .stage-status-card.is-soon {
+            border-color: rgba(253, 186, 116, 0.42);
+            background: linear-gradient(180deg, rgba(180, 83, 9, 0.16), rgba(255,255,255,0.08));
+        }
 
         #toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: sans-serif; opacity: 0; transition: opacity 0.3s; z-index: 10000; pointer-events: none;}
         #cloud-status { font-size: 11px; color: #bbf7d0; text-align: center; margin-top: 2px; font-weight: normal; }
 
         .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999; cursor: pointer; font-family: sans-serif; font-weight: bold; font-size: 14px; backdrop-filter: blur(5px); display: none; }
-        .export-btn { position: fixed; top: 20px; right: 320px; background-color: #002D72; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: 0.2s; }
+        .export-btn { position: fixed; top: 20px; right: 360px; background-color: #002D72; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: 0.2s; }
         .export-btn:hover { background-color: #d32f2f; transform: scale(1.05); }
 
         /* 报告弹窗 */
@@ -283,6 +371,18 @@
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
         #print-root { display: none; }
+
+        @media (max-width: 1100px) {
+            .export-btn { right: 20px; top: auto; bottom: 20px; }
+        }
+        @media (max-width: 640px) {
+            body { padding: 10px; }
+            .control-panel { width: calc(100vw - 24px); right: 12px; top: 12px; }
+            .program-main-row { flex-direction: column; }
+            .program-select { width: 100%; }
+            .mini-panel-btn { top: 12px; right: 12px; }
+            .export-btn { right: 12px; bottom: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -296,6 +396,30 @@
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
         <button id="cloud-connect-shortcut" class="ctrl-btn" style="display:none; background:#0ea5e9; color:white; width:100%;" onclick="window.showDataModal()">☁️ 连接云同步 / Connect Sync</button>
+        <div class="program-shell-card" id="program-shell-card">
+            <div class="program-shell-head">
+                <span class="program-kicker">当前训练</span>
+                <span class="program-chip phase-1" id="program-phase-chip">第一阶段</span>
+            </div>
+            <div class="program-main-row">
+                <div class="program-copy">
+                    <div class="program-title" id="program-title-label">Mini Challenge Advanced</div>
+                    <div class="program-desc" id="program-desc-label">持续强化核心算法、互化、方程和策略训练。</div>
+                </div>
+                <select id="program-selector" class="program-select" onchange="window.changeProgram(this.value)">
+                    <option value="advanced_fluency_v1">Advanced</option>
+                    <option value="elementary_closure_v1" disabled>Closure（即将开放）</option>
+                </select>
+            </div>
+        </div>
+        <div class="stage-status-card is-soon" id="stage-status-card">
+            <div class="stage-status-head">
+                <div class="stage-status-title" id="stage-status-title">第一阶段 · 稳定训练中</div>
+                <span class="status-chip phase-1" id="stage-status-chip">主线阶段</span>
+            </div>
+            <div class="stage-status-body" id="stage-status-body">当前版本先保持第一阶段训练主链稳定，第二阶段入口壳层已开始接入。</div>
+            <div class="stage-status-action" id="stage-status-action">建议动作：继续当前训练；第二阶段题卷模块将在后续版本接入。</div>
+        </div>
 
         <div id="normal-ctrls">
             <div class="ctrl-row" style="margin-top: 5px;">
@@ -341,14 +465,99 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.19';
-        const APP_RELEASE_LABEL = '数学排版美化版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.19 数学排版美化版：<br><strong>符号更匀、更稳、更清楚<br>纸面观感和打印质感一起提升</strong>';
+        const APP_VERSION = 'v23.20';
+        const APP_RELEASE_LABEL = '第二阶段程序壳';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.20 第二阶段程序壳：<br><strong>Program 切换条与阶段状态卡上线<br>第一阶段训练主链保持不变</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
+        const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
+        const TRAINING_PROGRAMS = {
+            advanced_fluency_v1: {
+                label: 'Mini Challenge Advanced',
+                phaseText: '第一阶段',
+                statusChip: '主线阶段',
+                desc: '持续强化核心算法、互化、方程和策略训练。',
+                statusTitle: '第一阶段 · 稳定训练中',
+                statusBody: '当前版本仍以第一阶段为默认主训练程序，出卷、打印、批改、错题本和同步主链保持不变。',
+                statusAction: '建议动作：继续当前高价值训练，保持稳定节奏。',
+                enabled: true,
+                tone: 'phase-1'
+            },
+            elementary_closure_v1: {
+                label: '小学计算收束阶段',
+                phaseText: '第二阶段',
+                statusChip: '即将开放',
+                desc: '收束整数、小数、分数、百分数、比、比例和单位计算。',
+                statusTitle: '第二阶段 · 程序壳就位',
+                statusBody: '第二阶段的 program 壳层已经接入，后续版本会逐步开放题卷、批改与阶段切换逻辑。',
+                statusAction: '建议动作：当前先保持第一阶段训练；第二阶段题卷模块即将接入。',
+                enabled: false,
+                tone: 'phase-2'
+            }
+        };
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
+
+        function getStoredProgramId() {
+            const stored = localStorage.getItem(PROGRAM_STORAGE_KEY) || 'advanced_fluency_v1';
+            if (TRAINING_PROGRAMS[stored]?.enabled) return stored;
+            return 'advanced_fluency_v1';
+        }
+
+        function getCurrentProgramId() {
+            return window.currentProgramId || 'advanced_fluency_v1';
+        }
+
+        function getProgramConfig(programId = getCurrentProgramId()) {
+            return TRAINING_PROGRAMS[programId] || TRAINING_PROGRAMS.advanced_fluency_v1;
+        }
+
+        function renderProgramShell() {
+            const config = getProgramConfig();
+            const selector = document.getElementById('program-selector');
+            const phaseChip = document.getElementById('program-phase-chip');
+            const titleLabel = document.getElementById('program-title-label');
+            const descLabel = document.getElementById('program-desc-label');
+            const stageCard = document.getElementById('stage-status-card');
+            const stageChip = document.getElementById('stage-status-chip');
+            const stageTitle = document.getElementById('stage-status-title');
+            const stageBody = document.getElementById('stage-status-body');
+            const stageAction = document.getElementById('stage-status-action');
+
+            if (selector) selector.value = getCurrentProgramId();
+            if (phaseChip) {
+                phaseChip.textContent = config.phaseText;
+                phaseChip.className = `program-chip ${config.tone}`;
+            }
+            if (titleLabel) titleLabel.textContent = config.label;
+            if (descLabel) descLabel.textContent = config.desc;
+            if (stageCard) stageCard.className = `stage-status-card ${config.enabled ? 'is-ready' : 'is-soon'}`;
+            if (stageChip) {
+                stageChip.textContent = config.statusChip;
+                stageChip.className = `status-chip ${config.tone}`;
+            }
+            if (stageTitle) stageTitle.textContent = config.statusTitle;
+            if (stageBody) stageBody.textContent = config.statusBody;
+            if (stageAction) stageAction.textContent = config.statusAction;
+        }
+
+        window.changeProgram = function(programId) {
+            const requested = TRAINING_PROGRAMS[programId];
+            if (!requested || !requested.enabled) {
+                const selector = document.getElementById('program-selector');
+                if (selector) selector.value = getCurrentProgramId();
+                renderProgramShell();
+                if (typeof window.showToast === 'function') {
+                    window.showToast('第二阶段题卷模块正在接入中，当前先保持第一阶段训练。', { background: '#b45309', duration: 2600 });
+                }
+                return;
+            }
+            window.currentProgramId = programId;
+            safeLocalSetItem(PROGRAM_STORAGE_KEY, programId);
+            renderProgramShell();
+            if (typeof window.renderPaper === 'function') window.renderPaper();
+        };
 
         function getStoredSetNumber() {
             const stored = Number.parseInt(localStorage.getItem('MathEngine_LastSetNum'), 10);
@@ -356,6 +565,7 @@
         }
 
         window.currentSetNumber = getStoredSetNumber();
+        window.currentProgramId = getStoredProgramId();
         let prngState = 0;
 
         function random() {
@@ -2440,6 +2650,7 @@
         };
 
         window.renderPaper = function() {
+            renderProgramShell();
             document.getElementById('set-num-display').innerText = window.currentSetNumber;
             setSeed(window.currentSetNumber * 12345);
             let data = generateOrLoadSetData();
@@ -3142,6 +3353,7 @@
             if (versionLabel) versionLabel.textContent = `🧠 专家私教引擎 ${APP_VERSION}`;
             const releaseLabel = document.getElementById('release-note-label');
             if (releaseLabel) releaseLabel.innerHTML = APP_RELEASE_NOTE_HTML;
+            renderProgramShell();
             const container = document.getElementById('paper-container');
             if (container) {
                 container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";
