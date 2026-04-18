@@ -24,6 +24,12 @@ if (!html.includes('id="program-selector"')) {
 if (!html.includes('id="stage-status-card"')) {
   throw new Error('Stage status card is missing from control panel');
 }
+if (!html.includes('MathEngine_SetCounters')) {
+  throw new Error('Program-aware set counter storage key is missing from runtime script');
+}
+if (!html.includes('MathEngine_PromotionState')) {
+  throw new Error('Promotion state storage key is missing from runtime script');
+}
 if (!html.includes('function beautifyMathHTML')) {
   throw new Error('Math beautification helper is missing from runtime script');
 }
@@ -204,6 +210,7 @@ await new Promise(resolve => setTimeout(resolve, 25));
 const programSelector = elements.get('program-selector');
 const programTitleLabel = elements.get('program-title-label');
 const stageStatusTitle = elements.get('stage-status-title');
+const stageStatusAction = elements.get('stage-status-action');
 if (!programSelector) {
   throw new Error('Program selector element was not initialized');
 }
@@ -215,6 +222,9 @@ if (!String(programTitleLabel?.textContent || '').includes('Mini Challenge Advan
 }
 if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
   throw new Error('Stage status card did not render first-stage status text');
+}
+if (!String(stageStatusAction?.textContent || '').includes('继续巩固')) {
+  throw new Error('Stage status card did not render first-stage readiness guidance');
 }
 
 function assertPaper(setNumber) {
@@ -789,14 +799,115 @@ for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   checked.push(`${setNumber}:${assertPaper(setNumber)}`);
 }
 context.window.changeProgram('elementary_closure_v1');
-if (programSelector.value !== 'elementary_closure_v1') {
-  throw new Error('Program selector did not switch to elementary_closure_v1');
+if (programSelector.value !== 'advanced_fluency_v1' || context.window.getCurrentProgramId?.() !== 'advanced_fluency_v1') {
+  throw new Error('Closure switch should first open the promotion gate instead of switching immediately');
+}
+if (!String(elements.get('modal-title')?.innerText || '').includes('第二阶段入口')) {
+  throw new Error('Promotion gate modal did not open when requesting closure');
+}
+if (!String(elements.get('report-content-area')?.innerHTML || '').includes('继续巩固 7 套')) {
+  throw new Error('Promotion gate is missing the continue-reinforcing branch');
+}
+const advancedSetBeforeDefer = context.window.currentSetNumber;
+context.window.deferClosurePromotion?.();
+if (context.window.promotionState?.closureDeferUntilSet !== advancedSetBeforeDefer + 7) {
+  throw new Error('Deferring closure promotion did not record a seven-set reinforcement window');
+}
+if (!String(stageStatusAction?.textContent || '').includes(`第 ${advancedSetBeforeDefer + 7} 套`)) {
+  throw new Error('Stage status card did not reflect the deferred promotion target set');
+}
+
+function seedAdvancedReadiness(student, setStart) {
+  const profile = context.window.StorageDB.getProfile(student, 'advanced_fluency_v1');
+  profile.weights = {};
+  profile.lastSeen = {
+    k_dmul_basic: setStart + 7,
+    k_ddiv_basic: setStart + 7,
+    k_conv_1: setStart + 7,
+    k_eq_move: setStart + 7,
+    l_div_decimal_dividend: setStart + 7,
+    l_fmix_add: setStart + 7,
+  };
+  profile.errorBook = {
+    [`mastered-${student}`]: {
+      tag: student === 'KAI' ? 'k_dmul_basic' : 'l_div_decimal_dividend',
+      count: 2,
+      firstSet: setStart,
+      firstDate: 'validator',
+      lastSet: setStart + 2,
+      lastDate: 'validator',
+      mastered: true,
+      masteredDate: 'validator',
+      info: { q: '1', a: '1' },
+    }
+  };
+  profile.history = Array.from({ length: 8 }, (_, index) => ({
+    set: setStart + index,
+    ts: Date.now() + index,
+    date: 'validator',
+    programId: 'advanced_fluency_v1',
+    details: index < 2 ? [{
+      tag: student === 'KAI' ? 'k_eq_move' : 'l_div_decimal_dividend',
+      grade: 'careless',
+      info: { sec: 'validator', num: 1, q: '1', a: '1' },
+      uid: `u-${student}-${index}`
+    }] : [],
+    allGrades: Array.from({ length: 36 }, (_, idx) => ({
+      tag: idx % 2 ? (student === 'KAI' ? 'k_dmul_basic' : 'l_div_decimal_dividend') : (student === 'KAI' ? 'k_conv_1' : 'l_fmix_add'),
+      grade: idx < 34 ? 'perfect' : 'careless'
+    })),
+    weightAdjustments: [],
+    signalAdjustments: [],
+    signalSnapshot: null,
+  }));
+}
+
+seedAdvancedReadiness('KAI', 95);
+seedAdvancedReadiness('Lorik', 95);
+context.window.currentSetNumber = context.window.promotionState.closureDeferUntilSet + 1;
+context.window.changeProgram('elementary_closure_v1');
+const readinessSnapshot = context.window.getPromotionReadinessSnapshot?.();
+if (!readinessSnapshot || readinessSnapshot.status !== 'ready') {
+  throw new Error('Promotion readiness snapshot did not report ready after strong advanced training history');
+}
+if (!String(elements.get('report-content-area')?.innerHTML || '').includes('可进入第二阶段')) {
+  throw new Error('Promotion gate did not render the ready-to-promote state');
+}
+context.window.acceptClosurePromotion?.();
+if (programSelector.value !== 'elementary_closure_v1' || context.window.getCurrentProgramId?.() !== 'elementary_closure_v1') {
+  throw new Error('Accepting the promotion gate did not enter closure');
 }
 if (!String(programTitleLabel?.textContent || '').includes('小学计算收束阶段')) {
-  throw new Error('Program shell did not render the closure program label');
+  throw new Error('Program shell did not render the closure program label after accepting promotion');
 }
 if (!String(stageStatusTitle?.textContent || '').includes('第二阶段')) {
-  throw new Error('Stage status card did not render second-stage status text');
+  throw new Error('Stage status card did not render second-stage status text after accepting promotion');
+}
+if (!context.window.promotionState?.closureBootstrapped || !Array.isArray(context.window.promotionState?.promotionHistory) || !context.window.promotionState.promotionHistory.length) {
+  throw new Error('Accepting the promotion gate did not record promotion bootstrap history');
+}
+if (context.window.currentSetNumber !== 1) {
+  throw new Error(`Expected closure to open on its own set counter at 1, got ${context.window.currentSetNumber}`);
+}
+context.window.renderPaper();
+assertClosurePaper(1);
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('欢迎进入小学计算收束阶段')) {
+  throw new Error('Closure intro card did not render after promotion');
+}
+context.window.changeSet(2);
+if (context.window.currentSetNumber !== 3) {
+  throw new Error('Closure set counter did not advance independently');
+}
+context.window.changeProgram('advanced_fluency_v1');
+if (context.window.getCurrentProgramId?.() !== 'advanced_fluency_v1') {
+  throw new Error('Switching back to advanced did not succeed');
+}
+if (context.window.currentSetNumber !== readinessSnapshot.currentSet) {
+  throw new Error('Advanced set counter was not restored after returning from closure');
+}
+context.window.changeProgram('elementary_closure_v1');
+if (context.window.currentSetNumber !== 3) {
+  throw new Error('Closure set counter was not restored after switching back into closure');
 }
 context.window.currentSetNumber = 103;
 context.window.renderPaper();

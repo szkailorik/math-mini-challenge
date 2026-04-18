@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is also enabled in `v23.22`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a promotion-state store; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is also enabled in `v23.23`.
 
 ## Local Environment
 
@@ -38,8 +38,12 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 ## Key Runtime Concepts
 
 - `currentSetNumber`: drives deterministic seeding and set cache keys.
-- `TRAINING_PROGRAMS` / `currentProgramId`: switch between the first-stage advanced trainer and the second-stage closure-paper preview while keeping the first-stage default path intact.
+- `TRAINING_PROGRAMS` / `currentProgramId`: switch between the first-stage advanced trainer and the second-stage closure program while keeping the first-stage default path intact.
+- `SET_COUNTERS_STORAGE_KEY`: keeps `Advanced` and `Closure` on their own set counters so stage switching does not overwrite the other stage's progress pointer.
+- `PROMOTION_STATE_STORAGE_KEY`: keeps the second-stage defer window, promotion history, and bootstrap state in local storage.
 - `renderProgramShell`: updates the control-panel program switcher and stage-status card without affecting printable question-sheet DOM.
+- `buildPromotionReadinessSnapshot`: turns recent first-stage history into a readiness status word and action guidance for stage promotion.
+- `openClosurePromotionGate` / `acceptClosurePromotion` / `deferClosurePromotion`: formalize second-stage entry, including the "continue reinforcing for 7 more sets" branch.
 - `getSetCacheKey`: namespaces cached set snapshots by program so closure papers do not collide with advanced papers.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
@@ -79,7 +83,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then switches into `elementary_closure_v1` to validate second-stage paper structure, active grading messaging, program-aware cache keys, isolated profile writes, closure signal updates, and print-sandbox behavior.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then validates promotion gating, defer-for-7-sets behavior, program-aware set counters, closure bootstrap, second-stage paper structure, isolated profile writes, closure signal updates, and print-sandbox behavior.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -116,7 +120,9 @@ python3 -m http.server 8080
 - Export JSON and import it in a fresh browser profile.
 - Confirm exported backup JSON includes the current app version and export metadata fields.
 - Confirm the control panel now shows the program switcher and stage-status card, and that the switcher defaults to `Advanced`.
-- Switch to `Closure` and confirm the stage-status card updates to the second-stage active state.
+- Try switching to `Closure` from `Advanced` and confirm the promotion gate appears before the actual switch.
+- Choose `继续巩固 7 套` once and confirm the stage-status card reflects the deferred target set.
+- Enter `Closure`, then switch back and forth once to confirm `Advanced` and `Closure` restore their own set counters.
 - Confirm `Closure` renders four question sheets plus two writable answer sheets.
 - Confirm the `Closure` sheets visibly combine integrated closure topics with explicit old-skill maintenance sections.
 - Grade and submit one `Closure` set, then confirm a closure-specific report appears and the first-stage profile remains untouched.

@@ -29,28 +29,28 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.22 Iteration Notes
+## Current v23.23 Iteration Notes
 
 ### Iteration 1
 
-- What I changed: opened the second-stage grading loop, so `Closure` now has four question sheets, two writable answer sheets, and program-aware cached paper data.
+- What I changed: completed M4 by adding a formal promotion gate from `Advanced` into `Closure`, rather than treating stage two as a plain manual toggle.
 - Open questions: none.
-- Risks: phase-two writeback now exists, so profile isolation between `Advanced` and `Closure` has become a release-critical guarantee.
-- Next steps: keep second-stage paper quality high while preserving first-stage stability.
+- Risks: promotion wording now affects real user decisions, so the stage card and gate copy should stay aligned with actual readiness behavior.
+- Next steps: if real use shows the gate is too strict or too loose, tune thresholds rather than removing the gate structure.
 
 ### Iteration 2
 
-- What I changed: defined the first closure-profile signal model around `representationGap / methodGap / stabilityGap / speedGap / validationGap`.
+- What I changed: added the `继续巩固 7 套` branch and isolated set counters per program, so switching stages no longer overwrites the other stage's position.
 - Open questions: none.
-- Risks: if future changes over-randomize second-stage bridge sections, paper quality can drop through duplicated or shallow integrated items, which would make the new closure signals noisy.
-- Next steps: refine the closure signal model and prepare readiness scoring in M4.
+- Risks: any future import/sync changes now need to respect per-program counters and promotion state, not only the legacy single-set pointer.
+- Next steps: keep stage-state persistence in mind whenever backup or sync behavior changes.
 
 ### Iteration 3
 
-- What I changed: upgraded runtime validation so release checks now cover the advanced trainer and the closure runtime, including isolated profile writes, closure reporting, and print-sandbox behavior.
+- What I changed: bootstrapped first entry into `Closure`, added a no-print first-entry explanation card, and upgraded runtime validation to cover readiness, defer, bootstrap, and per-program set restoration.
 - Open questions: none.
-- Risks: print, grading, reporting, and storage are now part of the release contract for two programs, so future regressions have more surface area.
-- Next steps: move into M4 by designing readiness scoring and formal stage-promotion rules.
+- Risks: the release contract now includes stage-promotion flow in addition to print, grading, reporting, and storage.
+- Next steps: continue improving second-stage paper quality and readiness scoring based on real usage, not on one-off threshold tuning.
 
 ## Previous v23.19 Iteration Notes
 

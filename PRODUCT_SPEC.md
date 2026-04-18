@@ -131,6 +131,13 @@ v23.22 turns phase two into a real trainable program without disrupting the curr
 - The product intent is not to simply raise difficulty or revisit basics in isolation. It is to finish elementary-school calculation training efficiently and personally, judged from a grade-6 to junior-high readiness perspective.
 - The current release now writes phase-two grading into an isolated program profile, so closure-specific error books and gap signals accumulate without polluting the first-stage trainer.
 
+v23.23 completes the stage-promotion loop:
+
+- The first stage now gives a human-readable readiness status instead of only exposing a raw second-stage switch.
+- Families can formally choose between `进入第二阶段` and `继续巩固 7 套`, which matches the product goal of high-quality transition rather than mechanical stage flipping.
+- The transition now preserves learning continuity better: `Advanced` and `Closure` keep their own set counters, and first entry into phase two performs a light bootstrap from first-stage weak domains.
+- The product stance remains the same: the second stage is not "hard mode". It is the formal closure stage for elementary-school calculation, viewed from grade-6 to junior-high readiness.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.22 (第二阶段闭环上线)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.23 (第二阶段晋级闭环)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -391,7 +391,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.19</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.23</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -438,7 +438,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.19 数学排版美化版：<br><strong>符号更匀、更稳、更清楚<br>纸面观感和打印质感一起提升</strong>
+                💡 23.23 第二阶段晋级闭环：<br><strong>readiness、切换门槛、继续巩固与第二阶段 bootstrap 已接通<br>第一阶段与第二阶段套号独立保存</strong>
             </div>
         </div>
 
@@ -465,14 +465,19 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.22';
-        const APP_RELEASE_LABEL = '第二阶段闭环上线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.22 第二阶段闭环上线：<br><strong>Closure 题卷、批改、报告与独立画像已接通<br>第一阶段训练主链保持不变</strong>';
+        const APP_VERSION = 'v23.23';
+        const APP_RELEASE_LABEL = '第二阶段晋级闭环';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.23 第二阶段晋级闭环：<br><strong>readiness、切换门槛、继续巩固与第二阶段 bootstrap 已接通<br>第一阶段与第二阶段套号独立保存</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
+        const SET_COUNTERS_STORAGE_KEY = 'MathEngine_SetCounters';
+        const PROMOTION_STATE_STORAGE_KEY = 'MathEngine_PromotionState';
+        const ADVANCED_PROGRAM_ID = 'advanced_fluency_v1';
+        const CLOSURE_PROGRAM_ID = 'elementary_closure_v1';
+        const PROGRAM_SIGNAL_FIELDS = ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap'];
         const TRAINING_PROGRAMS = {
-            advanced_fluency_v1: {
+            [ADVANCED_PROGRAM_ID]: {
                 label: 'Mini Challenge Advanced',
                 phaseText: '第一阶段',
                 statusChip: '主线阶段',
@@ -483,7 +488,7 @@
                 enabled: true,
                 tone: 'phase-1'
             },
-            elementary_closure_v1: {
+            [CLOSURE_PROGRAM_ID]: {
                 label: '小学计算收束阶段',
                 phaseText: '第二阶段',
                 statusChip: '闭环运行',
@@ -505,16 +510,255 @@
             return 'advanced_fluency_v1';
         }
 
+        function readStoredJSON(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return parsed && typeof parsed === 'object' ? parsed : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function getDefaultSetNumberForProgram(programId) {
+            return programId === CLOSURE_PROGRAM_ID ? 1 : 73;
+        }
+
+        function getStoredSetCounters() {
+            const counters = readStoredJSON(SET_COUNTERS_STORAGE_KEY, {});
+            const legacy = Number.parseInt(localStorage.getItem('MathEngine_LastSetNum'), 10);
+            if (Number.isInteger(legacy) && legacy > 0 && !Number.isInteger(counters[ADVANCED_PROGRAM_ID])) {
+                counters[ADVANCED_PROGRAM_ID] = legacy;
+            }
+            return counters;
+        }
+
+        function persistSetCounters() {
+            safeLocalSetItem(SET_COUNTERS_STORAGE_KEY, JSON.stringify(window.setCounterByProgram || {}));
+            safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
+        }
+
+        function ensurePromotionStateShape(state) {
+            const next = state && typeof state === 'object' ? state : {};
+            next.closureDeferUntilSet = Number.isInteger(next.closureDeferUntilSet) ? next.closureDeferUntilSet : 0;
+            next.promotionHistory = Array.isArray(next.promotionHistory) ? next.promotionHistory : [];
+            next.closureBootstrapped = !!next.closureBootstrapped;
+            next.closureIntroDismissedVersion = next.closureIntroDismissedVersion || '';
+            next.pendingProgramId = typeof next.pendingProgramId === 'string' ? next.pendingProgramId : '';
+            next.lastReadinessSnapshot = next.lastReadinessSnapshot && typeof next.lastReadinessSnapshot === 'object' ? next.lastReadinessSnapshot : null;
+            return next;
+        }
+
+        function savePromotionState() {
+            window.promotionState = ensurePromotionStateShape(window.promotionState);
+            safeLocalSetItem(PROMOTION_STATE_STORAGE_KEY, JSON.stringify(window.promotionState));
+        }
+
         function getCurrentProgramId() {
-            return window.currentProgramId || 'advanced_fluency_v1';
+            return window.currentProgramId || ADVANCED_PROGRAM_ID;
+        }
+
+        function getStoredSetNumber(programId = getStoredProgramId()) {
+            const counters = window.setCounterByProgram || getStoredSetCounters();
+            const stored = Number.parseInt(counters[programId], 10);
+            return Number.isInteger(stored) && stored > 0 ? stored : getDefaultSetNumberForProgram(programId);
+        }
+
+        function setProgramSetNumber(programId, setNumber) {
+            if (!window.setCounterByProgram) window.setCounterByProgram = getStoredSetCounters();
+            window.setCounterByProgram[programId] = setNumber;
+            persistSetCounters();
         }
 
         function getProgramConfig(programId = getCurrentProgramId()) {
-            return TRAINING_PROGRAMS[programId] || TRAINING_PROGRAMS.advanced_fluency_v1;
+            return TRAINING_PROGRAMS[programId] || TRAINING_PROGRAMS[ADVANCED_PROGRAM_ID];
+        }
+
+        function clampNumber(value, min, max) {
+            return Math.min(max, Math.max(min, value));
+        }
+
+        function uniqueDomainCount(profile) {
+            const domains = new Set();
+            const addTag = (tag) => {
+                if (!tag || typeof getKnowledgeDomain !== 'function') return;
+                const domain = getKnowledgeDomain(tag);
+                if (domain?.id) domains.add(domain.id);
+            };
+            Object.keys(profile?.weights || {}).forEach(addTag);
+            Object.keys(profile?.lastSeen || {}).forEach(addTag);
+            Object.values(profile?.errorBook || {}).forEach(entry => addTag(entry?.tag));
+            return domains.size;
+        }
+
+        function summarizeAdvancedStudentReadiness(student) {
+            const profile = typeof StorageDB !== 'undefined'
+                ? (StorageDB.getProfile(student, ADVANCED_PROGRAM_ID) || createProgramProfile(ADVANCED_PROGRAM_ID))
+                : createProgramProfile(ADVANCED_PROGRAM_ID);
+            const history = (profile.history || []).slice(-8);
+            const answered = history.reduce((sum, session) => sum + ((session.allGrades || []).length || 0), 0);
+            const detailMistakes = history.reduce((sum, session) => sum + ((session.details || []).length || 0), 0);
+            const activeErrors = Object.values(profile.errorBook || {}).filter(entry => !entry.mastered).length;
+            const masteredErrors = Object.values(profile.errorBook || {}).filter(entry => entry.mastered).length;
+            const heavyWeights = Object.values(profile.weights || {}).filter(weight => weight >= 4).length;
+            const accuracyRate = answered ? ((answered - detailMistakes) / answered) : 0;
+            const accuracyScore = clampNumber(((accuracyRate - 0.72) / 0.24) * 25, 0, 25);
+            const stabilityScore = clampNumber(24 - (activeErrors * 2.4) - (heavyWeights * 1.6), 0, 24);
+            const transferScore = clampNumber(uniqueDomainCount(profile) * 4.5, 0, 18);
+            const errorDecayScore = clampNumber((masteredErrors / Math.max(1, activeErrors + masteredErrors)) * 16, activeErrors === 0 ? 10 : 0, 16);
+            const completionScore = clampNumber(((window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID)) - 72) * 0.65, 0, 17);
+            const score = accuracyScore + stabilityScore + transferScore + errorDecayScore + completionScore;
+            return {
+                student,
+                score: Math.round(score),
+                accuracyRate,
+                activeErrors,
+                masteredErrors,
+                completionSets: history.length,
+                domainCoverage: uniqueDomainCount(profile),
+            };
+        }
+
+        function buildPromotionReadinessSnapshot() {
+            const currentSet = window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID);
+            const students = ['KAI', 'Lorik'].map(summarizeAdvancedStudentReadiness);
+            const avgScore = students.length ? students.reduce((sum, item) => sum + item.score, 0) / students.length : 0;
+            const minScore = students.length ? Math.min(...students.map(item => item.score)) : 0;
+            const deferUntilSet = Number(window.promotionState?.closureDeferUntilSet || 0);
+            let status = 'reinforce';
+            if (deferUntilSet > currentSet) status = 'reinforce';
+            else if (avgScore >= 78 && minScore >= 74 && currentSet >= 92) status = 'ready';
+            else if (avgScore >= 62 || currentSet >= 88) status = 'near';
+
+            const statusWord = status === 'ready' ? '可进入第二阶段' : (status === 'near' ? '接近切换' : '继续巩固');
+            const statusChip = status === 'ready' ? '可切换' : (status === 'near' ? '接近切换' : '继续巩固');
+            const statusTitle = status === 'ready'
+                ? '第一阶段 · 已具备第二阶段入口条件'
+                : (status === 'near' ? '第一阶段 · 接近第二阶段入口' : '第一阶段 · 继续巩固中');
+            let statusBody = `当前基于最近训练记录判断：${statusWord}。两位学生最近训练更像是在${status === 'ready' ? '稳定收口' : '继续压错和稳固'}。`;
+            let statusAction = status === 'ready'
+                ? '建议动作：可以进入第二阶段；如果想再稳一层，也可以继续巩固 7 套。'
+                : (status === 'near'
+                    ? '建议动作：再保持 3-5 套高价值训练，准备进入第二阶段。'
+                    : '建议动作：继续巩固当前高价值训练，先把准确率、稳定度和迁移度拉齐。');
+            if (deferUntilSet > currentSet) {
+                statusBody = `你已选择继续留在第一阶段巩固到第 ${deferUntilSet} 套，再决定是否切换。`;
+                statusAction = `建议动作：先完成到第 ${deferUntilSet} 套；如果想提前进入第二阶段，也可以随时重新判断。`;
+            }
+
+            return {
+                currentSet,
+                deferUntilSet,
+                score: Math.round(avgScore),
+                status,
+                statusWord,
+                statusChip,
+                statusTitle,
+                statusBody,
+                statusAction,
+                students,
+            };
+        }
+
+        function buildClosureStageSnapshot() {
+            const currentSet = window.currentSetNumber || getStoredSetNumber(CLOSURE_PROGRAM_ID);
+            const profiles = ['KAI', 'Lorik'].map(student => StorageDB.getProfile(student, CLOSURE_PROGRAM_ID) || createProgramProfile(CLOSURE_PROGRAM_ID));
+            const signalAvg = PROGRAM_SIGNAL_FIELDS.reduce((sum, field) => {
+                const avg = profiles.reduce((inner, profile) => inner + Number(profile[field] || 0), 0) / Math.max(1, profiles.length);
+                return sum + avg;
+            }, 0) / PROGRAM_SIGNAL_FIELDS.length;
+            const cycle = currentSet <= 7 ? '收口期' : (currentSet <= 22 ? '收束期' : '毕业判定期');
+            return {
+                status: 'closure',
+                statusWord: cycle,
+                statusChip: cycle,
+                statusTitle: `第二阶段 · ${cycle}进行中`,
+                statusBody: '这一阶段不是更难，而是把整数、小数、分数、百分数、比、比例、单位与策略训练更系统地收束起来。',
+                statusAction: `建议动作：继续观察 5 类 gap 信号和旧知保温表现。当前平均 gap 压力 ${Math.round(signalAvg * 10) / 10}。`,
+            };
+        }
+
+        function getProgramStageSnapshot(programId = getCurrentProgramId()) {
+            return programId === CLOSURE_PROGRAM_ID ? buildClosureStageSnapshot() : buildPromotionReadinessSnapshot();
+        }
+
+        function renderReadinessMetricRow(snapshot) {
+            return snapshot.students.map(item => {
+                const accuracy = `${Math.round(item.accuracyRate * 100)}%`;
+                return `<span class="knowledge-tag">${item.student} ${item.score} 分 · 准确率 ${accuracy} · 活跃错题 ${item.activeErrors}</span>`;
+            }).join('');
+        }
+
+        function switchProgram(programId, { resetToDefault = false } = {}) {
+            const nextSet = resetToDefault ? getDefaultSetNumberForProgram(programId) : getStoredSetNumber(programId);
+            window.currentProgramId = programId;
+            window.currentSetNumber = nextSet;
+            setProgramSetNumber(programId, nextSet);
+            safeLocalSetItem(PROGRAM_STORAGE_KEY, programId);
+            renderProgramShell();
+            if (typeof window.renderPaper === 'function') window.renderPaper();
+        }
+
+        function bootstrapClosureProfiles(readinessSnapshot) {
+            if (window.promotionState?.closureBootstrapped) return;
+            ['KAI', 'Lorik'].forEach(student => {
+                const advancedProfile = StorageDB.getProfile(student, ADVANCED_PROGRAM_ID) || createProgramProfile(ADVANCED_PROGRAM_ID);
+                const closureProfile = StorageDB.getProfile(student, CLOSURE_PROGRAM_ID) || createProgramProfile(CLOSURE_PROGRAM_ID);
+                const domainSignals = typeof summarizeDomainSignals === 'function' ? summarizeDomainSignals([advancedProfile]) : [];
+                domainSignals.sort((a, b) => b.score - a.score);
+                domainSignals.slice(0, 4).forEach(signal => {
+                    const id = signal.domain?.id || '';
+                    if (['fraction', 'ratio', 'percent'].includes(id)) closureProfile.representationGap = Math.max(closureProfile.representationGap || 0, 1);
+                    if (['ratio', 'algebra', 'measurement'].includes(id)) closureProfile.methodGap = Math.max(closureProfile.methodGap || 0, 1);
+                    if (['decimal', 'arithmetic'].includes(id)) closureProfile.stabilityGap = Math.max(closureProfile.stabilityGap || 0, 1);
+                });
+                StorageDB.cache[student] = ensureStudentRecordShape(StorageDB.cache[student]);
+                StorageDB.cache[student].programs[CLOSURE_PROGRAM_ID] = closureProfile;
+                StorageDB.forceSave(student);
+            });
+            window.promotionState.closureBootstrapped = true;
+            window.promotionState.promotionHistory.push({
+                ts: Date.now(),
+                fromSet: readinessSnapshot.currentSet,
+                score: readinessSnapshot.score,
+                status: readinessSnapshot.status,
+            });
+            window.promotionState.pendingProgramId = '';
+            window.promotionState.lastReadinessSnapshot = readinessSnapshot;
+            savePromotionState();
+        }
+
+        function openClosurePromotionGate() {
+            setProgramSetNumber(ADVANCED_PROGRAM_ID, window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID));
+            const snapshot = buildPromotionReadinessSnapshot();
+            window.promotionState.pendingProgramId = CLOSURE_PROGRAM_ID;
+            window.promotionState.lastReadinessSnapshot = snapshot;
+            savePromotionState();
+            document.getElementById('modal-title').innerText = '🚪 第二阶段入口 / Promotion Gate';
+            document.getElementById('report-content-area').innerHTML = `
+                <div class="report-section">
+                    <h3>当前判断：${snapshot.statusWord}</h3>
+                    <div style="padding:15px; font-size:14px; line-height:1.7; color:#334155;">
+                        <div style="margin-bottom:10px;">${snapshot.statusBody}</div>
+                        <div style="margin-bottom:10px; color:#0f172a;"><strong>综合 readiness：</strong>${snapshot.score} / 100</div>
+                        <div class="knowledge-tags" style="margin-bottom:14px;">${renderReadinessMetricRow(snapshot)}</div>
+                        <div style="padding:12px 14px; border:1px solid #dbeafe; background:#f8fbff; border-radius:8px; color:#1e3a8a;">${snapshot.statusAction}</div>
+                        <div style="display:flex; gap:10px; margin-top:14px;">
+                            <button class="modal-btn" style="background:#0f766e; color:#fff; flex:1;" onclick="window.acceptClosurePromotion()">${snapshot.status === 'ready' ? '进入第二阶段' : '仍然进入第二阶段'}</button>
+                            <button class="modal-btn" style="background:#b45309; color:#fff; flex:1;" onclick="window.deferClosurePromotion()">继续巩固 7 套</button>
+                        </div>
+                        <button class="modal-btn" style="background:#64748b; color:#fff; width:100%; margin-top:10px;" onclick="window.closeReportModal()">暂不切换</button>
+                    </div>
+                </div>`;
+            document.getElementById('report-modal').style.display = 'block';
+            renderProgramShell();
         }
 
         function renderProgramShell() {
-            const config = getProgramConfig();
+            const programId = getCurrentProgramId();
+            const config = getProgramConfig(programId);
+            const snapshot = getProgramStageSnapshot(programId);
             const selector = document.getElementById('program-selector');
             const phaseChip = document.getElementById('program-phase-chip');
             const titleLabel = document.getElementById('program-title-label');
@@ -525,21 +769,21 @@
             const stageBody = document.getElementById('stage-status-body');
             const stageAction = document.getElementById('stage-status-action');
 
-            if (selector) selector.value = getCurrentProgramId();
+            if (selector) selector.value = programId;
             if (phaseChip) {
                 phaseChip.textContent = config.phaseText;
                 phaseChip.className = `program-chip ${config.tone}`;
             }
             if (titleLabel) titleLabel.textContent = config.label;
             if (descLabel) descLabel.textContent = config.desc;
-            if (stageCard) stageCard.className = `stage-status-card ${config.enabled ? 'is-ready' : 'is-soon'}`;
+            if (stageCard) stageCard.className = `stage-status-card ${snapshot.status === 'ready' || programId === CLOSURE_PROGRAM_ID ? 'is-ready' : 'is-soon'}`;
             if (stageChip) {
-                stageChip.textContent = config.statusChip;
+                stageChip.textContent = snapshot.statusChip;
                 stageChip.className = `status-chip ${config.tone}`;
             }
-            if (stageTitle) stageTitle.textContent = config.statusTitle;
-            if (stageBody) stageBody.textContent = config.statusBody;
-            if (stageAction) stageAction.textContent = config.statusAction;
+            if (stageTitle) stageTitle.textContent = snapshot.statusTitle;
+            if (stageBody) stageBody.textContent = snapshot.statusBody;
+            if (stageAction) stageAction.textContent = snapshot.statusAction;
         }
 
         window.changeProgram = function(programId) {
@@ -553,19 +797,50 @@
                 }
                 return;
             }
-            window.currentProgramId = programId;
-            safeLocalSetItem(PROGRAM_STORAGE_KEY, programId);
-            renderProgramShell();
-            if (typeof window.renderPaper === 'function') window.renderPaper();
+            if (programId === CLOSURE_PROGRAM_ID && getCurrentProgramId() === ADVANCED_PROGRAM_ID) {
+                if (window.promotionState?.closureBootstrapped) {
+                    switchProgram(programId);
+                    return;
+                }
+                openClosurePromotionGate();
+                return;
+            }
+            switchProgram(programId);
         };
 
-        function getStoredSetNumber() {
-            const stored = Number.parseInt(localStorage.getItem('MathEngine_LastSetNum'), 10);
-            return Number.isInteger(stored) && stored > 0 ? stored : 73;
-        }
+        window.deferClosurePromotion = function() {
+            const currentSet = window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID);
+            window.promotionState.closureDeferUntilSet = currentSet + 7;
+            window.promotionState.pendingProgramId = '';
+            savePromotionState();
+            if (typeof window.closeReportModal === 'function') window.closeReportModal();
+            renderProgramShell();
+            if (typeof window.showToast === 'function') {
+                window.showToast(`已选择继续巩固，到第 ${currentSet + 7} 套后再判断是否切换第二阶段。`, { background: '#b45309', duration: 3200 });
+            }
+        };
 
-        window.currentSetNumber = getStoredSetNumber();
+        window.acceptClosurePromotion = function() {
+            const snapshot = buildPromotionReadinessSnapshot();
+            window.promotionState.closureDeferUntilSet = 0;
+            bootstrapClosureProfiles(snapshot);
+            if (!Number.isInteger((window.setCounterByProgram || {})[CLOSURE_PROGRAM_ID])) {
+                setProgramSetNumber(CLOSURE_PROGRAM_ID, getDefaultSetNumberForProgram(CLOSURE_PROGRAM_ID));
+            }
+            if (typeof window.closeReportModal === 'function') window.closeReportModal();
+            switchProgram(CLOSURE_PROGRAM_ID);
+            if (typeof window.showToast === 'function') {
+                window.showToast('已进入第二阶段：接下来会做总收束，并继续保温第一阶段成果。', { background: '#0f766e', duration: 3200 });
+            }
+        };
+
+        window.getCurrentProgramId = getCurrentProgramId;
+        window.getPromotionReadinessSnapshot = buildPromotionReadinessSnapshot;
+
+        window.setCounterByProgram = getStoredSetCounters();
+        window.promotionState = ensurePromotionStateShape(readStoredJSON(PROMOTION_STATE_STORAGE_KEY, {}));
         window.currentProgramId = getStoredProgramId();
+        window.currentSetNumber = getStoredSetNumber(window.currentProgramId);
         let prngState = 0;
 
         function random() {
@@ -674,9 +949,6 @@
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
         const SET_CACHE_PREFIX = 'MathSetData_v36';
-        const ADVANCED_PROGRAM_ID = 'advanced_fluency_v1';
-        const CLOSURE_PROGRAM_ID = 'elementary_closure_v1';
-        const PROGRAM_SIGNAL_FIELDS = ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap'];
 
         function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
             return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
@@ -1510,6 +1782,9 @@
                 KAI: StorageDB.cache.KAI,
                 Lorik: StorageDB.cache.Lorik,
                 lastSetNum: window.currentSetNumber,
+                currentProgramId: getCurrentProgramId(),
+                setCounterByProgram: window.setCounterByProgram || {},
+                promotionState: window.promotionState || {},
                 exportVersion: APP_VERSION,
                 exportTs: Date.now(),
                 exportDateISO: new Date().toISOString(),
@@ -1533,7 +1808,20 @@
                             // 通过 migrateProfile 自动重建 errorBook（若是旧版备份）
                             StorageDB.cache.KAI   = StorageDB.migrateProfile(parsed.KAI);
                             StorageDB.cache.Lorik = StorageDB.migrateProfile(parsed.Lorik);
-                            window.currentSetNumber = parsed.lastSetNum || window.currentSetNumber;
+                            window.setCounterByProgram = {
+                                ...getStoredSetCounters(),
+                                ...(parsed.setCounterByProgram && typeof parsed.setCounterByProgram === 'object' ? parsed.setCounterByProgram : {})
+                            };
+                            window.promotionState = ensurePromotionStateShape(parsed.promotionState || window.promotionState);
+                            window.currentProgramId = TRAINING_PROGRAMS[parsed.currentProgramId]?.enabled ? parsed.currentProgramId : getCurrentProgramId();
+                            window.currentSetNumber = getStoredSetNumber(window.currentProgramId);
+                            if (parsed.lastSetNum && !parsed.setCounterByProgram) {
+                                window.currentSetNumber = parsed.lastSetNum || window.currentSetNumber;
+                                setProgramSetNumber(window.currentProgramId, window.currentSetNumber);
+                            } else {
+                                persistSetCounters();
+                            }
+                            savePromotionState();
                             safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
                             await StorageDB.forceSave('KAI'); await StorageDB.forceSave('Lorik');
                             alert(`✅ 数据完美恢复！\n来源版本：${parsed.exportVersion || 'legacy'}\n当前版本：${APP_VERSION}`);
@@ -2951,6 +3239,7 @@
 
         window.renderPaper = function() {
             renderProgramShell();
+            setProgramSetNumber(getCurrentProgramId(), window.currentSetNumber);
             document.getElementById('set-num-display').innerText = window.currentSetNumber;
             setSeed(window.currentSetNumber * 12345);
             const programId = getCurrentProgramId();
@@ -3040,7 +3329,16 @@
                             `<div class="ans-section"><div class="ans-section-title">五、估算与速度 (Estimate & Speed)</div>${buildAnsGrid(data.c_l_mix, 'Lorik', '结果判断', closureLorikSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildAnsGrid(data.c_l_maint_mix, 'Lorik', '旧知保温', closureLorikSession)}</div>`;
 
+                const closureIntroCard = `
+                    <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
+                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段</h3>
+                        <div style="padding:14px 18px; color:#7c2d12; font-size:14px; line-height:1.7; font-family:sans-serif;">
+                            这一阶段不是单纯拔高，而是从六年级到初中的视角，把整数、小数、分数、百分数、比、比例、单位和策略训练更系统地收束起来。每天仍然保持两页训练，系统也会继续记录、批改和调训。
+                        </div>
+                    </div>`;
+
                 document.getElementById('paper-container').innerHTML =
+                    closureIntroCard +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, closureScore, '') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '') +
@@ -3671,7 +3969,7 @@
         window.changeSet = function(delta) {
             if (window.currentSetNumber + delta < 1) return;
             window.currentSetNumber += delta;
-            safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
+            setProgramSetNumber(getCurrentProgramId(), window.currentSetNumber);
             window.renderPaper();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
