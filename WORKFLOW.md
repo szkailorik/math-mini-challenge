@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.48 Iteration Notes
+## Current v23.49 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a new child-facing `Calculation Quick Review` page that reuses the existing modal shell and print sandbox, organizes eight high-value calculation review topics into an overview-plus-topics layout, and keeps the page print-friendly while adding only light stage-aware recommendation hints.
+- Open questions: whether the next pass should deepen the content quality of each topic block first, or refine the page’s visual density and printing balance after real-world teacher use.
+- Risks: the v1 page intentionally keeps content stable and restrained, so if later iterations add too much personalized detail it could drift away from its core “knowledge reactivation” role and become a noisy mini-dashboard.
+- Next steps: review the live page with real student use, then either polish topic copy and examples or continue refining the page’s density, typography, and print layout.
+
+## Previous v23.48 Iteration Notes
 
 ### Iteration 1
 

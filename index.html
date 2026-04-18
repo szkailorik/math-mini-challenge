@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.48 (旧知稳态边界强化升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.49 (计算知识总览页上线)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -142,6 +142,72 @@
             }
             body.print-sandbox-active #print-root .sheet-meta-value {
                 font-size: 10.5px !important;
+            }
+            body.print-quick-review #print-root .quick-review-print-shell {
+                width: 210mm !important;
+                min-height: var(--print-sheet-height) !important;
+                box-sizing: border-box !important;
+                padding: 10mm 12mm 12mm !important;
+                background: #fff !important;
+                color: #111 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid-page !important;
+            }
+            body.print-quick-review #print-root .quick-review-page {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                color: #111 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            body.print-quick-review #print-root .quick-review-hero {
+                padding: 0 0 7mm !important;
+                border-bottom: 1px solid #cbd5e1 !important;
+                margin-bottom: 4mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-nav {
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                gap: 4px !important;
+                padding: 0 0 4mm !important;
+                margin-bottom: 4mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-nav-chip,
+            body.print-quick-review #print-root .quick-review-recommendation,
+            body.print-quick-review #print-root .quick-review-pin {
+                background: #fff !important;
+                color: #111 !important;
+                border-color: #94a3b8 !important;
+                box-shadow: none !important;
+            }
+            body.print-quick-review #print-root .quick-review-topics {
+                gap: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-topic {
+                padding: 3.2mm 3.6mm 3.4mm !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body.print-quick-review #print-root .quick-review-grid {
+                gap: 2.4mm 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-topic-title {
+                font-size: 15px !important;
+            }
+            body.print-quick-review #print-root .quick-review-topic-kicker,
+            body.print-quick-review #print-root .quick-review-emphasis,
+            body.print-quick-review #print-root .quick-review-block li,
+            body.print-quick-review #print-root .quick-review-example-row {
+                font-size: 11.2px !important;
+            }
+            body.print-quick-review #print-root .quick-review-footer-pins {
+                margin-top: 4mm !important;
+                padding-top: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-actions,
+            body.print-quick-review #print-root .modal-btns {
+                display: none !important;
             }
         }
         body {
@@ -626,6 +692,208 @@
         .knowledge-tags { display: flex; flex-wrap: wrap; gap: 5px; }
         .knowledge-tag { font-size: 11px; background: #f1f5f9; color: #334155; border-radius: 4px; padding: 2px 5px; }
         .knowledge-tag.weak { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .quick-review-page {
+            width: min(980px, 92vw);
+            margin: 0 auto;
+            color: #102033;
+            font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+        }
+        .quick-review-hero {
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248, 246, 240, 0.98)),
+                radial-gradient(circle at top right, rgba(15,118,110,0.08), transparent 42%);
+            border: 1px solid #d6e2e7;
+            border-radius: 16px;
+            padding: 18px 20px 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        }
+        .quick-review-kicker {
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #0f766e;
+            margin-bottom: 8px;
+        }
+        .quick-review-hero h2 {
+            margin: 0 0 8px;
+            color: #123b73;
+            font-size: 28px;
+            line-height: 1.15;
+            font-family: 'Georgia', 'Baskerville', serif;
+        }
+        .quick-review-hero p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.65;
+            color: #31556b;
+        }
+        .quick-review-recommendations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .quick-review-recommendation {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f8fcfb;
+            border: 1px solid #bfd6d3;
+            color: #155e75;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .quick-review-nav {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .quick-review-nav-chip {
+            border: 1px solid #cad8e2;
+            background: rgba(255,255,255,0.82);
+            border-radius: 999px;
+            padding: 7px 10px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #17324f;
+            box-shadow: 0 5px 12px rgba(15, 23, 42, 0.05);
+        }
+        .quick-review-topics {
+            display: grid;
+            gap: 12px;
+        }
+        .quick-review-topic {
+            border: 1px solid #d9e2ea;
+            border-radius: 16px;
+            padding: 14px 16px 15px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(251,249,244,0.98));
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+        }
+        .quick-review-topic-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding-bottom: 9px;
+            border-bottom: 1px solid #dde6ee;
+        }
+        .quick-review-topic-kicker {
+            display: inline-block;
+            margin-bottom: 6px;
+            color: #7c2d12;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .quick-review-topic-title {
+            margin: 0;
+            font-size: 20px;
+            line-height: 1.15;
+            color: #10233f;
+            font-family: 'Georgia', 'Baskerville', serif;
+        }
+        .quick-review-emphasis {
+            margin: 0;
+            max-width: 300px;
+            color: #31586b;
+            font-size: 12px;
+            line-height: 1.55;
+            text-align: right;
+        }
+        .quick-review-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 10px 14px;
+        }
+        .quick-review-block {
+            border: 1px solid #e5ebf1;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.85);
+            padding: 10px 11px;
+        }
+        .quick-review-block h4,
+        .quick-review-example h4 {
+            margin: 0 0 8px;
+            color: #123b73;
+            font-size: 12px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+        .quick-review-block ul {
+            margin: 0;
+            padding-left: 16px;
+        }
+        .quick-review-block li {
+            margin: 0 0 5px;
+            color: #1e293b;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+        .quick-review-block li:last-child { margin-bottom: 0; }
+        .quick-review-example {
+            grid-column: span 2;
+            border: 1px solid #d5e4e0;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f9fdfc, #f1f9f7);
+            padding: 11px 12px;
+        }
+        .quick-review-example-row {
+            font-family: 'STIX Two Text', 'Times New Roman', serif;
+            font-size: 20px;
+            line-height: 1.45;
+            color: #12253f;
+            letter-spacing: 0.01em;
+        }
+        .quick-review-footer-pins {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed #cfd8e3;
+        }
+        .quick-review-pin {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            color: #9a3412;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .quick-review-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .quick-review-actions .modal-btn {
+            min-width: 150px;
+        }
+        .modal-content.quick-review-modal {
+            width: min(1120px, 94vw);
+            max-height: 90vh;
+            background: linear-gradient(180deg, rgba(252,249,242,0.98), rgba(246,241,232,0.98));
+            padding: 22px 24px 20px;
+        }
+        .modal-content.quick-review-modal #modal-title {
+            border-bottom-color: #d8e2ea !important;
+            color: #123b73 !important;
+        }
+        .modal-content.quick-review-modal > .modal-btns {
+            display: none;
+        }
 
         /* ================= 控制面板 ================= */
         .control-panel {
@@ -824,6 +1092,25 @@
             .export-btn { right: 12px; bottom: 12px; }
             .info-row { grid-template-columns: 1fr; text-align: left; }
         }
+        @media (max-width: 780px) {
+            .quick-review-nav,
+            .quick-review-grid {
+                grid-template-columns: 1fr;
+            }
+            .quick-review-example {
+                grid-column: span 1;
+            }
+            .quick-review-topic-head {
+                flex-direction: column;
+            }
+            .quick-review-emphasis {
+                max-width: none;
+                text-align: left;
+            }
+            .quick-review-page {
+                width: min(94vw, 720px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -882,6 +1169,7 @@
             <button class="ctrl-btn" style="background:#dc2626; color:white; width:100%; margin-top:6px;" onclick="window.showSetReview()">📋 本套批改报告 / Set Review</button>
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
+            <button class="ctrl-btn" style="background:#0f766e; color:white; width:100%; margin-top:6px;" onclick="window.showCalculationQuickReview()">📘 计算知识总览 / Quick Review</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
                 💡 23.30 题目显示与打印对齐修正：<br><strong>修正题目显示不全、排列和序号错位<br>并单独压缩打印态，避免同类问题进入打印页</strong>
@@ -911,9 +1199,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.48';
-        const APP_RELEASE_LABEL = '旧知稳态边界强化升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.48 旧知稳态边界强化升级：<br><strong>Closure 的 stabilityGap L3 现在也会优先出真正的边界强化题<br>第二阶段在保温旧知和稳定完成上也开始有更强的针对性追打</strong>';
+        const APP_VERSION = 'v23.49';
+        const APP_RELEASE_LABEL = '计算知识总览页上线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.49 计算知识总览页上线：<br><strong>新增给小朋友快速回想规则、技巧、例子和易错点的复习页<br>支持跨阶段查看，并可直接打印成高质量复习讲义</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2651,6 +2939,244 @@
                 if (matched) tier = Math.max(tier, rule.tier);
             });
             return tier;
+        }
+        const CALCULATION_QUICK_REVIEW_PAGE = {
+            id: 'calculation_quick_review',
+            title: '计算知识总览 / Calculation Quick Review',
+            subtitle: '快速回想规则、技巧、例子和注意点，不是背百科。',
+            printTitle: 'Calculation Quick Review',
+            printSubtitle: '孩子愿意看、老师愿意打的高质量计算复习讲义'
+        };
+        const CALCULATION_QUICK_REVIEW_TOPICS = [
+            {
+                id: 'integer_ops',
+                shortLabel: '整数四则',
+                title: '整数四则与简算',
+                kicker: 'Integer Operations',
+                patterns: ['k_oly_', 'l_bmix_', 'l_mul_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想运算顺序、凑整和分配律，减少低级错。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想先看结构，再决定凑整、拆分还是补偿。'
+                },
+                rules: ['先乘除，后加减', '有括号先算括号', '分配律可拆可合'],
+                techniques: ['能凑整先凑整', '99、101 先想补偿', '先估大概结果'],
+                example: '99 × 37 = 100 × 37 − 37 = 3663',
+                pitfalls: ['别从左到右一口气全算', '别漏掉括号后的整体'],
+                pins: ['先看顺序', '能凑先凑']
+            },
+            {
+                id: 'written_algorithms',
+                shortLabel: '竖式乘除',
+                title: '竖式乘法与竖式除法',
+                kicker: 'Written Algorithms',
+                patterns: ['l_div_', 'l_div_decimal_', 'k_ddiv_', 'k_sub_', 'l_sub_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想对位、估商、商中间补 0 和小数点。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想先判断商的范围，再决定小数点落点。'
+                },
+                rules: ['数位要对齐', '先估商再下笔', '不够除时商写 0'],
+                techniques: ['先看商大于 1 还是小于 1', '添 0 再除也要守住数值不变', '算完用乘法反查'],
+                example: '4.8 ÷ 0.6 = 48 ÷ 6 = 8',
+                pitfalls: ['商的小数点别乱放', '中间不够除时别漏写 0'],
+                pins: ['先估商', '不够写 0']
+            },
+            {
+                id: 'decimal_ops',
+                shortLabel: '小数计算',
+                title: '小数加减乘除',
+                kicker: 'Decimal Operations',
+                patterns: ['k_dmul_', 'k_ddiv_', 'l_div_decimal_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想小数点对齐、位数和数量级。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想小数计算和单位、率、结果判断之间的连接。'
+                },
+                rules: ['加减先对齐小数点', '乘法先按整数乘', '除法先把除数化整'],
+                techniques: ['先估结果大小', '乘完再数小数位', '除前先想商的范围'],
+                example: '0.24 × 0.3 = 24 × 3 ÷ 1000 = 0.072',
+                pitfalls: ['积的小数位数别数错', '除数化整后别漏同步变化'],
+                pins: ['先估大小', '先化整再除']
+            },
+            {
+                id: 'fraction_ops',
+                shortLabel: '分数计算',
+                title: '分数加减乘除',
+                kicker: 'Fraction Operations',
+                patterns: ['k_fcalc_', 'l_fmix_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想通分、约分、倒数和最简结果。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想分数运算和互化、比较之间的连通。'
+                },
+                rules: ['加减先通分', '乘前能约分先约分', '除以分数等于乘倒数'],
+                techniques: ['带分数先化假分数', '连乘优先交叉约分', '最后化成最简'],
+                example: '3/4 ÷ 1/2 = 3/4 × 2 = 3/2',
+                pitfalls: ['别把除法直接当乘法', '结果别忘约成最简'],
+                pins: ['先通分', '先约再乘']
+            },
+            {
+                id: 'conversion_compare',
+                shortLabel: '互化比较',
+                title: '分数、小数、百分数互化与比较',
+                kicker: 'Conversion & Compare',
+                patterns: ['k_conv_', 'l_conv_', 'c2_bridge_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想常见基准值和“先统一形式再比较”。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想互化后怎样判断谁更接近 1、1/2 或 0。'
+                },
+                rules: ['先统一形式再比', '百分数先想每百份', '常见分数要会化小数'],
+                techniques: ['抓 1/2、1/4、3/4、4/5', '看离基准值多一点还是少一点', '不会比时先互化'],
+                example: '0.25 = 25% = 1/4',
+                pitfalls: ['别只看数字表面大小', '互化后别忘题目要什么形式'],
+                pins: ['先统一再比', '抓基准值']
+            },
+            {
+                id: 'unit_rate',
+                shortLabel: '单位比率',
+                title: '单位换算与常见数量关系',
+                kicker: 'Units & Rates',
+                patterns: ['c2_unit_', 'c2_rate_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想统一单位和基础数量关系式。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想速度、单价、平均量的综合应用。'
+                },
+                rules: ['先统一单位', '总价 = 单价 × 数量', '路程 = 速度 × 时间'],
+                techniques: ['先判断量纲对不对', '先找整体量再列式', '单位换算后再算'],
+                example: '2.4 km = 2400 m',
+                pitfalls: ['单位不同别直接算', '看清谁是单价谁是数量'],
+                pins: ['先统一单位', '先看量纲']
+            },
+            {
+                id: 'equation_method',
+                shortLabel: '方程逆运算',
+                title: '方程与逆运算',
+                kicker: 'Equation Method',
+                patterns: ['k_eq_', 'c2_eq_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想未知数位置和逆运算方向。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想方程背后的数量关系，而不是只会移项。'
+                },
+                rules: ['先想谁和谁相等', '等式两边同时变化', '按逆运算一步一步回推'],
+                techniques: ['未知数在减数要特别慢', '未知数在除数先写关系', '每次只做一步变化'],
+                example: 'x × 25 = 10，先求 10 ÷ 25',
+                pitfalls: ['别把减数和被减数弄反', '别一步跳太多'],
+                pins: ['先写关系', '一步一变']
+            },
+            {
+                id: 'estimation_validation',
+                shortLabel: '估算检验',
+                title: '估算、验算与结果合理性判断',
+                kicker: 'Estimate & Validate',
+                patterns: ['c2_est_', 'c2_speed_', 'k_ddiv_', 'l_div_decimal_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点回想数量级和商的大致范围。',
+                    [CLOSURE_PROGRAM_ID]: '重点回想结果是否合理、是否符合情境和单位。'
+                },
+                rules: ['先看结果大概范围', '算完再做估算对照', '单位和情境要合理'],
+                techniques: ['先看比 1 大还是小', '先抓接近整十整百', '结果异常先回查小数点'],
+                example: '4.8 ÷ 0.6 的商一定大于 1，不可能是 0.8',
+                pitfalls: ['只算不检验', '数量级不对还继续往下写'],
+                pins: ['先看范围', '算完再验']
+            }
+        ];
+        function getCalculationQuickReviewTopics() {
+            return CALCULATION_QUICK_REVIEW_TOPICS;
+        }
+        function getCalculationQuickReviewTopic(topicId) {
+            return CALCULATION_QUICK_REVIEW_TOPICS.find(topic => topic.id === topicId) || null;
+        }
+        function getCalculationQuickReviewEmphasis(topic, programId) {
+            if (!topic) return '';
+            return topic.programEmphasis?.[programId] || topic.programEmphasis?.[ADVANCED_PROGRAM_ID] || '';
+        }
+        function getCalculationQuickReviewRecommendations(programId) {
+            const profiles = [StorageDB.getProfile('KAI') || {}, StorageDB.getProfile('Lorik') || {}];
+            const scoredTopics = CALCULATION_QUICK_REVIEW_TOPICS.map(topic => {
+                let score = 0;
+                profiles.forEach(profile => {
+                    Object.entries(profile.weights || {}).forEach(([tag, weight]) => {
+                        if (weight > 0 && tagMatchesPatterns(tag, topic.patterns || [])) score += weight;
+                    });
+                    Object.values(profile.errorBook || {}).forEach(entry => {
+                        if (entry && !entry.mastered && entry.tag && tagMatchesPatterns(entry.tag, topic.patterns || [])) {
+                            score += Math.max(1, entry.count || 1) * 2;
+                        }
+                    });
+                });
+                return { topic, score };
+            }).sort((a, b) => b.score - a.score);
+            const selected = scoredTopics.filter(item => item.score > 0).slice(0, 2).map(item => item.topic.title);
+            if (selected.length >= 2) return selected;
+            return programId === CLOSURE_PROGRAM_ID
+                ? ['分数、小数、百分数互化与比较', '单位换算与常见数量关系']
+                : ['竖式乘法与竖式除法', '方程与逆运算'];
+        }
+        function buildCalculationQuickReviewPins(topics) {
+            const seen = new Set();
+            const pins = [];
+            topics.forEach(topic => {
+                (topic.pins || []).forEach(pin => {
+                    if (!seen.has(pin)) {
+                        seen.add(pin);
+                        pins.push(pin);
+                    }
+                });
+            });
+            return pins.slice(0, 8);
+        }
+        function buildCalculationQuickReviewHTML({ forPrint = false } = {}) {
+            const programId = getCurrentProgramId();
+            const topics = getCalculationQuickReviewTopics();
+            const recommendations = getCalculationQuickReviewRecommendations(programId);
+            const navHtml = topics.map(topic => `<span class="quick-review-nav-chip">${topic.shortLabel}</span>`).join('');
+            const topicHtml = topics.map(topic => `
+                <section class="quick-review-topic">
+                    <div class="quick-review-topic-head">
+                        <div>
+                            <div class="quick-review-topic-kicker">${topic.kicker}</div>
+                            <h3 class="quick-review-topic-title">${topic.title}</h3>
+                        </div>
+                        <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
+                    </div>
+                    <div class="quick-review-grid">
+                        <div class="quick-review-block">
+                            <h4>核心规则</h4>
+                            <ul>${topic.rules.map(item => `<li>${item}</li>`).join('')}</ul>
+                        </div>
+                        <div class="quick-review-block">
+                            <h4>计算技巧</h4>
+                            <ul>${topic.techniques.map(item => `<li>${item}</li>`).join('')}</ul>
+                        </div>
+                        <div class="quick-review-example">
+                            <h4>典型例子</h4>
+                            <div class="quick-review-example-row">${topic.example}</div>
+                        </div>
+                        <div class="quick-review-block quick-review-pitfalls">
+                            <h4>易错提醒</h4>
+                            <ul>${topic.pitfalls.map(item => `<li>${item}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                </section>
+            `).join('');
+            const pinsHtml = buildCalculationQuickReviewPins(topics).map(pin => `<span class="quick-review-pin">${pin}</span>`).join('');
+            const recommendationHtml = recommendations.map(item => `<span class="quick-review-recommendation">当前更值得多看：${item}</span>`).join('');
+            return `
+                <div class="quick-review-page" data-program="${programId}">
+                    <div class="quick-review-hero">
+                        <div class="quick-review-kicker">${CALCULATION_QUICK_REVIEW_PAGE.printTitle}</div>
+                        <h2>${CALCULATION_QUICK_REVIEW_PAGE.title}</h2>
+                        <p>${CALCULATION_QUICK_REVIEW_PAGE.subtitle}</p>
+                        <div class="quick-review-recommendations">${recommendationHtml}</div>
+                    </div>
+                    <div class="quick-review-nav">${navHtml}</div>
+                    <div class="quick-review-topics">${topicHtml}</div>
+                    <div class="quick-review-footer-pins">${pinsHtml}</div>
+                    ${forPrint ? '' : `
+                        <div class="quick-review-actions no-print">
+                            <button class="modal-btn" onclick="window.printCalculationQuickReview()">🖨️ 打印这页</button>
+                            <button class="modal-btn confirm" onclick="window.closeReportModal()">关闭</button>
+                        </div>
+                    `}
+                </div>
+            `;
         }
         function getActiveErrorEntries(profile, tag) {
             return Object.entries(profile?.errorBook || {})
@@ -5161,6 +5687,8 @@
         };
 
         window.showKnowledgeMap = function() {
+            const modalContent = document.getElementById('report-modal-content');
+            if (modalContent) modalContent.classList.remove('quick-review-modal');
             document.getElementById('modal-title').innerText = '🧭 知识点地图 / Knowledge Map';
 
             const profiles = {
@@ -5287,7 +5815,20 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        window.closeReportModal = function() { document.getElementById('report-modal').style.display = 'none'; };
+        window.showCalculationQuickReview = function() {
+            const modalContent = document.getElementById('report-modal-content');
+            if (modalContent) modalContent.classList.add('quick-review-modal');
+            document.getElementById('modal-title').innerText = '📘 计算知识总览 / Calculation Quick Review';
+            document.getElementById('report-content-area').innerHTML = buildCalculationQuickReviewHTML();
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.closeReportModal = function() {
+            const modal = document.getElementById('report-modal');
+            const modalContent = document.getElementById('report-modal-content');
+            if (modalContent) modalContent.classList.remove('quick-review-modal');
+            if (modal) modal.style.display = 'none';
+        };
 
         function showToast(message, { background = '#4caf50', duration = 2200 } = {}) {
             const toast = document.getElementById('toast-msg');
@@ -5414,7 +5955,7 @@
                 clearTimeout(printCleanupTimer);
                 printCleanupTimer = null;
             }
-            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-sandbox-active');
+            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-quick-review', 'print-sandbox-active');
             const root = getPrintRoot();
             if (root) root.innerHTML = '';
         }
@@ -5475,6 +6016,28 @@
 
         window.printAnswerSheets = function() {
             runPrintMode('print-answers-only');
+        };
+
+        window.printCalculationQuickReview = function() {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            root.innerHTML = `<div class="quick-review-print-shell">${buildCalculationQuickReviewHTML({ forPrint: true })}</div>`;
+            document.body.classList.add('print-quick-review', 'print-sandbox-active');
+            showToast('📘 打印知识总览提示：建议纵向打印，并关闭页眉页脚。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
         };
 
         // ================= 交互控制与数据编码闭环 =================

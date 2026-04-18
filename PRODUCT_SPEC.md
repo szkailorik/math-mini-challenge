@@ -290,6 +290,13 @@ v23.48 extends real boundary checks into stability:
 - The `Closure` focus lane can now emit dedicated boundary-style stability questions that foreground quotient size, decimal-point placement, and whether an answer can plausibly stay below or above 1 before exact computation.
 - Product-wise, this matters because keeping old knowledge warm is not only repetition, but stable judgment under familiar but easy-to-slip structures.
 
+v23.49 adds a child-facing quick-review layer for long-term calculation training:
+
+- The product now includes a dedicated `Calculation Quick Review` page instead of relying only on papers, reports, and the teacher-facing knowledge map.
+- This page is intentionally not a knowledge encyclopedia; it is a compact “knowledge reactivation” surface that helps the learner quickly recall rules, techniques, one standard example, and major pitfalls.
+- The page keeps its main content stable across time, but lightly adapts emphasis and “worth reviewing now” hints according to the current phase and active weak areas.
+- Product-wise, this matters because long-term fluency is not only generated practice. It also benefits from fast, repeatable review that helps the child remember what to pay attention to before or after practice.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

@@ -42,8 +42,35 @@ if (!html.includes('function getQualityFamilyForTag')) {
 if (!html.includes('function getReplayLevel')) {
   throw new Error('Replay level helper is missing from runtime script');
 }
+if (!html.includes('const CALCULATION_QUICK_REVIEW_TOPICS = [')) {
+  throw new Error('Calculation Quick Review topic registry is missing from runtime script');
+}
+if (!html.includes('function getCalculationQuickReviewTopics')) {
+  throw new Error('Calculation Quick Review topic helper is missing from runtime script');
+}
+if (!html.includes('function getCalculationQuickReviewEmphasis')) {
+  throw new Error('Calculation Quick Review emphasis helper is missing from runtime script');
+}
+if (!html.includes('function getCalculationQuickReviewRecommendations')) {
+  throw new Error('Calculation Quick Review recommendation helper is missing from runtime script');
+}
+if (!html.includes('window.showCalculationQuickReview = function()')) {
+  throw new Error('Calculation Quick Review entrypoint is missing from runtime script');
+}
+if (!html.includes('window.printCalculationQuickReview = function()')) {
+  throw new Error('Calculation Quick Review print function is missing from runtime script');
+}
+if (!html.includes('📘 计算知识总览 / Quick Review')) {
+  throw new Error('Calculation Quick Review control-panel shortcut is missing');
+}
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
+}
+if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row')) {
+  throw new Error('Calculation Quick Review visual shell is missing from CSS');
+}
+if (!html.includes('print-quick-review') || !html.includes('quick-review-print-shell')) {
+  throw new Error('Calculation Quick Review print styles are missing');
 }
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
@@ -235,6 +262,42 @@ if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
 if (!String(stageStatusAction?.textContent || '').includes('第二阶段')) {
   throw new Error('Stage status card did not render manual stage-switch guidance');
 }
+if (typeof context.showCalculationQuickReview !== 'function') {
+  throw new Error('Calculation Quick Review entrypoint was not exposed on window');
+}
+context.showCalculationQuickReview();
+const reviewModalHtml = String(elements.get('report-content-area')?.innerHTML || '');
+const reviewModalTitle = String(elements.get('modal-title')?.innerText || '');
+const reviewModalContent = elements.get('report-modal-content');
+if (!reviewModalTitle.includes('计算知识总览')) {
+  throw new Error('Calculation Quick Review did not update the modal title');
+}
+if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('整数四则与简算')) {
+  throw new Error('Calculation Quick Review did not render the expected page shell or topic content');
+}
+if (!reviewModalHtml.includes('当前更值得多看：')) {
+  throw new Error('Calculation Quick Review recommendations did not render');
+}
+if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('易错提醒')) {
+  throw new Error('Calculation Quick Review topic blocks are incomplete');
+}
+if (!reviewModalContent?.classList?.contains('quick-review-modal')) {
+  throw new Error('Calculation Quick Review did not switch the modal into quick-review layout mode');
+}
+context.printCalculationQuickReview();
+await new Promise(resolve => setTimeout(resolve, 260));
+if ((context.__printCalls || 0) < 1) {
+  throw new Error('Calculation Quick Review print function did not call window.print');
+}
+const quickReviewPrintRootHtml = String(elements.get('print-root')?.innerHTML || '');
+if (!quickReviewPrintRootHtml.includes('quick-review-print-shell') || !quickReviewPrintRootHtml.includes('quick-review-page')) {
+  throw new Error('Calculation Quick Review print sandbox did not receive the review page content');
+}
+context.closeReportModal();
+if (reviewModalContent?.classList?.contains('quick-review-modal')) {
+  throw new Error('Closing the report modal should clear quick-review layout mode');
+}
+context.__printCalls = 0;
 
 const normalizedInlineMath = context.beautifyMathHTML('<div class="frac"><span>1</span><span class="bottom">2</span></div> &plus; <div class="blank"></div>');
 if (!normalizedInlineMath.includes('<span class="frac">') || normalizedInlineMath.includes('<div class="frac">')) {
