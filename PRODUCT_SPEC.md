@@ -105,6 +105,12 @@ v23.5 strengthens print reliability and Lorik division coverage:
 - Print layout uses visible-sheet pagination during print, instead of relying on fixed page-height boxes alone.
 - Lorik section II now guarantees decimal division practice across three forms: decimal dividend, decimal divisor, and both dividend and divisor as decimals.
 
+v23.6 improves operator confidence around backup and printing:
+
+- Backups now carry explicit app-version and export metadata so families can tell which snapshot they are restoring.
+- Import success feedback now surfaces both the source version and the current app version.
+- Print actions show a brief preflight reminder for orientation, scaling, and header/footer settings before the system dialog opens.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.

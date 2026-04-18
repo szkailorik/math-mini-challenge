@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.5 (打印修复版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.6 (备份与打印引导版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -213,7 +213,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3>🧠 专家私教引擎 v23.5</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.6</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -235,8 +235,8 @@
             <button class="ctrl-btn" style="background:#0284c7; color:white; width:100%; margin-top:6px;" onclick="window.showCloudArchive()">🗄️ 学习档案 / View Archives</button>
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
-            <div style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.5 打印修复版：<br><strong>AB四页稳定打印<br>Lorik 小数除法补强</strong>
+            <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
+                💡 23.6 备份与打印引导版：<br><strong>导出版本信息修正<br>打印前提示更明确</strong>
             </div>
         </div>
 
@@ -262,7 +262,11 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        // v23.5 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
+        const APP_VERSION = 'v23.6';
+        const APP_RELEASE_LABEL = '备份与打印引导版';
+        const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
+
+        // v23.6 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
 
         function getStoredSetNumber() {
@@ -373,7 +377,7 @@
             return `${tag}_${hashString(normalized)}`;
         }
 
-        // ================= v23.5 GitHub Gist 云同步 =================
+        // ================= v23.6 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
@@ -443,7 +447,7 @@
                         description: GIST_DESC,
                         public: false,
                         files: {
-                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: 'v23.5', createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
+                            [GIST_SENTINEL_FILE]: { content: JSON.stringify({ version: APP_VERSION, createdAt: Date.now(), note: 'Auto-managed by Mini Challenge. Do not hand-edit.' }, null, 2) }
                         }
                     })
                 });
@@ -489,7 +493,7 @@
                     lastSetNum: window.currentSetNumber,
                     pushedAt: nowTs,
                     pushedFrom: navigator.userAgent.slice(0, 80),
-                    version: 'v23.5'
+                    version: APP_VERSION
                 }, null, 2) };
 
                 let r = await fetch(`https://api.github.com/gists/${gid}`, {
@@ -626,7 +630,7 @@
         }
         window.updateCloudStatus = updateCloudStatus;
 
-        // ================= v23.5 存储层（local + optional Gist 同步） =================
+        // ================= v23.6 存储层（local + optional Gist 同步） =================
         const StorageDB = {
             mode: 'local', // 'local' | 'gist'
             _lastAutoPull: 0,
@@ -909,7 +913,7 @@
         };
         window.StorageDB = StorageDB;
 
-        // ================= 数据备份 + v23.5 Gist 云同步 =================
+        // ================= 数据备份 + v23.6 Gist 云同步 =================
         window.showDataModal = function() {
             document.getElementById('modal-title').innerText = '💾 数据保险箱 / Data Backup & Sync';
 
@@ -981,7 +985,7 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
-        // v23.5 Gist 连接 UI 逻辑
+        // v23.6 Gist 连接 UI 逻辑
         window.gistConnect = async function() {
             let input = document.getElementById('gist-token-input');
             let token = input ? input.value.trim() : '';
@@ -1088,12 +1092,15 @@
                 KAI: StorageDB.cache.KAI,
                 Lorik: StorageDB.cache.Lorik,
                 lastSetNum: window.currentSetNumber,
-                exportVersion: 'v22',
-                exportTs: Date.now()
+                exportVersion: APP_VERSION,
+                exportTs: Date.now(),
+                exportDateISO: new Date().toISOString(),
+                exportMode: StorageDB.mode,
+                gistId: GistSync.getGistId() || null
             };
             let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
             let url = URL.createObjectURL(blob); let a = document.createElement('a'); a.href = url;
-            a.download = `MathEngine_Backup_Set${window.currentSetNumber}_${new Date().toISOString().slice(0,10)}.json`;
+            a.download = `MathEngine_Backup_${APP_VERSION}_Set${window.currentSetNumber}_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
         };
 
@@ -1111,7 +1118,8 @@
                             window.currentSetNumber = parsed.lastSetNum || window.currentSetNumber;
                             safeLocalSetItem('MathEngine_LastSetNum', window.currentSetNumber);
                             await StorageDB.forceSave('KAI'); await StorageDB.forceSave('Lorik');
-                            alert('✅ 数据完美恢复！'); window.renderPaper(); window.closeReportModal();
+                            alert(`✅ 数据完美恢复！\n来源版本：${parsed.exportVersion || 'legacy'}\n当前版本：${APP_VERSION}`);
+                            window.renderPaper(); window.closeReportModal();
                         } else { alert('❌ 数据格式似乎不正确。'); }
                     } catch(err) { alert('❌ 文件读取失败或格式错误。'); }
                 };
@@ -2244,11 +2252,7 @@
         window.masterErrorUI = async function(student, uid) {
             let ok = await StorageDB.masterError(student, uid);
             if (ok) {
-                const toast = document.getElementById('toast-msg');
-                toast.innerHTML = `🏆 已标记为"已掌握"，从错题本移除！`;
-                toast.style.background = '#10b981';
-                toast.style.opacity = 1;
-                setTimeout(() => toast.style.opacity = 0, 2000);
+                showToast(`🏆 已标记为"已掌握"，从错题本移除！`, { background: '#10b981', duration: 2000 });
                 renderErrorBookInternal();
             }
         };
@@ -2256,11 +2260,7 @@
         window.unmasterErrorUI = async function(student, uid) {
             let ok = await StorageDB.unmasterError(student, uid);
             if (ok) {
-                const toast = document.getElementById('toast-msg');
-                toast.innerHTML = `↩ 已移回错题本继续练习`;
-                toast.style.background = '#f59e0b';
-                toast.style.opacity = 1;
-                setTimeout(() => toast.style.opacity = 0, 2000);
+                showToast(`↩ 已移回错题本继续练习`, { background: '#f59e0b', duration: 2000 });
                 renderErrorBookInternal();
             }
         };
@@ -2448,6 +2448,18 @@
 
         window.closeReportModal = function() { document.getElementById('report-modal').style.display = 'none'; };
 
+        function showToast(message, { background = '#4caf50', duration = 2200 } = {}) {
+            const toast = document.getElementById('toast-msg');
+            if (!toast) return;
+            toast.innerHTML = message;
+            toast.style.background = background;
+            toast.style.opacity = 1;
+            clearTimeout(showToast._timer);
+            showToast._timer = setTimeout(() => {
+                toast.style.opacity = 0;
+            }, duration);
+        }
+
         function findSetSession(profile, setNum) {
             return (profile?.history || []).slice().reverse().find(session => session.set === setNum) || null;
         }
@@ -2560,14 +2572,18 @@
             ensurePrintLifecycleHooks();
             clearPrintMode();
             document.body.classList.add(mode);
+            showToast(
+                mode === 'print-questions-only' ? PRINT_HINT_HTML : '🧾 打印答案提示：建议关闭页眉页脚，并确认只打印答案页。',
+                { background: '#0f766e', duration: 2600 }
+            );
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
             };
             if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(triggerPrint));
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
             } else {
-                setTimeout(triggerPrint, 50);
+                setTimeout(triggerPrint, 220);
             }
         }
 
@@ -2619,12 +2635,8 @@
 
             if (records.length > 0) {
                 await StorageDB.saveSession(student, records, window.currentSetNumber);
-                const toast = document.getElementById('toast-msg');
                 let errCount = records.filter(r => r.grade !== 'perfect').length;
-                toast.innerHTML = `✅ ${student} 已归档！新增/更新 ${errCount} 道错题到永久错题本。`;
-                toast.style.background = '#4caf50';
-                toast.style.opacity = 1;
-                setTimeout(() => toast.style.opacity = 0, 3000);
+                showToast(`✅ ${student} 已归档！新增/更新 ${errCount} 道错题到永久错题本。`, { background: '#4caf50', duration: 3000 });
 
                 window.renderPaper();
                 window.showSetReview(window.currentSetNumber, student);
@@ -2657,6 +2669,11 @@
 
         // Initialize directly using an async function since module scripts execute after DOM has parsed
         async function startEngine() {
+            document.title = `Mini Challenge - 专家私教引擎 ${APP_VERSION} (${APP_RELEASE_LABEL})`;
+            const versionLabel = document.getElementById('app-version-label');
+            if (versionLabel) versionLabel.textContent = `🧠 专家私教引擎 ${APP_VERSION}`;
+            const releaseLabel = document.getElementById('release-note-label');
+            if (releaseLabel) releaseLabel.innerHTML = `💡 ${APP_VERSION} ${APP_RELEASE_LABEL}：<br><strong>导出版本信息修正<br>打印前提示更明确</strong>`;
             const container = document.getElementById('paper-container');
             if (container) {
                 container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";

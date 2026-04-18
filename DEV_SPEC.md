@@ -48,6 +48,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
 - `printQuestionSheets` / `printAnswerSheets`: switches the body into print-only modes for question sheets or answer sheets, then relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
+- `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
+- `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `GenLorik.div`: guarantees Lorik section II includes one whole-number division item plus decimal-dividend, decimal-divisor, and double-decimal division practice.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
@@ -86,8 +88,10 @@ python3 -m http.server 8080
 - Resubmit the same set with different grades and confirm the error-book counts do not duplicate.
 - Open the error book, mark an item mastered, then move it back.
 - Export JSON and import it in a fresh browser profile.
+- Confirm exported backup JSON includes the current app version and export metadata fields.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
+- Confirm print buttons show the short print hint before the system print dialog opens.
 - Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
 
 ## GitHub Connection

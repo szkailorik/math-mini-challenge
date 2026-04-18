@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.5 Iteration Notes
+## Current v23.6 Iteration Notes
+
+### Iteration 1
+
+- What I changed: introduced shared runtime version constants so UI labels, Gist metadata, and JSON exports stay on the same app version.
+- Open questions: none.
+- Risks: static README and release notes still need manual updates each release even though the runtime strings are now centralized.
+- Next steps: if releases become more frequent, generate the human-facing changelog from a single source too.
+
+### Iteration 2
+
+- What I changed: upgraded backup export metadata and import success feedback so recovery flows show the source version and context.
+- Open questions: none.
+- Risks: older backups still restore as `legacy`, which is correct but less precise if users renamed files manually.
+- Next steps: consider adding a tiny backup summary panel before import confirmation.
+
+### Iteration 3
+
+- What I changed: added lightweight print preflight hints and unified toast feedback for print, grading, and error-book actions.
+- Open questions: none.
+- Risks: the print hint intentionally delays dialog opening slightly, so it should stay brief to avoid feeling sluggish.
+- Next steps: if families still miss print settings, consider a first-run-only print checklist modal.
+
+## Previous v23.5 Iteration Notes
 
 ### Iteration 1
 

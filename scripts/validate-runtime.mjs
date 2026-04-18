@@ -276,7 +276,7 @@ if (typeof context.window.printQuestionSheets !== 'function' || typeof context.w
   throw new Error('Print helper functions are not available');
 }
 context.window.printQuestionSheets();
-await new Promise(resolve => setTimeout(resolve, 10));
+await new Promise(resolve => setTimeout(resolve, 260));
 if (!context.document.body.classList.contains('print-questions-only') || context.__printCalls !== 1) {
   throw new Error('Question-sheet print mode did not activate correctly');
 }
