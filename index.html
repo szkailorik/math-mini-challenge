@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.39 (分数题单题单行优先)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.40 (分数题区改为单列)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -96,7 +96,7 @@
                 line-height: 1.28 !important;
             }
             body.print-sandbox-active #print-root .grid-frac-tight {
-                gap: 8px 10px !important;
+                gap: 7px 8px !important;
             }
             body.print-sandbox-active #print-root .frac {
                 font-size: 0.88em !important;
@@ -111,8 +111,8 @@
                 margin-right: 0.1em !important;
             }
             body.print-sandbox-active #print-root .item.h-frac {
-                font-size: 15.9px !important;
-                line-height: 1.12 !important;
+                font-size: 16.3px !important;
+                line-height: 1.08 !important;
             }
             body.print-sandbox-active #print-root .h-frac .q-body,
             body.print-sandbox-active #print-root .h-frac .math-text {
@@ -267,10 +267,11 @@
         .points { font-size: 12px; font-weight: 700; color: #9a3412; letter-spacing: 0.12em; font-family: 'Arial Narrow', sans-serif; white-space: nowrap; margin-left: 15px; text-transform: uppercase;}
 
         .grid { display: grid; gap: 20px 15px; width: 100%; align-items: start; }
+        .grid-1 { grid-template-columns: 1fr; }
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-frac-tight { gap: 11px 12px; }
+        .grid-frac-tight { gap: 9px 10px; }
 
         .q-badge { font-size: 11px; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: middle; font-family: 'KaiTi', '楷体', serif; font-weight: normal; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-weak { background-color: #ef4444; }
@@ -410,8 +411,8 @@
             font-size: 18.6px;
         }
         .item.h-frac {
-            font-size: 17.1px;
-            line-height: 1.18;
+            font-size: 18px;
+            line-height: 1.14;
         }
         .h-frac .math-text,
         .h-mixed .math-text {
@@ -800,7 +801,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.39</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.40</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -879,9 +880,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.39';
-        const APP_RELEASE_LABEL = '分数题单题单行优先';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.39 分数题单题单行优先：<br><strong>分数题区域改成更宽列数和更紧行距，优先保证一道题完整排在一行<br>宁可整块往下长，也不让单题内部断开错位</strong>';
+        const APP_VERSION = 'v23.40';
+        const APP_RELEASE_LABEL = '分数题区改为单列';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.40 分数题区改为单列：<br><strong>分数题区域直接改成单列排布，优先保证每道题完整占一行<br>宁可整块更高，也不让分数题在一题内部断开错位</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4290,7 +4291,7 @@
             const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
             const sectionIndex = match ? match[1] : '';
             const sectionTitle = match ? match[2] : cnTitle;
-            const gridClass = heightClass === 'h-frac' ? `grid grid-2 grid-frac-tight` : `grid grid-${cols}`;
+            const gridClass = heightClass === 'h-frac' ? `grid grid-1 grid-frac-tight` : `grid grid-${cols}`;
             return `
             <div class="section">
                 <div class="section-title">

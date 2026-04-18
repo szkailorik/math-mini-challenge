@@ -241,6 +241,12 @@ v23.39 prioritizes one-line fraction items:
 - In practice, this means fewer items per row, tighter row gaps, and more vertical growth for the section when needed, so one problem can remain one clean line.
 - Product-wise, this matters because broken or staggered fraction expressions feel much messier than a slightly taller section.
 
+v23.40 gives the fraction section a full single-column layout:
+
+- The worksheet now goes one step further for fraction-heavy sections by letting those items occupy a whole row each.
+- This explicitly favors item integrity over overall compactness.
+- Product-wise, this matters because a slightly taller worksheet is easier to accept than a visually broken fraction expression.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

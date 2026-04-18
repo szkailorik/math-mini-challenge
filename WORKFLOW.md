@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.39 Iteration Notes
+## Current v23.40 Iteration Notes
+
+### Iteration 1
+
+- What I changed: accepted that even the wider fraction layout was still compromising item integrity, so the next step was to stop sharing a row between fraction problems at all.
+- Open questions: none.
+- Risks: the section now grows taller, which may affect overall page balance.
+- Next steps: monitor whether the cleaner one-line fraction items are worth the extra vertical space in actual printouts.
+
+### Iteration 2
+
+- What I changed: switched fraction-heavy sections from the widened multi-column layout to a single-column layout with tighter vertical rhythm.
+- Open questions: none.
+- Risks: if page count becomes the new issue, it will need to be solved at section allocation level rather than by rebreaking fraction items.
+- Next steps: keep the “one problem, one line” rule as the priority for this section.
+
+### Iteration 3
+
+- What I changed: mirrored the same logic into the print path so the fraction section does not revert to denser row sharing on paper.
+- Open questions: none.
+- Risks: taller sections can push other content farther down the sheet.
+- Next steps: keep checking page composition as fraction content evolves.
+
+## Previous v23.39 Iteration Notes
 
 ### Iteration 1
 
