@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.18 Iteration Notes
+## Current v23.19 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a math-layout polish layer so generated expressions now render with more deliberate operator, equality, comparison, blank, and circle styling.
+- Open questions: none.
+- Risks: visual tuning is inherently subjective, so real print preview remains the final authority for whether the paper feels balanced.
+- Next steps: keep future new generators using the same normalized math-markup path instead of styling each symbol ad hoc.
+
+### Iteration 2
+
+- What I changed: tightened spacing around fractions, mixed numbers, parentheses, question numbers, and conversion cells to make the sheet feel more even and exam-like.
+- Open questions: none.
+- Risks: denser spacing can make some edge-case expressions feel slightly more compact, so it should stay paired with print checks.
+- Next steps: if any specific section still feels crowded, tune that section locally rather than undoing the global math polish layer.
+
+### Iteration 3
+
+- What I changed: updated runtime docs and version metadata so the math-layout pass is now part of the visible release contract.
+- Open questions: none.
+- Risks: validator can check helper presence, but paper beauty still needs human eyes.
+- Next steps: continue balancing pedagogy improvements with sheet readability, since both affect real training quality.
+
+## Previous v23.18 Iteration Notes
 
 ### Iteration 1
 

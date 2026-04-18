@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.19 improves mathematical sheet readability and print polish:
+
+- Math expressions now use more deliberate visual treatment for operators, equality marks, comparison signs, blanks, circles, and fraction spacing.
+- The goal is to reduce visual friction: learners should parse the structure of the problem faster and with less symbol confusion.
+- The typography pass applies to both on-screen review and printed sheets, so visual quality supports the training model instead of fighting it.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.

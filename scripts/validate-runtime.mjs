@@ -15,6 +15,12 @@ if (!html.includes('body.print-sandbox-active > *:not(#print-root)')) {
 if (!html.includes('const PRINT_ROOT_ID = \'print-root\';')) {
   throw new Error('Print sandbox constant is missing from runtime script');
 }
+if (!html.includes('function beautifyMathHTML')) {
+  throw new Error('Math beautification helper is missing from runtime script');
+}
+if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
+  throw new Error('Math typography classes are missing from CSS');
+}
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
 }
@@ -203,6 +209,9 @@ function assertPaper(setNumber) {
   const questionOnly = paper.split('class="sheet ans-sheet"')[0] || paper;
   if (questionOnly.includes('focus-strip') || questionOnly.includes('engine-status')) {
     throw new Error(`Generated question paper for set ${setNumber} still includes training-status chrome`);
+  }
+  if (!questionOnly.includes('math-op') || !questionOnly.includes('math-eq')) {
+    throw new Error(`Generated question paper for set ${setNumber} is missing normalized math typography markup`);
   }
   if (questionOnly.includes('level-badge')) {
     throw new Error(`Generated question paper for set ${setNumber} still includes level badges`);
@@ -599,7 +608,7 @@ context.window.StorageDB.cache.KAI = {
 context.window.currentSetNumber = 105;
 context.window.renderPaper();
 const replayPaper = elements.get('paper-container')?.innerHTML || '';
-if (!replayPaper.includes('2 &times; 3') || !replayPaper.includes('Error Replay')) {
+if (!stripHtml(replayPaper).includes('2 &times; 3') || !replayPaper.includes('Error Replay')) {
   throw new Error('Active error-book item was not bridged back into generated training');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };

@@ -57,6 +57,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - Error-book replay now has two lanes: exact replay of the original item, and targeted same-tag review variants for selected high-value tags such as decimal-division and benchmark-comparison items.
 - `getHighValueTrainingSignal`: adds a global priority layer so the engine can spend more of the daily paper on high-value misconception families instead of distributing attention too evenly.
 - Targeted review variants now also cover selected KAI decimal-division and equation trap tags, not only Lorik benchmark comparison and division tags.
+- `beautifyMathHTML`: normalizes the visual treatment of operators, equality signs, comparison signs, blanks, and circle choices so math layout stays more balanced across generated HTML strings.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
@@ -132,6 +133,7 @@ python3 -m http.server 8080
 - Confirm conversion items in both KAI and Lorik sections provide answer-sheet steps that explain the benchmark or denominator transformation used.
 - Confirm selected error-book review items can appear as same-tag variants rather than only verbatim replay, while still carrying the small review marker without affecting print layout.
 - Confirm selected KAI high-value traps such as decimal-division placement and divisor-position equations can reappear as same-skill review variants, not only as exact replays.
+- Confirm operators, equality signs, fraction spacing, blanks, and circle choices look visually balanced on both screen and print preview.
 
 ## GitHub Connection
 
