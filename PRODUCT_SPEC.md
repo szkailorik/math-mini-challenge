@@ -527,3 +527,9 @@ profile = {
 - The stage-status area now reads more like a compact in-card status strip than a second full floating card.
 - Chips and insight pills were also tightened so the same phase context occupies less visual and vertical weight.
 - This keeps the shell easier to scan as a tool palette instead of a stack of separate panels.
+
+- v23.63 refines the child-facing quick-review entry experience:
+
+- The quick-review hero is now lighter and more cover-like, so learners reach the actual topic sections faster.
+- The `今日先看` focus cards are more compact, keeping the “what to scan first” guidance without delaying entry into the main content.
+- The page should now feel more like a concise review handout than a layered dashboard at the top.

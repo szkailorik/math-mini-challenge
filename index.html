@@ -743,9 +743,15 @@
                 radial-gradient(circle at top right, rgba(15,118,110,0.08), transparent 42%);
             border: 1px solid #d6e2e7;
             border-radius: 16px;
-            padding: 18px 20px 15px;
-            margin-bottom: 12px;
-            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            padding: 15px 17px 13px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+        }
+        .quick-review-hero-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px 14px;
+            align-items: start;
         }
         .quick-review-kicker {
             font-size: 11px;
@@ -753,46 +759,53 @@
             text-transform: uppercase;
             font-weight: 700;
             color: #0f766e;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .quick-review-hero h2 {
-            margin: 0 0 8px;
+            margin: 0 0 6px;
             color: #123b73;
-            font-size: 28px;
-            line-height: 1.15;
+            font-size: 25px;
+            line-height: 1.12;
             font-family: 'Georgia', 'Baskerville', serif;
         }
         .quick-review-hero p {
             margin: 0;
-            font-size: 14px;
-            line-height: 1.65;
+            font-size: 13px;
+            line-height: 1.58;
             color: #31556b;
         }
         .quick-review-stage-note {
-            margin-top: 10px;
+            margin-top: 2px;
+            display: inline-flex;
+            align-items: center;
+            max-width: 260px;
+            padding: 7px 10px;
+            border-radius: 12px;
+            border: 1px solid #ecd6c5;
+            background: rgba(255, 250, 243, 0.92);
             font-size: 12px;
-            line-height: 1.6;
+            line-height: 1.45;
             color: #7c2d12;
             font-weight: 700;
         }
         .quick-review-usage-strip {
             display: flex;
             flex-wrap: wrap;
-            gap: 7px;
-            margin-top: 12px;
+            gap: 6px;
+            margin-top: 10px;
         }
         .quick-review-usage-card {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
             border: 1px solid #dde5ea;
             border-radius: 999px;
             background: rgba(255,255,255,0.78);
-            padding: 6px 10px;
+            padding: 5px 9px;
         }
         .quick-review-usage-label {
             color: #0f766e;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 800;
             letter-spacing: 0.06em;
             text-transform: uppercase;
@@ -800,38 +813,44 @@
         }
         .quick-review-usage-text {
             color: #365165;
-            font-size: 11.5px;
-            line-height: 1.45;
+            font-size: 11px;
+            line-height: 1.35;
             font-weight: 600;
         }
         .quick-review-recommendations {
-            margin-top: 12px;
-            padding: 8px 10px;
+            margin-top: 10px;
+            padding: 7px 10px;
             border-radius: 12px;
             border: 1px solid #dde5ea;
             background: rgba(255,255,255,0.74);
             color: #486172;
-            font-size: 12px;
-            line-height: 1.55;
+            font-size: 11.5px;
+            line-height: 1.45;
             font-weight: 700;
         }
         .quick-review-focus-strip {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-top: 14px;
+            gap: 8px;
+            margin-top: 10px;
         }
         .quick-review-focus-card {
             border: 1px solid #dbe4eb;
-            border-radius: 14px;
+            border-radius: 12px;
             background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.97));
-            padding: 12px 13px;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045);
+            padding: 9px 10px;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.035);
+        }
+        .quick-review-focus-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
         }
         .quick-review-focus-label {
             display: inline-block;
-            margin-bottom: 7px;
-            font-size: 11px;
+            margin-bottom: 4px;
+            font-size: 10.5px;
             line-height: 1;
             letter-spacing: 0.1em;
             text-transform: uppercase;
@@ -839,42 +858,40 @@
             font-weight: 800;
         }
         .quick-review-focus-card h3 {
-            margin: 0 0 6px;
+            margin: 0;
             color: #10233f;
-            font-size: 18px;
-            line-height: 1.2;
+            font-size: 16px;
+            line-height: 1.15;
             font-family: 'Georgia', 'Baskerville', serif;
         }
         .quick-review-focus-copy {
             margin: 0;
             color: #31586b;
-            font-size: 12px;
-            line-height: 1.6;
+            font-size: 11.5px;
+            line-height: 1.45;
         }
         .quick-review-focus-summary {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #dbe2ea;
+            margin-top: 7px;
             color: #123b73;
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 12.5px;
+            line-height: 1.45;
             font-weight: 800;
         }
         .quick-review-focus-route {
-            margin-top: 8px;
-            font-size: 12px;
-            line-height: 1.55;
+            margin-top: 6px;
+            font-size: 11px;
+            line-height: 1.4;
             color: #5b4a2f;
             font-weight: 700;
         }
         .quick-review-mini-jump {
-            margin-top: 10px;
-            padding: 6px 10px;
+            margin-top: 8px;
+            padding: 5px 9px;
             border-radius: 999px;
             border: 1px solid #bfd0dd;
             background: #fff;
             color: #123b73;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 800;
             cursor: pointer;
             font-family: inherit;
@@ -1470,6 +1487,7 @@
             .ctrl-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 780px) {
+            .quick-review-hero-top,
             .quick-review-focus-strip,
             .quick-review-nav,
             .quick-review-flow,
@@ -1499,7 +1517,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.62</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.63</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1575,9 +1593,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.62';
-        const APP_RELEASE_LABEL = '悬浮菜单状态层轻量化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.62 悬浮菜单状态层轻量化：把阶段状态区改成更轻的一条状态层。';
+        const APP_VERSION = 'v23.63';
+        const APP_RELEASE_LABEL = '计算知识页页头与焦点区收轻';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.63 计算知识页页头与焦点区收轻：更快进入专题主体。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3556,12 +3574,16 @@
             `).join('');
             const focusHtml = recommendationTopics.map((topic, index) => `
                 <article class="quick-review-focus-card">
-                    <span class="quick-review-focus-label">今日先看 ${String(index + 1).padStart(2, '0')}</span>
-                    <h3>${topic.title}</h3>
+                    <div class="quick-review-focus-top">
+                        <div>
+                            <span class="quick-review-focus-label">今日先看 ${String(index + 1).padStart(2, '0')}</span>
+                            <h3>${topic.title}</h3>
+                        </div>
+                        ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达</button>`}
+                    </div>
                     <p class="quick-review-focus-copy">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     <div class="quick-review-focus-summary">${topic.hook}</div>
                     <div class="quick-review-focus-route">先按这个顺序扫：${topic.memoryRoute}</div>
-                    ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达这个专题</button>`}
                 </article>
             `).join('');
             const navHtml = topics.map((topic, index) => `
@@ -3625,10 +3647,14 @@
             return `
                 <div class="quick-review-page" data-program="${programId}">
                     <div class="quick-review-hero">
-                        <div class="quick-review-kicker">${CALCULATION_QUICK_REVIEW_PAGE.printTitle}</div>
-                        <h2>${CALCULATION_QUICK_REVIEW_PAGE.title}</h2>
-                        <p>${CALCULATION_QUICK_REVIEW_PAGE.subtitle}</p>
-                        <div class="quick-review-stage-note">${stageNote}</div>
+                        <div class="quick-review-hero-top">
+                            <div>
+                                <div class="quick-review-kicker">${CALCULATION_QUICK_REVIEW_PAGE.printTitle}</div>
+                                <h2>${CALCULATION_QUICK_REVIEW_PAGE.title}</h2>
+                                <p>${CALCULATION_QUICK_REVIEW_PAGE.subtitle}</p>
+                            </div>
+                            <div class="quick-review-stage-note">${stageNote}</div>
+                        </div>
                         <div class="quick-review-usage-strip">${usageHtml}</div>
                         <div class="quick-review-recommendations">${recommendationHtml}</div>
                         <div class="quick-review-focus-strip">${focusHtml}</div>

@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.63 Iteration Notes
+
+### Iteration 1
+
+- What I changed: reduced the visual weight of the child-facing `Calculation Quick Review` header by turning it into a lighter two-column cover and tightening the focus cards so learners reach the real topic blocks faster.
+- Open questions: whether the next quick-review pass should now focus on topic-level copy quality, or on further print-first tightening of the topic cards.
+- Risks: making the top lighter improves scan speed, but the focus cards must still remain clear enough that children know what to review first.
+- Next steps: review the live page with child-like scan behavior, then decide whether to sharpen topic wording or keep polishing print rhythm.
+
 ## Current v23.62 Iteration Notes
 
 ### Iteration 1

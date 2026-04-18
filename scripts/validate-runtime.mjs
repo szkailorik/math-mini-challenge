@@ -290,7 +290,7 @@ if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes(
 if (!reviewModalHtml.includes('当前优先看：')) {
   throw new Error('Calculation Quick Review recommendations did not render');
 }
-if (!reviewModalHtml.includes('今日先看 01') || !reviewModalHtml.includes('直达这个专题')) {
+if (!reviewModalHtml.includes('今日先看 01') || (!reviewModalHtml.includes('直达这个专题') && !reviewModalHtml.includes('>直达<'))) {
   throw new Error('Calculation Quick Review focus cards or jump shortcuts did not render');
 }
 if (!reviewModalHtml.includes('先记住')) {
