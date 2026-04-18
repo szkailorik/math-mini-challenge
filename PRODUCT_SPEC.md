@@ -124,12 +124,12 @@ v23.19 improves mathematical sheet readability and print polish:
 - The goal is to reduce visual friction: learners should parse the structure of the problem faster and with less symbol confusion.
 - The typography pass applies to both on-screen review and printed sheets, so visual quality supports the training model instead of fighting it.
 
-v23.21 turns phase two into a real paper-preview program without disrupting the current trainer:
+v23.22 turns phase two into a real trainable program without disrupting the current trainer:
 
-- Families can now switch into `小学计算收束阶段` and preview a real second-stage paper set instead of only seeing a shell.
+- Families can now switch into `小学计算收束阶段`, complete a real second-stage paper set, submit grading, and immediately review closure-specific feedback.
 - The phase-two paper is designed as `总收束 + 保温`: it integrates percent/fraction/ratio bridging, unit chains, rates, equations, estimation, speed, and result checking while still keeping first-stage core calculation fluency warm every day.
 - The product intent is not to simply raise difficulty or revisit basics in isolation. It is to finish elementary-school calculation training efficiently and personally, judged from a grade-6 to junior-high readiness perspective.
-- The current release keeps phase two in preview-only mode for safety: paper generation, answer pages, and printing are live; grading writeback and phase-two profiling remain part of `M3`.
+- The current release now writes phase-two grading into an isolated program profile, so closure-specific error books and gap signals accumulate without polluting the first-stage trainer.
 
 v23.18 improves global training efficiency, not only local item quality:
 

@@ -29,28 +29,28 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.21 Iteration Notes
+## Current v23.22 Iteration Notes
 
 ### Iteration 1
 
-- What I changed: turned the second-stage shell into a real preview program with four question sheets, two answer sheets, and program-aware cached paper data.
+- What I changed: opened the second-stage grading loop, so `Closure` now has four question sheets, two writable answer sheets, and program-aware cached paper data.
 - Open questions: none.
-- Risks: phase two is intentionally preview-only in this release, so grading entry points must stay clearly blocked until M3.
+- Risks: phase-two writeback now exists, so profile isolation between `Advanced` and `Closure` has become a release-critical guarantee.
 - Next steps: keep second-stage paper quality high while preserving first-stage stability.
 
 ### Iteration 2
 
-- What I changed: defined the first closure-paper structure around `总收束 + 旧知保温`, rather than treating phase two as simple difficulty increase.
+- What I changed: defined the first closure-profile signal model around `representationGap / methodGap / stabilityGap / speedGap / validationGap`.
 - Open questions: none.
-- Risks: if future changes over-randomize second-stage bridge sections, paper quality can drop through duplicated or shallow integrated items.
-- Next steps: strengthen the second-stage generator and later connect program-aware profiling in M3.
+- Risks: if future changes over-randomize second-stage bridge sections, paper quality can drop through duplicated or shallow integrated items, which would make the new closure signals noisy.
+- Next steps: refine the closure signal model and prepare readiness scoring in M4.
 
 ### Iteration 3
 
-- What I changed: upgraded runtime validation so release checks now cover the advanced trainer and the new closure preview, including print-sandbox behavior.
+- What I changed: upgraded runtime validation so release checks now cover the advanced trainer and the closure runtime, including isolated profile writes, closure reporting, and print-sandbox behavior.
 - Open questions: none.
-- Risks: print and answer-page preview are now part of the release contract for two programs, so future regressions have more surface area.
-- Next steps: move into M3 by adding phase-two grading writeback, reporting, and program-aware profile storage.
+- Risks: print, grading, reporting, and storage are now part of the release contract for two programs, so future regressions have more surface area.
+- Next steps: move into M4 by designing readiness scoring and formal stage-promotion rules.
 
 ## Previous v23.19 Iteration Notes
 

@@ -270,8 +270,8 @@ function assertClosurePaper(setNumber) {
   if (!paper.includes('收束') || !paper.includes('保温')) {
     throw new Error(`Closure paper for set ${setNumber} is missing closure or maintenance guidance`);
   }
-  if (!paper.includes('第二阶段预览') || !paper.includes('M3')) {
-    throw new Error(`Closure answer sheet for set ${setNumber} is missing preview-only grading messaging`);
+  if (!paper.includes('第二阶段') || !paper.includes('写入第二阶段独立画像')) {
+    throw new Error(`Closure answer sheet for set ${setNumber} is missing active grading messaging`);
   }
   if (!closureQuestionOnly.includes('综合') && !closureQuestionOnly.includes('桥接')) {
     throw new Error(`Closure question paper for set ${setNumber} is missing integrated-training section framing`);
@@ -808,6 +808,50 @@ if ((closurePrintRootHtml.match(/question-sheet/g) || []).length !== 4) {
   throw new Error('Closure print sandbox did not stage exactly four printable question sheets');
 }
 emit('afterprint');
+const closureData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 103)) || '{}');
+const advancedBeforeProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+const advancedBefore = JSON.stringify({
+  weights: advancedBeforeProfile.weights,
+  lastSeen: advancedBeforeProfile.lastSeen,
+  history: advancedBeforeProfile.history,
+  errorBook: advancedBeforeProfile.errorBook,
+});
+await context.window.StorageDB.saveSession('KAI', [
+  { tag: 'c2_bridge_pct_frac', grade: 'wrong', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[0]?.q, a: closureData.c_k_bridge?.[0]?.a, step: closureData.c_k_bridge?.[0]?.step } },
+  { tag: 'c2_eq_percent', grade: 'wrong', info: { sec: '比率方程', num: 2, q: closureData.c_k_rate?.[0]?.q, a: closureData.c_k_rate?.[0]?.a, step: closureData.c_k_rate?.[0]?.step } },
+  { tag: 'c2_speed_mix', grade: 'careless', info: { sec: '结果判断', num: 3, q: closureData.c_k_mix?.[0]?.q, a: closureData.c_k_mix?.[0]?.a, step: closureData.c_k_mix?.[0]?.step } },
+  { tag: closureData.c_k_maint_core?.[0]?.tag, grade: 'wrong', info: { sec: '旧知保温', num: 4, q: closureData.c_k_maint_core?.[0]?.q, a: closureData.c_k_maint_core?.[0]?.a, step: closureData.c_k_maint_core?.[0]?.step } },
+], 103);
+const advancedAfterProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+const advancedAfter = JSON.stringify({
+  weights: advancedAfterProfile.weights,
+  lastSeen: advancedAfterProfile.lastSeen,
+  history: advancedAfterProfile.history,
+  errorBook: advancedAfterProfile.errorBook,
+});
+if (advancedBefore !== advancedAfter) {
+  throw new Error('Phase-two grading polluted the advanced_fluency_v1 profile');
+}
+const closureProfile = context.window.StorageDB.getProfile('KAI', 'elementary_closure_v1');
+if (!closureProfile || !Array.isArray(closureProfile.history) || !closureProfile.history.some(session => session.set === 103)) {
+  throw new Error('Phase-two grading did not create closure history');
+}
+if (!closureProfile.errorBook || Object.keys(closureProfile.errorBook).length < 3) {
+  throw new Error('Phase-two grading did not populate the closure error book');
+}
+for (const field of ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap']) {
+  if (typeof closureProfile[field] !== 'number') {
+    throw new Error(`Phase-two profile is missing ${field}`);
+  }
+}
+if (closureProfile.representationGap <= 0 || closureProfile.methodGap <= 0 || closureProfile.stabilityGap <= 0 || closureProfile.speedGap <= 0) {
+  throw new Error('Phase-two grading did not update the expected closure gap signals');
+}
+context.window.showSetReview(103, 'KAI');
+const closureReviewHtml = elements.get('report-content-area')?.innerHTML || '';
+if (!closureReviewHtml.includes('第二阶段') || !closureReviewHtml.includes('表征切换') || !closureReviewHtml.includes('旧知保温')) {
+  throw new Error('Phase-two set review is missing closure-specific reporting');
+}
 if (missingAdvice.size) {
   throw new Error(`Missing KnowledgeBase advice for tags: ${[...missingAdvice].sort().join(', ')}`);
 }

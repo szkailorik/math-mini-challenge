@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`; `advanced_fluency_v1` remains the default while preview-only `elementary_closure_v1` is also enabled in `v23.21`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is also enabled in `v23.22`.
 
 ## Local Environment
 
@@ -53,7 +53,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
-- `buildPreviewAnsGrid` / `showClosurePreviewNotice`: keep second-stage answer sheets readable and printable without opening grading writeback before M3.
+- `getProgramSignalDelta` / `snapshotProgramSignals`: convert second-stage grading into five independent closure-signal buckets without contaminating first-stage weights.
 - `printQuestionSheets` / `printAnswerSheets`: stages cloned printable sheets into `#print-root`, switches the body into a print sandbox mode, and relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - Print output now uses a dedicated print sandbox instead of paginating the live long page directly, reducing browser-specific blank-even-page regressions.
 - Question-sheet printing uses a slightly sub-A4 fixed page height in the sandbox to avoid rounding overflow that can make one printed sheet consume two physical pages.
@@ -79,7 +79,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then switches into `elementary_closure_v1` to validate second-stage paper structure, preview messaging, program-aware cache keys, and print-sandbox behavior.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then switches into `elementary_closure_v1` to validate second-stage paper structure, active grading messaging, program-aware cache keys, isolated profile writes, closure signal updates, and print-sandbox behavior.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -116,10 +116,10 @@ python3 -m http.server 8080
 - Export JSON and import it in a fresh browser profile.
 - Confirm exported backup JSON includes the current app version and export metadata fields.
 - Confirm the control panel now shows the program switcher and stage-status card, and that the switcher defaults to `Advanced`.
-- Switch to `Closure` and confirm the stage-status card updates to the second-stage preview state.
-- Confirm `Closure` renders four question sheets plus two preview-only answer sheets.
+- Switch to `Closure` and confirm the stage-status card updates to the second-stage active state.
+- Confirm `Closure` renders four question sheets plus two writable answer sheets.
 - Confirm the `Closure` sheets visibly combine integrated closure topics with explicit old-skill maintenance sections.
-- Confirm the `Closure` answer sheets state that grading writeback is deferred to `M3`.
+- Grade and submit one `Closure` set, then confirm a closure-specific report appears and the first-stage profile remains untouched.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
 - Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.
