@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.57 (计算知识总览页逻辑与版式收束)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.58 (计算知识总览页讲义感深化)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -802,21 +802,14 @@
             font-weight: 600;
         }
         .quick-review-recommendations {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
             margin-top: 12px;
-        }
-        .quick-review-recommendation {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 5px 9px;
-            border-radius: 999px;
-            background: rgba(255,255,255,0.72);
-            border: 1px solid #d5e0dd;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid #dde5ea;
+            background: rgba(255,255,255,0.74);
             color: #486172;
-            font-size: 11.5px;
+            font-size: 12px;
+            line-height: 1.55;
             font-weight: 700;
         }
         .quick-review-focus-strip {
@@ -1070,6 +1063,22 @@
             border-radius: 12px;
             background: rgba(255,255,255,0.92);
             padding: 10px 11px;
+            position: relative;
+        }
+        .quick-review-flow-step::after {
+            content: "";
+            position: absolute;
+            top: 26px;
+            right: -11px;
+            width: 8px;
+            height: 8px;
+            border-top: 1px solid #c8d5e3;
+            border-right: 1px solid #c8d5e3;
+            transform: rotate(45deg);
+            background: transparent;
+        }
+        .quick-review-flow-step:last-child::after {
+            display: none;
         }
         .quick-review-flow-label {
             margin-bottom: 6px;
@@ -1078,6 +1087,22 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .quick-review-flow-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 999px;
+            background: #e8eef6;
+            color: #123b73;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 900;
+            flex-shrink: 0;
         }
         .quick-review-flow-copy {
             color: #1e293b;
@@ -1092,7 +1117,8 @@
             margin-top: 10px;
         }
         .quick-review-support-block {
-            border: 1px solid #e5ebf1;
+            border: 1px solid #e8edf2;
+            border-left: 3px solid #d7e2ec;
             border-radius: 12px;
             background: rgba(252,252,251,0.9);
             padding: 10px 11px;
@@ -1130,7 +1156,8 @@
         }
         .quick-review-support-block li:last-child { margin-bottom: 0; }
         .quick-review-example {
-            border: 1px solid #dde5e2;
+            border: 1px solid #e3e9e6;
+            border-left: 3px solid #d7e2dc;
             border-radius: 12px;
             background: linear-gradient(180deg, #fbfcfc, #f4f8f7);
             padding: 11px 12px;
@@ -1407,6 +1434,9 @@
             .quick-review-support-columns {
                 grid-template-columns: 1fr;
             }
+            .quick-review-flow-step::after {
+                display: none;
+            }
             .quick-review-topic-head {
                 flex-direction: column;
             }
@@ -1506,9 +1536,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.57';
-        const APP_RELEASE_LABEL = '计算知识总览页逻辑与版式收束';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.57 计算知识总览页逻辑与版式收束：<br><strong>每个专题统一成“总纲句 + 做题主线 + 轻量补充”<br>页面更顺、更克制，也更像高质量复习讲义</strong>';
+        const APP_VERSION = 'v23.58';
+        const APP_RELEASE_LABEL = '计算知识总览页讲义感深化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.58 计算知识总览页讲义感深化：<br><strong>把优先提示收成一句更清楚的话，并让主线更像步骤顺序<br>页面更安静，也更像真正可打印的复习单</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3523,21 +3553,21 @@
                     </div>
                     <div class="quick-review-flow">
                         <div class="quick-review-flow-step">
-                            <div class="quick-review-flow-label">先做这一步</div>
+                            <div class="quick-review-flow-label"><span class="quick-review-flow-num">1</span><span>先做这一步</span></div>
                             <div class="quick-review-flow-copy">${topic.firstMove || ''}</div>
                         </div>
                         <div class="quick-review-flow-step">
-                            <div class="quick-review-flow-label">最容易错</div>
+                            <div class="quick-review-flow-label"><span class="quick-review-flow-num">2</span><span>最容易错</span></div>
                             <div class="quick-review-flow-copy">${topic.pitfalls?.[0] || ''}</div>
                         </div>
                         <div class="quick-review-flow-step">
-                            <div class="quick-review-flow-label">最后检查</div>
+                            <div class="quick-review-flow-label"><span class="quick-review-flow-num">3</span><span>最后检查</span></div>
                             <div class="quick-review-flow-copy">${topic.finalCheck || ''}</div>
                         </div>
                     </div>
                     <div class="quick-review-support-grid">
                         <div class="quick-review-support-block">
-                            <h4>规则与技巧</h4>
+                            <h4>补充速查</h4>
                             <div class="quick-review-support-columns">
                                 <div class="quick-review-support-col">
                                     <h5>核心规则</h5>
@@ -3558,7 +3588,7 @@
                 </section>
             `).join('');
             const pinsHtml = buildCalculationQuickReviewPins(topics).map(pin => `<span class="quick-review-pin">${pin}</span>`).join('');
-            const recommendationHtml = recommendations.map(item => `<span class="quick-review-recommendation">当前更值得多看：${item}</span>`).join('');
+            const recommendationHtml = `当前优先看：${recommendations.join('、')}。先看上面的两块，再往下细看专题。`;
             return `
                 <div class="quick-review-page" data-program="${programId}">
                     <div class="quick-review-hero">

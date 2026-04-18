@@ -281,7 +281,7 @@ if (!reviewModalTitle.includes('计算知识总览')) {
 if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('整数四则与简算')) {
   throw new Error('Calculation Quick Review did not render the expected page shell or topic content');
 }
-if (!reviewModalHtml.includes('当前更值得多看：')) {
+if (!reviewModalHtml.includes('当前优先看：')) {
   throw new Error('Calculation Quick Review recommendations did not render');
 }
 if (!reviewModalHtml.includes('今日先看 01') || !reviewModalHtml.includes('直达这个专题')) {

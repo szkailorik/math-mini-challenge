@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.58 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the new study-flow structure, then further reduced visual noise by turning the recommendation pills into one calmer priority sentence and making the three-step working flow read more explicitly as an ordered sequence.
+- Open questions: whether the next pass should focus on tighter wording inside each topic, or on further print and density polish now that the structure is much calmer.
+- Risks: the page is now quieter and easier to scan, but future additions must stay disciplined or the recommendation area could become noisy again.
+- Next steps: review the live page with real child use, then either sharpen topic copy or continue print-first refinement.
+
 ## Current v23.57 Iteration Notes
 
 ### Iteration 1

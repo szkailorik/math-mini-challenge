@@ -357,6 +357,12 @@ v23.57 tightens the visual discipline of that structure:
 - Navigation behaves more like a table of contents, focus cards are more restrained, and the topic blocks feel more like one study leaflet than a collage of mini dashboards.
 - Product-wise, this matters because even correct structure can still feel tiring if the page keeps shouting at the learner. High-quality review surfaces should guide attention without exhausting it.
 
+v23.58 continues that “study leaflet” direction:
+
+- The quick-review page now states the current priority as one calmer sentence instead of many small pills.
+- The three-step working flow now reads more explicitly as a sequence, which better matches how learners actually move through a calculation.
+- Product-wise, this matters because review quality depends not only on what to read, but also on whether the page makes the order of attention feel obvious and low-friction.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
