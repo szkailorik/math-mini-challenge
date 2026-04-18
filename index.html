@@ -2383,6 +2383,7 @@
                     genItem.reason = genItem.isErrorReplay ? 'replay' : (genItem.isErrorVariant ? 'variant' : x.selectReason);
                     genItem.level = x.level;
                     genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
+                    genItem = attachQualityMetadata(genItem);
                     usedThisPaper.add(genItem.q);
                     return genItem;
                 });
@@ -2396,6 +2397,32 @@
                     .map(group => Engine.weightedSelect(group, student, 1)[0])
                     .filter(Boolean)
             );
+        }
+        const QUALITY_FAMILY_RULES = [
+            { family: 'decimal_division', test: tag => /^(k_ddiv_|l_div_decimal_)/.test(tag) },
+            { family: 'fraction_operation', test: tag => /^l_fmix_/.test(tag) },
+            { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
+            { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
+            { family: 'equation_method', test: tag => /^(k_eq_|c2_rate_eq)/.test(tag) },
+            { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
+        ];
+        function getQualityFamilyForTag(tag = '') {
+            const value = String(tag || '');
+            const matched = QUALITY_FAMILY_RULES.find(rule => rule.test(value));
+            return matched ? matched.family : '';
+        }
+        function getReplayLevel(entry = {}) {
+            const count = Number(entry?.count || entry?.replayCount || 0);
+            if (count >= 4) return 'L3';
+            if (count >= 2) return 'L2';
+            return 'L1';
+        }
+        function attachQualityMetadata(item) {
+            if (!item) return item;
+            return {
+                ...item,
+                qualityFamily: item.qualityFamily || getQualityFamilyForTag(item.tag || '')
+            };
         }
 
         const KnowledgeBase = {
@@ -2684,17 +2711,18 @@
         function buildErrorReplayItem(entry) {
             const tip = getKnowledgeTip(entry.tag);
             const step = entry.info.step || `先复盘上次错误，再按知识点重新解一遍。${tip.advice}`;
-            return {
+            return attachQualityMetadata({
                 tag: entry.tag,
                 q: entry.info.q,
                 a: entry.info.a,
                 step: `[错题回炉 Replay] ${step}`,
+                replayLevel: getReplayLevel(entry),
                 replayUid: entry.uid,
                 replayCount: Math.max(1, entry.count || 1),
                 sourceSet: entry.lastSet || entry.firstSet || '',
                 isErrorReplay: true,
                 isReviewItem: true
-            };
+            });
         }
         const LORIK_DIV_DECIMAL_DIVIDEND_VARIANTS = [
             { divisor: 18, quotient: 1.25 },
@@ -2905,15 +2933,16 @@
                     break;
             }
             if (!built) return null;
-            return {
+            return attachQualityMetadata({
                 tag: entry.tag,
                 ...built,
+                replayLevel: getReplayLevel(entry),
                 replayUid: entry.uid,
                 replayCount: Math.max(1, entry.count || 1),
                 sourceSet: entry.lastSet || entry.firstSet || '',
                 isErrorVariant: true,
                 isReviewItem: true
-            };
+            });
         }
         function getDomainSignal(profile, tag) {
             const domain = getKnowledgeDomain(tag);
@@ -2966,6 +2995,8 @@
         window.KnowledgeFamilies = KnowledgeFamilies;
         window.KnowledgeDomains = KnowledgeDomains;
         window.FallbackAdvice = FallbackAdvice;
+        window.getQualityFamilyForTag = getQualityFamilyForTag;
+        window.getReplayLevel = getReplayLevel;
         window.getKnowledgeDomain = getKnowledgeDomain;
         window.getErrorBookSignal = getErrorBookSignal;
         window.getHighValueTrainingSignal = getHighValueTrainingSignal;

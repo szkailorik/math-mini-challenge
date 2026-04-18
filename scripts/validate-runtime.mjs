@@ -36,6 +36,12 @@ if (!html.includes('function beautifyMathHTML')) {
 if (!html.includes('function normalizeQuestionPrompt')) {
   throw new Error('Question prompt normalization helper is missing from runtime script');
 }
+if (!html.includes('function getQualityFamilyForTag')) {
+  throw new Error('Quality family helper is missing from runtime script');
+}
+if (!html.includes('function getReplayLevel')) {
+  throw new Error('Replay level helper is missing from runtime script');
+}
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
 }
@@ -820,6 +826,28 @@ const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
 if (!sampleHighValueSignal || sampleHighValueSignal.tier < 3 || sampleHighValueSignal.score <= 0 || !sampleHighValueSignal.priority) {
   throw new Error('High-value training signal is not prioritising core misconception tags');
 }
+const requiredQualityFamilies = [
+  ['k_ddiv_shift', 'decimal_division'],
+  ['l_fmix_madd', 'fraction_operation'],
+  ['k_conv_1', 'conversion_bridge'],
+];
+for (const [tag, expectedFamily] of requiredQualityFamilies) {
+  const actualFamily = context.window.getQualityFamilyForTag?.(tag);
+  if (actualFamily !== expectedFamily) {
+    throw new Error(`Quality family mapping mismatch for ${tag}: expected ${expectedFamily}, got ${actualFamily}`);
+  }
+}
+const replayLevelSamples = [
+  [{ count: 1 }, 'L1'],
+  [{ count: 2 }, 'L2'],
+  [{ count: 4 }, 'L3'],
+];
+for (const [entry, expectedLevel] of replayLevelSamples) {
+  const actualLevel = context.window.getReplayLevel?.(entry);
+  if (actualLevel !== expectedLevel) {
+    throw new Error(`Replay level mismatch for count ${entry.count}: expected ${expectedLevel}, got ${actualLevel}`);
+  }
+}
 const sampleReplay = context.window.buildErrorReplayItem?.({
   uid: 'e3',
   tag: 'k_dmul_basic',
@@ -830,6 +858,12 @@ const sampleReplay = context.window.buildErrorReplayItem?.({
 if (!sampleReplay?.isErrorReplay || !sampleReplay?.isReviewItem || sampleReplay.q !== '2 &times; 3' || !sampleReplay.step.includes('Replay')) {
   throw new Error('Error replay item builder is not producing replay items');
 }
+if (sampleReplay?.qualityFamily !== '') {
+  throw new Error(`Expected non-rollout replay sample to keep empty qualityFamily, got ${sampleReplay?.qualityFamily}`);
+}
+if (sampleReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected replay sample to be L3, got ${sampleReplay?.replayLevel}`);
+}
 const sampleVariant = context.window.buildErrorVariantItem?.({
   uid: 'e4',
   tag: 'l_conv_6',
@@ -839,6 +873,12 @@ const sampleVariant = context.window.buildErrorVariantItem?.({
 });
 if (!sampleVariant?.isErrorVariant || !sampleVariant?.isReviewItem || !sampleVariant.q.includes('circle-blank') || !sampleVariant.step.includes('Review Variant')) {
   throw new Error('Error variant item builder is not producing targeted review variants');
+}
+if (sampleVariant?.qualityFamily !== 'conversion_bridge') {
+  throw new Error(`Expected l_conv_6 variant to map to conversion_bridge, got ${sampleVariant?.qualityFamily}`);
+}
+if (sampleVariant?.replayLevel !== 'L2') {
+  throw new Error(`Expected variant sample to be L2, got ${sampleVariant?.replayLevel}`);
 }
 const sampleKaiVariant = context.window.buildErrorVariantItem?.({
   uid: 'e6',
