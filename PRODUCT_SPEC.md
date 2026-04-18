@@ -178,6 +178,15 @@ v23.29 aligns the answer key with the same booklet system:
   - clearer teacher orientation during grading
   - stronger feeling that question paper and solution booklet belong to one intentional system
 
+v23.30 fixes a high-friction booklet regression:
+
+- The new booklet chrome had started to compete with question density: some longer items could be clipped, and multi-line questions could make the printed numbering feel unstable.
+- The product now treats screen readability and print density as two different problems:
+  - on screen, questions must render completely
+  - in print, the page must stay compact enough to preserve the intended four-page packet
+- The numbering model is also more exam-like now because serial numbers stay in their own left column instead of moving with wrapped question text.
+- This matters product-wise because a beautifully styled booklet that clips questions or misaligns numbering is lower-quality training, not higher-quality presentation.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.29 Iteration Notes
+## Current v23.30 Iteration Notes
+
+### Iteration 1
+
+- What I changed: traced the "显示不全 / 排列 / 序号错位" regression back to fixed-height question blocks that no longer fit once booklet chrome grew taller.
+- Open questions: none.
+- Risks: allowing screen blocks to grow can hide print-density problems unless print gets its own compact rules.
+- Next steps: keep screen completeness and print compactness as separate concerns instead of forcing one rule to satisfy both.
+
+### Iteration 2
+
+- What I changed: switched question blocks to screen-first `min-height` behavior and split the sequence number into its own dedicated column so long items can wrap without dragging numbering out of alignment.
+- Open questions: none.
+- Risks: any future item-style embellishment can still destabilize the line rhythm if it is added inside the question body.
+- Next steps: continue keeping question numbers structurally separate from wrapped text.
+
+### Iteration 3
+
+- What I changed: added print-only compression rules inside the sandbox so the repaired on-screen layout does not spill into bloated printed pages.
+- Open questions: none.
+- Risks: print compaction now carries more responsibility, so every future layout pass should include print preview verification.
+- Next steps: keep print adjustments scoped to `#print-root` and avoid mixing them back into the screen stylesheet.
+
+## Previous v23.29 Iteration Notes
 
 ### Iteration 1
 

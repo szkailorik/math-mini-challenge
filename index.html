@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.29 (Answer Key Booklet 对齐)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.30 (题目显示与打印对齐修正)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -44,7 +44,7 @@
                 height: var(--print-sheet-height) !important;
                 max-height: var(--print-sheet-height) !important;
                 box-sizing: border-box !important;
-                padding: 12mm 15mm !important;
+                padding: 11mm 14mm 16mm !important;
                 overflow: hidden !important;
                 background: #fff !important;
                 box-shadow: none !important;
@@ -66,6 +66,57 @@
                 overflow: visible !important;
                 padding-bottom: 20mm !important;
             }
+            body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
+            body.print-sandbox-active #print-root .section-title {
+                margin-bottom: 8px !important;
+                padding-bottom: 5px !important;
+                font-size: 14px !important;
+            }
+            body.print-sandbox-active #print-root .section-index {
+                min-width: 2.05em !important;
+                height: 2.05em !important;
+                font-size: 10px !important;
+            }
+            body.print-sandbox-active #print-root .grid { gap: 14px 11px !important; }
+            body.print-sandbox-active #print-root .item {
+                font-size: 17.5px !important;
+                line-height: 1.28 !important;
+                padding-right: 0 !important;
+            }
+            body.print-sandbox-active #print-root .q-num {
+                font-size: 17px !important;
+                margin-right: 0 !important;
+                line-height: 1.28 !important;
+            }
+            body.print-sandbox-active #print-root .q-body {
+                gap: 0.1em 0.18em !important;
+            }
+            body.print-sandbox-active #print-root .math-text,
+            body.print-sandbox-active #print-root .math-row {
+                line-height: 1.28 !important;
+            }
+            body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
+            body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
+            body.print-sandbox-active #print-root .h-frac { min-height: 100px !important; }
+            body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
+            body.print-sandbox-active #print-root .h-conv {
+                min-height: 36px !important;
+                font-size: 17px !important;
+            }
+            body.print-sandbox-active #print-root .sheet-meta-band {
+                gap: 6px !important;
+                margin-bottom: 9px !important;
+            }
+            body.print-sandbox-active #print-root .sheet-meta-cell {
+                padding: 4px 6px 5px !important;
+            }
+            body.print-sandbox-active #print-root .sheet-meta-label,
+            body.print-sandbox-active #print-root .sheet-footer {
+                font-size: 8px !important;
+            }
+            body.print-sandbox-active #print-root .sheet-meta-value {
+                font-size: 10.5px !important;
+            }
         }
         body {
             margin: 0;
@@ -80,11 +131,12 @@
 
         .sheet {
             width: 210mm !important;
-            height: 297mm !important;
+            min-height: 297mm !important;
+            height: auto !important;
             box-sizing: border-box;
-            padding: 12mm 15mm;
+            padding: 12mm 15mm 18mm;
             page-break-after: always;
-            overflow: hidden;
+            overflow: visible;
             background: #fffef9;
             border: 1px solid rgba(15, 23, 42, 0.08);
             box-shadow: 0 14px 35px rgba(15, 23, 42, 0.14);
@@ -190,7 +242,7 @@
         .title-en { font-size: 11px; color: #64748b; font-weight: 700; font-family: 'Arial Narrow', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
         .points { font-size: 12px; font-weight: 700; color: #9a3412; letter-spacing: 0.12em; font-family: 'Arial Narrow', sans-serif; white-space: nowrap; margin-left: 15px; text-transform: uppercase;}
 
-        .grid { display: grid; gap: 20px 15px; width: 100%; }
+        .grid { display: grid; gap: 20px 15px; width: 100%; align-items: start; }
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
@@ -199,17 +251,32 @@
         .badge-weak { background-color: #ef4444; }
         .badge-forget { background-color: #3b82f6; }
 
-        .item { display: flex; align-items: flex-start; font-size: 20px; position: relative; padding: 1px 4px 2px 0; line-height: 1.44; }
+        .item {
+            display: grid;
+            grid-template-columns: 1.72em minmax(0, 1fr);
+            column-gap: 8px;
+            align-items: start;
+            font-size: 20px;
+            position: relative;
+            padding: 1px 4px 2px 0;
+            line-height: 1.44;
+        }
         .q-num {
-            width: 1.65em;
-            flex: 0 0 1.65em;
+            width: auto;
+            min-width: 1.65em;
             text-align: right;
             color: var(--math-blue);
             font-family: 'Times New Roman', serif;
             font-weight: bold;
             font-size: 19px;
-            margin-right: 8px;
             line-height: 1.36;
+        }
+        .q-body {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.14em 0.2em;
+            min-width: 0;
         }
         .math-row {
             display: inline-flex;
@@ -284,8 +351,9 @@
         .paren-l::before { content: '('; }
         .paren-r::before { content: ')'; }
 
-        .h-vert   { height: 140px; } .h-sub    { height: 75px; } .h-frac   { height: 115px; } .h-mixed  { height: 135px; }
-        .h-conv { display: flex; align-items: center; min-height: 44px; height: 44px; width: 100%; font-size: 19px; }
+        .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
+        .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
+        .h-conv .q-body,
         .h-conv .math-row { align-items: center; }
         .sheet-meta-band {
             display: grid;
@@ -637,7 +705,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.29</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.30</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -689,7 +757,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.29 Answer Key Booklet 对齐：<br><strong>答案页与题卷统一成同一套 booklet 语言<br>新增统一页脚和更清楚的解析 section 标题</strong>
+                💡 23.30 题目显示与打印对齐修正：<br><strong>修正题目显示不全、排列和序号错位<br>并单独压缩打印态，避免同类问题进入打印页</strong>
             </div>
         </div>
 
@@ -716,9 +784,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.29';
-        const APP_RELEASE_LABEL = 'Answer Key Booklet 对齐';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.29 Answer Key Booklet 对齐：<br><strong>答案页与题卷统一成同一套 booklet 语言<br>新增统一页脚和更清楚的解析 section 标题</strong>';
+        const APP_VERSION = 'v23.30';
+        const APP_RELEASE_LABEL = '题目显示与打印对齐修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.30 题目显示与打印对齐修正：<br><strong>修正题目显示不全、排列和序号错位<br>并单独压缩打印态，避免同类问题进入打印页</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4101,7 +4169,7 @@
                         let renderedQuestion = beautifyMathHTML(q.q);
                         let suffix = (heightClass !== 'h-conv' && !q.q.includes('=')) ? `<span class="math-eq">=</span>` : '';
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        return `<div class="item ${heightClass}">${reviewFlag}<div class="math-row"><span class="q-num">${i+1}.</span><span class="math-text">${renderedQuestion}</span>${suffix}</div></div>`;
+                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${renderedQuestion}</span>${suffix}</div></div>`;
                     }).join('')}
                 </div>
             </div>`;
