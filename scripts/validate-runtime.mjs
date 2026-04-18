@@ -1117,6 +1117,13 @@ if (!closureProfile || !Array.isArray(closureProfile.history) || !closureProfile
 if (!closureProfile.errorBook || Object.keys(closureProfile.errorBook).length < 3) {
   throw new Error('Phase-two grading did not populate the closure error book');
 }
+Object.values(closureProfile.errorBook).forEach(entry => {
+  if (String(entry?.tag || '').startsWith('c2_bridge_')) {
+    entry.count = 4;
+    entry.lastSet = 103;
+    entry.mastered = false;
+  }
+});
 for (const field of ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap']) {
   if (typeof closureProfile[field] !== 'number') {
     throw new Error(`Phase-two profile is missing ${field}`);
@@ -1128,8 +1135,18 @@ const closureAdaptiveData = JSON.parse(store.get(getProgramCacheKey('elementary_
 if (closureAdaptiveData.c_k_focusMeta?.field !== 'representationGap') {
   throw new Error(`Expected KAI adaptive closure focus to target representationGap, got ${closureAdaptiveData.c_k_focusMeta?.field || '(missing)'}`);
 }
-if (!closureAdaptiveData.c_k_mix?.some(item => (item?.isErrorReplay || item?.isErrorVariant) && String(item?.tag || '').startsWith('c2_bridge_'))) {
-  throw new Error('Adaptive closure focus did not inject a bridge replay/variant into the KAI focus lane');
+const closureFocusReplay = closureAdaptiveData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+if (!closureFocusReplay) {
+  throw new Error('Adaptive closure focus did not inject an explicit closure focus replay item into the KAI focus lane');
+}
+if (!String(closureFocusReplay?.tag || '').startsWith('c2_bridge_')) {
+  throw new Error(`Expected closure focus replay to target a bridge tag, got ${closureFocusReplay?.tag || '(missing)'}`);
+}
+if (closureFocusReplay?.qualityFamily !== 'conversion_bridge') {
+  throw new Error(`Expected closure focus replay to use conversion_bridge quality family, got ${closureFocusReplay?.qualityFamily || '(missing)'}`);
+}
+if (closureFocusReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected closure focus replay to escalate to L3, got ${closureFocusReplay?.replayLevel || '(missing)'}`);
 }
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：跨表示桥接')) {
   throw new Error('Adaptive closure focus title did not render on the next KAI closure paper');

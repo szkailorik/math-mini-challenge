@@ -248,6 +248,12 @@ v23.41 reframes worksheet layout around a stricter paper rule:
 - Instead of forcing fraction sections into a single column, the renderer now adapts between 2-column and 3-column section grids while shrinking overly tall fraction cells back toward normal exam-row height.
 - Product-wise, this matters because the worksheet should feel like a real exam sheet: compact across the page, but still visually stable at the individual-question level.
 
+v23.42 upgrades the second-stage focus lane from simple replay to explicit replay levels:
+
+- `Closure` section V now distinguishes `L1 / L2 / L3` replay instead of only “exact replay if possible, otherwise a generic variant”.
+- `L1` prioritizes exact recovery, `L2` prioritizes same-family transfer variants, and `L3` prioritizes stronger boundary-style focus variants before falling back.
+- Product-wise, this matters because the second stage should test whether a learner can truly transfer and stabilize a high-value weakness, not just remember the last exact question.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

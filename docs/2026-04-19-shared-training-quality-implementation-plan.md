@@ -279,7 +279,7 @@ git commit -m "feat: improve advanced high-value replay"
 - Modify: `/Users/bianbian/Documents/codex/minichallenge/index.html`
 - Test: `/Users/bianbian/Documents/codex/minichallenge/scripts/validate-runtime.mjs`
 
-- [ ] **Step 1: Write the failing validation for closure focus progression**
+- [x] **Step 1: Write the failing validation for closure focus progression**
 
 Add a validation that forces a closure focus family and expects section V to include replay metadata:
 
@@ -298,13 +298,13 @@ assert(closureFocusItems.some(item => item.replayLevel === 'L3'), 'Expected L3 f
 assert(closureFocusItems.some(item => item.qualityFamily === 'conversion_bridge'), 'Expected conversion bridge focus item');
 ```
 
-- [ ] **Step 2: Run validation to verify it fails**
+- [x] **Step 2: Run validation to verify it fails**
 
 Run: `node scripts/validate-runtime.mjs`
 
 Expected: FAIL because closure focus does not yet expose replay levels in a deterministic way.
 
-- [ ] **Step 3: Route closure focus entries through the new replay builder**
+- [x] **Step 3: Route closure focus entries through the new replay builder**
 
 Update the section-V replay injector:
 
@@ -325,7 +325,7 @@ function injectClosureFocusReview(student, focusMeta, focusItems) {
 }
 ```
 
-- [ ] **Step 4: Add first boundary-style closure variants for rollout families**
+- [x] **Step 4: Add first boundary-style closure variants for rollout families**
 
 Implement focused L3 variants for:
 - decimal division
@@ -349,9 +349,17 @@ function buildClosureBoundaryReplayItem(entry) {
 }
 ```
 
-- [ ] **Step 5: Run validation to verify it passes**
+- [x] **Step 5: Run validation to verify it passes**
 
 Run: `node scripts/validate-runtime.mjs`
+
+Status note:
+
+- The current runtime now exposes `isClosureFocusReplay`, keeps `qualityFamily` / `replayLevel` on focus-lane items, and uses an explicit chooser that prefers:
+  - exact replay for `L1`
+  - same-family variant for `L2`
+  - stronger focus variants for `L3` before falling back
+- The first hardened validation path covers `conversion_bridge` inside the closure focus lane and expects an explicit `L3` replay item.
 
 Expected: PASS and closure focus now emits deterministic replay-level metadata.
 

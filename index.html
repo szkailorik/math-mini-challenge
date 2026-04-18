@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.41 (两页内单题单行排版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.42 (第二阶段强化区 L1-L3 回炉)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.41</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.42</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.41';
-        const APP_RELEASE_LABEL = '两页内单题单行排版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.41 两页内单题单行排版：<br><strong>所有题目优先保持整题单行，分数区恢复紧凑多列<br>通过题块降高与列数自适应，把整套卷子继续压回两页内</strong>';
+        const APP_VERSION = 'v23.42';
+        const APP_RELEASE_LABEL = '第二阶段强化区 L1-L3 回炉';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.42 第二阶段强化区 L1-L3 回炉：<br><strong>Closure 第五大题现在会按回炉层级显式区分原题、同类变式和更强边界变式<br>让重点强化区更像真正的高质量个性化追打</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3778,6 +3778,40 @@
             }
         }
 
+        function buildClosureFocusReplayItem(entry, usedThisPaper = new Set(), recent = new Set()) {
+            if (!entry?.tag) return null;
+            const replayLevel = getReplayLevel(entry);
+            const exactAllowed = !!entry?.info?.q
+                && !usedThisPaper.has(entry.info.q)
+                && (replayLevel === 'L1' || !recent.has(entry.info.q));
+            const exactItem = exactAllowed ? buildErrorReplayItem(entry) : null;
+            let variantItem = buildErrorVariantItem(entry, () => buildClosureC2Variant(entry, '[重点强化 Focus Variant] '));
+            if (variantItem && (usedThisPaper.has(variantItem.q) || recent.has(variantItem.q))) {
+                variantItem = null;
+            }
+
+            let chosen = null;
+            let closureFocusMode = '';
+            if (replayLevel === 'L1') {
+                chosen = exactItem || variantItem;
+                closureFocusMode = chosen?.isErrorReplay ? 'L1_exact' : 'L1_variant';
+            } else if (replayLevel === 'L2') {
+                chosen = variantItem || exactItem;
+                closureFocusMode = chosen?.isErrorVariant ? 'L2_variant' : 'L2_exact';
+            } else {
+                chosen = variantItem || exactItem;
+                closureFocusMode = chosen?.isErrorVariant ? 'L3_boundary' : 'L3_exact';
+            }
+            if (!chosen) return null;
+            return attachQualityMetadata({
+                ...chosen,
+                replayLevel,
+                isClosureFocusReplay: true,
+                closureFocusMode,
+                reason: chosen?.isErrorReplay ? 'replay' : 'variant'
+            });
+        }
+
         function injectClosureFocusReview(student, focusMeta, focusItems) {
             if (!focusMeta?.field || focusMeta.field === 'legacyMix') return focusItems;
             const entries = getClosureFocusEntries(student, focusMeta.field);
@@ -3788,20 +3822,10 @@
             const recent = window._recentQuestions || new Set();
             const nextItems = [...focusItems];
             const replaceAt = Math.max(0, nextItems.length - 1);
-
-            if (!usedThisPaper.has(chosen.info.q)) {
-                const replayItem = buildErrorReplayItem(chosen);
-                replayItem.reason = 'replay';
-                nextItems[replaceAt] = replayItem;
-                usedThisPaper.add(replayItem.q);
-                return Engine.shuffle(nextItems);
-            }
-
-            const variantItem = buildErrorVariantItem(chosen, () => buildClosureC2Variant(chosen, '[同类变式 Review Variant] '));
-            if (variantItem && !usedThisPaper.has(variantItem.q) && !recent.has(variantItem.q)) {
-                variantItem.reason = 'variant';
-                nextItems[replaceAt] = variantItem;
-                usedThisPaper.add(variantItem.q);
+            const focusReplayItem = buildClosureFocusReplayItem(chosen, usedThisPaper, recent);
+            if (focusReplayItem) {
+                nextItems[replaceAt] = focusReplayItem;
+                usedThisPaper.add(focusReplayItem.q);
                 return Engine.shuffle(nextItems);
             }
             return focusItems;

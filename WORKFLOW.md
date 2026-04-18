@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.41 Iteration Notes
+## Current v23.42 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the `Closure` focus lane from a simple replay-or-variant fallback into an explicit `L1 / L2 / L3` selector, and tightened runtime validation so second-stage reinforcement now has to expose `isClosureFocusReplay`, `qualityFamily`, and the expected replay level.
+- Open questions: whether the next step should broaden `L3` boundary-style variants beyond the current bridge-focused rollout families.
+- Risks: second-stage quality is now more explicit in metadata than in visible UI, so the strongest payoff will come when more focus families get custom L3 variants.
+- Next steps: continue Task 4 by widening custom `Closure` focus variants to more second-stage families, then upgrade shared answer explanations.
+
+## Previous v23.41 Iteration Notes
 
 ### Iteration 1
 
