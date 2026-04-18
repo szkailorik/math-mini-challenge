@@ -323,6 +323,15 @@ v23.53 makes the quick-review layer safer against repeat mistakes:
 - This means the page now helps with two things in the first few seconds: what to remember first, and what to avoid first.
 - Product-wise, this matters because efficient review is not only “remember the right rule”, but also “avoid the one habitual slip that keeps coming back”.
 
+v23.54 makes the quick-review layer more actionable:
+
+- Each topic now also exposes one `先做这一步` line.
+- The page therefore now supports three fast layers before the fuller content:
+  - remember this first
+  - avoid this first
+  - do this first
+- Product-wise, this matters because some learners know the rule and even know the common mistake, but still freeze on the first move. The review page should reduce that hesitation.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

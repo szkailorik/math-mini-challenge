@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.54 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the child-facing `Calculation Quick Review` page so every topic now also shows a `先做这一步` action cue, making the page better at telling the learner how to start, not only what to remember or avoid.
+- Open questions: whether the next pass should refine the actual wording of these action cues, or pause content-layer work and further tighten print density and typography.
+- Risks: this new action layer only helps if it stays short and concrete; if later edits make it abstract, it will stop functioning as a true first-move hint.
+- Next steps: review the live page with real child use, then either sharpen the action-cue wording or continue refining print-first balance and visual rhythm.
+
 ## Current v23.53 Iteration Notes
 
 ### Iteration 1
