@@ -539,3 +539,9 @@ profile = {
 - Each topic now behaves more like a compact review card: hook and recall route first, process flow second, support and example last.
 - The goal is to reduce scanning friction so children can recover the right method faster without feeling like they are reading stacked modules.
 - The same change also improves print readability by making each topic block feel more self-contained and orderly.
+
+- v23.65 sharpens the recall language inside the quick-review page:
+
+- Topic copy is now shorter, more spoken, and closer to “what a child should remember right before solving” rather than “how an adult would explain the topic”.
+- Hooks, first moves, checks, and reminders were all rewritten to improve recall speed instead of descriptive completeness.
+- This keeps the page aligned with its real job: helping students quickly remember high-value calculation rules and avoid common slips.

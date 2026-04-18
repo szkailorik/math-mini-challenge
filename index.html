@@ -1529,7 +1529,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.64</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.65</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1605,9 +1605,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.64';
-        const APP_RELEASE_LABEL = '计算知识页专题卡再收顺';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.64 计算知识页专题卡再收顺：更像高质量速查卡。';
+        const APP_VERSION = 'v23.65';
+        const APP_RELEASE_LABEL = '计算知识页内容提纯';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.65 计算知识页内容提纯：更短、更像孩子能马上想起的话。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3343,13 +3343,13 @@
         const CALCULATION_QUICK_REVIEW_PAGE = {
             id: 'calculation_quick_review',
             title: '计算知识总览 / Calculation Quick Review',
-            subtitle: '快速回想规则、技巧、例子和注意点，不是背百科。',
+            subtitle: '快速想起规则、方法和注意点，不是背百科。',
             printTitle: 'Calculation Quick Review',
             printSubtitle: '孩子愿意看、老师愿意打的高质量计算复习讲义',
             usageMoments: [
-                { label: '练前 30 秒', text: '先扫推荐专题，再看规则和易错提醒。' },
-                { label: '练后 1 分钟', text: '对照刚错过的地方，回想应注意什么。' },
-                { label: '考前 2 分钟', text: '只抓钉子句和典型例子，快速稳住手感。' }
+                { label: '练前 30 秒', text: '先看推荐专题，再抓关键提醒。' },
+                { label: '练后 1 分钟', text: '对照刚错的地方，马上回想。' },
+                { label: '考前 2 分钟', text: '只抓钉子句和典型例子。' }
             ]
         };
         const CALCULATION_QUICK_REVIEW_TOPICS = [
@@ -3358,18 +3358,18 @@
                 shortLabel: '整数四则',
                 title: '整数四则与简算',
                 kicker: 'Integer Operations',
-                hook: '先看顺序，再找凑整，最后用估算兜底。',
-                firstMove: '先圈出要先算的部分，再看有没有能凑整的数。',
-                finalCheck: '最后回看：运算顺序有没有错，估算大小合不合理。',
+                hook: '先看顺序，再看能不能凑整。',
+                firstMove: '先圈先算的部分，再找能凑整的数。',
+                finalCheck: '最后看顺序对不对，结果像不像。',
                 patterns: ['k_oly_', 'l_bmix_', 'l_mul_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想运算顺序、凑整和分配律，减少低级错。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想先看结构，再决定凑整、拆分还是补偿。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓顺序、凑整和分配律，少出低级错。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓结构，再决定凑整、拆分还是补偿。'
                 },
-                rules: ['先乘除，后加减', '有括号先算括号', '分配律可拆可合'],
+                rules: ['先乘除，后加减', '有括号先算括号', '分配律能拆也能合'],
                 techniques: ['能凑整先凑整', '99、101 先想补偿', '先估大概结果'],
                 example: '99 × 37 = 100 × 37 − 37 = 3663',
-                pitfalls: ['别从左到右一口气全算', '别漏掉括号后的整体'],
+                pitfalls: ['别从左到右一路算', '别漏掉括号后的整体'],
                 memoryRoute: '先看顺序 → 再找凑整 → 最后估结果',
                 pins: ['先看顺序', '能凑先凑']
             },
@@ -3378,16 +3378,16 @@
                 shortLabel: '竖式乘除',
                 title: '竖式乘法与竖式除法',
                 kicker: 'Written Algorithms',
-                hook: '先估商，再对位，小数点和补 0 都不能乱。',
-                firstMove: '先判断商的大概范围，再开始写竖式。',
-                finalCheck: '最后回看：小数点、补 0、乘法反查都对不对。',
+                hook: '先估商，再对位，小数点别乱。',
+                firstMove: '先想商大概多大，再写竖式。',
+                finalCheck: '最后看小数点、补 0 和验算。',
                 patterns: ['l_div_', 'l_div_decimal_', 'k_ddiv_', 'k_sub_', 'l_sub_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想对位、估商、商中间补 0 和小数点。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想先判断商的范围，再决定小数点落点。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓对位、估商、补 0 和小数点。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓商的范围，再定小数点。'
                 },
                 rules: ['数位要对齐', '先估商再下笔', '不够除时商写 0'],
-                techniques: ['先看商大于 1 还是小于 1', '添 0 再除也要守住数值不变', '算完用乘法反查'],
+                techniques: ['先看商大于 1 还是小于 1', '添 0 再除值不变', '算完用乘法反查'],
                 example: '4.8 ÷ 0.6 = 48 ÷ 6 = 8',
                 pitfalls: ['商的小数点别乱放', '中间不够除时别漏写 0'],
                 memoryRoute: '先估商 → 再对位 → 最后用乘法验算',
@@ -3398,18 +3398,18 @@
                 shortLabel: '小数计算',
                 title: '小数加减乘除',
                 kicker: 'Decimal Operations',
-                hook: '先管小数点，再算整数部分，最后看数量级。',
-                firstMove: '先确定小数点该怎么处理，再动笔算。',
-                finalCheck: '最后回看：小数位数和结果大小有没有对上。',
+                hook: '先管小数点，再算整数部分。',
+                firstMove: '先想小数点怎么处理，再动笔。',
+                finalCheck: '最后看位数对不对，结果大不大。',
                 patterns: ['k_dmul_', 'k_ddiv_', 'l_div_decimal_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想小数点对齐、位数和数量级。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想小数计算和单位、率、结果判断之间的连接。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓小数点、位数和数量级。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓小数计算和单位、率、结果判断的连接。'
                 },
                 rules: ['加减先对齐小数点', '乘法先按整数乘', '除法先把除数化整'],
-                techniques: ['先估结果大小', '乘完再数小数位', '除前先想商的范围'],
+                techniques: ['先估结果大小', '乘完再数位数', '除前先想商的范围'],
                 example: '0.24 × 0.3 = 24 × 3 ÷ 1000 = 0.072',
-                pitfalls: ['积的小数位数别数错', '除数化整后别漏同步变化'],
+                pitfalls: ['位数别数错', '化整后别漏同步变化'],
                 memoryRoute: '先看小数点 → 再算整数部分 → 最后查数量级',
                 pins: ['先估大小', '先化整再除']
             },
@@ -3418,18 +3418,18 @@
                 shortLabel: '分数计算',
                 title: '分数加减乘除',
                 kicker: 'Fraction Operations',
-                hook: '先通分或倒数，再约分，最后化成最简。',
-                firstMove: '先看这题要先通分、先倒数，还是先约分。',
-                finalCheck: '最后回看：是不是最简结果，除法有没有变成乘倒数。',
+                hook: '先通分或倒数，再约分。',
+                firstMove: '先看要通分、倒数，还是约分。',
+                finalCheck: '最后看是不是最简，除法变没变倒数。',
                 patterns: ['k_fcalc_', 'l_fmix_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想通分、约分、倒数和最简结果。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想分数运算和互化、比较之间的连通。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓通分、约分、倒数和最简结果。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓分数运算和互化、比较之间的连通。'
                 },
                 rules: ['加减先通分', '乘前能约分先约分', '除以分数等于乘倒数'],
-                techniques: ['带分数先化假分数', '连乘优先交叉约分', '最后化成最简'],
+                techniques: ['带分数先化假分数', '连乘优先交叉约分', '最后化最简'],
                 example: '3/4 ÷ 1/2 = 3/4 × 2 = 3/2',
-                pitfalls: ['别把除法直接当乘法', '结果别忘约成最简'],
+                pitfalls: ['别把除法直接当乘法', '结果别忘最简'],
                 memoryRoute: '先通分或倒数 → 再约分 → 最后化最简',
                 pins: ['先通分', '先约再乘']
             },
@@ -3438,18 +3438,18 @@
                 shortLabel: '互化比较',
                 title: '分数、小数、百分数互化与比较',
                 kicker: 'Conversion & Compare',
-                hook: '先统一形式，再抓基准值，不要只看数字表面。',
-                firstMove: '先决定统一成哪一种形式，再比较或互化。',
-                finalCheck: '最后回看：是不是按题目要求保留成正确形式。',
+                hook: '先统一形式，再抓基准值。',
+                firstMove: '先想统一成哪一种形式。',
+                finalCheck: '最后看是不是按题目要求保留了形式。',
                 patterns: ['k_conv_', 'l_conv_', 'c2_bridge_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想常见基准值和“先统一形式再比较”。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想互化后怎样判断谁更接近 1、1/2 或 0。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓常见基准值和“先统一再比较”。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓互化后谁更接近 1、1/2 或 0。'
                 },
                 rules: ['先统一形式再比', '百分数先想每百份', '常见分数要会化小数'],
-                techniques: ['抓 1/2、1/4、3/4、4/5', '看离基准值多一点还是少一点', '不会比时先互化'],
+                techniques: ['抓 1/2、1/4、3/4、4/5', '看离基准值近还是远', '不会比时先互化'],
                 example: '0.25 = 25% = 1/4',
-                pitfalls: ['别只看数字表面大小', '互化后别忘题目要什么形式'],
+                pitfalls: ['别只看数字表面', '互化后别忘题目要什么形式'],
                 memoryRoute: '先统一形式 → 再抓基准值 → 最后比较',
                 pins: ['先统一再比', '抓基准值']
             },
@@ -3458,16 +3458,16 @@
                 shortLabel: '单位比率',
                 title: '单位换算与常见数量关系',
                 kicker: 'Units & Rates',
-                hook: '先统一单位，再看量纲，最后才列式计算。',
-                firstMove: '先把单位统一，再判断要用哪个关系式。',
-                finalCheck: '最后回看：单位统一了吗，答案单位写对了吗。',
+                hook: '先统一单位，再看关系式。',
+                firstMove: '先把单位统一，再列关系。',
+                finalCheck: '最后看单位统一没，答案单位写没写。',
                 patterns: ['c2_unit_', 'c2_rate_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想统一单位和基础数量关系式。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想速度、单价、平均量的综合应用。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓统一单位和基础数量关系式。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓速度、单价、平均量的综合应用。'
                 },
                 rules: ['先统一单位', '总价 = 单价 × 数量', '路程 = 速度 × 时间'],
-                techniques: ['先判断量纲对不对', '先找整体量再列式', '单位换算后再算'],
+                techniques: ['先看量纲对不对', '先找整体量再列式', '换算后再算'],
                 example: '2.4 km = 2400 m',
                 pitfalls: ['单位不同别直接算', '看清谁是单价谁是数量'],
                 memoryRoute: '先统一单位 → 再找关系式 → 最后代数',
@@ -3478,16 +3478,16 @@
                 shortLabel: '方程逆运算',
                 title: '方程与逆运算',
                 kicker: 'Equation Method',
-                hook: '先写关系，再做逆运算，每次只动一步。',
-                firstMove: '先写出谁和谁相等，再想第一步逆运算。',
-                finalCheck: '最后回看：能不能代回原式，关系有没有保持相等。',
+                hook: '先写关系，再做逆运算。',
+                firstMove: '先写谁和谁相等，再动第一步。',
+                finalCheck: '最后看能不能代回，关系变没变。',
                 patterns: ['k_eq_', 'c2_eq_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想未知数位置和逆运算方向。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想方程背后的数量关系，而不是只会移项。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓未知数位置和逆运算方向。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓方程背后的数量关系，不只会移项。'
                 },
                 rules: ['先想谁和谁相等', '等式两边同时变化', '按逆运算一步一步回推'],
-                techniques: ['未知数在减数要特别慢', '未知数在除数先写关系', '每次只做一步变化'],
+                techniques: ['未知数在减数要慢', '未知数在除数先写关系', '每次只做一步'],
                 example: 'x × 25 = 10，先求 10 ÷ 25',
                 pitfalls: ['别把减数和被减数弄反', '别一步跳太多'],
                 memoryRoute: '先写关系 → 再逆运算 → 最后回代检查',
@@ -3498,18 +3498,18 @@
                 shortLabel: '估算检验',
                 title: '估算、验算与结果合理性判断',
                 kicker: 'Estimate & Validate',
-                hook: '先看范围，再精算，最后判断结果合不合理。',
-                firstMove: '先判断答案大概比 1 大还是小、比整十整百近不近。',
-                finalCheck: '最后回看：结果落没落在合理范围，单位和情境合不合。',
+                hook: '先看范围，再算，再检验。',
+                firstMove: '先想结果比 1 大还是小，离整十整百近不近。',
+                finalCheck: '最后看结果合不合理，单位对不对。',
                 patterns: ['c2_est_', 'c2_speed_', 'k_ddiv_', 'l_div_decimal_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点回想数量级和商的大致范围。',
-                    [CLOSURE_PROGRAM_ID]: '重点回想结果是否合理、是否符合情境和单位。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓数量级和商的大致范围。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓结果是否合理、是否符合情境和单位。'
                 },
                 rules: ['先看结果大概范围', '算完再做估算对照', '单位和情境要合理'],
                 techniques: ['先看比 1 大还是小', '先抓接近整十整百', '结果异常先回查小数点'],
                 example: '4.8 ÷ 0.6 的商一定大于 1，不可能是 0.8',
-                pitfalls: ['只算不检验', '数量级不对还继续往下写'],
+                pitfalls: ['只算不检验', '数量级不对还往下写'],
                 memoryRoute: '先看范围 → 再精算 → 最后检验合理性',
                 pins: ['先看范围', '算完再验']
             }

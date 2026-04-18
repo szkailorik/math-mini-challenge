@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.65 Iteration Notes
+
+### Iteration 1
+
+- What I changed: rewrote the child-facing `Calculation Quick Review` topic copy into shorter, more spoken reminder language so hooks, first moves, checks, rules, and pitfalls behave more like quick recall prompts than mini-explanations.
+- Open questions: whether the next pass should continue refining wording topic-by-topic, or pause content edits and refocus on print density and final visual polish.
+- Risks: shorter copy improves speed, but the wording must still stay precise enough that important distinctions like decimal-point handling or fraction inversion are not blurred.
+- Next steps: review the live page with real child-use expectations, then decide whether to do one more content pass or switch back to print-first polish.
+
 ## Current v23.64 Iteration Notes
 
 ### Iteration 1

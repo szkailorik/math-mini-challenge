@@ -305,7 +305,7 @@ if (!reviewModalHtml.includes('先做这一步')) {
 if (!reviewModalHtml.includes('最后检查')) {
   throw new Error('Calculation Quick Review final-check copy did not render');
 }
-if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('易错提醒')) {
+if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('补充速查') || !reviewModalHtml.includes('回想顺序')) {
   throw new Error('Calculation Quick Review topic blocks are incomplete');
 }
 if (!reviewModalContent?.classList?.contains('quick-review-modal')) {
