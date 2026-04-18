@@ -48,6 +48,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
 - `printQuestionSheets` / `printAnswerSheets`: switches the body into print-only modes for question sheets or answer sheets, then relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
+- Print pagination now uses adjacent-sheet page breaks during print, instead of relying on full-height A4 preview shells, to avoid blank interleaved pages on some browser/printer combinations.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
@@ -96,6 +97,7 @@ python3 -m http.server 8080
 - Confirm exported backup JSON includes the current app version and export metadata fields.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
+- Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.
 - Confirm print buttons show the short print hint before the system print dialog opens.
 - Confirm KAI decimal multiplication covers place value, tiny decimal, strategy, and mixed whole-number practice in the same set.
 - Confirm KAI decimal division covers scale-up, divisor-shift, decimal-quotient, and same-scale decimal division in the same set.

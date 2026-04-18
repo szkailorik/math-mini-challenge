@@ -118,6 +118,11 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.10 fixes a high-friction print failure:
+
+- The four-page AB print flow no longer relies on full-height preview shells during print, which could create blank even-numbered pages on some browsers or printer presets.
+- Question and answer printing now insert page breaks only between adjacent visible sheets, so tutors can print four consecutive populated pages without manually selecting odd pages.
+
 v23.9 strengthens fraction training reliability:
 
 - KAI fraction sets now guarantee a daily blend of add/subtract structure, chained multiply-divide reasoning, distributive reasoning, cross-canceling, and decimal-fraction bridge work.

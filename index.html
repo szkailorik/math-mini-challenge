@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.9 (分数训练覆盖增强版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.10 (打印分页修正版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -12,30 +12,41 @@
         @media print {
             body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .sheet {
-                width: 210mm !important;
-                min-height: 297mm !important;
+                width: auto !important;
+                min-height: 0 !important;
                 height: auto !important;
+                max-height: none !important;
                 box-shadow: none !important;
                 margin: 0 !important;
                 page-break-after: auto !important;
                 break-after: auto !important;
+                page-break-before: auto !important;
+                break-before: auto !important;
             }
-            .sheet.question-sheet { overflow: hidden !important; }
+            .sheet.question-sheet { overflow: visible !important; }
             .sheet.ans-sheet { overflow: visible !important; }
             .no-print { display: none !important; }
             .modal-overlay, #toast-msg { display: none !important; }
             body.print-questions-only .sheet:not(.question-sheet) { display: none !important; }
             body.print-questions-only .question-sheet {
                 display: block !important;
-                page-break-after: always !important;
-                break-after: page !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid-page !important;
             }
-            body.print-questions-only .question-sheet.print-last-question { page-break-after: auto !important; break-after: auto !important; }
+            body.print-questions-only .question-sheet + .question-sheet {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
             body.print-answers-only .question-sheet { display: none !important; }
-            body.print-answers-only .ans-sheet { display: block !important; page-break-after: always !important; break-after: page !important; }
-            body.print-answers-only .ans-sheet:last-of-type { page-break-after: auto !important; break-after: auto !important; }
+            body.print-answers-only .ans-sheet {
+                display: block !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid-page !important;
+            }
+            body.print-answers-only .ans-sheet + .ans-sheet {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
         }
         body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
 
@@ -213,7 +224,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.9</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.10</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -236,7 +247,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.9 分数训练覆盖增强版：<br><strong>KAI 分数计算结构更稳定<br>Lorik 分数综合每日全覆盖</strong>
+                💡 23.10 打印分页修正版：<br><strong>打印AB四页不再夹空白页<br>题卷改为相邻分页模式</strong>
             </div>
         </div>
 
@@ -262,9 +273,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.9';
-        const APP_RELEASE_LABEL = '分数训练覆盖增强版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.9 分数训练覆盖增强版：<br><strong>KAI 分数计算结构更稳定<br>Lorik 分数综合每日全覆盖</strong>';
+        const APP_VERSION = 'v23.10';
+        const APP_RELEASE_LABEL = '打印分页修正版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.10 打印分页修正版：<br><strong>打印AB四页不再夹空白页<br>题卷改为相邻分页模式</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）

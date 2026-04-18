@@ -6,6 +6,15 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
+if (!html.includes('body.print-questions-only .question-sheet + .question-sheet')) {
+  throw new Error('Print CSS is missing adjacent question-sheet page breaks');
+}
+if (!html.includes('body.print-answers-only .ans-sheet + .ans-sheet')) {
+  throw new Error('Print CSS is missing adjacent answer-sheet page breaks');
+}
+if (html.includes('body.print-questions-only .question-sheet.print-last-question')) {
+  throw new Error('Legacy last-question print override should not remain in print CSS');
+}
 const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v30';
 
 const store = new Map();

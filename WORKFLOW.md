@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.9 Iteration Notes
+## Current v23.10 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed the print-time full-page shell sizing that could make each question sheet slightly overflow the printable page box and generate interleaved blank pages.
+- Open questions: none.
+- Risks: print density now follows content height during print, so any future section that grows too tall still needs manual preview confirmation.
+- Next steps: keep `打印AB四页` in the smoke-test checklist whenever layout density changes.
+
+### Iteration 2
+
+- What I changed: changed question and answer printing to use adjacent-sheet page breaks instead of `page-break-after` on every visible sheet.
+- Open questions: none.
+- Risks: browser print engines still differ, but this pattern is more robust than breaking after fixed-height A4 preview cards.
+- Next steps: if any printer still misbehaves, add a dedicated print-debug mode that highlights overflow.
+
+### Iteration 3
+
+- What I changed: updated validation and docs so the blank-even-page regression is explicitly guarded and documented.
+- Open questions: none.
+- Risks: validator can confirm the CSS strategy, but native print preview still requires occasional manual confirmation on real devices.
+- Next steps: if print regressions recur, consider adding exported PDF snapshot checks outside the browser print dialog.
+
+## Previous v23.9 Iteration Notes
 
 ### Iteration 1
 
