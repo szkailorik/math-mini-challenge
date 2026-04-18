@@ -458,6 +458,9 @@ Status note:
   - `method`
   - `validation`
 - Existing review prefixes such as `[错题回炉 Replay]` and `[重点强化 Focus Variant]` are preserved, but their explanation body is now wrapped in structured training language.
+- Shared-family coverage has already widened once after the first rollout:
+  - `k_fcalc_*` now maps into `fraction_operation`
+  - `c2_eq_*` now maps into `equation_method`
 
 - [ ] **Step 7: Commit**
 

@@ -829,7 +829,9 @@ if (!sampleHighValueSignal || sampleHighValueSignal.tier < 3 || sampleHighValueS
 const requiredQualityFamilies = [
   ['k_ddiv_shift', 'decimal_division'],
   ['l_fmix_madd', 'fraction_operation'],
+  ['k_fcalc_addsub', 'fraction_operation'],
   ['k_conv_1', 'conversion_bridge'],
+  ['c2_eq_percent', 'equation_method'],
 ];
 for (const [tag, expectedFamily] of requiredQualityFamilies) {
   const actualFamily = context.window.getQualityFamilyForTag?.(tag);
@@ -890,6 +892,12 @@ const sampleKaiVariant = context.window.buildErrorVariantItem?.({
 if (!sampleKaiVariant?.isErrorVariant || !sampleKaiVariant?.q.includes('&divide; <i class="var">x</i>') || !sampleKaiVariant.step.includes('Review Variant')) {
   throw new Error('Error variant item builder is not producing targeted KAI equation review variants');
 }
+if (sampleKaiVariant?.qualityFamily !== 'equation_method') {
+  throw new Error(`Expected k_eq_divisor variant to map to equation_method, got ${sampleKaiVariant?.qualityFamily || '(missing)'}`);
+}
+if (sampleKaiVariant?.explanationMode !== 'rule') {
+  throw new Error(`Expected k_eq_divisor variant to use rule explanation mode, got ${sampleKaiVariant?.explanationMode || '(missing)'}`);
+}
 if (typeof context.window.generateProgramSetData !== 'function') {
   throw new Error('Program set generator is not exposed for runtime validation');
 }
@@ -915,6 +923,27 @@ const advancedQualityData = context.window.generateProgramSetData('advanced_flue
 const advancedReplayItems = [...advancedQualityData.k_d, ...advancedQualityData.k_f, ...advancedQualityData.k_c].filter(item => item?.isAdvancedHighValueReplay);
 if (!advancedReplayItems.some(item => item.qualityFamily === 'decimal_division' && item.replayLevel === 'L2')) {
   throw new Error('Advanced high-value replay slot is not injecting a decimal_division L2 review item');
+}
+context.window.StorageDB.cache.KAI = {
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: {
+    hv2: {
+      tag: 'k_fcalc_addsub',
+      count: 3,
+      lastSet: 105,
+      mastered: false,
+      info: { q: '<div class="frac"><span>1</span><span class="bottom">2</span></div> + <div class="frac"><span>1</span><span class="bottom">3</span></div> &minus; <div class="frac"><span>1</span><span class="bottom">6</span></div>', a: '<div class="frac"><span>2</span><span class="bottom">3</span></div>', step: '先通分，再按顺序加减。' }
+    }
+  },
+  programs: {}
+};
+context.window.currentSetNumber = 108;
+const advancedFractionData = context.window.generateProgramSetData('advanced_fluency_v1');
+const advancedFractionReplayItems = [...advancedFractionData.k_d, ...advancedFractionData.k_f, ...advancedFractionData.k_c].filter(item => item?.isAdvancedHighValueReplay);
+if (!advancedFractionReplayItems.some(item => item.qualityFamily === 'fraction_operation' && item.replayLevel === 'L2')) {
+  throw new Error('Advanced high-value replay slot is not injecting a fraction_operation L2 review item');
 }
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');

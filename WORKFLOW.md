@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.43 Iteration Notes
+## Current v23.44 Iteration Notes
+
+### Iteration 1
+
+- What I changed: widened shared quality-family coverage so KAI fraction-calculation tags and closure equation tags now participate in the same replay and explanation core instead of sitting outside it.
+- Open questions: whether the next widening pass should target more closure method/unit families, or shift to making the stronger replay families more visible in reports.
+- Risks: the semantic layer now covers more tags, but family-specific custom variants are still deeper for some families than others.
+- Next steps: keep widening deterministic family coverage and then sharpen family-specific replay/answer wording where the shared templates are still generic.
+
+## Previous v23.43 Iteration Notes
 
 ### Iteration 1
 

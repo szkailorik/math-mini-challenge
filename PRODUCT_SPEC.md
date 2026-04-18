@@ -260,6 +260,12 @@ v23.43 upgrades answer explanations from loose steps to shared training language
 - In practice, this means answer rows can now consistently frame guidance as `规则提醒`、`方法提醒` or `检验提醒`.
 - Product-wise, this matters because high-quality review is not only “show the answer”, but “tell the learner what kind of thinking to reuse next time”.
 
+v23.44 widens shared training-quality coverage across both stages:
+
+- `KAI` fraction-calculation items now join the same `fraction_operation` family that previously focused more narrowly on Lorik fraction work.
+- Closure equation items now join the `equation_method` family instead of remaining outside the shared quality layer.
+- Product-wise, this matters because “两个阶段共同优化” should not stop at one learner lane or one paper family; it should cover the high-value bridges across both phase-one and phase-two work.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

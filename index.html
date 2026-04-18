@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.43 (共享讲解模式上线)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.44 (共享质量家族扩面)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.43</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.44</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.43';
-        const APP_RELEASE_LABEL = '共享讲解模式上线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.43 共享讲解模式上线：<br><strong>首批高价值题族现在会自动带上规则提醒、方法提醒或检验提醒<br>答案页复盘会更像真正的训练语言，而不是只有散的步骤说明</strong>';
+        const APP_VERSION = 'v23.44';
+        const APP_RELEASE_LABEL = '共享质量家族扩面';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.44 共享质量家族扩面：<br><strong>KAI 分数计算题和第二阶段方程题现在也正式接入共享质量家族<br>高价值回炉、讲解模式和后续训练质量逻辑会覆盖得更完整</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2400,10 +2400,10 @@
         }
         const QUALITY_FAMILY_RULES = [
             { family: 'decimal_division', test: tag => /^(k_ddiv_|l_div_decimal_)/.test(tag) },
-            { family: 'fraction_operation', test: tag => /^l_fmix_/.test(tag) },
+            { family: 'fraction_operation', test: tag => /^(k_fcalc_|l_fmix_)/.test(tag) },
             { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
             { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
-            { family: 'equation_method', test: tag => /^(k_eq_|c2_rate_eq)/.test(tag) },
+            { family: 'equation_method', test: tag => /^(k_eq_|c2_eq_|c2_rate_eq)/.test(tag) },
             { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
         ];
         function getQualityFamilyForTag(tag = '') {
@@ -2471,6 +2471,7 @@
                 decimal_division: 'k_d',
                 fraction_operation: 'k_f',
                 conversion_bridge: 'k_c',
+                equation_method: 'k_f',
             },
             Lorik: {
                 decimal_division: 'l_d',
@@ -2485,7 +2486,7 @@
                 .filter(entry => !entry.mastered && entry.tag && entry.info?.q && entry.info?.a)
                 .map(entry => {
                     const qualityFamily = getQualityFamilyForTag(entry.tag);
-                    if (!['decimal_division', 'fraction_operation', 'conversion_bridge'].includes(qualityFamily)) return null;
+                    if (!['decimal_division', 'fraction_operation', 'conversion_bridge', 'equation_method'].includes(qualityFamily)) return null;
                     const recency = Number(entry.lastSet || entry.firstSet || 0);
                     return {
                         ...entry,
