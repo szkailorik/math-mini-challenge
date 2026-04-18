@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.52 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the child-facing `Calculation Quick Review` page so every topic now starts with a `先记住` memory hook, making the page easier to scan as a rapid recall tool instead of only a structured reference sheet.
+- Open questions: whether the next pass should focus on tightening the actual wording quality of these memory hooks, or on polishing print density and typography even further.
+- Risks: the new hook layer improves fast recall, but if later edits let these lines become too long or too explanatory they will stop acting like true memory triggers.
+- Next steps: review the live page with real child use, then either sharpen the wording of the hook lines or continue refining print-first visual balance.
+
 ## Current v23.51 Iteration Notes
 
 ### Iteration 1

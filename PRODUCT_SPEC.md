@@ -311,6 +311,12 @@ v23.51 makes the quick-review layer more decisive:
 - Print output preserves that focus strip in a compressed format, so the printed handout starts with an immediate priority cue instead of only a long stable reference page.
 - Product-wise, this matters because a high-quality review aid should not only be readable; it should help the learner decide where to spend the next 30 seconds.
 
+v23.52 makes the quick-review layer easier to remember:
+
+- Each topic now starts with a short `先记住` line that pulls the single most valuable recall sentence to the front.
+- This keeps the page aligned with its real purpose: not encyclopedic coverage, but rapid reactivation of the rule, norm, or trick that most needs to come back to mind.
+- Product-wise, this matters because many learners do not fail review for lack of material; they fail because the page does not surface the one sentence worth grabbing first.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

@@ -72,7 +72,7 @@ if (!html.includes('📘 计算知识总览 / Quick Review')) {
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
 }
-if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row') || !html.includes('.quick-review-focus-strip')) {
+if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row') || !html.includes('.quick-review-focus-strip') || !html.includes('.quick-review-hook')) {
   throw new Error('Calculation Quick Review visual shell is missing from CSS');
 }
 if (!html.includes('print-quick-review') || !html.includes('quick-review-print-shell')) {
@@ -286,6 +286,9 @@ if (!reviewModalHtml.includes('当前更值得多看：')) {
 }
 if (!reviewModalHtml.includes('今日先看 01') || !reviewModalHtml.includes('直达这个专题')) {
   throw new Error('Calculation Quick Review focus cards or jump shortcuts did not render');
+}
+if (!reviewModalHtml.includes('先记住')) {
+  throw new Error('Calculation Quick Review memory-hook copy did not render');
 }
 if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('易错提醒')) {
   throw new Error('Calculation Quick Review topic blocks are incomplete');
