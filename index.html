@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.20 (第二阶段程序壳)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.21 (第二阶段出卷上线)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -408,7 +408,7 @@
                 </div>
                 <select id="program-selector" class="program-select" onchange="window.changeProgram(this.value)">
                     <option value="advanced_fluency_v1">Advanced</option>
-                    <option value="elementary_closure_v1" disabled>Closure（即将开放）</option>
+                    <option value="elementary_closure_v1">Closure</option>
                 </select>
             </div>
         </div>
@@ -465,9 +465,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.20';
-        const APP_RELEASE_LABEL = '第二阶段程序壳';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.20 第二阶段程序壳：<br><strong>Program 切换条与阶段状态卡上线<br>第一阶段训练主链保持不变</strong>';
+        const APP_VERSION = 'v23.21';
+        const APP_RELEASE_LABEL = '第二阶段出卷上线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.21 第二阶段出卷上线：<br><strong>Closure 题卷与答案页可预览、可打印<br>批改写回将在 M3 开放</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -486,12 +486,12 @@
             elementary_closure_v1: {
                 label: '小学计算收束阶段',
                 phaseText: '第二阶段',
-                statusChip: '即将开放',
-                desc: '收束整数、小数、分数、百分数、比、比例和单位计算。',
-                statusTitle: '第二阶段 · 程序壳就位',
-                statusBody: '第二阶段的 program 壳层已经接入，后续版本会逐步开放题卷、批改与阶段切换逻辑。',
-                statusAction: '建议动作：当前先保持第一阶段训练；第二阶段题卷模块即将接入。',
-                enabled: false,
+                statusChip: '题卷预览',
+                desc: '站在六年级到初中的视角，收束小学阶段全部高价值计算能力，并持续保温第一阶段成果。',
+                statusTitle: '第二阶段 · 题卷预览已开放',
+                statusBody: '现在可以切换到第二阶段，查看“总收束 + 保温”首版题卷、答案页和打印流；批改写回仍会在 M3 再接入。',
+                statusAction: '建议动作：先看综合桥接、单位/比率/估算与旧知保温的组合质量，再决定 M3 的画像字段。',
+                enabled: true,
                 tone: 'phase-2'
             }
         };
@@ -674,6 +674,14 @@
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
         const SET_CACHE_PREFIX = 'MathSetData_v36';
+
+        function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
+            return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
+        }
+
+        function getLegacyAdvancedCacheKey(setNumber = window.currentSetNumber) {
+            return `${SET_CACHE_PREFIX}_${setNumber}`;
+        }
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1629,7 +1637,15 @@
             "l_fmix_ofwhole": { name: "分数-求一个数的几分之几", advice: "先用总数除以分母求一份，再乘分子，避免直接大数乘分数。" },
             "l_bmix_125": { name: "125凑整", advice: "背熟好朋友数字：125找8，25找4。看到12.5就要从另一个因数里拆出8。" },
             "l_bmix_near100": { name: "简算-接近整百", advice: "99×a+a 或 101×a-a 都是在凑100个a，先识别整体结构。" },
-            "l_bmix_paren": { name: "混合运算-括号优先级", advice: "括号先算，再乘除，最后加减。每一步写等号，防止顺手从左到右全算。" }
+            "l_bmix_paren": { name: "混合运算-括号优先级", advice: "括号先算，再乘除，最后加减。每一步写等号，防止顺手从左到右全算。" },
+            "c2_bridge_pct_frac": { name: "第二阶段-百分数分数互化", advice: "先把百分数写成分母100的分数，再约分，最后回看数量级是否合理。" },
+            "c2_bridge_ratio_frac": { name: "第二阶段-比值桥接", advice: "把比写成前项÷后项，再转成分数或小数，不要把比和分数混成两个概念。" },
+            "c2_unit_length": { name: "第二阶段-长度单位换算", advice: "先想相邻单位进率，再决定是乘10、100、1000还是反向除。" },
+            "c2_unit_mass": { name: "第二阶段-质量单位换算", advice: "先统一单位再运算，避免一边是千克一边是克时直接相加减。" },
+            "c2_rate_discount": { name: "第二阶段-百分率与折扣", advice: "先把折扣和百分率化成小数或分数，再套“整体×比率”的统一模型。" },
+            "c2_eq_percent": { name: "第二阶段-百分数方程", advice: "看到“某数的百分之几是多少”，先写成 x×比率=结果，再做逆运算。" },
+            "c2_est_product": { name: "第二阶段-估算乘法结果", advice: "先看数量级，再用接近整十整百的数估算，别急着做精确竖式。" },
+            "c2_speed_mix": { name: "第二阶段-速度稳定短链", advice: "先看结构再计算，目标是又稳又快，而不是只靠抢速度。" }
         };
         const FallbackAdvice = { name: "综合推导与解题规范", advice: "未严格遵守运算顺序或存在明显跳步。要求孩子在题纸上标出优先级底线，一步一等号。" };
         const KnowledgeFamilies = [
@@ -1646,14 +1662,22 @@
             { prefix: "l_div_", name: "除法-缩放与反推", advice: "先观察除数是否能缩放或凑整，再用乘法反推检查商是否合理。" },
             { prefix: "l_sub_", name: "减法-退位检查", advice: "跨0退位时每一位都要写借位标记，算完用差加减数反查。" },
             { prefix: "l_fmix_", name: "分数混合-通分与顺序", advice: "同分母直接算，异分母先通分；混合运算先括号，再乘除，最后加减。" },
-            { prefix: "l_bmix_", name: "混合简算-优先级", advice: "先看括号和乘除优先级，再找125、25、99、101等凑整结构。" }
+            { prefix: "l_bmix_", name: "混合简算-优先级", advice: "先看括号和乘除优先级，再找125、25、99、101等凑整结构。" },
+            { prefix: "c2_bridge_", name: "第二阶段-跨表示桥接", advice: "同一个数量在百分数、小数、分数、比之间切换时，先统一表示，再计算。" },
+            { prefix: "c2_unit_", name: "第二阶段-单位换算链", advice: "先统一单位再计算；复杂题优先在草稿上写出转换后的量。" },
+            { prefix: "c2_rate_", name: "第二阶段-比率与折扣", advice: "先识别“整体”和“比率”，再决定用乘法、除法还是按比分配。" },
+            { prefix: "c2_eq_", name: "第二阶段-数量关系方程", advice: "把文字关系先压成等式，再做一步一步逆运算，不要脑算跳步。" },
+            { prefix: "c2_est_", name: "第二阶段-估算与验算", advice: "先用接近整十整百估范围，再看精算结果有没有落在合理区间。" },
+            { prefix: "c2_speed_", name: "第二阶段-稳态速算", advice: "优先认结构、少走回头路，目标是稳定完成而不是仓促抢快。" }
         ];
         const KnowledgeDomains = [
             { id: "decimal", name: "小数与位值", patterns: ["k_dmul_", "k_ddiv_", "l_div_decimal_"], desc: "训练小数点移动、数量级估算、补0占位和同倍扩大。" },
             { id: "integer", name: "整数乘除与退位", patterns: ["l_mul_", "l_div_", "k_sub_", "l_sub_"], desc: "训练竖式位值、退位链、商中间0和反推验算。" },
-            { id: "fraction", name: "分数与互化", patterns: ["k_fcalc_", "l_fmix_", "k_conv_", "l_conv_"], desc: "训练通分、约分、分数小数百分数互化和分数意义。" },
-            { id: "equation", name: "方程与未知数", patterns: ["k_eq_"], desc: "训练逆运算、未知数位置判断和两步方程顺序。" },
-            { id: "strategy", name: "简算与综合策略", patterns: ["k_oly_", "l_bmix_", "boss_"], desc: "训练结构识别、分配律、补偿凑整和迁移题。" }
+            { id: "fraction", name: "分数与互化", patterns: ["k_fcalc_", "l_fmix_", "k_conv_", "l_conv_", "c2_bridge_"], desc: "训练通分、约分、分数小数百分数互化和分数意义。" },
+            { id: "equation", name: "方程与未知数", patterns: ["k_eq_", "c2_eq_"], desc: "训练逆运算、未知数位置判断和两步方程顺序。" },
+            { id: "strategy", name: "简算与综合策略", patterns: ["k_oly_", "l_bmix_", "boss_", "c2_est_", "c2_speed_"], desc: "训练结构识别、分配律、补偿凑整和迁移题。" },
+            { id: "rate", name: "百分率与比", patterns: ["c2_rate_"], desc: "训练百分率、折扣、按比分配和比值表达的统一计算链。" },
+            { id: "unit", name: "单位与量纲", patterns: ["c2_unit_"], desc: "训练长度、质量、时间等单位的统一换算与计算链。" }
         ];
         const HIGH_VALUE_TRAINING_RULES = [
             { type: 'tag', value: 'k_ddiv_shift', tier: 3 },
@@ -2503,6 +2527,7 @@
         // v22.1 收集"最近 N 套 + 错题本"里出现过的题面，作为生成时的去重黑名单
         function collectRecentQuestions(lookbackSets = 8) {
             const recent = new Set();
+            const programId = getCurrentProgramId();
             // 1) 从历史 session 收集
             ['KAI', 'Lorik'].forEach(student => {
                 let prof = StorageDB.getProfile(student);
@@ -2515,7 +2540,18 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v32_${window.currentSetNumber - i}`, `MathSetData_v31_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [
+                    getSetCacheKey(window.currentSetNumber - i, programId),
+                    ...(programId === 'advanced_fluency_v1'
+                        ? [getLegacyAdvancedCacheKey(window.currentSetNumber - i)]
+                        : []),
+                    `MathSetData_v32_${window.currentSetNumber - i}`,
+                    `MathSetData_v31_${window.currentSetNumber - i}`,
+                    `MathSetData_v30_${window.currentSetNumber - i}`,
+                    `MathSetData_v25_${window.currentSetNumber - i}`,
+                    `MathSetData_v24_${window.currentSetNumber - i}`,
+                    `MathSetData_v22_${window.currentSetNumber - i}`
+                ].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {
@@ -2527,6 +2563,154 @@
                 });
             }
             return recent;
+        }
+
+        function buildClosureBridgeSection(student, track = 'kai') {
+            const groups = track === 'kai'
+                ? [
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`先把 37.5% 写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`先写成 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) },
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`125% =<div class="blank"></div>`, a:`1.25`, step:`125% 就是 125/100，也就是 1.25。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 8 =<div class="blank"></div>`, a:`0.375`, step:`把 3:8 看成 3÷8，得到 0.375。` }) },
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 4 =<div class="blank"></div>`, a:`1.25`, step:`把 5:4 看成 5÷4，先得 1 又 1/4，再写成 1.25。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>2</span><span class="bottom">5</span></div> = 2 :<div class="blank"></div>`, a:`5`, step:`分数 a/b 可以看成 a:b，所以 2/5 对应 2:5。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.25 = 5 :<div class="blank"></div>`, a:`4`, step:`1.25 就是 5/4，所以对应 5:4。` }) }
+                    ]
+                ]
+                : [
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) },
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }
+                    ],
+                    [
+                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }
+                    ]
+                ];
+            return buildCoveredSection(student, groups);
+        }
+
+        function buildClosureUnitSection(student, track = 'kai') {
+            const groups = track === 'kai'
+                ? [
+                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`3.2 m + 45 cm =<div class="blank"></div> cm`, a:`365`, step:`先把 3.2 m 化成 320 cm，再加 45 cm 得 365 cm。` }) }],
+                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`1.8 km &minus; 450 m =<div class="blank"></div> km`, a:`1.35`, step:`先把 450 m 化成 0.45 km，再算 1.8 &minus; 0.45 = 1.35。` }) }],
+                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`2 kg 350 g =<div class="blank"></div> kg`, a:`2.35`, step:`350 g = 0.35 kg，所以一共是 2.35 kg。` }) }],
+                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`4.5 t =<div class="blank"></div> kg`, a:`4500`, step:`1 t = 1000 kg，所以 4.5 t = 4500 kg。` }) }]
+                ]
+                : [
+                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`2.4 m =<div class="blank"></div> cm`, a:`240`, step:`1 m = 100 cm，所以 2.4 m = 240 cm。` }) }],
+                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`650 cm =<div class="blank"></div> m`, a:`6.5`, step:`1 m = 100 cm，所以 650 cm = 6.5 m。` }) }],
+                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`3 kg 80 g =<div class="blank"></div> g`, a:`3080`, step:`3 kg = 3000 g，再加 80 g 得 3080 g。` }) }],
+                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1250 g =<div class="blank"></div> kg`, a:`1.25`, step:`1250 g 除以 1000，得到 1.25 kg。` }) }]
+                ];
+            return buildCoveredSection(student, groups);
+        }
+
+        function buildClosureRateEqSection(student, track = 'kai') {
+            const groups = track === 'kai'
+                ? [
+                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`240 元打七五折 =<div class="blank"></div> 元`, a:`180`, step:`七五折就是 75%，所以 240 &times; 75% = 180。` }) }],
+                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`45 是 60 的<div class="blank"></div>%`, a:`75`, step:`先算 45÷60 = 0.75，再化成 75%。` }) }],
+                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 40% = 28，<i class="var">x</i> =<div class="blank"></div>`, a:`70`, step:`先把 40% 看成 0.4，再用 28÷0.4 = 70。` }) }],
+                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 25% 是 18，这个数是<div class="blank"></div>`, a:`72`, step:`25% 就是 1/4，所以原数 = 18 &divide; 25% = 72。` }) }]
+                ]
+                : [
+                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`160 元打八折 =<div class="blank"></div> 元`, a:`128`, step:`八折就是 80%，所以 160 &times; 80% = 128。` }) }],
+                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`24 是 40 的<div class="blank"></div>%`, a:`60`, step:`先算 24÷40 = 0.6，再写成 60%。` }) }],
+                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 20% = 18，<i class="var">x</i> =<div class="blank"></div>`, a:`90`, step:`20% 就是 0.2，所以 <i class="var">x</i> = 18 ÷ 0.2 = 90。` }) }],
+                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 50% 是 36，这个数是<div class="blank"></div>`, a:`72`, step:`50% 就是一半，所以原数是 36 的 2 倍，即 72。` }) }]
+                ];
+            return buildCoveredSection(student, groups);
+        }
+
+        function buildClosureMixSection(student, track = 'kai') {
+            const groups = track === 'kai'
+                ? [
+                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`200`, step:`39.8 约看成 40，5.1 约看成 5，所以结果约是 200。` }) }],
+                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 19 &asymp;<div class="blank"></div>`, a:`30`, step:`把 598 看成 600，把 19 看成 20，600÷20 = 30。` }) }],
+                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`180 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`60`, step:`速度 = 路程 ÷ 时间，所以 180÷3 = 60 米/分。` }) }],
+                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时 &times; 1.5 时 =<div class="blank"></div> 千米`, a:`108`, step:`路程 = 速度 × 时间，所以 72 &times; 1.5 = 108。` }) }]
+                ]
+                : [
+                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
+                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
+                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
+                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
+                ];
+            return buildCoveredSection(student, groups);
+        }
+
+        function buildClosureProgramSet() {
+            return {
+                programId: 'elementary_closure_v1',
+                c_k_bridge: buildClosureBridgeSection('KAI', 'kai'),
+                c_k_unit: buildClosureUnitSection('KAI', 'kai'),
+                c_k_maint_core: GenKAI.decimalsDiv(),
+                c_k_rate: buildClosureRateEqSection('KAI', 'kai'),
+                c_k_mix: buildClosureMixSection('KAI', 'kai'),
+                c_k_maint_mix: Engine.shuffle([...GenKAI.decimalsMult(), ...GenKAI.bigSub()]),
+                c_l_bridge: buildClosureBridgeSection('Lorik', 'lorik'),
+                c_l_unit: buildClosureUnitSection('Lorik', 'lorik'),
+                c_l_maint_core: GenLorik.div(),
+                c_l_rate: buildClosureRateEqSection('Lorik', 'lorik'),
+                c_l_mix: buildClosureMixSection('Lorik', 'lorik'),
+                c_l_maint_mix: Engine.shuffle([...GenLorik.mul(), ...GenLorik.sub()]),
+                stateLabel: '[Phase: Elementary Closure Preview]'
+            };
+        }
+
+        function generateProgramSetData(programId = getCurrentProgramId()) {
+            if (programId === 'elementary_closure_v1') return buildClosureProgramSet();
+            const state = Engine.getCycleState();
+            return {
+                programId: 'advanced_fluency_v1',
+                k_m: GenKAI.decimalsMult(), k_d: GenKAI.decimalsDiv(), k_s: GenKAI.bigSub(),
+                k_c: getConversions(), k_f: GenKAI.fracEquations(), k_o: GenKAI.olympiad(),
+                l_m: GenLorik.mul(), l_d: GenLorik.div(), l_s: GenLorik.sub(),
+                l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
+                stateLabel: state.label
+            };
         }
 
         // v22.1 每个 section 独立洗牌：即便题目不变，位置也不会形成固定套路
@@ -2547,8 +2731,12 @@
         }
 
         function generateOrLoadSetData() {
-            let cacheKey = `${SET_CACHE_PREFIX}_${window.currentSetNumber}`;
+            const programId = getCurrentProgramId();
+            let cacheKey = getSetCacheKey(window.currentSetNumber, programId);
             let cached = localStorage.getItem(cacheKey);
+            if (!cached && programId === 'advanced_fluency_v1') {
+                cached = localStorage.getItem(getLegacyAdvancedCacheKey(window.currentSetNumber));
+            }
             if (cached) {
                 try { return JSON.parse(cached); } catch(e) {}
             }
@@ -2557,14 +2745,7 @@
             window._recentQuestions = collectRecentQuestions(8);
             window._paperQuestions = new Set();
 
-            const state = Engine.getCycleState();
-            let data = {
-                k_m: GenKAI.decimalsMult(), k_d: GenKAI.decimalsDiv(), k_s: GenKAI.bigSub(),
-                k_c: getConversions(), k_f: GenKAI.fracEquations(), k_o: GenKAI.olympiad(),
-                l_m: GenLorik.mul(), l_d: GenLorik.div(), l_s: GenLorik.sub(),
-                l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
-                stateLabel: state.label
-            };
+            let data = generateProgramSetData(programId);
             safeLocalSetItem(cacheKey, JSON.stringify(data));
             return data;
         }
@@ -2627,6 +2808,23 @@
             return `<div class="ans-grid-block">` + questions.map((q, i) => buildAnsRow(q, i, student, secName, sessionData)).join('') + `</div>`;
         };
 
+        const buildPreviewAnsGrid = (questions, student, secName) => {
+            return `<div class="ans-grid-block">` + questions.map((q, i) => {
+                let kb = getKnowledgeTip(q.tag);
+                let renderedQuestion = beautifyMathHTML(q.q);
+                let renderedAnswer = beautifyMathHTML(q.a);
+                let renderedStep = q.step ? beautifyMathHTML(q.step) : '';
+                return `
+                <div class="ans-row preview-only" data-student="${student}" data-tag="${q.tag || ''}">
+                    <div class="ans-content">
+                        <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif;">[原题 Question] <span class="math-row">${renderedQuestion}</span></span></div>
+                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
+                        <div class="ans-tip">[训练意图 Focus] ${secName}：${kb.advice}</div>
+                    </div>
+                </div>`;
+            }).join('') + `</div>`;
+        };
+
         // 双语标题处理
         const buildQSection = (cnTitle, enTitle, pointsStr, items, heightClass, cols) => {
             return `
@@ -2649,11 +2847,106 @@
             </div>`;
         };
 
+        window.showClosurePreviewNotice = function(student) {
+            showToast(`🧭 ${student} 的第二阶段当前还是预览模式：题卷、答案页和打印已经开放，批改写回会在 M3 接入。`, { background: '#0f766e', duration: 3200 });
+        };
+
         window.renderPaper = function() {
             renderProgramShell();
             document.getElementById('set-num-display').innerText = window.currentSetNumber;
             setSeed(window.currentSetNumber * 12345);
+            const programId = getCurrentProgramId();
             let data = generateOrLoadSetData();
+            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '') => `
+                <div class="sheet question-sheet ${extraClass}">
+                    ${stamp}
+                    <div class="header">
+                        <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
+                        <h1>${title}</h1>
+                        <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
+                    </div>
+                    ${content}
+                </div>`;
+
+            const getAnsSheetHTML = (name, content, isCompleted) => {
+                let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
+                let btnText = isCompleted ? `✅ 重新提交 ${name} 的批改并覆盖记录 (Resubmit & Overwrite)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
+                let btnStyle = isCompleted ? `background: #4caf50;` : ``;
+                return `
+                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
+                    ${ansStamp}
+                    <div class="header"><h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
+                    ${content}
+                    <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
+                </div>`;
+            };
+
+            const getPreviewOnlyAnsSheetHTML = (name, content) => `
+                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
+                    <div class="header"><h1>【第二阶段预览 Closure Preview Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
+                    <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
+                        第二阶段预览：当前重点是核对<strong>收束 + 保温</strong>的题卷结构、答案页和打印表现。<strong>批改写回将在 M3 接入</strong>，现在先用答案页观察训练质量与综合度。
+                    </div>
+                    ${content}
+                    <button class="submit-grades-btn no-print" style="background:#64748b;" onclick="window.showClosurePreviewNotice('${name}')">⏳ 第二阶段预览：M3 开放批改写回</button>
+                </div>`;
+
+            if (programId === 'elementary_closure_v1') {
+                data = {
+                    ...data,
+                    c_k_bridge: sectionShuffle(data.c_k_bridge, 401),
+                    c_k_unit: sectionShuffle(data.c_k_unit, 402),
+                    c_k_maint_core: sectionShuffle(data.c_k_maint_core, 403),
+                    c_k_rate: sectionShuffle(data.c_k_rate, 404),
+                    c_k_mix: sectionShuffle(data.c_k_mix, 405),
+                    c_k_maint_mix: sectionShuffle(data.c_k_maint_mix, 406),
+                    c_l_bridge: sectionShuffle(data.c_l_bridge, 501),
+                    c_l_unit: sectionShuffle(data.c_l_unit, 502),
+                    c_l_maint_core: sectionShuffle(data.c_l_maint_core, 503),
+                    c_l_rate: sectionShuffle(data.c_l_rate, 504),
+                    c_l_mix: sectionShuffle(data.c_l_mix, 505),
+                    c_l_maint_mix: sectionShuffle(data.c_l_maint_mix, 506),
+                };
+
+                const closureScore = 8 + 8 + 8 + 8 + 8 + 16;
+                let k_p1 = buildQSection(`一、 收束桥接：百分数·分数·比`, `I. Closure Bridge: Percent, Fraction & Ratio`, '(统一表示再计算 / Normalize first)', data.c_k_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 单位链与量纲统一`, `II. Unit Chains & Dimensional Alignment`, '(先统一单位 / Unify units first)', data.c_k_unit, 'h-mixed', 2) +
+                           buildQSection(`三、 旧知保温：关键除法`, `III. Maintenance: Core Division`, '(保留第一阶段手感 / Keep fluency warm)', data.c_k_maint_core, 'h-vert', 2);
+                let k_p2 = buildQSection(`四、 百分率、折扣与方程`, `IV. Rates, Discounts & Equations`, '(整体与比率统一 / Whole-rate model)', data.c_k_rate, 'h-mixed', 2) +
+                           buildQSection(`五、 估算、速度与结果判断`, `V. Estimation, Speed & Validation`, '(先估后判 / Estimate before trust)', data.c_k_mix, 'h-mixed', 2) +
+                           buildQSection(`六、 旧知保温：乘减综合`, `VI. Maintenance: Multiplication & Subtraction`, '(防止旧成果回落 / Prevent skill fade)', data.c_k_maint_mix, 'h-mixed', 2);
+
+                let l_p1 = buildQSection(`一、 收束桥接：百分数·分数·比`, `I. Closure Bridge: Percent, Fraction & Ratio`, '(统一表示再计算 / Normalize first)', data.c_l_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 单位链与量纲统一`, `II. Unit Chains & Dimensional Alignment`, '(先统一单位 / Unify units first)', data.c_l_unit, 'h-mixed', 2) +
+                           buildQSection(`三、 旧知保温：关键除法`, `III. Maintenance: Core Division`, '(保留第一阶段手感 / Keep fluency warm)', data.c_l_maint_core, 'h-vert', 2);
+                let l_p2 = buildQSection(`四、 百分率、折扣与方程`, `IV. Rates, Discounts & Equations`, '(整体与比率统一 / Whole-rate model)', data.c_l_rate, 'h-mixed', 2) +
+                           buildQSection(`五、 估算、速度与结果判断`, `V. Estimation, Speed & Validation`, '(先估后判 / Estimate before trust)', data.c_l_mix, 'h-mixed', 2) +
+                           buildQSection(`六、 旧知保温：乘减综合`, `VI. Maintenance: Multiplication & Subtraction`, '(防止旧成果回落 / Prevent skill fade)', data.c_l_maint_mix, 'h-mixed', 2);
+
+                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (Closure Bridge)</div>${buildPreviewAnsGrid(data.c_k_bridge, 'KAI', '收束桥接')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildPreviewAnsGrid(data.c_k_unit, 'KAI', '单位链')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildPreviewAnsGrid(data.c_k_maint_core, 'KAI', '旧知保温')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildPreviewAnsGrid(data.c_k_rate, 'KAI', '比率方程')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">五、估算与速度 (Estimate & Speed)</div>${buildPreviewAnsGrid(data.c_k_mix, 'KAI', '结果判断')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildPreviewAnsGrid(data.c_k_maint_mix, 'KAI', '旧知保温')}</div>`;
+
+                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (Closure Bridge)</div>${buildPreviewAnsGrid(data.c_l_bridge, 'Lorik', '收束桥接')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildPreviewAnsGrid(data.c_l_unit, 'Lorik', '单位链')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildPreviewAnsGrid(data.c_l_maint_core, 'Lorik', '旧知保温')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildPreviewAnsGrid(data.c_l_rate, 'Lorik', '比率方程')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">五、估算与速度 (Estimate & Speed)</div>${buildPreviewAnsGrid(data.c_l_mix, 'Lorik', '结果判断')}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildPreviewAnsGrid(data.c_l_maint_mix, 'Lorik', '旧知保温')}</div>`;
+
+                document.getElementById('paper-container').innerHTML =
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, closureScore, '') +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '') +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '') +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, closureScore, '', 'print-last-question') +
+                    getPreviewOnlyAnsSheetHTML('KAI', k_ans) +
+                    getPreviewOnlyAnsSheetHTML('Lorik', l_ans);
+                return;
+            }
+
             // v22.1 二次洗牌：在缓存题目的基础上，每个 section 用独立 salt 重排位置
             // 这样相同的 set 多次打开顺序也会变，打破"第N题永远是X类型"的套路
             // 网格视图与答案视图共用相同顺序（用 salt 保证一致）
@@ -2700,30 +2993,6 @@
                         `<div class="ans-section"><div class="ans-section-title">四、互化与比较 (Conversions)</div>${buildAnsGrid(data.l_c, 'Lorik', '互化与比较', lorikSession)}</div>` +
                         `<div class="ans-section"><div class="ans-section-title">五、分数四则运算 (Fraction Ops)</div>${buildAnsGrid(data.l_f, 'Lorik', '分数四则运算', lorikSession)}</div>` +
                         `<div class="ans-section"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
-
-            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '') => `
-                <div class="sheet question-sheet ${extraClass}">
-                    ${stamp}
-                    <div class="header">
-                        <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
-                        <h1>${title}</h1>
-                        <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
-                    </div>
-                    ${content}
-                </div>`;
-
-            const getAnsSheetHTML = (name, content, isCompleted) => {
-                let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
-                let btnText = isCompleted ? `✅ 重新提交 ${name} 的批改并覆盖记录 (Resubmit & Overwrite)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
-                let btnStyle = isCompleted ? `background: #4caf50;` : ``;
-                return `
-                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
-                    ${ansStamp}
-                    <div class="header"><h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
-                    ${content}
-                    <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
-                </div>`;
-            };
 
             document.getElementById('paper-container').innerHTML =
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI) +
@@ -3177,6 +3446,26 @@
         }
 
         window.showSetReview = function(setNum = window.currentSetNumber, highlightStudent = null) {
+            if (getCurrentProgramId() === 'elementary_closure_v1') {
+                document.getElementById('modal-title').innerText = `📋 Set ${setNum} 第二阶段预览说明 / Closure Preview`;
+                document.getElementById('report-content-area').innerHTML = `
+                    <div class="report-section">
+                        <h3>第二阶段当前是预览模式</h3>
+                        <div style="padding:16px; line-height:1.8;">
+                            这一阶段现在已经开放：
+                            <br>1. 四张题卷预览
+                            <br>2. 答案页查看
+                            <br>3. 打印 AB 四页与打印答案
+                            <br><br>这一阶段还未开放：
+                            <br>1. 批改写回
+                            <br>2. 第二阶段专属画像
+                            <br>3. 第二阶段本套报告
+                            <br><br>当前设计重点是让题卷真正体现“<strong>小学计算总收束 + 第一阶段成果保温</strong>”，正式批改闭环会在 M3 接入。
+                        </div>
+                    </div>`;
+                document.getElementById('report-modal').style.display = 'block';
+                return;
+            }
             document.getElementById('modal-title').innerText = `📋 Set ${setNum} 本套批改报告 / Set Review`;
             const html = buildSetReviewSection('KAI', setNum, highlightStudent) + buildSetReviewSection('Lorik', setNum, highlightStudent);
             document.getElementById('report-content-area').innerHTML = html;
@@ -3297,6 +3586,10 @@
         };
 
         window.submitGrades = async function(student) {
+            if (getCurrentProgramId() === 'elementary_closure_v1') {
+                window.showClosurePreviewNotice(student);
+                return;
+            }
             let sheetId = student === 'KAI' ? 'kai-ans-sheet' : 'lorik-ans-sheet';
             let rows = document.querySelectorAll(`#${sheetId} .ans-row`);
             let records = [];

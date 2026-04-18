@@ -124,11 +124,12 @@ v23.19 improves mathematical sheet readability and print polish:
 - The goal is to reduce visual friction: learners should parse the structure of the problem faster and with less symbol confusion.
 - The typography pass applies to both on-screen review and printed sheets, so visual quality supports the training model instead of fighting it.
 
-v23.20 lays the UI shell for phase two without disrupting the current trainer:
+v23.21 turns phase two into a real paper-preview program without disrupting the current trainer:
 
-- The control panel now shows a lightweight program switcher and stage-status card, so families can see that the app is preparing for a second-stage training program.
-- The current experience still defaults to `Mini Challenge Advanced`; no existing paper, grading, print, error-book, or sync flow is replaced in this release.
-- The second-stage program is intentionally visible as a future mode rather than half-enabled content, reducing confusion while the architecture is being put in place safely.
+- Families can now switch into `小学计算收束阶段` and preview a real second-stage paper set instead of only seeing a shell.
+- The phase-two paper is designed as `总收束 + 保温`: it integrates percent/fraction/ratio bridging, unit chains, rates, equations, estimation, speed, and result checking while still keeping first-stage core calculation fluency warm every day.
+- The product intent is not to simply raise difficulty or revisit basics in isolation. It is to finish elementary-school calculation training efficiently and personally, judged from a grade-6 to junior-high readiness perspective.
+- The current release keeps phase two in preview-only mode for safety: paper generation, answer pages, and printing are live; grading writeback and phase-two profiling remain part of `M3`.
 
 v23.18 improves global training efficiency, not only local item quality:
 

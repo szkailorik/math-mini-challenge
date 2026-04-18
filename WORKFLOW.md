@@ -29,28 +29,28 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.20 Iteration Notes
+## Current v23.21 Iteration Notes
 
 ### Iteration 1
 
-- What I changed: added the first multi-program shell pieces to the control panel, including a lightweight program switcher and stage-status card, while keeping the current advanced trainer as the only enabled runtime program.
+- What I changed: turned the second-stage shell into a real preview program with four question sheets, two answer sheets, and program-aware cached paper data.
 - Open questions: none.
-- Risks: the second-stage option is intentionally visible but disabled, so wording must stay clear enough that families do not expect phase-two papers yet.
-- Next steps: move from shell-only state into M2 by wiring the first real phase-two generator and paper layout without disturbing the first-stage print flow.
+- Risks: phase two is intentionally preview-only in this release, so grading entry points must stay clearly blocked until M3.
+- Next steps: keep second-stage paper quality high while preserving first-stage stability.
 
 ### Iteration 2
 
-- What I changed: introduced persisted `currentProgramId` state and runtime normalization, so future phase-two work now has a real attachment point without changing current paper generation behavior.
+- What I changed: defined the first closure-paper structure around `总收束 + 旧知保温`, rather than treating phase two as simple difficulty increase.
 - Open questions: none.
-- Risks: future implementation must keep program-aware logic centralized rather than scattering `if program === ...` branches through rendering and storage code.
-- Next steps: extract program-aware generation helpers before adding phase-two content.
+- Risks: if future changes over-randomize second-stage bridge sections, paper quality can drop through duplicated or shallow integrated items.
+- Next steps: strengthen the second-stage generator and later connect program-aware profiling in M3.
 
 ### Iteration 3
 
-- What I changed: updated validation and release docs so the new program shell is now part of the guarded runtime contract.
+- What I changed: upgraded runtime validation so release checks now cover the advanced trainer and the new closure preview, including print-sandbox behavior.
 - Open questions: none.
-- Risks: validator can confirm the shell exists, but the real challenge is preserving first-stage stability as phase-two generation is added.
-- Next steps: start M1/M2 implementation in thin slices, with print and grading smoke checks after each slice.
+- Risks: print and answer-page preview are now part of the release contract for two programs, so future regressions have more surface area.
+- Next steps: move into M3 by adding phase-two grading writeback, reporting, and program-aware profile storage.
 
 ## Previous v23.19 Iteration Notes
 

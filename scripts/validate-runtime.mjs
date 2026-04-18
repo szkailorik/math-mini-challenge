@@ -33,7 +33,11 @@ if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v33';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v36';
+
+function getProgramCacheKey(programId, setNumber) {
+  return `${cachePrefix}_${programId}_${setNumber}`;
+}
 
 const store = new Map();
 const localStorage = {
@@ -244,8 +248,35 @@ function assertPaper(setNumber) {
   if (paper.includes('undefined')) {
     throw new Error(`Generated paper for set ${setNumber} contains undefined`);
   }
-  assertSetData(setNumber);
+  assertSetData(setNumber, 'advanced_fluency_v1');
   return sheetCount;
+}
+
+function assertClosurePaper(setNumber) {
+  const paper = elements.get('paper-container')?.innerHTML || '';
+  const questionSheetCount = (paper.match(/question-sheet/g) || []).length;
+  const answerSheetCount = (paper.match(/class="sheet ans-sheet/g) || []).length;
+  const closureQuestionOnly = paper.split('class="sheet ans-sheet"')[0] || paper;
+
+  if (questionSheetCount !== 4) {
+    throw new Error(`Expected exactly 4 closure question sheets for set ${setNumber}, got ${questionSheetCount}`);
+  }
+  if (answerSheetCount !== 2) {
+    throw new Error(`Expected exactly 2 closure answer sheets for set ${setNumber}, got ${answerSheetCount}`);
+  }
+  if (!paper.includes('Mini Challenge Closure')) {
+    throw new Error(`Closure paper for set ${setNumber} is missing the closure title`);
+  }
+  if (!paper.includes('收束') || !paper.includes('保温')) {
+    throw new Error(`Closure paper for set ${setNumber} is missing closure or maintenance guidance`);
+  }
+  if (!paper.includes('第二阶段预览') || !paper.includes('M3')) {
+    throw new Error(`Closure answer sheet for set ${setNumber} is missing preview-only grading messaging`);
+  }
+  if (!closureQuestionOnly.includes('综合') && !closureQuestionOnly.includes('桥接')) {
+    throw new Error(`Closure question paper for set ${setNumber} is missing integrated-training section framing`);
+  }
+  assertSetData(setNumber, 'elementary_closure_v1');
 }
 
 function stripHtml(value) {
@@ -265,8 +296,10 @@ function decimalPlacesFromText(value) {
   return match?.[1]?.length || 0;
 }
 
-function assertSetData(setNumber) {
-  const raw = store.get(`${cachePrefix}_${setNumber}`);
+function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
+  const raw = store.get(getProgramCacheKey(programId, setNumber)) || (
+    programId === 'advanced_fluency_v1' ? store.get(`${cachePrefix}_${setNumber}`) : null
+  );
   if (!raw) throw new Error(`Missing cached set data for set ${setNumber}`);
   const data = JSON.parse(raw);
   const expectedCounts = {
@@ -277,6 +310,105 @@ function assertSetData(setNumber) {
   const getKnowledgeTip = context.window.getKnowledgeTip;
   const getKnowledgeDomain = context.window.getKnowledgeDomain;
   const fallbackName = context.window.FallbackAdvice?.name;
+  if (programId === 'elementary_closure_v1') {
+    const expectedClosureCounts = {
+      c_k_bridge: 8,
+      c_k_unit: 4,
+      c_k_maint_core: 4,
+      c_k_rate: 4,
+      c_k_mix: 4,
+      c_k_maint_mix: 8,
+      c_l_bridge: 8,
+      c_l_unit: 4,
+      c_l_maint_core: 4,
+      c_l_rate: 4,
+      c_l_mix: 4,
+      c_l_maint_mix: 8,
+    };
+    const closureSections = Object.keys(expectedClosureCounts);
+    const kBridgeTags = new Set((data.c_k_bridge || []).map(item => item?.tag));
+    const kUnitTags = new Set((data.c_k_unit || []).map(item => item?.tag));
+    const kMaintCoreTags = new Set((data.c_k_maint_core || []).map(item => item?.tag));
+    const kRateTags = new Set((data.c_k_rate || []).map(item => item?.tag));
+    const kMixTags = new Set((data.c_k_mix || []).map(item => item?.tag));
+    const kMaintMixTags = new Set((data.c_k_maint_mix || []).map(item => item?.tag));
+    const lBridgeTags = new Set((data.c_l_bridge || []).map(item => item?.tag));
+    const lUnitTags = new Set((data.c_l_unit || []).map(item => item?.tag));
+    const lMaintCoreTags = new Set((data.c_l_maint_core || []).map(item => item?.tag));
+    const lRateTags = new Set((data.c_l_rate || []).map(item => item?.tag));
+    const lMixTags = new Set((data.c_l_mix || []).map(item => item?.tag));
+    const lMaintMixTags = new Set((data.c_l_maint_mix || []).map(item => item?.tag));
+
+    if (!kBridgeTags.has('c2_bridge_pct_frac') || !kBridgeTags.has('c2_bridge_ratio_frac')) {
+      throw new Error(`Closure set ${setNumber} is missing KAI bridge coverage`);
+    }
+    if (!lBridgeTags.has('c2_bridge_pct_frac') || !lBridgeTags.has('c2_bridge_ratio_frac')) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik bridge coverage`);
+    }
+    if (!kUnitTags.has('c2_unit_length') || !kUnitTags.has('c2_unit_mass')) {
+      throw new Error(`Closure set ${setNumber} is missing KAI unit-chain coverage`);
+    }
+    if (!lUnitTags.has('c2_unit_length') || !lUnitTags.has('c2_unit_mass')) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik unit-chain coverage`);
+    }
+    if (!kRateTags.has('c2_rate_discount') || !kRateTags.has('c2_eq_percent')) {
+      throw new Error(`Closure set ${setNumber} is missing KAI rate-equation coverage`);
+    }
+    if (!lRateTags.has('c2_rate_discount') || !lRateTags.has('c2_eq_percent')) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik rate-equation coverage`);
+    }
+    if (!kMixTags.has('c2_est_product') || !kMixTags.has('c2_speed_mix')) {
+      throw new Error(`Closure set ${setNumber} is missing KAI estimation-speed coverage`);
+    }
+    if (!lMixTags.has('c2_est_product') || !lMixTags.has('c2_speed_mix')) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik estimation-speed coverage`);
+    }
+    if (![...kMaintCoreTags].some(tag => String(tag || '').startsWith('k_ddiv_'))) {
+      throw new Error(`Closure set ${setNumber} is missing KAI division maintenance coverage`);
+    }
+    if (![...lMaintCoreTags].some(tag => String(tag || '').startsWith('l_div_'))) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik division maintenance coverage`);
+    }
+    if (![...kMaintMixTags].some(tag => String(tag || '').startsWith('k_dmul_')) || ![...kMaintMixTags].some(tag => String(tag || '').startsWith('k_sub_'))) {
+      throw new Error(`Closure set ${setNumber} is missing KAI maintenance of multiplication or subtraction`);
+    }
+    if (![...lMaintMixTags].some(tag => String(tag || '').startsWith('l_mul_')) || ![...lMaintMixTags].some(tag => String(tag || '').startsWith('l_sub_'))) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik maintenance of multiplication or subtraction`);
+    }
+
+    for (const [section, expected] of Object.entries(expectedClosureCounts)) {
+      const items = data[section];
+      if (!Array.isArray(items) || items.length !== expected) {
+        throw new Error(`Closure set ${setNumber} section ${section} expected ${expected}, got ${items?.length ?? 'missing'}`);
+      }
+    }
+
+    closureSections.forEach(section => {
+      (data[section] || []).forEach((item, index) => {
+        const location = `closure set ${setNumber} ${section}[${index}]`;
+        if (!item || !item.tag) throw new Error(`${location} missing tag`);
+        const tip = typeof getKnowledgeTip === 'function' ? getKnowledgeTip(item.tag) : null;
+        if (!tip || tip.name === fallbackName) missingAdvice.add(item.tag);
+        const domain = typeof getKnowledgeDomain === 'function' ? getKnowledgeDomain(item.tag) : null;
+        if (!domain) missingDomain.add(item.tag);
+        const level = item.level || context.window.inferDifficulty?.(item.tag);
+        if (!Number.isInteger(level) || level < 1 || level > 4) {
+          throw new Error(`${location} has invalid level ${level}`);
+        }
+        observedLevels.add(level);
+        if (!stripHtml(item.q)) throw new Error(`${location} missing question`);
+        if (!stripHtml(item.a)) throw new Error(`${location} missing answer`);
+        const combined = `${item.q} ${item.a} ${item.step || ''}`;
+        if (/undefined|NaN|Infinity/.test(combined)) {
+          throw new Error(`${location} contains invalid output: ${combined}`);
+        }
+        const signature = `${item.tag}:${stripHtml(item.q)}`;
+        if (seen.has(signature)) throw new Error(`${location} duplicates ${signature}`);
+        seen.add(signature);
+      });
+    });
+    return;
+  }
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
   const kaiDivTags = new Set((data.k_d || []).map(item => item?.tag));
   const kaiSubTags = new Set((data.k_s || []).map(item => item?.tag));
@@ -656,6 +788,26 @@ for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.renderPaper();
   checked.push(`${setNumber}:${assertPaper(setNumber)}`);
 }
+context.window.changeProgram('elementary_closure_v1');
+if (programSelector.value !== 'elementary_closure_v1') {
+  throw new Error('Program selector did not switch to elementary_closure_v1');
+}
+if (!String(programTitleLabel?.textContent || '').includes('小学计算收束阶段')) {
+  throw new Error('Program shell did not render the closure program label');
+}
+if (!String(stageStatusTitle?.textContent || '').includes('第二阶段')) {
+  throw new Error('Stage status card did not render second-stage status text');
+}
+context.window.currentSetNumber = 103;
+context.window.renderPaper();
+assertClosurePaper(103);
+context.window.printQuestionSheets();
+await new Promise(resolve => setTimeout(resolve, 260));
+const closurePrintRootHtml = elements.get('print-root')?.innerHTML || '';
+if ((closurePrintRootHtml.match(/question-sheet/g) || []).length !== 4) {
+  throw new Error('Closure print sandbox did not stage exactly four printable question sheets');
+}
+emit('afterprint');
 if (missingAdvice.size) {
   throw new Error(`Missing KnowledgeBase advice for tags: ${[...missingAdvice].sort().join(', ')}`);
 }

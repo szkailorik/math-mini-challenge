@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`, but only `advanced_fluency_v1` is enabled in `v23.20`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry and a persisted `currentProgramId`; `advanced_fluency_v1` remains the default while preview-only `elementary_closure_v1` is also enabled in `v23.21`.
 
 ## Local Environment
 
@@ -38,18 +38,22 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 ## Key Runtime Concepts
 
 - `currentSetNumber`: drives deterministic seeding and set cache keys.
-- `TRAINING_PROGRAMS` / `currentProgramId`: establish the multi-program shell for future stage-two work while keeping the current advanced trainer as the only active runtime program in `v23.20`.
+- `TRAINING_PROGRAMS` / `currentProgramId`: switch between the first-stage advanced trainer and the second-stage closure-paper preview while keeping the first-stage default path intact.
 - `renderProgramShell`: updates the control-panel program switcher and stage-status card without affecting printable question-sheet DOM.
+- `getSetCacheKey`: namespaces cached set snapshots by program so closure papers do not collide with advanced papers.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
+- `generateProgramSetData`: isolates advanced and closure generation behind one runtime entry point.
+- `buildClosureProgramSet`: assembles the second-stage preview around two simultaneous goals: elementary calculation closure and first-stage skill maintenance.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
+- `buildPreviewAnsGrid` / `showClosurePreviewNotice`: keep second-stage answer sheets readable and printable without opening grading writeback before M3.
 - `printQuestionSheets` / `printAnswerSheets`: stages cloned printable sheets into `#print-root`, switches the body into a print sandbox mode, and relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - Print output now uses a dedicated print sandbox instead of paginating the live long page directly, reducing browser-specific blank-even-page regressions.
 - Question-sheet printing uses a slightly sub-A4 fixed page height in the sandbox to avoid rounding overflow that can make one printed sheet consume two physical pages.
@@ -75,7 +79,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102, validates section counts, catches empty questions/answers, duplicate items, invalid strings, missing knowledge advice, invalid levels, missing focus strip, missing domain coverage, broken domain-signal scoring, error-book replay bridging, Lorik decimal-division coverage, print sandbox helpers, four printable question sheets, cloud auto-pull helpers, and set-review report output.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then switches into `elementary_closure_v1` to validate second-stage paper structure, preview messaging, program-aware cache keys, and print-sandbox behavior.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -112,11 +116,16 @@ python3 -m http.server 8080
 - Export JSON and import it in a fresh browser profile.
 - Confirm exported backup JSON includes the current app version and export metadata fields.
 - Confirm the control panel now shows the program switcher and stage-status card, and that the switcher defaults to `Advanced`.
+- Switch to `Closure` and confirm the stage-status card updates to the second-stage preview state.
+- Confirm `Closure` renders four question sheets plus two preview-only answer sheets.
+- Confirm the `Closure` sheets visibly combine integrated closure topics with explicit old-skill maintenance sections.
+- Confirm the `Closure` answer sheets state that grading writeback is deferred to `M3`.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
 - Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.
 - Confirm the live app content is hidden during print and the dedicated print sandbox is the only printable root.
 - Confirm print buttons show the short print hint before the system print dialog opens.
+- Open print preview after switching to `Closure` and confirm the second-stage question sheets also print as four consecutive populated pages.
 - Confirm KAI decimal multiplication covers place value, tiny decimal, strategy, and mixed whole-number practice in the same set.
 - Confirm KAI decimal division covers scale-up, divisor-shift, decimal-quotient, and same-scale decimal division in the same set.
 - Confirm KAI big subtraction covers cross-borrow, inner-zero, benchmark whole, and six-digit regrouping practice in the same set.
