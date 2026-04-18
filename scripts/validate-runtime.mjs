@@ -278,6 +278,20 @@ if (comparisonPrompt?.hasAnswerTail) {
   throw new Error('Comparison prompts with circle blanks should not receive a trailing answer tail');
 }
 
+const blankTailPrompt = context.normalizeQuestionPrompt(
+  '<div class="frac"><span>9</span><span class="bottom">25</span></div> =<div class="blank"></div>%',
+  'h-conv',
+);
+if (!blankTailPrompt?.hasAnswerTail) {
+  throw new Error('Inline blank equations should be normalized into the shared answer tail');
+}
+if (blankTailPrompt.bodyHtml.includes('math-inline-blank')) {
+  throw new Error('Inline blank equations should not keep the old blank inside the question body');
+}
+if (!blankTailPrompt.answerTailHtml.includes('math-tail-suffix') || !blankTailPrompt.answerTailHtml.includes('%')) {
+  throw new Error('Inline blank equations with unit suffix should keep their suffix in the shared answer tail');
+}
+
 const equationPrompt = context.normalizeQuestionPrompt('3<i class="var">x</i> + 5 = 11', 'h-frac');
 if (equationPrompt?.hasAnswerTail) {
   throw new Error('Internal equations should not receive a second trailing equals answer tail');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.33 (分数题试卷密排修正)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.34 (等号与空格线统一修正)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -362,6 +362,13 @@
             white-space: nowrap;
             margin-left: 0;
             min-height: 1em;
+        }
+        .math-tail-suffix {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.06em;
+            margin-left: 0.04em;
+            white-space: nowrap;
         }
         .math-text.exam-expression {
             flex-wrap: nowrap;
@@ -845,7 +852,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.33</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.34</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -924,9 +931,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.33';
-        const APP_RELEASE_LABEL = '分数题试卷密排修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.33 分数题试卷密排修正：<br><strong>继续压缩分数/括号重题的卷面密度，让等号和答题尾部更容易留在同一行<br>并同步优化打印态，减少三列分数题的断行与挤压</strong>';
+        const APP_VERSION = 'v23.34';
+        const APP_RELEASE_LABEL = '等号与空格线统一修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.34 等号与空格线统一修正：<br><strong>把题干自带的“= 空格线”统一折叠成共享答题尾部<br>减少等号重复、等号乱位和空格线乱跑的问题</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2609,8 +2616,25 @@
             value = value.replace(/\s=(?=<)/g, ' <span class="math-eq">=</span>');
             return value;
         }
+        function buildAnswerTailHtml(tailSuffixHtml = '') {
+            const suffixHtml = tailSuffixHtml
+                ? `<span class="math-tail-suffix">${beautifyMathHTML(tailSuffixHtml)}</span>`
+                : '';
+            return `<span class="math-answer-tail"><span class="math-eq">=</span><span class="math-answer-slot"></span>${suffixHtml}</span>`;
+        }
         function normalizeQuestionPrompt(questionHtml = '', heightClass = '') {
             const raw = String(questionHtml || '').trim();
+            const blankTailMatch = raw.match(/^(.*?)(?:\s*=)\s*<div class="blank"><\/div>\s*(.*)$/);
+            if (blankTailMatch) {
+                const bodySource = blankTailMatch[1].trim();
+                const tailSuffix = blankTailMatch[2].trim();
+                return {
+                    bodyHtml: beautifyMathHTML(bodySource),
+                    hasAnswerTail: true,
+                    prefersExamInline: /class="frac"|paren-l|paren-r/.test(bodySource),
+                    answerTailHtml: buildAnswerTailHtml(tailSuffix)
+                };
+            }
             const hasTrailingEquals = /\s*=\s*$/.test(raw);
             const rawWithoutTerminalEquals = hasTrailingEquals ? raw.replace(/\s*=\s*$/, '') : raw;
             const bodyHtml = beautifyMathHTML(rawWithoutTerminalEquals);
@@ -2628,9 +2652,7 @@
                 bodyHtml,
                 hasAnswerTail,
                 prefersExamInline,
-                answerTailHtml: hasAnswerTail
-                    ? '<span class="math-answer-tail"><span class="math-eq">=</span><span class="math-answer-slot"></span></span>'
-                    : ''
+                answerTailHtml: hasAnswerTail ? buildAnswerTailHtml() : ''
             };
         }
         window.beautifyMathHTML = beautifyMathHTML;

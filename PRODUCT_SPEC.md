@@ -206,6 +206,12 @@ v23.33 deepens dense worksheet typesetting for fraction sections:
 - The printed version mirrors that denser profile instead of re-expanding those items, which helps preserve the “formal worksheet” feel across both screen preview and paper.
 - Product-wise, this matters because a mathematically correct but cramped expression still reads as low-quality practice if the final answer area appears detached from the expression.
 
+v23.34 unifies equals signs and blank lines into one rule:
+
+- Prompts that used to embed `= ____` directly in their source are now folded into the same shared answer-tail component as other computation prompts.
+- This keeps conversion, unit, and simple equation items from mixing legacy in-body blanks with newer tail-based blanks, which was making some equals signs feel duplicated or oddly placed.
+- Product-wise, this matters because students and tutors read trust from consistency: one worksheet should not feel like it was assembled from multiple conflicting notation systems.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

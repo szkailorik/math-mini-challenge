@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.33 Iteration Notes
+## Current v23.34 Iteration Notes
+
+### Iteration 1
+
+- What I changed: shifted the investigation from “missing equals signs” to “conflicting equals-sign systems”, because some prompts still carried their own in-body `= blank` structure while others used the shared tail renderer.
+- Open questions: none.
+- Risks: if future generators mix inline blanks and shared tails ad hoc again, visual consistency will drift quickly.
+- Next steps: keep one canonical answer-tail structure and route legacy prompt shapes through it.
+
+### Iteration 2
+
+- What I changed: normalized `= <blank>` prompt shapes into the shared answer-tail component, including suffixes like `%`, so those items no longer keep a separate blank line inside the question body.
+- Open questions: none.
+- Risks: prompts with more unusual suffix text may still need spot-checking to make sure the suffix belongs after the blank, not before it.
+- Next steps: continue treating unit and percentage suffixes as part of the tail component rather than bespoke inline markup.
+
+### Iteration 3
+
+- What I changed: added runtime checks for this normalization path so future changes cannot quietly reintroduce old in-body blank patterns for equality prompts.
+- Open questions: none.
+- Risks: runtime validation confirms structure, but paper appearance should still be human-checked for the strangest legacy prompt families.
+- Next steps: keep sampling real generated prompts when users report notation drift instead of relying only on abstract helper tests.
+
+## Previous v23.33 Iteration Notes
 
 ### Iteration 1
 
