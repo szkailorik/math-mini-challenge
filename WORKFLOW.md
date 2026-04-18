@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.30 Iteration Notes
+## Current v23.31 Iteration Notes
+
+### Iteration 1
+
+- What I changed: traced the remaining math-layout failures to question HTML that still embedded block-like fraction and blank nodes, plus a suffix rule that guessed answer equals signs from raw strings.
+- Open questions: none.
+- Risks: if future generators reintroduce block-level fragments into inline math, similar drift could return even if the CSS stays polished.
+- Next steps: keep normalizing question fragments before styling them, rather than trying to patch visual glitches after rendering.
+
+### Iteration 2
+
+- What I changed: added a normalized question-prompt renderer that converts legacy fraction and blank markup into inline-safe spans, removes raw trailing equals from the body, and rebuilds them through one shared answer-tail component.
+- Open questions: none.
+- Risks: any generator that truly needs a nonstandard tail format should opt in explicitly, because the default path is now intentionally stricter.
+- Next steps: keep new math item formats flowing through the shared prompt normalizer instead of bypassing it ad hoc.
+
+### Iteration 3
+
+- What I changed: retuned fraction size, bracket grouping, answer-slot sizing, and print compaction together so the same structural fix improves both screen papers and printed sheets.
+- Open questions: none.
+- Risks: fraction-heavy edge cases still deserve human print preview when new item families are added.
+- Next steps: treat fraction groups and answer tails as release-sensitive print primitives and include them in future layout spot checks.
+
+## Previous v23.30 Iteration Notes
 
 ### Iteration 1
 

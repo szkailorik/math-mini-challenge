@@ -33,6 +33,9 @@ if (!html.includes('MathEngine_PromotionState')) {
 if (!html.includes('function beautifyMathHTML')) {
   throw new Error('Math beautification helper is missing from runtime script');
 }
+if (!html.includes('function normalizeQuestionPrompt')) {
+  throw new Error('Question prompt normalization helper is missing from runtime script');
+}
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
 }
@@ -225,6 +228,48 @@ if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
 }
 if (!String(stageStatusAction?.textContent || '').includes('第二阶段')) {
   throw new Error('Stage status card did not render manual stage-switch guidance');
+}
+
+const normalizedInlineMath = context.beautifyMathHTML('<div class="frac"><span>1</span><span class="bottom">2</span></div> &plus; <div class="blank"></div>');
+if (!normalizedInlineMath.includes('<span class="frac">') || normalizedInlineMath.includes('<div class="frac">')) {
+  throw new Error('Fraction markup is not normalized into inline-safe span elements');
+}
+if (!normalizedInlineMath.includes('<span class="blank math-inline-blank"></span>')) {
+  throw new Error('Answer blank markup is not normalized into inline answer-slot elements');
+}
+
+if (typeof context.normalizeQuestionPrompt !== 'function') {
+  throw new Error('normalizeQuestionPrompt was not exposed on window for validation');
+}
+
+const fractionPrompt = context.normalizeQuestionPrompt(
+  '<div class="frac"><span>3</span><span class="bottom">4</span></div> &times; <span class="paren-l"></span><div class="frac"><span>1</span><span class="bottom">2</span></div> + <div class="frac"><span>1</span><span class="bottom">8</span></div><span class="paren-r"></span> = ',
+  'h-frac',
+);
+if (!fractionPrompt?.hasAnswerTail) {
+  throw new Error('Trailing equals questions should render through the shared answer tail');
+}
+if (fractionPrompt.bodyHtml.includes('math-eq')) {
+  throw new Error('Trailing equals should be removed from question body before answer-tail rendering');
+}
+if (!fractionPrompt.bodyHtml.includes('math-paren-group')) {
+  throw new Error('Parenthesized fraction groups are not normalized into a stable inline wrapper');
+}
+if (!fractionPrompt.answerTailHtml.includes('math-answer-tail') || !fractionPrompt.answerTailHtml.includes('math-answer-slot')) {
+  throw new Error('Shared answer tail is missing the expected equals and answer-slot markup');
+}
+
+const comparisonPrompt = context.normalizeQuestionPrompt(
+  '<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.8',
+  'h-conv',
+);
+if (comparisonPrompt?.hasAnswerTail) {
+  throw new Error('Comparison prompts with circle blanks should not receive a trailing answer tail');
+}
+
+const equationPrompt = context.normalizeQuestionPrompt('3<i class="var">x</i> + 5 = 11', 'h-frac');
+if (equationPrompt?.hasAnswerTail) {
+  throw new Error('Internal equations should not receive a second trailing equals answer tail');
 }
 
 function assertPaper(setNumber) {

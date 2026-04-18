@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.30 (题目显示与打印对齐修正)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.31 (数学排版结构化修正)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -94,6 +94,18 @@
             body.print-sandbox-active #print-root .math-text,
             body.print-sandbox-active #print-root .math-row {
                 line-height: 1.28 !important;
+            }
+            body.print-sandbox-active #print-root .math-answer-slot,
+            body.print-sandbox-active #print-root .blank {
+                width: 3.35em !important;
+                min-width: 3.35em !important;
+            }
+            body.print-sandbox-active #print-root .frac {
+                font-size: 0.88em !important;
+            }
+            body.print-sandbox-active #print-root .paren-l,
+            body.print-sandbox-active #print-root .paren-r {
+                font-size: 1.78em !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
@@ -275,7 +287,7 @@
             display: flex;
             align-items: flex-start;
             flex-wrap: wrap;
-            gap: 0.14em 0.2em;
+            gap: 0.16em 0.22em;
             min-width: 0;
         }
         .math-row {
@@ -289,7 +301,13 @@
             line-height: 1.38;
             color: var(--math-ink);
         }
-        .math-text { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0.16em 0.22em; }
+        .math-text {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.16em 0.22em;
+            min-width: 0;
+        }
         .math-op, .math-eq, .math-compare {
             display: inline-flex;
             align-items: center;
@@ -303,6 +321,15 @@
         .math-op { color: var(--math-blue); font-size: 1.04em; }
         .math-eq { color: var(--math-warm); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
+        .math-answer-tail {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 0.2em;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            margin-left: 0.08em;
+            min-height: 1.08em;
+        }
         .review-flag {
             position: absolute;
             top: -2px;
@@ -326,27 +353,49 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: 0 7px;
+            flex: 0 0 auto;
+            margin: 0 0.16em 0 0.12em;
             min-width: 1.7em;
-            font-size: 18px;
-            vertical-align: middle; /* 彻底修复分数基线对齐问题 */
+            font-size: 0.92em;
+            vertical-align: -0.24em;
+            line-height: 1;
         }
-        .frac > span { display: flex; align-items: center; justify-content: center; min-width: 100%; height: 1.22em; padding: 0 5px; line-height: 1; }
+        .frac > span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 100%;
+            padding: 0 0.28em;
+            line-height: 1.04;
+        }
         .frac > span.bottom { border-top: 1.6px solid currentColor; width: 100%; box-sizing: border-box; }
         .mixed { display: inline-flex; align-items: center; gap: 4px; font-size: 20px; }
         i.var { font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; margin: 0 4px; }
 
-        /* 彻底废弃边框画括号，采用真·大括号字符，保证任何环境绝对不乱码、出错位！ */
+        .math-paren-group {
+            display: inline-flex;
+            align-items: center;
+            flex: 0 0 auto;
+            gap: 0.02em;
+        }
+        .math-group-body {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            gap: 0.16em 0.18em;
+        }
         .paren-l, .paren-r {
-            display: inline-block;
-            font-size: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.9em;
             font-family: 'Times New Roman', serif;
             font-weight: 300;
-            vertical-align: middle;
             color: currentColor;
-            line-height: 1;
-            margin: 0 1px;
-            transform: translateY(-3px); /* 精确微调像素，保证与分数线完美水平对齐 */
+            line-height: 0.82;
+            margin: 0 -0.02em;
+            transform: none;
+            flex: 0 0 auto;
         }
         .paren-l::before { content: '('; }
         .paren-r::before { content: ')'; }
@@ -354,7 +403,8 @@
         .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
-        .h-conv .math-row { align-items: center; }
+        .h-conv .math-row,
+        .h-conv .math-text { align-items: center; }
         .sheet-meta-band {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -409,12 +459,27 @@
             font-weight: 700;
             letter-spacing: 0.16em;
         }
-        .blank { flex-grow: 1; border-bottom: 1.8px solid var(--math-line); margin-left: 8px; margin-right: 8px; height: 17px; min-width: 48px; }
+        .blank,
+        .math-answer-slot {
+            display: inline-block;
+            flex: 0 0 auto;
+            width: 3.6em;
+            min-width: 3.6em;
+            height: 0.92em;
+            border-bottom: 1.8px solid var(--math-line);
+            margin: 0 0.16em 0.06em;
+            vertical-align: baseline;
+            transform: translateY(-0.02em);
+        }
+        .math-answer-slot {
+            width: 4.2em;
+            min-width: 4.2em;
+        }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
-        .circle-blank { display: inline-block; width: 26px; height: 26px; border-radius: 50%; border: 1.7px solid var(--math-line); margin: 0 10px; align-self: center; }
-        .math-inline-blank { transform: translateY(1px); }
-        .math-inline-circle { transform: translateY(1px); }
+        .circle-blank { display: inline-block; width: 1.18em; height: 1.18em; border-radius: 50%; border: 1.7px solid var(--math-line); margin: 0 0.22em; align-self: center; flex: 0 0 auto; }
+        .math-inline-blank { transform: translateY(-0.01em); }
+        .math-inline-circle { transform: translateY(0.02em); }
 
         /* ================= 错题本与交互 UI ================= */
         .error-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 15px; }
@@ -705,7 +770,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.30</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.31</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -784,9 +849,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.30';
-        const APP_RELEASE_LABEL = '题目显示与打印对齐修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.30 题目显示与打印对齐修正：<br><strong>修正题目显示不全、排列和序号错位<br>并单独压缩打印态，避免同类问题进入打印页</strong>';
+        const APP_VERSION = 'v23.31';
+        const APP_RELEASE_LABEL = '数学排版结构化修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.31 数学排版结构化修正：<br><strong>统一等号与答题槽规则，修正分数题、括号题和横线错位<br>并同步收紧打印态，避免分数排版再次飘移</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2445,10 +2510,20 @@
                 priority: tier >= 2 && score >= 3.4
             };
         }
-        function beautifyMathHTML(html = '') {
+        function normalizeInlineMathMarkup(html = '') {
             let value = String(html || '');
-            value = value.replace(/class="blank"/g, 'class="blank math-inline-blank"');
-            value = value.replace(/class="circle-blank"/g, 'class="circle-blank math-inline-circle"');
+            value = value.replace(/<div class="blank"><\/div>/g, '<span class="blank math-inline-blank"></span>');
+            value = value.replace(/<div class="frac">([\s\S]*?)<\/div>/g, '<span class="frac">$1</span>');
+            value = value.replace(
+                /<span class="paren-l"><\/span>([\s\S]*?)<span class="paren-r"><\/span>/g,
+                '<span class="math-paren-group"><span class="paren-l"></span><span class="math-group-body">$1</span><span class="paren-r"></span></span>'
+            );
+            return value;
+        }
+        function beautifyMathHTML(html = '') {
+            let value = normalizeInlineMathMarkup(html);
+            value = value.replace(/class="blank(?![^"]*math-inline-blank)([^"]*)"/g, 'class="blank math-inline-blank$1"');
+            value = value.replace(/class="circle-blank(?![^"]*math-inline-circle)([^"]*)"/g, 'class="circle-blank math-inline-circle$1"');
             value = value.replace(/&times;/g, '<span class="math-op">&times;</span>');
             value = value.replace(/&divide;/g, '<span class="math-op">&divide;</span>');
             value = value.replace(/&minus;/g, '<span class="math-op">&minus;</span>');
@@ -2459,7 +2534,25 @@
             value = value.replace(/\s=(?=<)/g, ' <span class="math-eq">=</span>');
             return value;
         }
+        function normalizeQuestionPrompt(questionHtml = '', heightClass = '') {
+            const raw = String(questionHtml || '').trim();
+            const hasTrailingEquals = /\s*=\s*$/.test(raw);
+            const rawWithoutTerminalEquals = hasTrailingEquals ? raw.replace(/\s*=\s*$/, '') : raw;
+            const bodyHtml = beautifyMathHTML(rawWithoutTerminalEquals);
+            const hasInlineBlank = /class="blank\b|math-inline-blank/.test(bodyHtml);
+            const hasCircleBlank = /circle-blank/.test(bodyHtml);
+            const hasInternalEquals = !hasTrailingEquals && rawWithoutTerminalEquals.includes('=');
+            const hasAnswerTail = (hasTrailingEquals || (heightClass !== 'h-conv' && !hasInlineBlank && !hasCircleBlank && !hasInternalEquals));
+            return {
+                bodyHtml,
+                hasAnswerTail,
+                answerTailHtml: hasAnswerTail
+                    ? '<span class="math-answer-tail"><span class="math-eq">=</span><span class="math-answer-slot"></span></span>'
+                    : ''
+            };
+        }
         window.beautifyMathHTML = beautifyMathHTML;
+        window.normalizeQuestionPrompt = normalizeQuestionPrompt;
         function pickErrorReplayEntry(entries) {
             const valid = (entries || []).filter(entry => entry?.info?.q && entry?.info?.a);
             if (!valid.length) return null;
@@ -4166,10 +4259,9 @@
                 </div>
                 <div class="grid grid-${cols}">
                     ${items.map((q,i) => {
-                        let renderedQuestion = beautifyMathHTML(q.q);
-                        let suffix = (heightClass !== 'h-conv' && !q.q.includes('=')) ? `<span class="math-eq">=</span>` : '';
+                        let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${renderedQuestion}</span>${suffix}</div></div>`;
+                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}</span>${prompt.answerTailHtml}</div></div>`;
                     }).join('')}
                 </div>
             </div>`;

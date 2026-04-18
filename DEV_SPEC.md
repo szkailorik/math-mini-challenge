@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with booklet-style question sheets plus aligned answer-booklet presentation in `v23.30`, including separate screen-vs-print layout rules for question density.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with booklet-style question sheets plus aligned answer-booklet presentation in `v23.31`, including separate screen-vs-print layout rules for question density plus a normalized inline-math question renderer for fractions, blanks, and shared answer tails.
 
 ## Local Environment
 
@@ -76,6 +76,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `SET_CACHE_PREFIX`: versioned set-cache namespace; bumping it forces future set numbers to regenerate under new generator rules instead of reusing stale papers from older releases.
 - Training-quality passes now also target explanation quality, not only coverage: key generated items should expose a real worked hint instead of relying solely on fallback knowledge advice.
 - Question-sheet rendering now intentionally suppresses training metadata such as weakness badges, level badges, and phase strips; only exact error-book replay items may show a tiny non-layout-affecting review marker.
+- `normalizeInlineMathMarkup` / `normalizeQuestionPrompt`: normalize legacy block-like math fragments such as fraction markup and blank lines into inline-safe spans, convert trailing `=` prompts into a shared `math-answer-tail`, and avoid appending redundant answer tails to comparison or internal-equation items.
 - Conversion/comparison quality work now focuses on benchmark discrimination: comparison items near `1/2`, `5/8`, `3/4`, and `4/5` should force real comparison rather than obvious visual guessing.
 - Error-book replay now has two lanes: exact replay of the original item, and targeted same-tag review variants for selected high-value tags such as decimal-division and benchmark-comparison items.
 - `getHighValueTrainingSignal`: adds a global priority layer so the engine can spend more of the daily paper on high-value misconception families instead of distributing attention too evenly.

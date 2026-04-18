@@ -187,6 +187,13 @@ v23.30 fixes a high-friction booklet regression:
 - The numbering model is also more exam-like now because serial numbers stay in their own left column instead of moving with wrapped question text.
 - This matters product-wise because a beautifully styled booklet that clips questions or misaligns numbering is lower-quality training, not higher-quality presentation.
 
+v23.31 fixes a deeper math-layout regression:
+
+- The app now normalizes legacy fraction and blank-line fragments into inline-safe math elements before they ever reach the paper, instead of letting block-like HTML destabilize question layout.
+- Computation prompts now share one answer-tail rule, so the paper no longer mixes raw trailing equals signs, guessed suffix equals, and drifting answer lines.
+- Parenthesized fraction expressions are rendered as one inline math group, which makes the most fragile fraction questions feel more like a real exam item and less like assembled HTML parts.
+- Product-wise, this matters because students should be solving math, not decoding unstable typography; cleaner alignment improves both print trust and cognitive fluency.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
