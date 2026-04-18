@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.55 (计算知识总览页收尾自检升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.57 (计算知识总览页逻辑与版式收束)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -811,12 +811,12 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 6px 10px;
+            padding: 5px 9px;
             border-radius: 999px;
-            background: #f8fcfb;
-            border: 1px solid #bfd6d3;
-            color: #155e75;
-            font-size: 12px;
+            background: rgba(255,255,255,0.72);
+            border: 1px solid #d5e0dd;
+            color: #486172;
+            font-size: 11.5px;
             font-weight: 700;
         }
         .quick-review-focus-strip {
@@ -826,13 +826,11 @@
             margin-top: 14px;
         }
         .quick-review-focus-card {
-            border: 1px solid #d8e3df;
+            border: 1px solid #dbe4eb;
             border-radius: 14px;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,250,248,0.96)),
-                radial-gradient(circle at top left, rgba(18,59,115,0.06), transparent 45%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.97));
             padding: 12px 13px;
-            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.045);
         }
         .quick-review-focus-label {
             display: inline-block;
@@ -860,7 +858,7 @@
         .quick-review-focus-summary {
             margin-top: 8px;
             padding-top: 8px;
-            border-top: 1px solid #dbe6e2;
+            border-top: 1px solid #dbe2ea;
             color: #123b73;
             font-size: 13px;
             line-height: 1.55;
@@ -892,15 +890,15 @@
             margin-bottom: 14px;
         }
         .quick-review-nav-chip {
-            border: 1px solid #cad8e2;
-            background: rgba(255,255,255,0.82);
+            border: 1px solid #d7e0e8;
+            background: rgba(255,255,255,0.88);
             border-radius: 999px;
             padding: 7px 10px;
             text-align: left;
             font-size: 12px;
             font-weight: 700;
-            color: #17324f;
-            box-shadow: 0 5px 12px rgba(15, 23, 42, 0.05);
+            color: #35506c;
+            box-shadow: none;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -928,11 +926,11 @@
             gap: 12px;
         }
         .quick-review-topic {
-            border: 1px solid #d9e2ea;
+            border: 1px solid #dce4eb;
             border-radius: 16px;
             padding: 14px 16px 15px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(251,249,244,0.98));
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+            background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(250,250,248,0.99));
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
         }
         .quick-review-topic-head {
             display: flex;
@@ -947,9 +945,9 @@
             margin: 0 0 10px;
             padding: 8px 10px;
             border-radius: 12px;
-            border: 1px solid #d8e5de;
-            background: linear-gradient(180deg, rgba(249,253,252,0.98), rgba(241,249,247,0.98));
-            color: #0f4c5c;
+            border: 1px solid #dde7e3;
+            background: linear-gradient(180deg, rgba(250,252,252,0.98), rgba(245,249,248,0.98));
+            color: #214d5a;
             font-size: 13px;
             line-height: 1.55;
             font-weight: 800;
@@ -1067,9 +1065,10 @@
             margin-top: 10px;
         }
         .quick-review-flow-step {
-            border: 1px solid #d9e2ea;
+            border: 1px solid #dde5ec;
+            border-top: 3px solid #c4d4e4;
             border-radius: 12px;
-            background: rgba(255,255,255,0.88);
+            background: rgba(255,255,255,0.92);
             padding: 10px 11px;
         }
         .quick-review-flow-label {
@@ -1095,7 +1094,7 @@
         .quick-review-support-block {
             border: 1px solid #e5ebf1;
             border-radius: 12px;
-            background: rgba(255,255,255,0.85);
+            background: rgba(252,252,251,0.9);
             padding: 10px 11px;
         }
         .quick-review-support-block h4,
@@ -1131,9 +1130,9 @@
         }
         .quick-review-support-block li:last-child { margin-bottom: 0; }
         .quick-review-example {
-            border: 1px solid #d5e4e0;
+            border: 1px solid #dde5e2;
             border-radius: 12px;
-            background: linear-gradient(180deg, #f9fdfc, #f1f9f7);
+            background: linear-gradient(180deg, #fbfcfc, #f4f8f7);
             padding: 11px 12px;
         }
         .quick-review-example-row {
@@ -1507,9 +1506,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.55';
-        const APP_RELEASE_LABEL = '计算知识总览页收尾自检升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.55 计算知识总览页收尾自检升级：<br><strong>每个专题新增“最后检查”一句自检提示<br>让孩子做完以后更快完成结果核对和自我纠错</strong>';
+        const APP_VERSION = 'v23.57';
+        const APP_RELEASE_LABEL = '计算知识总览页逻辑与版式收束';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.57 计算知识总览页逻辑与版式收束：<br><strong>每个专题统一成“总纲句 + 做题主线 + 轻量补充”<br>页面更顺、更克制，也更像高质量复习讲义</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

@@ -351,6 +351,12 @@ v23.56 restructures the quick-review page around actual review logic:
   - one lighter support area for rules, techniques, and an example
 - Product-wise, this matters because efficient review depends not only on what content is present, but on whether the learner can immediately tell what to read first and what is only supporting material.
 
+v23.57 tightens the visual discipline of that structure:
+
+- The quick-review page now keeps the same improved reading logic, but the visual hierarchy is less noisy.
+- Navigation behaves more like a table of contents, focus cards are more restrained, and the topic blocks feel more like one study leaflet than a collage of mini dashboards.
+- Product-wise, this matters because even correct structure can still feel tiring if the page keeps shouting at the learner. High-quality review surfaces should guide attention without exhausting it.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

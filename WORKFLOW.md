@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.57 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the new “总纲句 + 做题主线 + 轻量补充” topic structure, then tightened the page’s visual hierarchy so the quick-review experience feels calmer, more guided, and more like a printable study leaflet instead of a stack of equally loud colorful modules.
+- Open questions: whether the next pass should now focus mainly on wording quality inside each topic, or keep tuning density and print balance.
+- Risks: the structure is now much cleaner, but future content additions must stay disciplined or the page could drift back toward visual noise.
+- Next steps: review the live page with real child use, then either sharpen copy quality or continue print-first polish.
+
 ## Current v23.56 Iteration Notes
 
 ### Iteration 1
