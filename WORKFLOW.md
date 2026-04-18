@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.56 Iteration Notes
+
+### Iteration 1
+
+- What I changed: reorganized the child-facing `Calculation Quick Review` page so each topic now reads as one total-principle sentence, one three-step working flow, and one lighter support area instead of many equally loud stacked reminder blocks.
+- Open questions: whether the next pass should refine the wording of the flow steps and principle lines, or focus mainly on further density and print-layout polish.
+- Risks: the new structure is much cleaner, but if later edits reintroduce too many equal-priority blocks the page could drift back toward a noisy card collection.
+- Next steps: review the live page with real child use, then either sharpen copy quality or keep polishing print-first visual rhythm and spacing.
+
 ## Current v23.55 Iteration Notes
 
 ### Iteration 1

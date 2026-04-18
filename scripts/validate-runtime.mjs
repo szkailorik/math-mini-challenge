@@ -72,7 +72,7 @@ if (!html.includes('📘 计算知识总览 / Quick Review')) {
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
 }
-if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row') || !html.includes('.quick-review-focus-strip') || !html.includes('.quick-review-hook') || !html.includes('.quick-review-mistake') || !html.includes('.quick-review-first-move') || !html.includes('.quick-review-check')) {
+if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row') || !html.includes('.quick-review-focus-strip') || !html.includes('.quick-review-hook') || !html.includes('.quick-review-flow') || !html.includes('.quick-review-support-grid')) {
   throw new Error('Calculation Quick Review visual shell is missing from CSS');
 }
 if (!html.includes('print-quick-review') || !html.includes('quick-review-print-shell')) {

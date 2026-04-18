@@ -205,8 +205,15 @@
                 break-inside: avoid !important;
                 page-break-inside: avoid !important;
             }
-            body.print-quick-review #print-root .quick-review-grid {
+            body.print-quick-review #print-root .quick-review-flow {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
                 gap: 2.4mm 3mm !important;
+                margin-top: 2.4mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-support-grid {
+                grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
+                gap: 2.4mm 3mm !important;
+                margin-top: 2.4mm !important;
             }
             body.print-quick-review #print-root .quick-review-topic-title {
                 font-size: 15px !important;
@@ -223,6 +230,10 @@
             body.print-quick-review #print-root .quick-review-mistake,
             body.print-quick-review #print-root .quick-review-first-move,
             body.print-quick-review #print-root .quick-review-check {
+                font-size: 11.2px !important;
+            }
+            body.print-quick-review #print-root .quick-review-flow-copy,
+            body.print-quick-review #print-root .quick-review-focus-summary {
                 font-size: 11.2px !important;
             }
             body.print-quick-review #print-root .quick-review-footer-pins {
@@ -846,29 +857,21 @@
             font-size: 12px;
             line-height: 1.6;
         }
+        .quick-review-focus-summary {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #dbe6e2;
+            color: #123b73;
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 800;
+        }
         .quick-review-focus-route {
             margin-top: 8px;
             font-size: 12px;
             line-height: 1.55;
             color: #5b4a2f;
             font-weight: 700;
-        }
-        .quick-review-focus-pins {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .quick-review-focus-pin {
-            display: inline-flex;
-            align-items: center;
-            padding: 4px 8px;
-            border-radius: 999px;
-            border: 1px solid #c9d9d3;
-            background: rgba(255,255,255,0.85);
-            color: #0f766e;
-            font-size: 11px;
-            font-weight: 800;
         }
         .quick-review-mini-jump {
             margin-top: 10px;
@@ -1057,18 +1060,45 @@
             text-transform: uppercase;
             font-size: 11px;
         }
-        .quick-review-grid {
+        .quick-review-flow {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 10px 14px;
+            margin-top: 10px;
         }
-        .quick-review-block {
+        .quick-review-flow-step {
+            border: 1px solid #d9e2ea;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.88);
+            padding: 10px 11px;
+        }
+        .quick-review-flow-label {
+            margin-bottom: 6px;
+            color: #123b73;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+        .quick-review-flow-copy {
+            color: #1e293b;
+            font-size: 13px;
+            line-height: 1.55;
+            font-weight: 700;
+        }
+        .quick-review-support-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+            gap: 10px 14px;
+            margin-top: 10px;
+        }
+        .quick-review-support-block {
             border: 1px solid #e5ebf1;
             border-radius: 12px;
             background: rgba(255,255,255,0.85);
             padding: 10px 11px;
         }
-        .quick-review-block h4,
+        .quick-review-support-block h4,
         .quick-review-example h4 {
             margin: 0 0 8px;
             color: #123b73;
@@ -1077,19 +1107,30 @@
             text-transform: uppercase;
             font-weight: 800;
         }
-        .quick-review-block ul {
+        .quick-review-support-columns {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 12px;
+        }
+        .quick-review-support-col h5 {
+            margin: 0 0 6px;
+            color: #5b4a2f;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .quick-review-support-block ul {
             margin: 0;
             padding-left: 16px;
         }
-        .quick-review-block li {
+        .quick-review-support-block li {
             margin: 0 0 5px;
             color: #1e293b;
             font-size: 13px;
             line-height: 1.55;
         }
-        .quick-review-block li:last-child { margin-bottom: 0; }
+        .quick-review-support-block li:last-child { margin-bottom: 0; }
         .quick-review-example {
-            grid-column: span 2;
             border: 1px solid #d5e4e0;
             border-radius: 12px;
             background: linear-gradient(180deg, #f9fdfc, #f1f9f7);
@@ -1101,6 +1142,23 @@
             line-height: 1.45;
             color: #12253f;
             letter-spacing: 0.01em;
+        }
+        .quick-review-topic-pins {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .quick-review-topic-pin {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid #c9d9d3;
+            background: rgba(255,255,255,0.88);
+            color: #0f766e;
+            font-size: 11px;
+            font-weight: 800;
         }
         .quick-review-footer-pins {
             display: flex;
@@ -1345,11 +1403,10 @@
             .quick-review-usage-strip,
             .quick-review-focus-strip,
             .quick-review-nav,
-            .quick-review-grid {
+            .quick-review-flow,
+            .quick-review-support-grid,
+            .quick-review-support-columns {
                 grid-template-columns: 1fr;
-            }
-            .quick-review-example {
-                grid-column: span 1;
             }
             .quick-review-topic-head {
                 flex-direction: column;
@@ -3440,12 +3497,8 @@
                     <span class="quick-review-focus-label">今日先看 ${String(index + 1).padStart(2, '0')}</span>
                     <h3>${topic.title}</h3>
                     <p class="quick-review-focus-copy">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
-                    <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
-                    <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
-                    <div class="quick-review-first-move"><span class="quick-review-first-move-label">先做这一步</span>${topic.firstMove || ''}</div>
-                    <div class="quick-review-check"><span class="quick-review-check-label">最后检查</span>${topic.finalCheck || ''}</div>
+                    <div class="quick-review-focus-summary">${topic.hook}</div>
                     <div class="quick-review-focus-route">先按这个顺序扫：${topic.memoryRoute}</div>
-                    <div class="quick-review-focus-pins">${(topic.pins || []).slice(0, 2).map(pin => `<span class="quick-review-focus-pin">${pin}</span>`).join('')}</div>
                     ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达这个专题</button>`}
                 </article>
             `).join('');
@@ -3465,29 +3518,42 @@
                         <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     </div>
                     <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
-                    <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
-                    <div class="quick-review-first-move"><span class="quick-review-first-move-label">先做这一步</span>${topic.firstMove || ''}</div>
-                    <div class="quick-review-check"><span class="quick-review-check-label">最后检查</span>${topic.finalCheck || ''}</div>
                     <div class="quick-review-memory-route">
                         <span class="quick-review-memory-label">回想顺序</span>
                         <span>${topic.memoryRoute}</span>
                     </div>
-                    <div class="quick-review-grid">
-                        <div class="quick-review-block">
-                            <h4>核心规则</h4>
-                            <ul>${topic.rules.map(item => `<li>${item}</li>`).join('')}</ul>
+                    <div class="quick-review-flow">
+                        <div class="quick-review-flow-step">
+                            <div class="quick-review-flow-label">先做这一步</div>
+                            <div class="quick-review-flow-copy">${topic.firstMove || ''}</div>
                         </div>
-                        <div class="quick-review-block">
-                            <h4>计算技巧</h4>
-                            <ul>${topic.techniques.map(item => `<li>${item}</li>`).join('')}</ul>
+                        <div class="quick-review-flow-step">
+                            <div class="quick-review-flow-label">最容易错</div>
+                            <div class="quick-review-flow-copy">${topic.pitfalls?.[0] || ''}</div>
+                        </div>
+                        <div class="quick-review-flow-step">
+                            <div class="quick-review-flow-label">最后检查</div>
+                            <div class="quick-review-flow-copy">${topic.finalCheck || ''}</div>
+                        </div>
+                    </div>
+                    <div class="quick-review-support-grid">
+                        <div class="quick-review-support-block">
+                            <h4>规则与技巧</h4>
+                            <div class="quick-review-support-columns">
+                                <div class="quick-review-support-col">
+                                    <h5>核心规则</h5>
+                                    <ul>${topic.rules.map(item => `<li>${item}</li>`).join('')}</ul>
+                                </div>
+                                <div class="quick-review-support-col">
+                                    <h5>计算技巧</h5>
+                                    <ul>${topic.techniques.map(item => `<li>${item}</li>`).join('')}</ul>
+                                </div>
+                            </div>
                         </div>
                         <div class="quick-review-example">
                             <h4>典型例子</h4>
                             <div class="quick-review-example-row">${topic.example}</div>
-                        </div>
-                        <div class="quick-review-block quick-review-pitfalls">
-                            <h4>易错提醒</h4>
-                            <ul>${topic.pitfalls.map(item => `<li>${item}</li>`).join('')}</ul>
+                            <div class="quick-review-topic-pins">${(topic.pins || []).map(pin => `<span class="quick-review-topic-pin">${pin}</span>`).join('')}</div>
                         </div>
                     </div>
                 </section>

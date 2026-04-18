@@ -342,6 +342,15 @@ v23.55 makes the quick-review layer more self-correcting:
   - check this at the end
 - Product-wise, this matters because many calculation slips survive not at the start, but in the last three seconds when the learner fails to run a quick self-check.
 
+v23.56 restructures the quick-review page around actual review logic:
+
+- Each topic no longer behaves like many equally loud reminder blocks.
+- Instead, each topic now follows a clearer reading order:
+  - one total-principle sentence
+  - one three-step working flow
+  - one lighter support area for rules, techniques, and an example
+- Product-wise, this matters because efficient review depends not only on what content is present, but on whether the learner can immediately tell what to read first and what is only supporting material.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
