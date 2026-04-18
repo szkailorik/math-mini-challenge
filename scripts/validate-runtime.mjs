@@ -18,7 +18,7 @@ if (html.includes('body.print-questions-only .question-sheet.print-last-question
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v32';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v33';
 
 const store = new Map();
 const localStorage = {

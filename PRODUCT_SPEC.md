@@ -118,6 +118,11 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.14 sharpens conversion and comparison discrimination:
+
+- Comparison items now sit closer to common benchmark values, reducing "obvious answer" cases and increasing real decimal-fraction discrimination practice.
+- Answer-sheet support for conversion items is stronger, so a tutor can review the exact benchmark transformation instead of only reading the final answer.
+
 v23.13 restores exam-like sheet presentation:
 
 - Normal question sheets now suppress internal training metadata so the printed page looks closer to a real exam handout.

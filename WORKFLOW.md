@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.13 Iteration Notes
+## Current v23.14 Iteration Notes
+
+### Iteration 1
+
+- What I changed: narrowed Lorik benchmark-comparison items so they now sit close to 0.5, 0.625, 0.75, and 0.8, forcing actual discrimination instead of obvious guesses.
+- Open questions: none.
+- Risks: tighter comparison ranges are cognitively sharper, so answer review needs to keep benchmarks very explicit.
+- Next steps: if needed, extend the same "near boundary" design to selected KAI conversion families later.
+
+### Iteration 2
+
+- What I changed: added worked conversion steps across KAI and Lorik conversion sections so answer review shows the denominator/benchmark transformation used.
+- Open questions: none.
+- Risks: more answer-sheet detail slightly increases density, but it improves tutoring value after grading.
+- Next steps: continue filling step gaps for any remaining high-frequency conversion items.
+
+### Iteration 3
+
+- What I changed: bumped the set-cache namespace again so new benchmark-comparison content is used immediately on future generated sets.
+- Open questions: none.
+- Risks: older cached sets remain in storage history, but newly generated sets use the new namespace.
+- Next steps: keep tying substantial content changes to cache-version updates when stale papers would otherwise hide the improvement.
+
+## Previous v23.13 Iteration Notes
 
 ### Iteration 1
 

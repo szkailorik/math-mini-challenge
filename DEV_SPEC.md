@@ -52,6 +52,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `SET_CACHE_PREFIX`: versioned set-cache namespace; bumping it forces future set numbers to regenerate under new generator rules instead of reusing stale papers from older releases.
 - Training-quality passes now also target explanation quality, not only coverage: key generated items should expose a real worked hint instead of relying solely on fallback knowledge advice.
 - Question-sheet rendering now intentionally suppresses training metadata such as weakness badges, level badges, and phase strips; only exact error-book replay items may show a tiny non-layout-affecting review marker.
+- Conversion/comparison quality work now focuses on benchmark discrimination: comparison items near `1/2`, `5/8`, `3/4`, and `4/5` should force real comparison rather than obvious visual guessing.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
@@ -120,6 +121,8 @@ python3 -m http.server 8080
 - Confirm Lorik basic mixed problems cover shortcut structure, order/parentheses, distributive reasoning, and combination splitting each set.
 - Confirm no generated explanation still contains placeholder markup like `...`; steps should either be real worked hints or fall back to knowledge advice.
 - Confirm the printed question sheets look exam-like: no training-status strip, no level labels, no weakness/domain badges, and only replay items may show a small corner review mark.
+- Confirm Lorik comparison items cluster near benchmark decimals rather than using overly broad easy ranges, so students must genuinely compare against 0.5, 0.625, 0.75, and 0.8.
+- Confirm conversion items in both KAI and Lorik sections provide answer-sheet steps that explain the benchmark or denominator transformation used.
 
 ## GitHub Connection
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.13 (考试排版清爽版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.14 (互化辨析强化版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -238,7 +238,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.13</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.14</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -261,7 +261,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.13 考试排版清爽版：<br><strong>题卷回归考试样式<br>仅错题回炉保留轻提示</strong>
+                💡 23.14 互化辨析强化版：<br><strong>比较题更贴近易错边界<br>互化题答案页复盘更完整</strong>
             </div>
         </div>
 
@@ -287,9 +287,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.13';
-        const APP_RELEASE_LABEL = '考试排版清爽版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.13 考试排版清爽版：<br><strong>题卷回归考试样式<br>仅错题回炉保留轻提示</strong>';
+        const APP_VERSION = 'v23.14';
+        const APP_RELEASE_LABEL = '互化辨析强化版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.14 互化辨析强化版：<br><strong>比较题更贴近易错边界<br>互化题答案页复盘更完整</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
@@ -408,7 +408,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v32';
+        const SET_CACHE_PREFIX = 'MathSetData_v33';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1172,7 +1172,8 @@
             const t = String(tag || '');
             if (/oly|twostep|divisor|unit_fraction|cancel|near_million|paren|reverse/.test(t)) return 4;
             if (/trap|shift|mid0|inner0|100k|all0|jump0|tiny|decimal_q|near100|ofwhole|125|fd|muldiv|dist|merge/.test(t)) return 3;
-            if (/basic|pure|norm|3x20|dec1|dec2|scale10|order|move|coeff/.test(t) || /^k_conv_[1256]$/.test(t) || /^l_conv_[1246]$/.test(t)) return 1;
+            if (/basic|pure|norm|3x20|dec1|dec2|scale10|order|move|coeff/.test(t) || /^k_conv_[1256]$/.test(t) || /^l_conv_[124]$/.test(t)) return 1;
+            if (/^l_conv_[5678]$/.test(t) || /^k_conv_(4|8|9|10)$/.test(t)) return 3;
             if (/conv|25|addsub|scale|int|cross|6digit|prop/.test(t)) return 2;
             return 2;
         }
@@ -1339,6 +1340,10 @@
             "l_div_decimal_divisor": { name: "小数除法-除数带小数点", advice: "除数有小数点时，被除数和除数同时扩大10或100倍，把除数先变成整数再算。" },
             "l_div_decimal_both": { name: "小数除法-被除数和除数都有小数点", advice: "先统一扩大成整数除法，再回头检查商的小数点位置，最后用乘法验算。" },
             "l_sub_100k": { name: "减法-整万连续借位", advice: "整万数减法不能直接逐位相减，要从最高位连续借位。" },
+            "l_conv_5": { name: "比较-4/5 与近邻小数", advice: "先把 4/5 化成 0.8，再和接近 0.8 的小数逐位比较，别只看整数部分。" },
+            "l_conv_6": { name: "比较-1/2 与近邻小数", advice: "把 1/2 看成 0.5，再比较十分位和百分位；遇到 0.49、0.51 这类题尤其要慢一点。" },
+            "l_conv_7": { name: "比较-5/8 与近邻小数", advice: "先记住 5/8=0.625，再和接近 0.62、0.63 的小数比较，防止只凭感觉判断。" },
+            "l_conv_8": { name: "比较-3/4 与近邻小数", advice: "先把 3/4 化成 0.75，再看另一个小数是比 0.75 多一点还是少一点。" },
             "l_fmix_sub": { name: "异分母相减", advice: "基础通分运算不熟练。需要强化寻找最小公倍数的能力。" },
             "l_fmix_ofwhole": { name: "分数-求一个数的几分之几", advice: "先用总数除以分母求一份，再乘分子，避免直接大数乘分数。" },
             "l_bmix_125": { name: "125凑整", advice: "背熟好朋友数字：125找8，25找4。看到12.5就要从另一个因数里拆出8。" },
@@ -1950,42 +1955,42 @@
 
         const getConversions = () => buildCoveredSection("KAI", [
             [
-                { tag: "k_conv_1", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "k_conv_1", q:`${v}% =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
-                { tag: "k_conv_2", gen: () => { let v = Engine.randInt(1,49)*2; return { tag: "k_conv_2", q:`${(v/10).toFixed(1)}% =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } }
+                { tag: "k_conv_1", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "k_conv_1", q:`${v}% =<div class="blank"></div>`, a: new Frac(v, 100).toHTML(), step:`百分数化分数先写成分母100：${v}% = <div class="frac"><span>${v}</span><span class="bottom">100</span></div>，再约分。` }; } },
+                { tag: "k_conv_2", gen: () => { let v = Engine.randInt(1,49)*2; return { tag: "k_conv_2", q:`${(v/10).toFixed(1)}% =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML(), step:`带小数的百分数先除以100：${(v/10).toFixed(1)}% = ${v}/1000，再约成最简分数。` }; } }
             ],
             [
-                { tag: "k_conv_3", gen: () => { let v = Engine.randInt(1,8); return { tag: "k_conv_3", q:`0.<span class="dot-top">${v}</span> =<div class="blank"></div>`, a: new Frac(v, 9).toHTML() }; } }
+                { tag: "k_conv_3", gen: () => { let v = Engine.randInt(1,8); return { tag: "k_conv_3", q:`0.<span class="dot-top">${v}</span> =<div class="blank"></div>`, a: new Frac(v, 9).toHTML(), step:`一位循环小数直接写成 ${v}/9。` }; } }
             ],
             [
-                { tag: "k_conv_4", gen: () => { let v1 = Engine.randInt(1,5); let v2 = Engine.randInt(1,8); if(v1===v2)v2++; return { tag: "k_conv_4", q:`0.${v1}<span class="dot-top">${v2}</span> =<div class="blank"></div>`, a: new Frac(v1*9+v2, 90).toHTML() }; } }
+                { tag: "k_conv_4", gen: () => { let v1 = Engine.randInt(1,5); let v2 = Engine.randInt(1,8); if(v1===v2)v2++; return { tag: "k_conv_4", q:`0.${v1}<span class="dot-top">${v2}</span> =<div class="blank"></div>`, a: new Frac(v1*9+v2, 90).toHTML(), step:`混循环小数先用“前不循环×9+循环位”作分子，分母写90。` }; } }
             ],
             [
-                { tag: "k_conv_5", gen: () => { let v = Engine.randInt(1,24); return { tag: "k_conv_5", q:`<div class="frac"><span>${v}</span><span class="bottom">25</span></div> =<div class="blank"></div>%`, a: `${v*4}` }; } }
+                { tag: "k_conv_5", gen: () => { let v = Engine.randInt(1,24); return { tag: "k_conv_5", q:`<div class="frac"><span>${v}</span><span class="bottom">25</span></div> =<div class="blank"></div>%`, a: `${v*4}`, step:`分母25化百分数时，把分母扩成100：${v}/25 = ${v*4}/100 = ${v*4}%。` }; } }
             ],
             [
-                { tag: "k_conv_6", gen: () => { let w = Engine.randInt(1,9), v = Engine.randInt(1,9); return { tag: "k_conv_6", q:`${w}.0${v} =<div class="blank"></div>`, a: `<div class="mixed">${w}${new Frac(v, 100).toHTML()}</div>` }; } },
-                { tag: "k_conv_7", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "k_conv_7", q:`${(v/10000).toFixed(4).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 10000).toHTML() }; } }
+                { tag: "k_conv_6", gen: () => { let w = Engine.randInt(1,9), v = Engine.randInt(1,9); return { tag: "k_conv_6", q:`${w}.0${v} =<div class="blank"></div>`, a: `<div class="mixed">${w}${new Frac(v, 100).toHTML()}</div>`, step:`整数部分照抄，小数部分 ${v}/100 写成分数，再组成带分数。` }; } },
+                { tag: "k_conv_7", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "k_conv_7", q:`${(v/10000).toFixed(4).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 10000).toHTML(), step:`先写成 ${v}/10000，再用 125、250、375 这类整块数快速约分。` }; } }
             ],
             [
-                { tag: "k_conv_8", gen: () => { let n = Engine.randInt(1,39); if(n%2===0)n++; if(n%5===0)n++; return { tag: "k_conv_8", q:`<div class="frac"><span>${n}</span><span class="bottom">40</span></div> =<div class="blank"></div>`, a: formatDecimal(n/40) }; } }
+                { tag: "k_conv_8", gen: () => { let n = Engine.randInt(1,39); if(n%2===0)n++; if(n%5===0)n++; return { tag: "k_conv_8", q:`<div class="frac"><span>${n}</span><span class="bottom">40</span></div> =<div class="blank"></div>`, a: formatDecimal(n/40), step:`分母40可先想到 1/40=0.025，再按倍数推出 ${n}/40。` }; } }
             ],
             [
-                { tag: "k_conv_9", gen: () => { let n = Engine.randChoice([1,3,5,7,9,11,13,15]); return { tag: "k_conv_9", q:`<div class="frac"><span>${n}</span><span class="bottom">16</span></div> =<div class="blank"></div>`, a: formatDecimal(n/16) }; } }
+                { tag: "k_conv_9", gen: () => { let n = Engine.randChoice([1,3,5,7,9,11,13,15]); return { tag: "k_conv_9", q:`<div class="frac"><span>${n}</span><span class="bottom">16</span></div> =<div class="blank"></div>`, a: formatDecimal(n/16), step:`分母16要想到 1/16=0.0625，再用倍数关系推出 ${n}/16。` }; } }
             ],
             [
-                { tag: "k_conv_10", gen: () => { let v = Engine.randChoice([0.0625,0.1875,0.3125,0.4375,0.5625,0.6875,0.8125,0.9375]); return { tag: "k_conv_10", q:`${v} =<div class="blank"></div>`, a: new Frac(v, 1).toHTML() }; } }
+                { tag: "k_conv_10", gen: () => { let v = Engine.randChoice([0.0625,0.1875,0.3125,0.4375,0.5625,0.6875,0.8125,0.9375]); return { tag: "k_conv_10", q:`${v} =<div class="blank"></div>`, a: new Frac(v, 1).toHTML(), step:`这类四位小数常来自十六分之几，先写成分母10000的分数，再约成十六分之一系列。` }; } }
             ]
         ]);
 
         const getLorikConv = () => Engine.weightedSelect([
-            { tag: "l_conv_1", gen: () => { let v = Engine.randInt(1,7); if(v%2===0)v++; return { tag: "l_conv_1", q:`<div class="frac"><span>${v}</span><span class="bottom">8</span></div> =<div class="blank"></div>`, a: formatDecimal(v/8) }; } },
-            { tag: "l_conv_2", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "l_conv_2", q:`0.${v} =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } },
-            { tag: "l_conv_3", gen: () => { let v = Engine.randInt(1,19); if(v%2===0)v++; if(v%5===0)v++; return { tag: "l_conv_3", q:`<div class="frac"><span>${v}</span><span class="bottom">20</span></div> =<div class="blank"></div>`, a: formatDecimal(v/20) }; } },
-            { tag: "l_conv_4", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "l_conv_4", q:`${(v/100).toFixed(2).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
-            { tag: "l_conv_5", gen: () => { let v = Engine.randInt(61, 99); let isGt = (80 > v) ? '&gt;' : '&lt;'; return { tag: "l_conv_5", q:`<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.${v}`, a: isGt }; } },
-            { tag: "l_conv_6", gen: () => { let v = Engine.randInt(31, 69); let isGt = (v > 50) ? '&gt;' : '&lt;'; return { tag: "l_conv_6", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>1</span><span class="bottom">2</span></div>`, a: isGt }; } },
-            { tag: "l_conv_7", gen: () => { let v = Engine.randInt(51, 79); let isGt = (625 > v*10) ? '&gt;' : '&lt;'; return { tag: "l_conv_7", q:`<div class="frac"><span>5</span><span class="bottom">8</span></div><span class="circle-blank"></span>0.${v}`, a: isGt }; } },
-            { tag: "l_conv_8", gen: () => { let v = Engine.randInt(61, 89); let isGt = (v*10 > 750) ? '&gt;' : '&lt;'; return { tag: "l_conv_8", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>3</span><span class="bottom">4</span></div>`, a: isGt }; } }
+            { tag: "l_conv_1", gen: () => { let v = Engine.randInt(1,7); if(v%2===0)v++; return { tag: "l_conv_1", q:`<div class="frac"><span>${v}</span><span class="bottom">8</span></div> =<div class="blank"></div>`, a: formatDecimal(v/8), step:`先记住 1/8=0.125，再按倍数写出 ${v}/8。` }; } },
+            { tag: "l_conv_2", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "l_conv_2", q:`0.${v} =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML(), step:`三位小数先写成 ${v}/1000，再约分成最简分数。` }; } },
+            { tag: "l_conv_3", gen: () => { let v = Engine.randInt(1,19); if(v%2===0)v++; if(v%5===0)v++; return { tag: "l_conv_3", q:`<div class="frac"><span>${v}</span><span class="bottom">20</span></div> =<div class="blank"></div>`, a: formatDecimal(v/20), step:`分母20先化成100：${v}/20 = ${v*5}/100，再写成小数。` }; } },
+            { tag: "l_conv_4", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "l_conv_4", q:`${(v/100).toFixed(2).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 100).toHTML(), step:`把小数写成分母100的分数，再约分。` }; } },
+            { tag: "l_conv_5", gen: () => { let v = Engine.randChoice([78,79,81,82]); let isGt = (80 > v) ? '&gt;' : '&lt;'; return { tag: "l_conv_5", q:`<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.${v}`, a: isGt, step:`先把 4/5 化成 0.8，再比较 0.80 和 0.${v} 的大小。` }; } },
+            { tag: "l_conv_6", gen: () => { let v = Engine.randChoice([47,48,49,51,52,53]); let isGt = (v > 50) ? '&gt;' : '&lt;'; return { tag: "l_conv_6", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>1</span><span class="bottom">2</span></div>`, a: isGt, step:`先把 1/2 化成 0.5，再比较 0.${v} 和 0.50。` }; } },
+            { tag: "l_conv_7", gen: () => { let v = Engine.randChoice([61,62,63,64]); let isGt = (625 > v*10) ? '&gt;' : '&lt;'; return { tag: "l_conv_7", q:`<div class="frac"><span>5</span><span class="bottom">8</span></div><span class="circle-blank"></span>0.${v}`, a: isGt, step:`先把 5/8 化成 0.625，再比较它和 0.${v} 的大小。` }; } },
+            { tag: "l_conv_8", gen: () => { let v = Engine.randChoice([73,74,76,77]); let isGt = (v*10 > 750) ? '&gt;' : '&lt;'; return { tag: "l_conv_8", q:`0.${v}<span class="circle-blank"></span><div class="frac"><span>3</span><span class="bottom">4</span></div>`, a: isGt, step:`先把 3/4 化成 0.75，再看 0.${v} 比 0.75 大还是小。` }; } }
         ], "Lorik", 8);
 
         // ================= 五、 快照与渲染引擎 =================
