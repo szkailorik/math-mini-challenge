@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.50 (计算知识总览页二次打磨)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.51 (计算知识总览页焦点引导升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -173,6 +173,12 @@
                 padding: 0 0 4mm !important;
                 margin-bottom: 4mm !important;
             }
+            body.print-quick-review #print-root .quick-review-focus-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 4px !important;
+                margin-top: 3mm !important;
+                margin-bottom: 4mm !important;
+            }
             body.print-quick-review #print-root .quick-review-usage-strip {
                 grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
                 gap: 4px !important;
@@ -181,11 +187,15 @@
             body.print-quick-review #print-root .quick-review-nav-chip,
             body.print-quick-review #print-root .quick-review-recommendation,
             body.print-quick-review #print-root .quick-review-pin,
-            body.print-quick-review #print-root .quick-review-usage-card {
+            body.print-quick-review #print-root .quick-review-usage-card,
+            body.print-quick-review #print-root .quick-review-focus-card {
                 background: #fff !important;
                 color: #111 !important;
                 border-color: #94a3b8 !important;
                 box-shadow: none !important;
+            }
+            body.print-quick-review #print-root .quick-review-focus-card {
+                padding: 2.8mm 3mm !important;
             }
             body.print-quick-review #print-root .quick-review-topics {
                 gap: 3mm !important;
@@ -206,12 +216,17 @@
             body.print-quick-review #print-root .quick-review-block li,
             body.print-quick-review #print-root .quick-review-example-row,
             body.print-quick-review #print-root .quick-review-usage-text,
-            body.print-quick-review #print-root .quick-review-memory-route {
+            body.print-quick-review #print-root .quick-review-memory-route,
+            body.print-quick-review #print-root .quick-review-focus-copy,
+            body.print-quick-review #print-root .quick-review-focus-route {
                 font-size: 11.2px !important;
             }
             body.print-quick-review #print-root .quick-review-footer-pins {
                 margin-top: 4mm !important;
                 padding-top: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-mini-jump {
+                display: none !important;
             }
             body.print-quick-review #print-root .quick-review-actions,
             body.print-quick-review #print-root .modal-btns {
@@ -789,6 +804,80 @@
             font-size: 12px;
             font-weight: 700;
         }
+        .quick-review-focus-strip {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .quick-review-focus-card {
+            border: 1px solid #d8e3df;
+            border-radius: 14px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,250,248,0.96)),
+                radial-gradient(circle at top left, rgba(18,59,115,0.06), transparent 45%);
+            padding: 12px 13px;
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
+        }
+        .quick-review-focus-label {
+            display: inline-block;
+            margin-bottom: 7px;
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #8a3412;
+            font-weight: 800;
+        }
+        .quick-review-focus-card h3 {
+            margin: 0 0 6px;
+            color: #10233f;
+            font-size: 18px;
+            line-height: 1.2;
+            font-family: 'Georgia', 'Baskerville', serif;
+        }
+        .quick-review-focus-copy {
+            margin: 0;
+            color: #31586b;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .quick-review-focus-route {
+            margin-top: 8px;
+            font-size: 12px;
+            line-height: 1.55;
+            color: #5b4a2f;
+            font-weight: 700;
+        }
+        .quick-review-focus-pins {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .quick-review-focus-pin {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid #c9d9d3;
+            background: rgba(255,255,255,0.85);
+            color: #0f766e;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .quick-review-mini-jump {
+            margin-top: 10px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid #bfd0dd;
+            background: #fff;
+            color: #123b73;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: inherit;
+        }
         .quick-review-nav {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -808,6 +897,11 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            width: 100%;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            font-family: inherit;
         }
         .quick-review-nav-num {
             width: 24px;
@@ -1169,6 +1263,7 @@
         }
         @media (max-width: 780px) {
             .quick-review-usage-strip,
+            .quick-review-focus-strip,
             .quick-review-nav,
             .quick-review-grid {
                 grid-template-columns: 1fr;
@@ -1275,9 +1370,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.50';
-        const APP_RELEASE_LABEL = '计算知识总览页二次打磨';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.50 计算知识总览页二次打磨：<br><strong>新增“什么时候看、先看什么、每个专题怎么扫”的复习引导<br>让孩子更快进入状态，打印出来也更像一份可直接使用的复习讲义</strong>';
+        const APP_VERSION = 'v23.51';
+        const APP_RELEASE_LABEL = '计算知识总览页焦点引导升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.51 计算知识总览页焦点引导升级：<br><strong>新增“今日先看”焦点区和直达专题导航<br>让孩子更快抓住今天最值得复习的两块，同时保持打印讲义感</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3177,6 +3272,9 @@
             return topic.programEmphasis?.[programId] || topic.programEmphasis?.[ADVANCED_PROGRAM_ID] || '';
         }
         function getCalculationQuickReviewRecommendations(programId) {
+            return getCalculationQuickReviewRecommendationTopics(programId).map(topic => topic.title);
+        }
+        function getCalculationQuickReviewRecommendationTopics(programId) {
             const profiles = [StorageDB.getProfile('KAI') || {}, StorageDB.getProfile('Lorik') || {}];
             const scoredTopics = CALCULATION_QUICK_REVIEW_TOPICS.map(topic => {
                 let score = 0;
@@ -3192,11 +3290,12 @@
                 });
                 return { topic, score };
             }).sort((a, b) => b.score - a.score);
-            const selected = scoredTopics.filter(item => item.score > 0).slice(0, 2).map(item => item.topic.title);
+            const selected = scoredTopics.filter(item => item.score > 0).slice(0, 2).map(item => item.topic);
             if (selected.length >= 2) return selected;
-            return programId === CLOSURE_PROGRAM_ID
-                ? ['分数、小数、百分数互化与比较', '单位换算与常见数量关系']
-                : ['竖式乘法与竖式除法', '方程与逆运算'];
+            const fallbackIds = programId === CLOSURE_PROGRAM_ID
+                ? ['conversion_compare', 'unit_rate']
+                : ['written_algorithms', 'equation_method'];
+            return fallbackIds.map(id => getCalculationQuickReviewTopic(id)).filter(Boolean);
         }
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
@@ -3211,10 +3310,18 @@
             });
             return pins.slice(0, 8);
         }
+        function jumpToQuickReviewTopic(topicId) {
+            const target = document.getElementById(`quick-review-topic-${topicId}`);
+            if (!target) return;
+            if (typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
         function buildCalculationQuickReviewHTML({ forPrint = false } = {}) {
             const programId = getCurrentProgramId();
             const topics = getCalculationQuickReviewTopics();
-            const recommendations = getCalculationQuickReviewRecommendations(programId);
+            const recommendationTopics = getCalculationQuickReviewRecommendationTopics(programId);
+            const recommendations = recommendationTopics.map(topic => topic.title);
             const stageNote = programId === CLOSURE_PROGRAM_ID
                 ? '第二阶段看这页时，更要抓互化、单位、比率和结果检验。'
                 : '第一阶段看这页时，更要抓规则稳、算法准、少出低级错。';
@@ -3224,14 +3331,24 @@
                     <div class="quick-review-usage-text">${item.text}</div>
                 </div>
             `).join('');
+            const focusHtml = recommendationTopics.map((topic, index) => `
+                <article class="quick-review-focus-card">
+                    <span class="quick-review-focus-label">今日先看 ${String(index + 1).padStart(2, '0')}</span>
+                    <h3>${topic.title}</h3>
+                    <p class="quick-review-focus-copy">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
+                    <div class="quick-review-focus-route">先按这个顺序扫：${topic.memoryRoute}</div>
+                    <div class="quick-review-focus-pins">${(topic.pins || []).slice(0, 2).map(pin => `<span class="quick-review-focus-pin">${pin}</span>`).join('')}</div>
+                    ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达这个专题</button>`}
+                </article>
+            `).join('');
             const navHtml = topics.map((topic, index) => `
-                <span class="quick-review-nav-chip">
+                <button type="button" class="quick-review-nav-chip" onclick="window.jumpToQuickReviewTopic('${topic.id}')">
                     <span class="quick-review-nav-num">${String(index + 1).padStart(2, '0')}</span>
                     <span>${topic.shortLabel}</span>
-                </span>
+                </button>
             `).join('');
             const topicHtml = topics.map(topic => `
-                <section class="quick-review-topic">
+                <section class="quick-review-topic" id="quick-review-topic-${topic.id}">
                     <div class="quick-review-topic-head">
                         <div>
                             <div class="quick-review-topic-kicker">${topic.kicker}</div>
@@ -3274,6 +3391,7 @@
                         <div class="quick-review-stage-note">${stageNote}</div>
                         <div class="quick-review-usage-strip">${usageHtml}</div>
                         <div class="quick-review-recommendations">${recommendationHtml}</div>
+                        <div class="quick-review-focus-strip">${focusHtml}</div>
                     </div>
                     <div class="quick-review-nav">${navHtml}</div>
                     <div class="quick-review-topics">${topicHtml}</div>
@@ -3287,6 +3405,7 @@
                 </div>
             `;
         }
+        window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;
         function getActiveErrorEntries(profile, tag) {
             return Object.entries(profile?.errorBook || {})
                 .map(([uid, entry]) => ({ uid, ...entry }))

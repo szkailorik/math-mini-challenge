@@ -304,6 +304,13 @@ v23.50 turns that quick-review layer into a more usable study routine:
 - Each topic now exposes a stable “回想顺序”, which turns the page from a static content wall into a repeatable scanning routine.
 - Product-wise, this matters because review efficiency depends not only on picking the right content, but also on reducing hesitation: the learner should know how to move through the page quickly.
 
+v23.51 makes the quick-review layer more decisive:
+
+- The page now lifts the two most worth-reviewing topics into a visible `今日先看` strip instead of leaving them only as small recommendation pills.
+- The overview navigation now doubles as a direct jump layer, reducing the time between “I know what I should review” and “I am looking at that topic now”.
+- Print output preserves that focus strip in a compressed format, so the printed handout starts with an immediate priority cue instead of only a long stable reference page.
+- Product-wise, this matters because a high-quality review aid should not only be readable; it should help the learner decide where to spend the next 30 seconds.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

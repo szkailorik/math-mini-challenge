@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.51 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the child-facing `Calculation Quick Review` page with a stronger `今日先看` focus strip, promoted the top two recommended topics into larger spotlight cards, and turned the overview navigation into direct jump shortcuts while keeping the printed handout compact.
+- Open questions: whether the next pass should tighten the wording quality inside each topic block again, or keep refining the visual density so the whole page feels even more like a polished study leaflet.
+- Risks: the page is now more decisive and easier to scan, but future additions must stay disciplined so the focus strip remains a prioritization aid rather than turning into a second dashboard.
+- Next steps: review the live page with real child use, then either sharpen topic copy or continue refining print-first layout balance and typography.
+
 ## Current v23.50 Iteration Notes
 
 ### Iteration 1

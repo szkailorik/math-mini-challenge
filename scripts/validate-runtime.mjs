@@ -54,6 +54,12 @@ if (!html.includes('function getCalculationQuickReviewEmphasis')) {
 if (!html.includes('function getCalculationQuickReviewRecommendations')) {
   throw new Error('Calculation Quick Review recommendation helper is missing from runtime script');
 }
+if (!html.includes('function getCalculationQuickReviewRecommendationTopics')) {
+  throw new Error('Calculation Quick Review recommendation-topic helper is missing from runtime script');
+}
+if (!html.includes('window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;')) {
+  throw new Error('Calculation Quick Review topic jump helper is missing from runtime script');
+}
 if (!html.includes('window.showCalculationQuickReview = function()')) {
   throw new Error('Calculation Quick Review entrypoint is missing from runtime script');
 }
@@ -66,7 +72,7 @@ if (!html.includes('📘 计算知识总览 / Quick Review')) {
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
   throw new Error('Math typography classes are missing from CSS');
 }
-if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row')) {
+if (!html.includes('.quick-review-page') || !html.includes('.quick-review-nav-chip') || !html.includes('.quick-review-example-row') || !html.includes('.quick-review-focus-strip')) {
   throw new Error('Calculation Quick Review visual shell is missing from CSS');
 }
 if (!html.includes('print-quick-review') || !html.includes('quick-review-print-shell')) {
@@ -278,11 +284,17 @@ if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes(
 if (!reviewModalHtml.includes('当前更值得多看：')) {
   throw new Error('Calculation Quick Review recommendations did not render');
 }
+if (!reviewModalHtml.includes('今日先看 01') || !reviewModalHtml.includes('直达这个专题')) {
+  throw new Error('Calculation Quick Review focus cards or jump shortcuts did not render');
+}
 if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('易错提醒')) {
   throw new Error('Calculation Quick Review topic blocks are incomplete');
 }
 if (!reviewModalContent?.classList?.contains('quick-review-modal')) {
   throw new Error('Calculation Quick Review did not switch the modal into quick-review layout mode');
+}
+if (typeof context.jumpToQuickReviewTopic !== 'function') {
+  throw new Error('Calculation Quick Review topic jump helper was not exposed on window');
 }
 context.printCalculationQuickReview();
 await new Promise(resolve => setTimeout(resolve, 260));
