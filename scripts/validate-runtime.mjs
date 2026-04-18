@@ -258,6 +258,17 @@ if (!fractionPrompt.bodyHtml.includes('math-paren-group')) {
 if (!fractionPrompt.answerTailHtml.includes('math-answer-tail') || !fractionPrompt.answerTailHtml.includes('math-answer-slot')) {
   throw new Error('Shared answer tail is missing the expected equals and answer-slot markup');
 }
+if (!fractionPrompt.prefersExamInline) {
+  throw new Error('Fraction prompts should request exam-inline layout treatment');
+}
+
+const fractionNoEqualsPrompt = context.normalizeQuestionPrompt(
+  '<div class="frac"><span>2</span><span class="bottom">9</span></div> &times; <div class="frac"><span>1</span><span class="bottom">2</span></div> &divide; <div class="frac"><span>1</span><span class="bottom">2</span></div>',
+  'h-frac',
+);
+if (!fractionNoEqualsPrompt?.hasAnswerTail) {
+  throw new Error('Fraction computation prompts without an explicit trailing equals should still receive a shared answer tail');
+}
 
 const comparisonPrompt = context.normalizeQuestionPrompt(
   '<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.8',

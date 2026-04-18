@@ -194,6 +194,12 @@ v23.31 fixes a deeper math-layout regression:
 - Parenthesized fraction expressions are rendered as one inline math group, which makes the most fragile fraction questions feel more like a real exam item and less like assembled HTML parts.
 - Product-wise, this matters because students should be solving math, not decoding unstable typography; cleaner alignment improves both print trust and cognitive fluency.
 
+v23.32 tightens exam-row math presentation:
+
+- Fraction-heavy prompts now prefer a stricter single-row exam layout, closer to how formal arithmetic worksheets present a whole expression before the answer line.
+- Visible-equals detection now ignores HTML attributes, so fraction questions no longer lose their trailing `= ____` just because the source string contains markup like `class="frac"`.
+- Product-wise, this matters because missing equals signs and broken fraction rows make the paper feel inconsistent and reduce the credibility of the worksheet as an exam-like practice surface.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

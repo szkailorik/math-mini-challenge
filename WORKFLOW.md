@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.31 Iteration Notes
+## Current v23.32 Iteration Notes
+
+### Iteration 1
+
+- What I changed: re-investigated the remaining missing-equals failures from real prompt output instead of assuming the previous structural fix had solved them.
+- Open questions: none.
+- Risks: math layout bugs can hide in semantic checks, not only in CSS, so visual polish alone is not enough.
+- Next steps: keep sampling rendered prompts when a paper bug appears, not only scanning source generators.
+
+### Iteration 2
+
+- What I changed: found that visible-equals detection was reading raw HTML and mistaking attributes such as `class="frac"` for an existing equals sign, which suppressed the shared answer tail on many fraction items.
+- Open questions: none.
+- Risks: any future semantic check that reads raw markup instead of visible math text can create similarly subtle rendering regressions.
+- Next steps: strip markup before semantic math checks and keep regression cases in runtime validation.
+
+### Iteration 3
+
+- What I changed: added an exam-inline row treatment for fraction-heavy prompts so fractions, parentheses, equals, and answer lines stay closer to a real worksheet line instead of drifting like wrapped webpage fragments.
+- Open questions: none.
+- Risks: very long future prompt families may still need item-specific density tuning if they exceed the available column width.
+- Next steps: keep fraction-heavy prompts on the stricter exam-row path and check them in print preview whenever new fraction generators are added.
+
+## Previous v23.31 Iteration Notes
 
 ### Iteration 1
 

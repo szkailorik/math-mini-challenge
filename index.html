@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.31 (数学排版结构化修正)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.32 (试卷行内算式排版修正)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -290,6 +290,13 @@
             gap: 0.16em 0.22em;
             min-width: 0;
         }
+        .q-body.exam-inline {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            column-gap: 0.18em;
+            row-gap: 0;
+        }
         .math-row {
             display: inline-flex;
             align-items: center;
@@ -329,6 +336,11 @@
             white-space: nowrap;
             margin-left: 0.08em;
             min-height: 1.08em;
+        }
+        .math-text.exam-expression {
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            gap: 0.1em 0.14em;
         }
         .review-flag {
             position: absolute;
@@ -401,6 +413,15 @@
         .paren-r::before { content: ')'; }
 
         .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
+        .h-frac .q-body.exam-inline,
+        .h-mixed .q-body.exam-inline {
+            align-items: center;
+        }
+        .h-frac .math-text.exam-expression,
+        .h-mixed .math-text.exam-expression {
+            font-size: 0.93em;
+            letter-spacing: 0.01em;
+        }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -770,7 +791,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.31</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.32</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -849,9 +870,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.31';
-        const APP_RELEASE_LABEL = '数学排版结构化修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.31 数学排版结构化修正：<br><strong>统一等号与答题槽规则，修正分数题、括号题和横线错位<br>并同步收紧打印态，避免分数排版再次飘移</strong>';
+        const APP_VERSION = 'v23.32';
+        const APP_RELEASE_LABEL = '试卷行内算式排版修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.32 试卷行内算式排版修正：<br><strong>修正分数题漏等号问题，并把分数/括号题收成更像试卷的一行算式<br>同步校正打印态，减少分数题断行和答题尾部漂移</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2541,11 +2562,18 @@
             const bodyHtml = beautifyMathHTML(rawWithoutTerminalEquals);
             const hasInlineBlank = /class="blank\b|math-inline-blank/.test(bodyHtml);
             const hasCircleBlank = /circle-blank/.test(bodyHtml);
-            const hasInternalEquals = !hasTrailingEquals && rawWithoutTerminalEquals.includes('=');
+            const semanticMathText = rawWithoutTerminalEquals
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/&(?:times|divide|minus|lt|gt);/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const hasInternalEquals = !hasTrailingEquals && semanticMathText.includes('=');
+            const prefersExamInline = /class="frac"|paren-l|paren-r/.test(rawWithoutTerminalEquals);
             const hasAnswerTail = (hasTrailingEquals || (heightClass !== 'h-conv' && !hasInlineBlank && !hasCircleBlank && !hasInternalEquals));
             return {
                 bodyHtml,
                 hasAnswerTail,
+                prefersExamInline,
                 answerTailHtml: hasAnswerTail
                     ? '<span class="math-answer-tail"><span class="math-eq">=</span><span class="math-answer-slot"></span></span>'
                     : ''
@@ -4261,7 +4289,9 @@
                     ${items.map((q,i) => {
                         let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}</span>${prompt.answerTailHtml}</div></div>`;
+                        const bodyClass = prompt.prefersExamInline ? 'q-body exam-inline' : 'q-body';
+                        const textClass = prompt.prefersExamInline ? 'math-text exam-expression' : 'math-text';
+                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="${bodyClass}"><span class="${textClass}">${prompt.bodyHtml}</span>${prompt.answerTailHtml}</div></div>`;
                     }).join('')}
                 </div>
             </div>`;
