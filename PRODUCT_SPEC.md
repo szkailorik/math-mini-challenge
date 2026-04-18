@@ -241,11 +241,12 @@ v23.39 prioritizes one-line fraction items:
 - In practice, this means fewer items per row, tighter row gaps, and more vertical growth for the section when needed, so one problem can remain one clean line.
 - Product-wise, this matters because broken or staggered fraction expressions feel much messier than a slightly taller section.
 
-v23.40 gives the fraction section a full single-column layout:
+v23.41 reframes worksheet layout around a stricter paper rule:
 
-- The worksheet now goes one step further for fraction-heavy sections by letting those items occupy a whole row each.
-- This explicitly favors item integrity over overall compactness.
-- Product-wise, this matters because a slightly taller worksheet is easier to accept than a visually broken fraction expression.
+- The whole paper should still fit inside its intended two-page footprint.
+- Each question must remain intact on a single line instead of breaking mid-expression.
+- Instead of forcing fraction sections into a single column, the renderer now adapts between 2-column and 3-column section grids while shrinking overly tall fraction cells back toward normal exam-row height.
+- Product-wise, this matters because the worksheet should feel like a real exam sheet: compact across the page, but still visually stable at the individual-question level.
 
 v23.24 deepens the second-stage training quality:
 

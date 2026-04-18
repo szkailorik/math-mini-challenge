@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.41 Iteration Notes
+
+### Iteration 1
+
+- What I changed: accepted the new hard constraint that the whole worksheet must stay within two pages, so “single-column fraction protection” was no longer enough.
+- Open questions: none.
+- Risks: denser multi-column recovery only works if item heights are also brought back down.
+- Next steps: remove oversized fraction-cell assumptions instead of only changing column count.
+
+### Iteration 2
+
+- What I changed: switched from a section-specific single-column strategy to a global “single-question single-line” rule with adaptive 2-column/3-column grids.
+- Open questions: none.
+- Risks: some exceptionally long prompts may still need section-level density tuning later.
+- Next steps: keep watching the longest mixed and conversion prompts after the fraction section stabilizes.
+
+### Iteration 3
+
+- What I changed: mirrored the same compacting logic into the print sandbox so paper output follows the same two-page, no-midline-break rule.
+- Open questions: none.
+- Risks: print density now depends more on font sizing and less on vertical whitespace.
+- Next steps: if a specific item still feels too tight, solve it by density class or section column choice, not by allowing line breaks.
+
 ## Current v23.40 Iteration Notes
 
 ### Iteration 1

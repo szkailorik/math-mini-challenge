@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.40 (分数题区改为单列)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.41 (两页内单题单行排版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -96,7 +96,7 @@
                 line-height: 1.28 !important;
             }
             body.print-sandbox-active #print-root .grid-frac-tight {
-                gap: 7px 8px !important;
+                gap: 6px 8px !important;
             }
             body.print-sandbox-active #print-root .frac {
                 font-size: 0.88em !important;
@@ -111,17 +111,19 @@
                 margin-right: 0.1em !important;
             }
             body.print-sandbox-active #print-root .item.h-frac {
-                font-size: 16.3px !important;
-                line-height: 1.08 !important;
+                font-size: 15.6px !important;
+                line-height: 1.06 !important;
             }
-            body.print-sandbox-active #print-root .h-frac .q-body,
-            body.print-sandbox-active #print-root .h-frac .math-text {
+            body.print-sandbox-active #print-root .item.paper-line-lock .q-body,
+            body.print-sandbox-active #print-root .item.paper-line-lock .math-text,
+            body.print-sandbox-active #print-root .item.paper-line-lock .math-row,
+            body.print-sandbox-active #print-root .item.paper-line-lock .math-group-body {
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
-            body.print-sandbox-active #print-root .h-frac { min-height: 100px !important; }
+            body.print-sandbox-active #print-root .h-frac { min-height: 42px !important; }
             body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
             body.print-sandbox-active #print-root .h-conv {
                 min-height: 36px !important;
@@ -271,7 +273,7 @@
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-frac-tight { gap: 9px 10px; }
+        .grid-frac-tight { gap: 8px 10px; }
 
         .q-badge { font-size: 11px; color: white; padding: 2px 5px; border-radius: 4px; margin-right: 6px; vertical-align: middle; font-family: 'KaiTi', '楷体', serif; font-weight: normal; letter-spacing: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .badge-weak { background-color: #ef4444; }
@@ -303,6 +305,16 @@
             flex-wrap: wrap;
             gap: 0.12em 0.18em;
             min-width: 0;
+        }
+        .item.paper-line-lock .q-body,
+        .item.paper-line-lock .math-row,
+        .item.paper-line-lock .math-text,
+        .item.paper-line-lock .math-group-body {
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+        .item.paper-line-lock .q-body {
+            align-items: center;
         }
         .math-row {
             display: inline-flex;
@@ -405,24 +417,43 @@
         .paren-l::before { content: '('; }
         .paren-r::before { content: ')'; }
 
-        .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
+        .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 52px; } .h-mixed  { min-height: 135px; }
         .h-frac,
         .h-mixed {
             font-size: 18.6px;
         }
         .item.h-frac {
-            font-size: 18px;
-            line-height: 1.14;
+            font-size: 17.3px;
+            line-height: 1.1;
         }
         .h-frac .math-text,
         .h-mixed .math-text {
             gap: 0.08em 0.14em;
             line-height: 1.24;
         }
-        .h-frac .q-body,
-        .h-frac .math-text {
-            flex-wrap: nowrap;
-            white-space: nowrap;
+        .item.item-dense {
+            font-size: 17.6px;
+            line-height: 1.16;
+        }
+        .item.item-dense .q-num {
+            font-size: 18px;
+            line-height: 1.22;
+        }
+        .item.item-dense .frac {
+            font-size: 0.84em;
+            margin: 0 0.07em 0 0.05em;
+        }
+        .item.item-ultra-dense {
+            font-size: 16.8px;
+            line-height: 1.12;
+        }
+        .item.item-ultra-dense .q-num {
+            font-size: 17.1px;
+            line-height: 1.18;
+        }
+        .item.item-ultra-dense .frac {
+            font-size: 0.8em;
+            margin: 0 0.05em 0 0.03em;
         }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
@@ -801,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.40</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.41</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -880,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.40';
-        const APP_RELEASE_LABEL = '分数题区改为单列';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.40 分数题区改为单列：<br><strong>分数题区域直接改成单列排布，优先保证每道题完整占一行<br>宁可整块更高，也不让分数题在一题内部断开错位</strong>';
+        const APP_VERSION = 'v23.41';
+        const APP_RELEASE_LABEL = '两页内单题单行排版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.41 两页内单题单行排版：<br><strong>所有题目优先保持整题单行，分数区恢复紧凑多列<br>通过题块降高与列数自适应，把整套卷子继续压回两页内</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2599,6 +2630,46 @@
         }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
+        function estimateQuestionComplexity(questionHtml = '') {
+            const raw = String(questionHtml || '');
+            const plain = raw
+                .replace(/<div class="frac">[\s\S]*?<\/div>/g, ' F ')
+                .replace(/<div class="blank"><\/div>/g, ' B ')
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/&(?:times|divide|minus|rarr|lt|gt);/g, ' O ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const fracCount = (raw.match(/class="frac"/g) || []).length;
+            const mixedCount = (raw.match(/class="mixed"/g) || []).length;
+            const blankCount = (raw.match(/class="blank"/g) || []).length;
+            const opCount = (raw.match(/(?:&times;|&divide;|&minus;|[+=()])/g) || []).length;
+            return plain.length + fracCount * 12 + mixedCount * 10 + blankCount * 8 + opCount * 2;
+        }
+        function getItemDensityClass(questionHtml = '', heightClass = '') {
+            const score = estimateQuestionComplexity(questionHtml);
+            if (heightClass === 'h-frac') {
+                if (score >= 78) return 'item-ultra-dense';
+                if (score >= 56) return 'item-dense';
+                return '';
+            }
+            if (heightClass === 'h-conv' || heightClass === 'h-mixed') {
+                if (score >= 54) return 'item-dense';
+            }
+            return '';
+        }
+        function resolveSectionColumnCount(items, heightClass, fallbackCols) {
+            const maxScore = Math.max(0, ...(items || []).map(item => estimateQuestionComplexity(item?.q || '')));
+            if (heightClass === 'h-frac') {
+                return maxScore >= 84 ? 2 : Math.min(3, fallbackCols);
+            }
+            if (heightClass === 'h-conv') {
+                return maxScore >= 42 ? Math.min(3, fallbackCols) : fallbackCols;
+            }
+            if (heightClass === 'h-mixed') {
+                return maxScore >= 60 ? Math.max(2, fallbackCols - 1) : fallbackCols;
+            }
+            return fallbackCols;
+        }
         function pickErrorReplayEntry(entries) {
             const valid = (entries || []).filter(entry => entry?.info?.q && entry?.info?.a);
             if (!valid.length) return null;
@@ -4291,7 +4362,8 @@
             const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
             const sectionIndex = match ? match[1] : '';
             const sectionTitle = match ? match[2] : cnTitle;
-            const gridClass = heightClass === 'h-frac' ? `grid grid-1 grid-frac-tight` : `grid grid-${cols}`;
+            const resolvedCols = resolveSectionColumnCount(items, heightClass, cols);
+            const gridClass = `grid grid-${resolvedCols}${heightClass === 'h-frac' ? ' grid-frac-tight' : ''}`;
             return `
             <div class="section">
                 <div class="section-title">
@@ -4308,7 +4380,8 @@
                     ${items.map((q,i) => {
                         let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
+                        const densityClass = getItemDensityClass(q.q, heightClass);
+                        return `<div class="item paper-line-lock ${heightClass}${densityClass ? ` ${densityClass}` : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
                     }).join('')}
                 </div>
             </div>`;
