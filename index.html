@@ -1313,32 +1313,28 @@
             background: rgba(255,255,255,0.72);
             border: 1px solid rgba(16, 35, 63, 0.1);
             border-radius: 14px;
-            padding: 9px 10px;
+            padding: 8px 9px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
         }
         .program-shell-card { margin-top: 4px; }
         .program-shell-head, .stage-status-head {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
         .program-kicker {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #64748b;
+            display: none;
         }
         .program-chip, .status-chip {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 3px 8px;
+            padding: 2px 7px;
             border-radius: 999px;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             white-space: nowrap;
         }
@@ -1391,24 +1387,29 @@
         .program-select { display: none; }
         .program-select:focus { outline: 2px solid rgba(191, 219, 254, 0.65); outline-offset: 1px; }
         .stage-status-title {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
             color: var(--desk-ink);
             line-height: 1.3;
         }
+        .stage-status-card {
+            background: transparent;
+            border: none;
+            border-top: 1px dashed rgba(16, 35, 63, 0.12);
+            border-radius: 0;
+            padding: 5px 0 0;
+        }
         .stage-status-card.is-advanced {
             border-color: rgba(18, 59, 115, 0.18);
-            background: linear-gradient(180deg, rgba(18, 59, 115, 0.06), rgba(255,255,255,0.66));
         }
         .stage-status-card.is-closure {
             border-color: rgba(180, 83, 9, 0.22);
-            background: linear-gradient(180deg, rgba(180, 83, 9, 0.08), rgba(255,255,255,0.68));
         }
-        .stage-insights { display: flex; flex-wrap: wrap; gap: 6px; }
+        .stage-insights { display: flex; flex-wrap: wrap; gap: 4px; }
         .stage-insight {
-            font-size: 10.5px;
+            font-size: 10px;
             line-height: 1.2;
-            padding: 2px 7px;
+            padding: 2px 6px;
             border-radius: 999px;
             background: rgba(255,255,255,0.78);
             border: 1px solid rgba(16, 35, 63, 0.1);
@@ -1498,7 +1499,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.61</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.62</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1574,9 +1575,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.61';
-        const APP_RELEASE_LABEL = '悬浮菜单继续瘦身';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.61 悬浮菜单继续瘦身：移除冗余标题区，进一步压缩高度。';
+        const APP_VERSION = 'v23.62';
+        const APP_RELEASE_LABEL = '悬浮菜单状态层轻量化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.62 悬浮菜单状态层轻量化：把阶段状态区改成更轻的一条状态层。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.62 Iteration Notes
+
+### Iteration 1
+
+- What I changed: reduced the visual weight of the floating tutor shell again by hiding the workbench kicker, shrinking chips and insight pills, and turning the stage-status block into a lighter status layer instead of a second heavy card.
+- Open questions: whether the next shell pass should stop here or merge one more layer of controls into a tighter top utility band.
+- Risks: making the shell too airy can improve fit, but if the state layer gets too subtle it may become easier to miss at a glance.
+- Next steps: review the live shell for scanability, then decide whether one more structural merge is worth it.
+
 ## Current v23.61 Iteration Notes
 
 ### Iteration 1

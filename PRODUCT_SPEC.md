@@ -521,3 +521,9 @@ profile = {
 - The separate current-program title row is no longer shown in the floating menu because the active stage switch and phase chip already communicate the same state.
 - Card spacing, insight pills, and button rhythm are all tighter, reducing the menu’s vertical footprint again.
 - The goal stays the same: keep the tutor shell easy to find and use without pushing lower controls off-screen.
+
+- v23.62 makes the tutor-shell status layer lighter:
+
+- The stage-status area now reads more like a compact in-card status strip than a second full floating card.
+- Chips and insight pills were also tightened so the same phase context occupies less visual and vertical weight.
+- This keeps the shell easier to scan as a tool palette instead of a stack of separate panels.
