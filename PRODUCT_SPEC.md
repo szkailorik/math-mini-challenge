@@ -272,6 +272,12 @@ v23.45 upgrades second-stage `L3` reinforcement from symbolic escalation to real
 - The `Closure` focus lane can now emit dedicated boundary-style questions for rate/equation/unit reasoning when a learner reaches `L3` intensity in `methodGap`.
 - Product-wise, this matters because a true closure phase should test method choice under slightly twisted conditions, not only rehearse a familiar template.
 
+v23.46 extends real boundary checks into result validation:
+
+- Validation-heavy closure items no longer stop at ordinary estimate variants once they reach `L3`.
+- The `Closure` focus lane can now emit dedicated boundary-style result-check questions that foreground quantity sense and trustworthiness before exact computation.
+- Product-wise, this matters because a high-quality elementary calculation finisher should not only execute methods, but also reject implausible answers quickly.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

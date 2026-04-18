@@ -462,6 +462,7 @@ Status note:
   - `k_fcalc_*` now maps into `fraction_operation`
   - `c2_eq_*` now maps into `equation_method`
 - The closure focus lane has also started moving from symbolic `L3` escalation to dedicated boundary-style replay items for method-heavy families.
+- Boundary-style `L3` replay is now also live for validation-heavy closure families, not only method-heavy ones.
 
 - [ ] **Step 7: Commit**
 

@@ -1248,6 +1248,63 @@ if (!String(closureMethodReplay?.step || '').includes('[重点强化 Boundary]')
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：单位与建模')) {
   throw new Error('Method-gap closure focus title did not render on the next KAI closure paper');
 }
+closureProfile.representationGap = 0;
+closureProfile.methodGap = 0;
+closureProfile.stabilityGap = 0;
+closureProfile.speedGap = 0;
+closureProfile.validationGap = 9;
+Object.keys(closureProfile.errorBook || {}).forEach(uid => {
+  const entry = closureProfile.errorBook[uid];
+  if (!entry) return;
+  if (entry.tag === 'c2_est_product') {
+    entry.count = 4;
+    entry.lastSet = 105;
+    entry.mastered = false;
+  } else {
+    entry.mastered = true;
+  }
+});
+closureProfile.errorBook.validationL3 = {
+  tag: 'c2_est_product',
+  grade: 'wrong',
+  count: 4,
+  firstSet: 105,
+  lastSet: 105,
+  mastered: false,
+  info: {
+    q: '19.8 &times; 4.9 的结果更接近<div class="blank"></div>',
+    a: '100',
+    step: '先看数量级，再判断结果范围。'
+  }
+};
+context.window.currentSetNumber = 106;
+context.window.renderPaper();
+const closureValidationData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 106)) || '{}');
+if (closureValidationData.c_k_focusMeta?.field !== 'validationGap') {
+  throw new Error(`Expected KAI closure focus to retarget validationGap, got ${closureValidationData.c_k_focusMeta?.field || '(missing)'}`);
+}
+const closureValidationReplay = closureValidationData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+if (!closureValidationReplay) {
+  throw new Error('Validation-gap closure focus did not inject an explicit closure focus replay item');
+}
+if (closureValidationReplay?.qualityFamily !== 'validation_estimation') {
+  throw new Error(`Expected validation-gap closure focus replay to use validation_estimation, got ${closureValidationReplay?.qualityFamily || '(missing)'}`);
+}
+if (closureValidationReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected validation-gap closure focus replay to escalate to L3, got ${closureValidationReplay?.replayLevel || '(missing)'}`);
+}
+if (closureValidationReplay?.closureFocusMode !== 'L3_boundary') {
+  throw new Error(`Expected validation-gap closure focus replay to use L3_boundary mode, got ${closureValidationReplay?.closureFocusMode || '(missing)'}`);
+}
+if (closureValidationReplay?.explanationMode !== 'validation') {
+  throw new Error(`Expected validation-gap closure focus replay to use validation explanation mode, got ${closureValidationReplay?.explanationMode || '(missing)'}`);
+}
+if (!String(closureValidationReplay?.step || '').includes('[重点强化 Boundary]')) {
+  throw new Error('Expected validation-gap L3 closure focus replay to use a dedicated boundary-style explanation');
+}
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：结果检验')) {
+  throw new Error('Validation-gap closure focus title did not render on the next KAI closure paper');
+}
 context.window.showSetReview(103, 'KAI');
 const closureReviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!closureReviewHtml.includes('第二阶段') || !closureReviewHtml.includes('表征切换') || !closureReviewHtml.includes('旧知保温')) {

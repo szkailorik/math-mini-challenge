@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.45 Iteration Notes
+## Current v23.46 Iteration Notes
+
+### Iteration 1
+
+- What I changed: extended dedicated `Closure` boundary replay from `methodGap` into `validationGap`, so second-stage `L3` reinforcement can now test result plausibility with custom boundary-style estimate checks instead of only ordinary variants.
+- Open questions: whether the next pass should deepen `speedGap` with its own custom boundary items, or pause boundary work and strengthen reporting/teacher visibility.
+- Risks: custom `L3` depth is now clearly stronger in `methodGap` and `validationGap` than in the remaining closure families.
+- Next steps: either widen boundary replay to `speedGap` or surface current `closureFocusMode` in reports so teachers can see how deep the reinforcement is.
+
+## Previous v23.45 Iteration Notes
 
 ### Iteration 1
 
