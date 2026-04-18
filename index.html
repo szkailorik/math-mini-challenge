@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.11 (训练质量重构版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.13 (考试排版清爽版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -81,9 +81,25 @@
         .badge-weak { background-color: #ef4444; }
         .badge-forget { background-color: #3b82f6; }
 
-        .item { display: flex; align-items: flex-start; font-size: 20px; }
+        .item { display: flex; align-items: flex-start; font-size: 20px; position: relative; }
         .q-num { font-family: 'Times New Roman', serif; font-weight: bold; margin-right: 6px; }
         .math-row { display: inline-flex; align-items: center; flex-wrap: wrap; font-family: 'Times New Roman', serif; letter-spacing: 1px; }
+        .review-flag {
+            position: absolute;
+            top: -2px;
+            right: 2px;
+            font-size: 9px;
+            line-height: 1;
+            padding: 2px 5px;
+            border-radius: 999px;
+            border: 1px solid #fdba74;
+            background: rgba(255, 247, 237, 0.95);
+            color: #9a3412;
+            font-family: sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            pointer-events: none;
+        }
 
         /* ================= V21 终极修正：纯排版级分数与完美大括号 ================= */
         .frac {
@@ -175,8 +191,6 @@
         .reason-replay { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74;}
         .reason-variant { background: #fef9c3; color: #854d0e; border: 1px solid #fde047;}
         .level-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; font-family: sans-serif; font-weight: bold; }
-        .focus-strip { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 6px; font-family: sans-serif; font-size: 11px; color: #334155; }
-        .focus-pill { border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 7px; background: #f8fafc; }
         .knowledge-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 15px; }
         .knowledge-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #fff; font-family: sans-serif; }
         .knowledge-card h4 { margin: 0 0 6px 0; color: #002D72; font-size: 15px; }
@@ -224,7 +238,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.11</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.13</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -247,7 +261,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.11 训练质量重构版：<br><strong>B卷除法强制更新新题<br>更多核心区块改为固定覆盖</strong>
+                💡 23.13 考试排版清爽版：<br><strong>题卷回归考试样式<br>仅错题回炉保留轻提示</strong>
             </div>
         </div>
 
@@ -273,9 +287,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.11';
-        const APP_RELEASE_LABEL = '训练质量重构版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.11 训练质量重构版：<br><strong>B卷除法强制更新新题<br>更多核心区块改为固定覆盖</strong>';
+        const APP_VERSION = 'v23.13';
+        const APP_RELEASE_LABEL = '考试排版清爽版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.13 考试排版清爽版：<br><strong>题卷回归考试样式<br>仅错题回炉保留轻提示</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
@@ -394,7 +408,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v31';
+        const SET_CACHE_PREFIX = 'MathSetData_v32';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1521,17 +1535,17 @@
             ]),
             bigSub: () => buildCoveredSection("KAI", [
                 [
-                    { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`先从个位开始减；遇到低位不够减时，向前一位借1并立刻在草稿上记清退位链。`}; } }
                 ],
                 [
-                    { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`中间有0时，借位要一层一层往前找，经过的0会变成9，最后再回到当前位做减法。`}; } }
                 ],
                 [
-                    { tag: "k_sub_100k", gen: () => { let b=Engine.randInt(21111,88888); return {tag:"k_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`}; } },
+                    { tag: "k_sub_100k", gen: () => { let b=Engine.randInt(21111,88888); return {tag:"k_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`, step:`整十万减法先从最高位借1，连续0依次变成9，再从末位开始逐位相减。`}; } },
                     { tag: "k_sub_near_million", gen: () => { let b=Engine.randInt(211111,888888); return {tag:"k_sub_near_million", q:`1000000 &minus; ${b}`, a:`${1000000-b}`, step:`从百万位借1，中间连续0依次变9，个位参与最后相减。`}; } }
                 ],
                 [
-                    { tag: "k_sub_6digit", gen: () => { let a=Engine.randInt(30,60)*10000+Engine.randInt(111,999), b=Engine.randInt(4,6)*10000+Engine.randInt(111,999); return {tag:"k_sub_6digit", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "k_sub_6digit", gen: () => { let a=Engine.randInt(30,60)*10000+Engine.randInt(111,999), b=Engine.randInt(4,6)*10000+Engine.randInt(111,999); return {tag:"k_sub_6digit", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`六位数退位题先估答案约在 ${Math.floor((a-b)/1000)}000 左右，再逐位相减，最后用估算回查数量级。`}; } }
                 ]
             ]),
             fracEquations: () => {
@@ -1691,88 +1705,117 @@
         const GenLorik = {
             mul: () => buildCoveredSection("Lorik", [
                 [
-                    { tag: "l_mul_3x3", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(301,999); return {tag:"l_mul_3x3", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
-                    { tag: "l_mul_3x20", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(11,99); return {tag:"l_mul_3x20", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+                    { tag: "l_mul_3x3", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(301,999); return {tag:"l_mul_3x3", q:`${a} &times; ${b}`, a:`${a*b}`, step:`按竖式分位相乘，先算个位乘积，再算十位和百位，最后注意同数位对齐相加。`}; } },
+                    { tag: "l_mul_3x20", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(11,99); return {tag:"l_mul_3x20", q:`${a} &times; ${b}`, a:`${a*b}`, step:`两位数乘三位数时，先用个位乘，再用十位乘；第二行要向左错一位再相加。`}; } }
                 ],
                 [
-                    { tag: "l_mul_dec", gen: () => { let a=Engine.randInt(11,99)/10, b=Engine.randInt(11,99)/10; return {tag:"l_mul_dec", q:`${a.toFixed(1)} &times; ${b.toFixed(1)}`, a:`${(a*b).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}`}; } }
+                    { tag: "l_mul_dec", gen: () => { let a=Engine.randInt(11,99)/10, b=Engine.randInt(11,99)/10; return {tag:"l_mul_dec", q:`${a.toFixed(1)} &times; ${b.toFixed(1)}`, a:`${(a*b).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}`, step:`先当整数算 ${Math.round(a*10)}&times;${Math.round(b*10)}，再看两个因数共有2位小数，把小数点点回去。`}; } }
                 ],
                 [
                     { tag: "l_mul_near100", gen: () => { let a=Engine.randChoice([98,99,101,102]), b=Engine.randInt(23,89); return {tag:"l_mul_near100", q:`${a} &times; ${b}`, a:`${a*b}`, step:`把${a}看成${a < 100 ? '100-' + (100-a) : '100+' + (a-100)}，先算100倍再补偿。`}; } },
                     { tag: "l_mul_25", gen: () => { let a=Engine.randInt(12,96)*4; return {tag:"l_mul_25", q:`25 &times; ${a}`, a:`${25*a}`, step:`25&times;4=100，先把${a}拆成4&times;${a/4}。`}; } }
                 ],
                 [
-                    { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
-                    { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+                    { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`, step:`先算非0部分，再把原数里的千位信息一起带回结果，避免把末尾0漏掉。`}; } },
+                    { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`, step:`把 ${a} 看成前面的数乘100，先算前面的乘法，最后在结果后面补上2个0。`}; } }
                 ]
             ]),
             div: () => {
                 return buildCoveredSection("Lorik", [
                     [
-                        { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
-                        { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                        { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`先看最高位够不够除；商中间遇到不够除的位时，要在商里写0占位，再继续往下除。`}; } },
+                        { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`两位数除法先估商，再用“除到哪一位，商就写在哪一位”的竖式规则逐位试商。`}; } },
                         { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
                         { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
-                        { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
+                        { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`, step:`结果末尾会带0时，也要照样算出前面的商，再把这个位值上的0保留下来。`}; } }
                     ],
                     [
                         { tag: "l_div_decimal_dividend", gen: () => {
                             let divisor = Engine.randInt(12,48);
-                            let quotient = Engine.randInt(12,96) / 10;
+                            let quotient = Engine.randChoice([0.6, 0.8, 1.2, 1.5, 2.4, 3.6, 4.8, 5.4, 6.4]);
                             let dividend = divisor * quotient;
                             return {
                                 tag:"l_div_decimal_dividend",
                                 q:`${dividend.toFixed(1)} &divide; ${divisor}`,
                                 a:formatDecimal(quotient),
-                                step:`先估商在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间，再按整数除法列式，商的小数点与被除数对齐。`
+                                step:`先估商${quotient < 1 ? '小于1，要先写0再点小数点；' : `大约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`}再按整数除法列式，商的小数点与被除数对齐。`
                             };
                         } },
-                        { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } }
+                        { tag: "l_div_dec1", gen: () => {
+                            let a=Engine.randInt(11,49), q=Engine.randChoice([0.4, 0.7, 0.9, 1.3, 1.6, 2.5, 3.2]);
+                            return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:formatDecimal(q), step:`被除数带小数时先估商，再按整数除法试商；如果商不到1，商上要先写0占位。`};
+                        } }
                     ],
                     [
                         { tag: "l_div_decimal_divisor", gen: () => {
-                            let divisor = Engine.randChoice([0.2, 0.4, 0.5, 0.8, 1.2, 2.5, 0.25, 0.75]);
-                            let quotient = Engine.randChoice([12, 15, 18, 24, 32, 36, 45, 6, 8]);
+                            let variant = Engine.randChoice([
+                                { divisor: 0.2, quotient: 18 },
+                                { divisor: 0.4, quotient: 7.5 },
+                                { divisor: 0.25, quotient: 3.2 },
+                                { divisor: 0.75, quotient: 1.6 },
+                                { divisor: 1.2, quotient: 3.5 },
+                                { divisor: 2.5, quotient: 1.2 }
+                            ]);
+                            let divisor = variant.divisor;
+                            let quotient = variant.quotient;
                             let dividend = divisor * quotient;
                             const scale = Number.isInteger(divisor * 10) ? 10 : 100;
                             return {
                                 tag:"l_div_decimal_divisor",
                                 q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
                                 a:formatDecimal(quotient),
-                                step:`把被除数和除数同时扩大${scale}倍，先化成整数除法 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}。`
+                                step:`先把除数变成整数：被除数和除数同时扩大${scale}倍，化成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}；${quotient < 1 ? '商小于1时别忘了先写0。' : '再按整数除法求商。'}`
                             };
                         } }
                     ],
                     [
                         { tag: "l_div_decimal_both", gen: () => {
-                            let divisor = Engine.randChoice([0.8, 1.2, 1.5, 2.4, 2.5, 3.2, 0.25]);
-                            let quotient = Engine.randChoice([1.5, 2.4, 3.5, 4.8, 6.4, 7.5, 0.8, 1.25]);
+                            let variant = Engine.randChoice([
+                                { divisor: 0.8, quotient: 2.4 },
+                                { divisor: 1.2, quotient: 3.5 },
+                                { divisor: 1.5, quotient: 0.8 },
+                                { divisor: 2.4, quotient: 1.25 },
+                                { divisor: 0.25, quotient: 1.2 },
+                                { divisor: 0.75, quotient: 0.4 },
+                                { divisor: 2.5, quotient: 1.6 }
+                            ]);
+                            let divisor = variant.divisor;
+                            let quotient = variant.quotient;
                             let dividend = divisor * quotient;
                             const scale = Number.isInteger(divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
                             return {
                                 tag:"l_div_decimal_both",
                                 q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
                                 a:formatDecimal(quotient),
-                                step:`被除数和除数都带小数点时，同乘${scale}先变成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}，再做整数除法。`
+                                step:`被除数和除数都带小数点时，同乘${scale}先变成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}；${quotient < 1 ? '商小于1要先写0。' : '再按整数除法试商。'}`
                             };
                         } },
-                        { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } }
+                        { tag: "l_div_dec2", gen: () => {
+                            let variant = Engine.randChoice([
+                                { divisor: 0.6, quotient: 1.4 },
+                                { divisor: 1.8, quotient: 0.5 },
+                                { divisor: 2.4, quotient: 1.25 },
+                                { divisor: 0.25, quotient: 2.8 }
+                            ]);
+                            let a = variant.divisor, q = variant.quotient;
+                            return {tag:"l_div_dec2", q:`${formatDecimal(a*q)} &divide; ${formatDecimal(a)}`, a:formatDecimal(q), step:`先把两数同时扩大成整数除法，再根据商的大小决定是否先写0并点小数点。`};
+                        } }
                     ]
                 ]);
             },
             sub: () => buildCoveredSection("Lorik", [
                 [
-                    { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`从个位开始减，不够减就向前一位借1；借完后要立刻在竖式上把被借位的数减1。`}; } }
                 ],
                 [
-                    { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                    { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`整万减法遇到连续0时，要一路向前借位；经过的0会依次变成9。`}; } },
                     { tag: "l_sub_100k", gen: () => { let b=Engine.randInt(21001,88999); return {tag:"l_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`, step:`从十万位借位，中间0连续变9。`}; } }
                 ],
                 [
-                    { tag: "l_sub_jump0", gen: () => { let a=Engine.randInt(60,90)*1000+Engine.randInt(1,5)*100+Engine.randInt(1,6), b=Engine.randInt(18,29)*1000+Engine.randInt(100,999); return {tag:"l_sub_jump0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "l_sub_jump0", gen: () => { let a=Engine.randInt(60,90)*1000+Engine.randInt(1,5)*100+Engine.randInt(1,6), b=Engine.randInt(18,29)*1000+Engine.randInt(100,999); return {tag:"l_sub_jump0", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`跳过0借位时，先找到前面最近的非0位借1，再把中间经过的0都改成9。`}; } }
                 ],
                 [
-                    { tag: "l_sub_norm", gen: () => { let a=Engine.randInt(50,90)*1000+Engine.randInt(100,400), b=Engine.randInt(11,49)*1000+Engine.randInt(500,999); return {tag:"l_sub_norm", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                    { tag: "l_sub_norm", gen: () => { let a=Engine.randInt(50,90)*1000+Engine.randInt(100,400), b=Engine.randInt(11,49)*1000+Engine.randInt(500,999); return {tag:"l_sub_norm", q:`${a} &minus; ${b}`, a:`${a-b}`, step:`普通退位减法先估结果约在 ${Math.floor((a-b)/1000)}000 左右，再逐位相减检查有没有错位。`}; } }
                 ]
             ]),
             fracMix: () => {
@@ -1807,12 +1850,18 @@
                     { tag: "l_fmix_madd", gen: () => {
                         let w=Engine.randInt(1,3), f1=new Frac(1,Engine.randChoice([6,8,10])), f2=new Frac(Engine.randInt(3,7),12);
                         let ans = new Frac(w*f1.d+f1.n,f1.d).add(f2);
-                        return {tag:"l_fmix_madd", q:`<div class="mixed">${w}${f1.toHTML()}</div> + ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`化假分数或直接带分数通分: <div class="mixed">${w}<div class="frac"><span>${f1.n*(12/Engine.gcd(f1.d,12))}</span><span class="bottom">${f1.d*(12/Engine.gcd(f1.d,12))}</span></div></div> + <div class="frac"><span>${f2.n*(f1.d/Engine.gcd(f1.d,12))}</span><span class="bottom">${f2.d*(f1.d/Engine.gcd(f1.d,12))}</span></div> = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                        let common = f1.d * f2.d / Engine.gcd(f1.d, f2.d);
+                        let leftNum = (w*f1.d+f1.n) * (common / f1.d);
+                        let rightNum = f2.n * (common / f2.d);
+                        return {tag:"l_fmix_madd", q:`<div class="mixed">${w}${f1.toHTML()}</div> + ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`先把带分数化成假分数并通分: ${new Frac(w*f1.d+f1.n,f1.d).toHTML()} = <div class="frac"><span>${leftNum}</span><span class="bottom">${common}</span></div>，${f2.toHTML()} = <div class="frac"><span>${rightNum}</span><span class="bottom">${common}</span></div>，再相加得 <strong class="highlight">${ans.toMixedHTML()}</strong>`};
                     } },
                     { tag: "l_fmix_msub", gen: () => {
                         let w=Engine.randInt(2,5), f1=new Frac(1,Engine.randChoice([8,10,12])), f2=new Frac(1,Engine.randChoice([3,4,5]));
                         let ans=new Frac(w*f1.d+f1.n,f1.d).sub(f2);
-                        return {tag:"l_fmix_msub", q:`<div class="mixed">${w}${f1.toHTML()}</div> &minus; ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`通分借位: <div class="mixed">${w-1}<div class="frac"><span>...</span><span class="bottom">...</span></div></div> &minus; ${f2.toHTML()} = <strong class="highlight">${ans.toMixedHTML()}</strong>`};
+                        let common = f1.d * f2.d / Engine.gcd(f1.d, f2.d);
+                        let borrowedNumerator = common + f1.n * (common / f1.d);
+                        let rightNum = f2.n * (common / f2.d);
+                        return {tag:"l_fmix_msub", q:`<div class="mixed">${w}${f1.toHTML()}</div> &minus; ${f2.toHTML()} = `, a:ans.toMixedHTML(), step:`先借1化成带分数减分数: <div class="mixed">${w}${f1.toHTML()}</div> = <div class="mixed">${w-1}<div class="frac"><span>${borrowedNumerator}</span><span class="bottom">${common}</span></div></div>，再减去 <div class="frac"><span>${rightNum}</span><span class="bottom">${common}</span></div>，得 <strong class="highlight">${ans.toMixedHTML()}</strong>`};
                     } },
                     { tag: "l_fmix_paren1", gen: () => {
                         let f1=new Frac(Engine.randInt(2,7), Engine.randChoice([8,9,11])), f2=new Frac(Engine.randInt(7,11),12), f3=new Frac(1,Engine.randInt(2,6));
@@ -1955,7 +2004,7 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v31_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {
@@ -2011,18 +2060,6 @@
 
         function flattenQuestionData(data) {
             return Object.values(data || {}).filter(Array.isArray).flat();
-        }
-
-        function summarizeLevelMix(data) {
-            const counts = { 1: 0, 2: 0, 3: 0, 4: 0 };
-            flattenQuestionData(data).forEach(item => {
-                const level = item.level || inferDifficulty(item.tag);
-                if (counts[level] !== undefined) counts[level]++;
-            });
-            return Object.entries(counts)
-                .filter(([, count]) => count > 0)
-                .map(([level, count]) => `L${level} ${count}题`)
-                .join(" · ");
         }
 
         const buildAnsRow = (q, i, student, secName, sessionData) => {
@@ -2089,14 +2126,8 @@
                 <div class="grid grid-${cols}">
                     ${items.map((q,i) => {
                         let suffix = (heightClass !== 'h-conv' && !q.q.includes('=')) ? ' =' : '';
-                        let colorStyle = '';
-                        if (q.reason === 'weak') colorStyle = 'color: #d32f2f; font-weight: bold;';
-                        else if (q.reason === 'forget') colorStyle = 'color: #0284c7; font-weight: bold;';
-                        else if (q.reason === 'domain') colorStyle = 'color: #15803d; font-weight: bold;';
-                        else if (q.reason === 'replay') colorStyle = 'color: #c2410c; font-weight: bold;';
-                        else if (q.reason === 'variant') colorStyle = 'color: #854d0e; font-weight: bold;';
-                        let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
-                        return `<div class="item ${heightClass}"><div class="math-row" style="${colorStyle}"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix} ${levelBadge}</div></div>`;
+                        let reviewFlag = q.isErrorReplay ? `<span class="review-flag">复习题</span>` : '';
+                        return `<div class="item ${heightClass}">${reviewFlag}<div class="math-row"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix}</div></div>`;
                     }).join('')}
                 </div>
             </div>`;
@@ -2122,9 +2153,6 @@
             let lorikProfile = StorageDB.getProfile("Lorik") || {history:[]};
             let kaiSession = kaiProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
             let lorikSession = lorikProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
-            const focus = Engine.getFocusPlan();
-            const levelSummary = summarizeLevelMix(data);
-
             let stampKAI = kaiSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
             let stampLorik = lorikSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
 
@@ -2162,14 +2190,6 @@
                     <div class="header">
                         <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
                         <h1>${title}</h1>
-                        <div class="engine-status">${data.stateLabel}</div>
-                        <div class="focus-strip">
-                            <span class="focus-pill">目标 ${focus.goal}</span>
-                            <span class="focus-pill">水准 ${focus.levelText}</span>
-                            <span class="focus-pill">${focus.principle}</span>
-                            <span class="focus-pill">原则 Retrieval · Spacing · Interleaving</span>
-                            <span class="focus-pill">${levelSummary}</span>
-                        </div>
                         <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
                     </div>
                     ${content}

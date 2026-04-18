@@ -29,7 +29,53 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.11 Iteration Notes
+## Current v23.13 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed training-status chrome from question sheets, including level badges, weakness/domain cues, and the phase strip in the page header.
+- Open questions: none.
+- Risks: less visible training metadata on the question page means those signals now live mainly in generation logic and answer review, which is the intended separation.
+- Next steps: keep validating the student paper against an "exam-like" presentation standard.
+
+### Iteration 2
+
+- What I changed: preserved only a lightweight review marker for exact error-book replay items, using absolute positioning so it does not affect line height or page breaks.
+- Open questions: none.
+- Risks: if a section ever becomes too visually dense near the top-right corner, the marker may need a smaller size on compact items.
+- Next steps: if needed later, allow the review marker to hide on the tiniest conversion cells while still showing in answer review.
+
+### Iteration 3
+
+- What I changed: updated validation and documentation so question sheets are now explicitly expected to be print-safe and exam-like.
+- Open questions: none.
+- Risks: validator can catch structural chrome regressions, but native print preview still remains the final authority for spacing.
+- Next steps: keep this rule stable across future feature work so pedagogy metadata does not leak back onto the paper.
+
+## Previous v23.12 Iteration Notes
+
+### Iteration 1
+
+- What I changed: improved Lorik decimal-division generators so the section now practices decimal-point placement with both quotient-above-1 and quotient-below-1 cases.
+- Open questions: none.
+- Risks: stronger decimal-quotient variation raises decision-making demand, so answer-sheet hints need to stay crisp.
+- Next steps: if needed, add phase-aware alternation between one-step and two-step decimal shifts.
+
+### Iteration 2
+
+- What I changed: added more worked hints to high-frequency multiplication and subtraction items, plus KAI large subtraction items, so review is less dependent on generic fallback tips.
+- Open questions: none.
+- Risks: more detailed steps increase answer-sheet density slightly, so future copy edits should keep them short.
+- Next steps: continue replacing any low-information answer lines with worked hints when a pattern keeps generating the same misconception.
+
+### Iteration 3
+
+- What I changed: removed the placeholder-style mixed-number subtraction explanation and replaced it with a real borrow-and-common-denominator walkthrough, then guarded against placeholder markup in validation.
+- Open questions: none.
+- Risks: validation now blocks this class of explanation regression, so future wording changes must preserve fully rendered worked steps.
+- Next steps: keep using validation for pedagogy regressions, not just structural ones.
+
+## Previous v23.11 Iteration Notes
 
 ### Iteration 1
 

@@ -15,7 +15,10 @@ if (!html.includes('body.print-answers-only .ans-sheet + .ans-sheet')) {
 if (html.includes('body.print-questions-only .question-sheet.print-last-question')) {
   throw new Error('Legacy last-question print override should not remain in print CSS');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v31';
+if (html.includes('<span>...</span><span class="bottom">...</span>')) {
+  throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
+}
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v32';
 
 const store = new Map();
 const localStorage = {
@@ -176,11 +179,12 @@ function assertPaper(setNumber) {
   if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Detailed Solutions')) {
     throw new Error(`Generated paper for set ${setNumber} is missing challenge or answer sections`);
   }
-  if (!paper.includes('focus-strip') || !paper.includes('Retrieval · Spacing · Interleaving')) {
-    throw new Error(`Generated paper for set ${setNumber} is missing the training focus strip`);
+  const questionOnly = paper.split('class="sheet ans-sheet"')[0] || paper;
+  if (questionOnly.includes('focus-strip') || questionOnly.includes('engine-status')) {
+    throw new Error(`Generated question paper for set ${setNumber} still includes training-status chrome`);
   }
-  if (!paper.includes('level-badge')) {
-    throw new Error(`Generated paper for set ${setNumber} is missing level badges`);
+  if (questionOnly.includes('level-badge')) {
+    throw new Error(`Generated question paper for set ${setNumber} still includes level badges`);
   }
   if (paper.includes('undefined')) {
     throw new Error(`Generated paper for set ${setNumber} contains undefined`);

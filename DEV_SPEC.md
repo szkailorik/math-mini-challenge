@@ -50,6 +50,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `printQuestionSheets` / `printAnswerSheets`: switches the body into print-only modes for question sheets or answer sheets, then relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - Print pagination now uses adjacent-sheet page breaks during print, instead of relying on full-height A4 preview shells, to avoid blank interleaved pages on some browser/printer combinations.
 - `SET_CACHE_PREFIX`: versioned set-cache namespace; bumping it forces future set numbers to regenerate under new generator rules instead of reusing stale papers from older releases.
+- Training-quality passes now also target explanation quality, not only coverage: key generated items should expose a real worked hint instead of relying solely on fallback knowledge advice.
+- Question-sheet rendering now intentionally suppresses training metadata such as weakness badges, level badges, and phase strips; only exact error-book replay items may show a tiny non-layout-affecting review marker.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.
 - `buildCoveredSection`: guarantees must-cover generator slices for sections where pedagogical diversity matters more than pure random sampling.
@@ -58,6 +60,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenKAI.bigSub` / `GenKAI.olympiad`: now guarantee daily coverage of high-value subtraction and olympiad-structure families instead of relying on fully random subsets.
 - `getConversions` / `GenKAI.fracEquations`: now guarantee key conversion families, fraction-calculation structures, and equation archetypes instead of relying on unconstrained random picks.
 - `GenLorik.mul` / `GenLorik.sub` / `GenLorik.div`: now guarantee daily coverage of multiplication strategy, subtraction borrow-chain structure, and the full decimal-division trio in Lorik Set B.
+- Lorik decimal-division generators now mix both `商>1` and `商<1` scenarios so decimal-point placement is practiced as a decision, not a memorized routine.
 - `GenLorik.fracMix`: now guarantees the full daily spread of core fraction-operation families instead of leaving that section to pool-level randomness.
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
@@ -111,9 +114,12 @@ python3 -m http.server 8080
 - Confirm KAI olympiad covers distributive/balance structure, telescoping fractions, 12.5 strategy, and fraction application structure in the same set.
 - Confirm Lorik multiplication covers core vertical form, decimal multiplication, strategy multiplication, and trailing-zero place-value practice in the same set.
 - Check Lorik section II and confirm the set includes decimal-dividend, decimal-divisor, and double-decimal division practice.
+- Confirm Lorik section II regularly includes decimal-division cases where the quotient is below 1, so leading-zero decimal quotient placement is practiced.
 - Confirm Lorik subtraction covers cross-borrow, zero-chain, jump-zero, and standard regrouping practice in the same set.
 - Confirm Lorik fraction mix covers the full daily spread of add/subtract, multiply/divide, fraction-of-whole, mixed-number, parentheses, triple-product, and decimal-fraction bridge practice.
 - Confirm Lorik basic mixed problems cover shortcut structure, order/parentheses, distributive reasoning, and combination splitting each set.
+- Confirm no generated explanation still contains placeholder markup like `...`; steps should either be real worked hints or fall back to knowledge advice.
+- Confirm the printed question sheets look exam-like: no training-status strip, no level labels, no weakness/domain badges, and only replay items may show a small corner review mark.
 
 ## GitHub Connection
 

@@ -118,6 +118,18 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.13 restores exam-like sheet presentation:
+
+- Normal question sheets now suppress internal training metadata so the printed page looks closer to a real exam handout.
+- Only exact error-book replay items keep a lightweight review marker, and that marker is positioned so it does not change line height or pagination.
+- This keeps pedagogy in the generation logic and answer sheet, while the student-facing paper stays visually calm and print-safe.
+
+v23.12 deepens training quality beyond structural coverage:
+
+- Decimal-division practice in Lorik Set B now includes quotient-placement decisions on both sides of 1, so students must genuinely reason about where the decimal point belongs.
+- More core items now carry real worked hints on the answer sheet, especially in multiplication, subtraction, decimal division, and mixed-number fraction operations.
+- Placeholder-style pseudo-explanations were removed from fraction review so remediation quality is closer to what a tutor would actually say aloud.
+
 v23.11 upgrades overall training quality and refreshes stale cached papers:
 
 - The set-cache namespace now advances with generator changes, so future papers regenerate under the latest logic instead of silently reusing stale older sets.
