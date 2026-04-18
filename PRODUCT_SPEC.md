@@ -332,6 +332,16 @@ v23.54 makes the quick-review layer more actionable:
   - do this first
 - Product-wise, this matters because some learners know the rule and even know the common mistake, but still freeze on the first move. The review page should reduce that hesitation.
 
+v23.55 makes the quick-review layer more self-correcting:
+
+- Each topic now also exposes one `最后检查` line.
+- The page therefore now supports a near-complete fast loop:
+  - remember this
+  - avoid this
+  - do this first
+  - check this at the end
+- Product-wise, this matters because many calculation slips survive not at the start, but in the last three seconds when the learner fails to run a quick self-check.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

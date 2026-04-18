@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.55 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded the child-facing `Calculation Quick Review` page so every topic now also shows a `最后检查` self-check cue, making the page better at supporting the end of a calculation routine instead of only the start.
+- Open questions: whether the next pass should refine the wording of these self-check lines, or pause content-layer changes and focus again on print density and typography.
+- Risks: this new self-check layer helps only if it remains short and concrete; if later edits make it broad or vague, it will stop functioning as a quick end-of-problem scan.
+- Next steps: review the live page with real child use, then either sharpen the self-check wording or continue refining print-first rhythm and density.
+
 ## Current v23.54 Iteration Notes
 
 ### Iteration 1

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.54 (计算知识总览页起手动作升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.55 (计算知识总览页收尾自检升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -221,7 +221,8 @@
             body.print-quick-review #print-root .quick-review-focus-route,
             body.print-quick-review #print-root .quick-review-hook,
             body.print-quick-review #print-root .quick-review-mistake,
-            body.print-quick-review #print-root .quick-review-first-move {
+            body.print-quick-review #print-root .quick-review-first-move,
+            body.print-quick-review #print-root .quick-review-check {
                 font-size: 11.2px !important;
             }
             body.print-quick-review #print-root .quick-review-footer-pins {
@@ -996,6 +997,25 @@
             text-transform: uppercase;
             font-size: 11px;
         }
+        .quick-review-check {
+            margin: 0 0 10px;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 1px solid #d6d1ef;
+            background: linear-gradient(180deg, rgba(247,244,255,0.98), rgba(239,234,253,0.98));
+            color: #5b21b6;
+            font-size: 12.5px;
+            line-height: 1.55;
+            font-weight: 800;
+        }
+        .quick-review-check-label {
+            display: inline-block;
+            margin-right: 8px;
+            color: #6d28d9;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
         .quick-review-topic-kicker {
             display: inline-block;
             margin-bottom: 6px;
@@ -1430,9 +1450,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.54';
-        const APP_RELEASE_LABEL = '计算知识总览页起手动作升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.54 计算知识总览页起手动作升级：<br><strong>每个专题新增“先做这一步”动作提示<br>让孩子看到题后更快进入正确的第一步</strong>';
+        const APP_VERSION = 'v23.55';
+        const APP_RELEASE_LABEL = '计算知识总览页收尾自检升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.55 计算知识总览页收尾自检升级：<br><strong>每个专题新增“最后检查”一句自检提示<br>让孩子做完以后更快完成结果核对和自我纠错</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3191,6 +3211,7 @@
                 kicker: 'Integer Operations',
                 hook: '先看顺序，再找凑整，最后用估算兜底。',
                 firstMove: '先圈出要先算的部分，再看有没有能凑整的数。',
+                finalCheck: '最后回看：运算顺序有没有错，估算大小合不合理。',
                 patterns: ['k_oly_', 'l_bmix_', 'l_mul_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想运算顺序、凑整和分配律，减少低级错。',
@@ -3210,6 +3231,7 @@
                 kicker: 'Written Algorithms',
                 hook: '先估商，再对位，小数点和补 0 都不能乱。',
                 firstMove: '先判断商的大概范围，再开始写竖式。',
+                finalCheck: '最后回看：小数点、补 0、乘法反查都对不对。',
                 patterns: ['l_div_', 'l_div_decimal_', 'k_ddiv_', 'k_sub_', 'l_sub_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想对位、估商、商中间补 0 和小数点。',
@@ -3229,6 +3251,7 @@
                 kicker: 'Decimal Operations',
                 hook: '先管小数点，再算整数部分，最后看数量级。',
                 firstMove: '先确定小数点该怎么处理，再动笔算。',
+                finalCheck: '最后回看：小数位数和结果大小有没有对上。',
                 patterns: ['k_dmul_', 'k_ddiv_', 'l_div_decimal_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想小数点对齐、位数和数量级。',
@@ -3248,6 +3271,7 @@
                 kicker: 'Fraction Operations',
                 hook: '先通分或倒数，再约分，最后化成最简。',
                 firstMove: '先看这题要先通分、先倒数，还是先约分。',
+                finalCheck: '最后回看：是不是最简结果，除法有没有变成乘倒数。',
                 patterns: ['k_fcalc_', 'l_fmix_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想通分、约分、倒数和最简结果。',
@@ -3267,6 +3291,7 @@
                 kicker: 'Conversion & Compare',
                 hook: '先统一形式，再抓基准值，不要只看数字表面。',
                 firstMove: '先决定统一成哪一种形式，再比较或互化。',
+                finalCheck: '最后回看：是不是按题目要求保留成正确形式。',
                 patterns: ['k_conv_', 'l_conv_', 'c2_bridge_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想常见基准值和“先统一形式再比较”。',
@@ -3286,6 +3311,7 @@
                 kicker: 'Units & Rates',
                 hook: '先统一单位，再看量纲，最后才列式计算。',
                 firstMove: '先把单位统一，再判断要用哪个关系式。',
+                finalCheck: '最后回看：单位统一了吗，答案单位写对了吗。',
                 patterns: ['c2_unit_', 'c2_rate_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想统一单位和基础数量关系式。',
@@ -3305,6 +3331,7 @@
                 kicker: 'Equation Method',
                 hook: '先写关系，再做逆运算，每次只动一步。',
                 firstMove: '先写出谁和谁相等，再想第一步逆运算。',
+                finalCheck: '最后回看：能不能代回原式，关系有没有保持相等。',
                 patterns: ['k_eq_', 'c2_eq_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想未知数位置和逆运算方向。',
@@ -3324,6 +3351,7 @@
                 kicker: 'Estimate & Validate',
                 hook: '先看范围，再精算，最后判断结果合不合理。',
                 firstMove: '先判断答案大概比 1 大还是小、比整十整百近不近。',
+                finalCheck: '最后回看：结果落没落在合理范围，单位和情境合不合。',
                 patterns: ['c2_est_', 'c2_speed_', 'k_ddiv_', 'l_div_decimal_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点回想数量级和商的大致范围。',
@@ -3415,6 +3443,7 @@
                     <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
                     <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
                     <div class="quick-review-first-move"><span class="quick-review-first-move-label">先做这一步</span>${topic.firstMove || ''}</div>
+                    <div class="quick-review-check"><span class="quick-review-check-label">最后检查</span>${topic.finalCheck || ''}</div>
                     <div class="quick-review-focus-route">先按这个顺序扫：${topic.memoryRoute}</div>
                     <div class="quick-review-focus-pins">${(topic.pins || []).slice(0, 2).map(pin => `<span class="quick-review-focus-pin">${pin}</span>`).join('')}</div>
                     ${forPrint ? '' : `<button type="button" class="quick-review-mini-jump no-print" onclick="window.jumpToQuickReviewTopic('${topic.id}')">直达这个专题</button>`}
@@ -3438,6 +3467,7 @@
                     <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
                     <div class="quick-review-mistake"><span class="quick-review-mistake-label">最容易错</span>${topic.pitfalls?.[0] || ''}</div>
                     <div class="quick-review-first-move"><span class="quick-review-first-move-label">先做这一步</span>${topic.firstMove || ''}</div>
+                    <div class="quick-review-check"><span class="quick-review-check-label">最后检查</span>${topic.finalCheck || ''}</div>
                     <div class="quick-review-memory-route">
                         <span class="quick-review-memory-label">回想顺序</span>
                         <span>${topic.memoryRoute}</span>
