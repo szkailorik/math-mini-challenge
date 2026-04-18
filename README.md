@@ -102,6 +102,7 @@
 - [第二阶段前端体验设计文档](./docs/2026-04-18-phase-two-frontend-ux-spec.md)
 - [两个阶段共同训练质量优化设计文档](./docs/2026-04-19-shared-training-quality-spec.md)
 - [两个阶段共同训练质量优化实施计划](./docs/2026-04-19-shared-training-quality-implementation-plan.md)
+- [计算知识总览页设计文档](./docs/superpowers/specs/2026-04-19-calculation-quick-review-design.md)
 
 ## 多设备同步设置（一次，30 秒）
 
