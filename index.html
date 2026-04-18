@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.42 (第二阶段强化区 L1-L3 回炉)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.43 (共享讲解模式上线)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.42</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.43</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.42';
-        const APP_RELEASE_LABEL = '第二阶段强化区 L1-L3 回炉';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.42 第二阶段强化区 L1-L3 回炉：<br><strong>Closure 第五大题现在会按回炉层级显式区分原题、同类变式和更强边界变式<br>让重点强化区更像真正的高质量个性化追打</strong>';
+        const APP_VERSION = 'v23.43';
+        const APP_RELEASE_LABEL = '共享讲解模式上线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.43 共享讲解模式上线：<br><strong>首批高价值题族现在会自动带上规则提醒、方法提醒或检验提醒<br>答案页复盘会更像真正的训练语言，而不是只有散的步骤说明</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2417,12 +2417,54 @@
             if (count >= 2) return 'L2';
             return 'L1';
         }
-        function attachQualityMetadata(item) {
+        const EXPLANATION_MODE_BY_FAMILY = {
+            decimal_division: 'rule',
+            fraction_operation: 'method',
+            conversion_bridge: 'method',
+            unit_rate_speed: 'method',
+            equation_method: 'rule',
+            validation_estimation: 'validation',
+        };
+        function inferExplanationMode(qualityFamily = '', tag = '') {
+            const family = qualityFamily || getQualityFamilyForTag(tag);
+            return EXPLANATION_MODE_BY_FAMILY[family] || 'method';
+        }
+        function buildExplanationText(mode, body = '') {
+            const content = String(body || '').trim();
+            if (!content) return '';
+            if (mode === 'rule') return `规则提醒：${content}`;
+            if (mode === 'validation') return `检验提醒：${content}`;
+            return `方法提醒：${content}`;
+        }
+        function attachExplanationMetadata(item) {
             if (!item) return item;
+            const qualityFamily = item.qualityFamily || getQualityFamilyForTag(item.tag || '');
+            const hasStructuredMode = !!qualityFamily || !!item.explanationMode;
+            if (!hasStructuredMode) return item;
+            const explanationMode = item.explanationMode || inferExplanationMode(qualityFamily, item.tag || '');
+            const fallbackBody = getKnowledgeTip(item.tag || '').advice || '';
+            let stepText = String(item.step || fallbackBody).trim();
+            let reviewPrefix = '';
+            const reviewMatch = stepText.match(/^((?:\[[^\]]+\]\s*)+)(.*)$/);
+            if (reviewMatch) {
+                reviewPrefix = reviewMatch[1];
+                stepText = String(reviewMatch[2] || '').trim();
+            }
+            if (!/^(规则提醒：|方法提醒：|检验提醒：)/.test(stepText)) {
+                stepText = buildExplanationText(explanationMode, stepText);
+            }
             return {
                 ...item,
-                qualityFamily: item.qualityFamily || getQualityFamilyForTag(item.tag || '')
+                explanationMode,
+                step: `${reviewPrefix}${stepText}`.trim()
             };
+        }
+        function attachQualityMetadata(item) {
+            if (!item) return item;
+            return attachExplanationMetadata({
+                ...item,
+                qualityFamily: item.qualityFamily || getQualityFamilyForTag(item.tag || '')
+            });
         }
         const ADVANCED_HIGH_VALUE_SECTION_MAP = {
             KAI: {

@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with booklet-style question sheets plus aligned answer-booklet presentation in `v23.42`, including separate screen-vs-print layout rules for question density, a normalized inline-math question renderer, a restored single-line in-body answer rendering model, a borderless write-gap after equals signs, neutral equals-sign coloring that matches the surrounding math text, a complexity-aware paper layout that keeps every question on a single line while still targeting a two-page worksheet footprint, and explicit `Closure` focus-lane `L1/L2/L3` replay escalation metadata.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with booklet-style question sheets plus aligned answer-booklet presentation in `v23.43`, including separate screen-vs-print layout rules for question density, a normalized inline-math question renderer, a restored single-line in-body answer rendering model, a borderless write-gap after equals signs, neutral equals-sign coloring that matches the surrounding math text, a complexity-aware paper layout that keeps every question on a single line while still targeting a two-page worksheet footprint, explicit `Closure` focus-lane `L1/L2/L3` replay escalation metadata, and shared explanation-mode normalization for rollout families.
 
 ## Local Environment
 
@@ -49,6 +49,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `selectClosureFocus`: combines closure signal fields, active closure error-book counts, recent closure mistakes, and phase bias to choose the dominant learner-specific reinforcement lane.
 - `buildClosureFocusReplayItem`: chooses an explicit `Closure` focus replay item for section V, preferring exact replay for `L1`, same-family variant for `L2`, and stronger boundary-style focus variants for `L3`.
 - `injectClosureFocusReview`: injects one explicit closure-focus replay item into section V when the chosen focus lane has active matching error-book entries.
+- `inferExplanationMode` / `buildExplanationText`: map high-value quality families to `rule / method / validation` explanation language.
+- `attachExplanationMetadata`: normalizes rollout-family items so their `step` text is wrapped in structured reminder language before answer-sheet rendering.
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.

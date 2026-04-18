@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.42 Iteration Notes
+## Current v23.43 Iteration Notes
+
+### Iteration 1
+
+- What I changed: extended the shared training-quality core into answer explanations by adding `explanationMode` plus structured `规则提醒 / 方法提醒 / 检验提醒` wrapping for the first rollout families.
+- Open questions: whether the next pass should expose explanation mode more visibly in the answer-row UI, or keep it as wording-only for now.
+- Risks: some long legacy step text is now more structured but still not fully rewritten family-by-family, so the biggest quality gains are currently concentrated in the rollout families.
+- Next steps: keep widening the rollout to more families and tighten answer-sheet wording where existing steps are still too long.
+
+## Previous v23.42 Iteration Notes
 
 ### Iteration 1
 

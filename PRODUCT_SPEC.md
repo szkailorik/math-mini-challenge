@@ -254,6 +254,12 @@ v23.42 upgrades the second-stage focus lane from simple replay to explicit repla
 - `L1` prioritizes exact recovery, `L2` prioritizes same-family transfer variants, and `L3` prioritizes stronger boundary-style focus variants before falling back.
 - Product-wise, this matters because the second stage should test whether a learner can truly transfer and stabilize a high-value weakness, not just remember the last exact question.
 
+v23.43 upgrades answer explanations from loose steps to shared training language:
+
+- The first rollout families now carry a structured explanation mode instead of only free-form step text.
+- In practice, this means answer rows can now consistently frame guidance as `规则提醒`、`方法提醒` or `检验提醒`.
+- Product-wise, this matters because high-quality review is not only “show the answer”, but “tell the learner what kind of thinking to reuse next time”.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

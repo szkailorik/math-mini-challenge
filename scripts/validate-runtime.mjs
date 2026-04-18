@@ -1151,6 +1151,27 @@ if (closureFocusReplay?.replayLevel !== 'L3') {
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：跨表示桥接')) {
   throw new Error('Adaptive closure focus title did not render on the next KAI closure paper');
 }
+const explanationModes = new Set(['rule', 'method', 'validation']);
+const explanationSamples = [
+  ...(closureAdaptiveData.c_k_mix || []),
+  ...(closureAdaptiveData.c_k_bridge || []),
+  ...(closureAdaptiveData.c_l_mix || []),
+  ...(closureAdaptiveData.c_l_bridge || []),
+].filter(item => ['decimal_division', 'fraction_operation', 'conversion_bridge'].includes(item?.qualityFamily));
+if (explanationSamples.length < 2) {
+  throw new Error('Expected rollout-family explanation samples from closure paper generation');
+}
+for (const item of explanationSamples) {
+  if (!explanationModes.has(item?.explanationMode)) {
+    throw new Error(`Invalid explanation mode on ${item?.tag || '(missing tag)'}`);
+  }
+  if (typeof item?.step !== 'string' || !item.step.trim()) {
+    throw new Error(`Missing explanation text on ${item?.tag || '(missing tag)'}`);
+  }
+  if (!/^(规则提醒：|方法提醒：|检验提醒：|\[错题回炉 Replay\] 规则提醒：|\[错题回炉 Replay\] 方法提醒：|\[错题回炉 Replay\] 检验提醒：|\[同类变式 Review Variant\] 规则提醒：|\[同类变式 Review Variant\] 方法提醒：|\[同类变式 Review Variant\] 检验提醒：|\[重点强化 Focus Variant\] 规则提醒：|\[重点强化 Focus Variant\] 方法提醒：|\[重点强化 Focus Variant\] 检验提醒：)/.test(item.step)) {
+    throw new Error(`Explanation text is missing a structured prefix on ${item?.tag || '(missing tag)'}`);
+  }
+}
 if (closureProfile.representationGap <= 0 || closureProfile.methodGap <= 0 || closureProfile.stabilityGap <= 0 || closureProfile.speedGap <= 0) {
   throw new Error('Phase-two grading did not update the expected closure gap signals');
 }

@@ -381,7 +381,7 @@ git commit -m "feat: deepen closure focus replay levels"
 - Modify: `/Users/bianbian/Documents/codex/minichallenge/WORKFLOW.md`
 - Modify: `/Users/bianbian/Documents/codex/minichallenge/docs/README.md`
 
-- [ ] **Step 1: Write the failing validation for explanation modes**
+- [x] **Step 1: Write the failing validation for explanation modes**
 
 Add a validation that expects rollout-family items to expose a valid explanation mode:
 
@@ -395,13 +395,13 @@ for (const item of sampleItems) {
 }
 ```
 
-- [ ] **Step 2: Run validation to verify it fails**
+- [x] **Step 2: Run validation to verify it fails**
 
 Run: `node scripts/validate-runtime.mjs`
 
 Expected: FAIL because rollout items do not yet carry a structured explanation mode.
 
-- [ ] **Step 3: Add explanation-template helpers**
+- [x] **Step 3: Add explanation-template helpers**
 
 Implement a small formatter:
 
@@ -418,7 +418,7 @@ Use it for:
 - fraction operation
 - conversion bridge
 
-- [ ] **Step 4: Attach explanation mode during item normalization**
+- [x] **Step 4: Attach explanation mode during item normalization**
 
 ```js
 function attachExplanationMetadata(item) {
@@ -430,14 +430,14 @@ function attachExplanationMetadata(item) {
 }
 ```
 
-- [ ] **Step 5: Update docs for the rollout**
+- [x] **Step 5: Update docs for the rollout**
 
 Add the new implementation-plan link and a short note describing:
 - shared quality families
 - replay levels
 - explanation templates
 
-- [ ] **Step 6: Run validation and syntax checks**
+- [x] **Step 6: Run validation and syntax checks**
 
 Run:
 
@@ -449,6 +449,15 @@ node /Users/bianbian/Documents/codex/minichallenge/scripts/validate-runtime.mjs
 Expected:
 - no syntax errors
 - runtime validation passes, including explanation-mode assertions
+
+Status note:
+
+- Rollout families now gain `explanationMode` during normalization instead of only at answer-sheet render time.
+- Current structured modes in active use are:
+  - `rule`
+  - `method`
+  - `validation`
+- Existing review prefixes such as `[错题回炉 Replay]` and `[重点强化 Focus Variant]` are preserved, but their explanation body is now wrapped in structured training language.
 
 - [ ] **Step 7: Commit**
 
