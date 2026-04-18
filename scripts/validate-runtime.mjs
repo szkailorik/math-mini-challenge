@@ -289,6 +289,21 @@ function assertClosurePaper(setNumber) {
   assertSetData(setNumber, 'elementary_closure_v1');
 }
 
+function assertClosurePhase(setNumber, expectedLabel, expectedCue) {
+  const paper = elements.get('paper-container')?.innerHTML || '';
+  const raw = store.get(getProgramCacheKey('elementary_closure_v1', setNumber)) || '{}';
+  const data = JSON.parse(raw);
+  if (data.phaseLabel !== expectedLabel) {
+    throw new Error(`Closure set ${setNumber} expected phaseLabel ${expectedLabel}, got ${data.phaseLabel || '(missing)'}`);
+  }
+  if (!paper.includes(expectedLabel)) {
+    throw new Error(`Closure paper for set ${setNumber} is missing expected phase label ${expectedLabel}`);
+  }
+  if (!paper.includes(expectedCue)) {
+    throw new Error(`Closure paper for set ${setNumber} is missing expected phase cue ${expectedCue}`);
+  }
+}
+
 function stripHtml(value) {
   return String(value || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
@@ -894,6 +909,7 @@ assertClosurePaper(1);
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('欢迎进入小学计算收束阶段')) {
   throw new Error('Closure intro card did not render after promotion');
 }
+assertClosurePhase(1, '收口期', '统一表示先打底');
 context.window.changeSet(2);
 if (context.window.currentSetNumber !== 3) {
   throw new Error('Closure set counter did not advance independently');
@@ -909,6 +925,14 @@ context.window.changeProgram('elementary_closure_v1');
 if (context.window.currentSetNumber !== 3) {
   throw new Error('Closure set counter was not restored after switching back into closure');
 }
+context.window.currentSetNumber = 12;
+context.window.renderPaper();
+assertClosurePaper(12);
+assertClosurePhase(12, '收束期', '综合迁移与方法选择');
+context.window.currentSetNumber = 26;
+context.window.renderPaper();
+assertClosurePaper(26);
+assertClosurePhase(26, '毕业判定期', '稳态抽检与结果校验');
 context.window.currentSetNumber = 103;
 context.window.renderPaper();
 assertClosurePaper(103);

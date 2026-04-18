@@ -29,8 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.23 Iteration Notes
+## Current v23.24 Iteration Notes
 
+### Iteration 1
+
+- What I changed: turned `Closure` from a single blended paper into a phase-aware program with `收口期 / 收束期 / 毕业判定期`, so the second stage now changes emphasis across the monthly arc instead of repeating the same balance forever.
+- Open questions: none.
+- Risks: phase progression is now part of the release contract, so future closure-item edits need to preserve both phase differentiation and cross-student non-duplication.
+- Next steps: keep tuning which misconceptions belong in each phase based on live use, not only on perceived difficulty.
+
+### Iteration 2
+
+- What I changed: aligned the closure stage card, intro copy, and answer-sheet labeling with the active phase cue, so the UI now explains what the current closure set is training.
+- Open questions: none.
+- Risks: wording must stay faithful to the actual generated paper emphasis; otherwise phase labels become cosmetic.
+- Next steps: if real use shows one phase still feels too generic, tighten that phase's section pools before adding more UI.
+
+### Iteration 3
+
+- What I changed: upgraded runtime validation to assert closure phase identity on representative sets, preventing regression back to one-size-fits-all second-stage papers.
+- Open questions: none.
+- Risks: validator can prove phase identity and structural coverage, but human print review is still needed to judge paper feel.
+- Next steps: continue deepening closure adaptive behaviour so the three-phase arc also responds more strongly to second-stage gap signals.
+
+## Previous v23.23 Iteration Notes
 ### Iteration 1
 
 - What I changed: completed M4 by adding a formal promotion gate from `Advanced` into `Closure`, rather than treating stage two as a plain manual toggle.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.23 (第二阶段晋级闭环)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.24 (第二阶段三段式收束)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -391,7 +391,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.23</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.24</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -417,8 +417,8 @@
                 <div class="stage-status-title" id="stage-status-title">第一阶段 · 稳定训练中</div>
                 <span class="status-chip phase-1" id="stage-status-chip">主线阶段</span>
             </div>
-            <div class="stage-status-body" id="stage-status-body">当前版本先保持第一阶段训练主链稳定，第二阶段入口壳层已开始接入。</div>
-            <div class="stage-status-action" id="stage-status-action">建议动作：继续当前训练；第二阶段题卷模块将在后续版本接入。</div>
+            <div class="stage-status-body" id="stage-status-body">当前版本默认仍从第一阶段进入，但第二阶段已经升级成按阶段推进的三段式收束训练。</div>
+            <div class="stage-status-action" id="stage-status-action">建议动作：继续当前训练；进入第二阶段后观察收口期、收束期和毕业判定期的变化。</div>
         </div>
 
         <div id="normal-ctrls">
@@ -438,7 +438,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.23 第二阶段晋级闭环：<br><strong>readiness、切换门槛、继续巩固与第二阶段 bootstrap 已接通<br>第一阶段与第二阶段套号独立保存</strong>
+                💡 23.24 第二阶段三段式收束：<br><strong>Closure 现在按收口期 / 收束期 / 毕业判定期递进出卷<br>同样坚持总收束 + 旧知保温</strong>
             </div>
         </div>
 
@@ -465,9 +465,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.23';
-        const APP_RELEASE_LABEL = '第二阶段晋级闭环';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.23 第二阶段晋级闭环：<br><strong>readiness、切换门槛、继续巩固与第二阶段 bootstrap 已接通<br>第一阶段与第二阶段套号独立保存</strong>';
+        const APP_VERSION = 'v23.24';
+        const APP_RELEASE_LABEL = '第二阶段三段式收束';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.24 第二阶段三段式收束：<br><strong>Closure 现在按收口期 / 收束期 / 毕业判定期递进出卷<br>同样坚持总收束 + 旧知保温</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -668,14 +668,14 @@
                 const avg = profiles.reduce((inner, profile) => inner + Number(profile[field] || 0), 0) / Math.max(1, profiles.length);
                 return sum + avg;
             }, 0) / PROGRAM_SIGNAL_FIELDS.length;
-            const cycle = currentSet <= 7 ? '收口期' : (currentSet <= 22 ? '收束期' : '毕业判定期');
+            const phase = getClosurePhaseInfo(currentSet);
             return {
                 status: 'closure',
-                statusWord: cycle,
-                statusChip: cycle,
-                statusTitle: `第二阶段 · ${cycle}进行中`,
-                statusBody: '这一阶段不是更难，而是把整数、小数、分数、百分数、比、比例、单位与策略训练更系统地收束起来。',
-                statusAction: `建议动作：继续观察 5 类 gap 信号和旧知保温表现。当前平均 gap 压力 ${Math.round(signalAvg * 10) / 10}。`,
+                statusWord: phase.label,
+                statusChip: phase.label,
+                statusTitle: `第二阶段 · ${phase.label}进行中`,
+                statusBody: `${phase.label}当前重点是“${phase.cue}”。这一阶段不是单纯加难，而是把整数、小数、分数、百分数、比、比例、单位与策略训练更系统地收束起来。`,
+                statusAction: `建议动作：继续观察 5 类 gap 信号和旧知保温表现。当前平均 gap 压力 ${Math.round(signalAvg * 10) / 10}；本阶段先抓 ${phase.cue}。`,
             };
         }
 
@@ -2972,138 +2972,361 @@
             return recent;
         }
 
-        function buildClosureBridgeSection(student, track = 'kai') {
-            const groups = track === 'kai'
-                ? [
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`先把 37.5% 写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`先写成 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) },
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`125% =<div class="blank"></div>`, a:`1.25`, step:`125% 就是 125/100，也就是 1.25。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 8 =<div class="blank"></div>`, a:`0.375`, step:`把 3:8 看成 3÷8，得到 0.375。` }) },
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 4 =<div class="blank"></div>`, a:`1.25`, step:`把 5:4 看成 5÷4，先得 1 又 1/4，再写成 1.25。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>2</span><span class="bottom">5</span></div> = 2 :<div class="blank"></div>`, a:`5`, step:`分数 a/b 可以看成 a:b，所以 2/5 对应 2:5。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.25 = 5 :<div class="blank"></div>`, a:`4`, step:`1.25 就是 5/4，所以对应 5:4。` }) }
+        function getClosurePhaseInfo(setNumber = window.currentSetNumber) {
+            if (setNumber <= 7) {
+                return {
+                    key: 'foundation',
+                    label: '收口期',
+                    cue: '统一表示先打底',
+                    bridgeTitle: '收口桥接：百分数·分数·比',
+                    bridgeHint: '(统一表示先打底 / Normalize before compute)',
+                    unitTitle: '基础量纲：单位换算链',
+                    unitHint: '(先统一单位 / Unify units first)',
+                    rateTitle: '基础比率：百分率与方程',
+                    rateHint: '(先识别整体与比率 / Whole before rate)',
+                    mixTitle: '估算打底：速度与结果判断',
+                    mixHint: '(先估范围再精算 / Estimate before exact work)',
+                    maintCoreTitle: '旧知保温：关键除法',
+                    maintCoreHint: '(保留第一阶段手感 / Keep core division warm)',
+                    maintMixTitle: '旧知保温：乘减综合',
+                    maintMixHint: '(防止旧成果回落 / Prevent early fade)',
+                };
+            }
+            if (setNumber <= 22) {
+                return {
+                    key: 'integration',
+                    label: '收束期',
+                    cue: '综合迁移与方法选择',
+                    bridgeTitle: '收束桥接：百分数·分数·比',
+                    bridgeHint: '(统一表示再计算 / Normalize first)',
+                    unitTitle: '单位链与量纲统一',
+                    unitHint: '(先统一单位 / Unify units first)',
+                    rateTitle: '百分率、折扣与方程',
+                    rateHint: '(整体与比率统一 / Whole-rate model)',
+                    mixTitle: '估算、速度与结果判断',
+                    mixHint: '(先估后判 / Estimate before trust)',
+                    maintCoreTitle: '旧知保温：关键除法',
+                    maintCoreHint: '(保留第一阶段手感 / Keep fluency warm)',
+                    maintMixTitle: '旧知保温：乘减综合',
+                    maintMixHint: '(防止旧成果回落 / Prevent skill fade)',
+                };
+            }
+            return {
+                key: 'graduation',
+                label: '毕业判定期',
+                cue: '稳态抽检与结果校验',
+                bridgeTitle: '毕业抽检：跨表示桥接',
+                bridgeHint: '(反向表达与边界辨析 / Reverse & verify)',
+                unitTitle: '毕业抽检：单位与量纲迁移',
+                unitHint: '(两步换算与综合判断 / Multi-step transfer)',
+                rateTitle: '毕业抽检：比率与方程综合',
+                rateHint: '(方法选择与结果回检 / Method choice)',
+                mixTitle: '毕业抽检：估算、速度与验算',
+                mixHint: '(稳态抽检与结果校验 / Validate the result)',
+                maintCoreTitle: '稳态抽检：关键除法',
+                maintCoreHint: '(稳定完成，不靠运气 / Stable execution)',
+                maintMixTitle: '稳态抽检：乘减综合',
+                maintMixHint: '(保温 + 抽检 / Maintain and verify)',
+            };
+        }
+
+        function buildClosureBridgeSection(student, track = 'kai', phaseKey = 'integration') {
+            const phaseGroups = {
+                foundation: track === 'kai'
+                    ? [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }]
                     ]
-                ]
-                : [
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }
+                    : [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`20% =<div class="blank"></div>`, a:new Frac(1, 5).toHTML(), step:`20% = 20/100，再约成 ${new Frac(1, 5).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`10% =<div class="blank"></div>`, a:new Frac(1, 10).toHTML(), step:`10% = 10/100，再约成 ${new Frac(1, 10).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.3 =<div class="blank"></div>`, a:`30%`, step:`0.3 写成 30/100，所以是 30%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 4 =<div class="blank"></div>`, a:`0.25`, step:`把 1:4 看成 1÷4，结果是 0.25。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 5 =<div class="blank"></div>`, a:`0.6`, step:`把 3:5 看成 3÷5，结果是 0.6。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.2 = 1 :<div class="blank"></div>`, a:`5`, step:`0.2 就是 1/5，所以对应 1:5。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`60% =<div class="blank"></div>`, a:new Frac(3, 5).toHTML(), step:`60% = 60/100，再约成 ${new Frac(3, 5).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.6 =<div class="blank"></div>%`, a:`60`, step:`0.6 乘 100 就是 60%。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，得到 0.8。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>1</span><span class="bottom">2</span></div> = 1 :<div class="blank"></div>`, a:`2`, step:`分数 1/2 可以直接写成 1:2。` }) }]
                     ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) },
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }
-                    ],
-                    [
-                        { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }
+                integration: track === 'kai'
+                    ? [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`先把 37.5% 写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`先写成 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`125% =<div class="blank"></div>`, a:`1.25`, step:`125% 就是 125/100，也就是 1.25。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 8 =<div class="blank"></div>`, a:`0.375`, step:`把 3:8 看成 3÷8，得到 0.375。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 4 =<div class="blank"></div>`, a:`1.25`, step:`把 5:4 看成 5÷4，先得 1 又 1/4，再写成 1.25。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>2</span><span class="bottom">5</span></div> = 2 :<div class="blank"></div>`, a:`5`, step:`分数 a/b 可以看成 a:b，所以 2/5 对应 2:5。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.25 = 5 :<div class="blank"></div>`, a:`4`, step:`1.25 就是 5/4，所以对应 5:4。` }) }]
                     ]
-                ];
-            return buildCoveredSection(student, groups);
+                    : [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }]
+                    ],
+                graduation: track === 'kai'
+                    ? [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`12.5% = 1 :<div class="blank"></div>`, a:`8`, step:`12.5% = 0.125 = 1/8，所以对应 1:8。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.625 =<div class="blank"></div>%`, a:`62.5`, step:`0.625 乘 100，得到 62.5%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.375 =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`0.375 = 375/1000，再约成 ${new Frac(3, 8).toHTML()}。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.375 = 3 :<div class="blank"></div>`, a:`8`, step:`0.375 就是 3/8，所以可写成 3:8。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 8 =<div class="blank"></div>`, a:`0.625`, step:`把 5:8 看成 5÷8，结果是 0.625。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.4 = 7 :<div class="blank"></div>`, a:`5`, step:`1.4 = 14/10 = 7/5，所以对应 7:5。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>5</span><span class="bottom">8</span></div> = 5 :<div class="blank"></div>`, a:`8`, step:`分数 5/8 可以直接写成 5:8。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.125 =<div class="blank"></div>%`, a:`12.5`, step:`0.125 乘 100 就是 12.5%。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.875 = 7 :<div class="blank"></div>`, a:`8`, step:`0.875 = 7/8，所以对应 7:8。` }) }]
+                    ]
+                    : [
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`12.5% =<div class="blank"></div>`, a:new Frac(1, 8).toHTML(), step:`12.5% = 12.5/100 = 0.125，再化成 ${new Frac(1, 8).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`1.25 =<div class="blank"></div>%`, a:`125`, step:`1.25 乘 100，就得到 125%。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`37.5% 先写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
+                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`0.875 = 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.625 = 5 :<div class="blank"></div>`, a:`8`, step:`0.625 就是 5/8，所以对应 5:8。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`7 : 10 =<div class="blank"></div>`, a:`0.7`, step:`把 7:10 看成 7÷10，结果是 0.7。` }) }
+                        ],
+                        [
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.4 = 2 :<div class="blank"></div>`, a:`5`, step:`0.4 = 2/5，所以对应 2:5。` }) },
+                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">8</span></div> = 3 :<div class="blank"></div>`, a:`8`, step:`分数 3/8 可以直接写成 3:8。` }) }
+                        ],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`150% =<div class="blank"></div>`, a:new Frac(3, 2).toHTML(), step:`150% = 150/100，再约成 ${new Frac(3, 2).toHTML()}。` }) }],
+                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.375 =<div class="blank"></div>%`, a:`37.5`, step:`0.375 乘 100，就得到 37.5%。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 5 =<div class="blank"></div>`, a:`0.6`, step:`把 3:5 看成 3÷5，结果是 0.6。` }) }],
+                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 = 3/4，所以对应 3:4。` }) }]
+                    ],
+            };
+            return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
         }
 
-        function buildClosureUnitSection(student, track = 'kai') {
-            const groups = track === 'kai'
-                ? [
-                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`3.2 m + 45 cm =<div class="blank"></div> cm`, a:`365`, step:`先把 3.2 m 化成 320 cm，再加 45 cm 得 365 cm。` }) }],
-                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`1.8 km &minus; 450 m =<div class="blank"></div> km`, a:`1.35`, step:`先把 450 m 化成 0.45 km，再算 1.8 &minus; 0.45 = 1.35。` }) }],
-                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`2 kg 350 g =<div class="blank"></div> kg`, a:`2.35`, step:`350 g = 0.35 kg，所以一共是 2.35 kg。` }) }],
-                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`4.5 t =<div class="blank"></div> kg`, a:`4500`, step:`1 t = 1000 kg，所以 4.5 t = 4500 kg。` }) }]
-                ]
-                : [
-                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`2.4 m =<div class="blank"></div> cm`, a:`240`, step:`1 m = 100 cm，所以 2.4 m = 240 cm。` }) }],
-                    [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`650 cm =<div class="blank"></div> m`, a:`6.5`, step:`1 m = 100 cm，所以 650 cm = 6.5 m。` }) }],
-                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`3 kg 80 g =<div class="blank"></div> g`, a:`3080`, step:`3 kg = 3000 g，再加 80 g 得 3080 g。` }) }],
-                    [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1250 g =<div class="blank"></div> kg`, a:`1.25`, step:`1250 g 除以 1000，得到 1.25 kg。` }) }]
-                ];
-            return buildCoveredSection(student, groups);
+        function buildClosureUnitSection(student, track = 'kai', phaseKey = 'integration') {
+            const phaseGroups = {
+                foundation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`2.4 m =<div class="blank"></div> cm`, a:`240`, step:`1 m = 100 cm，所以 2.4 m = 240 cm。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`650 cm =<div class="blank"></div> m`, a:`6.5`, step:`1 m = 100 cm，所以 650 cm = 6.5 m。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`3 kg 80 g =<div class="blank"></div> g`, a:`3080`, step:`3 kg = 3000 g，再加 80 g 得 3080 g。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1250 g =<div class="blank"></div> kg`, a:`1.25`, step:`1250 g 除以 1000，得到 1.25 kg。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`1.6 m =<div class="blank"></div> cm`, a:`160`, step:`1 m = 100 cm，所以 1.6 m = 160 cm。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`420 cm =<div class="blank"></div> m`, a:`4.2`, step:`420 cm 除以 100，得到 4.2 m。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`2 kg 40 g =<div class="blank"></div> g`, a:`2040`, step:`2 kg = 2000 g，再加 40 g 得 2040 g。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1600 g =<div class="blank"></div> kg`, a:`1.6`, step:`1600 g 除以 1000，得到 1.6 kg。` }) }]
+                    ],
+                integration: track === 'kai'
+                    ? [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`3.2 m + 45 cm =<div class="blank"></div> cm`, a:`365`, step:`先把 3.2 m 化成 320 cm，再加 45 cm 得 365 cm。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`1.8 km &minus; 450 m =<div class="blank"></div> km`, a:`1.35`, step:`先把 450 m 化成 0.45 km，再算 1.8 &minus; 0.45 = 1.35。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`2 kg 350 g =<div class="blank"></div> kg`, a:`2.35`, step:`350 g = 0.35 kg，所以一共是 2.35 kg。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`4.5 t =<div class="blank"></div> kg`, a:`4500`, step:`1 t = 1000 kg，所以 4.5 t = 4500 kg。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`2.4 m =<div class="blank"></div> cm`, a:`240`, step:`1 m = 100 cm，所以 2.4 m = 240 cm。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`650 cm =<div class="blank"></div> m`, a:`6.5`, step:`1 m = 100 cm，所以 650 cm = 6.5 m。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`3 kg 80 g =<div class="blank"></div> g`, a:`3080`, step:`3 kg = 3000 g，再加 80 g 得 3080 g。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1250 g =<div class="blank"></div> kg`, a:`1.25`, step:`1250 g 除以 1000，得到 1.25 kg。` }) }]
+                    ],
+                graduation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`2.75 km &minus; 450 m =<div class="blank"></div> m`, a:`2300`, step:`先把 2.75 km 化成 2750 m，再减去 450 m，得到 2300 m。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`3 m 6 cm + 0.54 m =<div class="blank"></div> m`, a:`3.6`, step:`3 m 6 cm = 3.06 m，再加 0.54 m 得 3.6 m。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1.8 t &minus; 350 kg =<div class="blank"></div> t`, a:`1.45`, step:`先把 350 kg 化成 0.35 t，再算 1.8 &minus; 0.35 = 1.45。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`0.75 kg + 380 g =<div class="blank"></div> g`, a:`1130`, step:`0.75 kg = 750 g，再加 380 g 得 1130 g。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`1.25 km + 750 m =<div class="blank"></div> km`, a:`2`, step:`750 m = 0.75 km，所以 1.25 + 0.75 = 2 km。` }) }],
+                        [{ tag: "c2_unit_length", gen: () => ({ tag: "c2_unit_length", q:`4 m 25 cm &minus; 0.75 m =<div class="blank"></div> m`, a:`3.5`, step:`4 m 25 cm = 4.25 m，再减 0.75 m 得 3.5 m。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`2.5 kg + 450 g =<div class="blank"></div> kg`, a:`2.95`, step:`450 g = 0.45 kg，所以一共是 2.95 kg。` }) }],
+                        [{ tag: "c2_unit_mass", gen: () => ({ tag: "c2_unit_mass", q:`1850 g &minus; 0.35 kg =<div class="blank"></div> g`, a:`1500`, step:`0.35 kg = 350 g，所以 1850 - 350 = 1500 g。` }) }]
+                    ],
+            };
+            return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
         }
 
-        function buildClosureRateEqSection(student, track = 'kai') {
-            const groups = track === 'kai'
-                ? [
-                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`240 元打七五折 =<div class="blank"></div> 元`, a:`180`, step:`七五折就是 75%，所以 240 &times; 75% = 180。` }) }],
-                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`45 是 60 的<div class="blank"></div>%`, a:`75`, step:`先算 45÷60 = 0.75，再化成 75%。` }) }],
-                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 40% = 28，<i class="var">x</i> =<div class="blank"></div>`, a:`70`, step:`先把 40% 看成 0.4，再用 28÷0.4 = 70。` }) }],
-                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 25% 是 18，这个数是<div class="blank"></div>`, a:`72`, step:`25% 就是 1/4，所以原数 = 18 &divide; 25% = 72。` }) }]
-                ]
-                : [
-                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`160 元打八折 =<div class="blank"></div> 元`, a:`128`, step:`八折就是 80%，所以 160 &times; 80% = 128。` }) }],
-                    [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`24 是 40 的<div class="blank"></div>%`, a:`60`, step:`先算 24÷40 = 0.6，再写成 60%。` }) }],
-                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 20% = 18，<i class="var">x</i> =<div class="blank"></div>`, a:`90`, step:`20% 就是 0.2，所以 <i class="var">x</i> = 18 ÷ 0.2 = 90。` }) }],
-                    [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 50% 是 36，这个数是<div class="blank"></div>`, a:`72`, step:`50% 就是一半，所以原数是 36 的 2 倍，即 72。` }) }]
-                ];
-            return buildCoveredSection(student, groups);
+        function buildClosureRateEqSection(student, track = 'kai', phaseKey = 'integration') {
+            const phaseGroups = {
+                foundation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`160 元打八折 =<div class="blank"></div> 元`, a:`128`, step:`八折就是 80%，所以 160 &times; 80% = 128。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`24 是 40 的<div class="blank"></div>%`, a:`60`, step:`先算 24÷40 = 0.6，再写成 60%。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 20% = 18，<i class="var">x</i> =<div class="blank"></div>`, a:`90`, step:`20% 就是 0.2，所以 <i class="var">x</i> = 18 ÷ 0.2 = 90。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 50% 是 36，这个数是<div class="blank"></div>`, a:`72`, step:`50% 就是一半，所以原数是 36 的 2 倍，即 72。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`90 元打九折 =<div class="blank"></div> 元`, a:`81`, step:`九折就是 90%，所以 90 &times; 90% = 81。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`18 是 30 的<div class="blank"></div>%`, a:`60`, step:`18÷30 = 0.6，再化成 60%。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 25% = 16，<i class="var">x</i> =<div class="blank"></div>`, a:`64`, step:`25% 就是 0.25，所以 <i class="var">x</i> = 16 ÷ 0.25 = 64。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 10% 是 8，这个数是<div class="blank"></div>`, a:`80`, step:`10% 就是 0.1，所以原数 = 8 ÷ 0.1 = 80。` }) }]
+                    ],
+                integration: track === 'kai'
+                    ? [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`240 元打七五折 =<div class="blank"></div> 元`, a:`180`, step:`七五折就是 75%，所以 240 &times; 75% = 180。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`45 是 60 的<div class="blank"></div>%`, a:`75`, step:`先算 45÷60 = 0.75，再化成 75%。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 40% = 28，<i class="var">x</i> =<div class="blank"></div>`, a:`70`, step:`先把 40% 看成 0.4，再用 28÷0.4 = 70。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 25% 是 18，这个数是<div class="blank"></div>`, a:`72`, step:`25% 就是 1/4，所以原数 = 18 &divide; 25% = 72。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`160 元打八折 =<div class="blank"></div> 元`, a:`128`, step:`八折就是 80%，所以 160 &times; 80% = 128。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`24 是 40 的<div class="blank"></div>%`, a:`60`, step:`先算 24÷40 = 0.6，再写成 60%。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> &times; 20% = 18，<i class="var">x</i> =<div class="blank"></div>`, a:`90`, step:`20% 就是 0.2，所以 <i class="var">x</i> = 18 ÷ 0.2 = 90。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 50% 是 36，这个数是<div class="blank"></div>`, a:`72`, step:`50% 就是一半，所以原数是 36 的 2 倍，即 72。` }) }]
+                    ],
+                graduation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`原价 320 元，现价 256 元，打了<div class="blank"></div>折`, a:`8`, step:`先算 256÷320 = 0.8，所以现价是原价的八折。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`某班女生占 40%，男生有 24 人，全班有<div class="blank"></div>人`, a:`40`, step:`男生占 60%，所以全班人数 = 24 ÷ 60% = 40。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 125% 是 45，这个数是<div class="blank"></div>`, a:`36`, step:`125% 就是 1.25，所以原数 = 45 ÷ 1.25 = 36。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> 的 40% 比 18 少 2，<i class="var">x</i> =<div class="blank"></div>`, a:`40`, step:`40% 的量是 16，所以 <i class="var">x</i> = 16 ÷ 0.4 = 40。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`原价 200 元，现价 170 元，打了<div class="blank"></div>折`, a:`8.5`, step:`170÷200 = 0.85，所以现价是原价的 8.5 折。` }) }],
+                        [{ tag: "c2_rate_discount", gen: () => ({ tag: "c2_rate_discount", q:`合格率是 75%，已合格 30 人，总人数是<div class="blank"></div>`, a:`40`, step:`总人数 = 30 ÷ 75% = 40。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`某数的 150% 是 54，这个数是<div class="blank"></div>`, a:`36`, step:`150% 就是 1.5，所以原数 = 54 ÷ 1.5 = 36。` }) }],
+                        [{ tag: "c2_eq_percent", gen: () => ({ tag: "c2_eq_percent", q:`<i class="var">x</i> 的 25% 比 18 少 8，<i class="var">x</i> =<div class="blank"></div>`, a:`40`, step:`25% 的量是 10，所以 <i class="var">x</i> = 10 ÷ 0.25 = 40。` }) }]
+                    ],
+            };
+            return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
         }
 
-        function buildClosureMixSection(student, track = 'kai') {
-            const groups = track === 'kai'
-                ? [
-                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`200`, step:`39.8 约看成 40，5.1 约看成 5，所以结果约是 200。` }) }],
-                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 19 &asymp;<div class="blank"></div>`, a:`30`, step:`把 598 看成 600，把 19 看成 20，600÷20 = 30。` }) }],
-                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`180 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`60`, step:`速度 = 路程 ÷ 时间，所以 180÷3 = 60 米/分。` }) }],
-                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时 &times; 1.5 时 =<div class="blank"></div> 千米`, a:`108`, step:`路程 = 速度 × 时间，所以 72 &times; 1.5 = 108。` }) }]
-                ]
-                : [
-                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
-                    [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
-                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
-                    [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
-                ];
-            return buildCoveredSection(student, groups);
+        function buildClosureMixSection(student, track = 'kai', phaseKey = 'integration') {
+            const phaseGroups = {
+                foundation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 2.1 &asymp;<div class="blank"></div>`, a:`80`, step:`39.8 约看成 40，2.1 约看成 2，所以结果约是 80。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`198 &divide; 4 &asymp;<div class="blank"></div>`, a:`50`, step:`把 198 看成 200，200÷4 = 50。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`120 米 &divide; 4 分 =<div class="blank"></div> 米/分`, a:`30`, step:`速度 = 路程 ÷ 时间，所以 120÷4 = 30 米/分。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`36 千米/时 &times; 2 时 =<div class="blank"></div> 千米`, a:`72`, step:`路程 = 速度 × 时间，所以 36 × 2 = 72。` }) }]
+                    ],
+                integration: track === 'kai'
+                    ? [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`200`, step:`39.8 约看成 40，5.1 约看成 5，所以结果约是 200。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 19 &asymp;<div class="blank"></div>`, a:`30`, step:`把 598 看成 600，把 19 看成 20，600÷20 = 30。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`180 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`60`, step:`速度 = 路程 ÷ 时间，所以 180÷3 = 60 米/分。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时 &times; 1.5 时 =<div class="blank"></div> 千米`, a:`108`, step:`路程 = 速度 × 时间，所以 72 &times; 1.5 = 108。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
+                    ],
+                graduation: track === 'kai'
+                    ? [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`49.8 &times; 8.2 的结果更接近<div class="blank"></div>`, a:`400`, step:`49.8 约看成 50，8.2 约看成 8，所以结果约是 400。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`803 &divide; 16 的结果更接近<div class="blank"></div>`, a:`50`, step:`803 约看成 800，16 不变，800÷16 = 50。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`一辆车 1.5 时行 96 千米，平均每时行<div class="blank"></div>千米`, a:`64`, step:`速度 = 路程 ÷ 时间，所以 96 ÷ 1.5 = 64。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时行 0.5 时，再行 18 千米，共行<div class="blank"></div>千米`, a:`54`, step:`先算 72×0.5 = 36 千米，再加 18 千米，一共 54 千米。` }) }]
+                    ]
+                    : [
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`29.9 &times; 7.8 的结果更接近<div class="blank"></div>`, a:`240`, step:`29.9 约看成 30，7.8 约看成 8，所以结果约是 240。` }) }],
+                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 12 的结果更接近<div class="blank"></div>`, a:`50`, step:`598 约看成 600，600÷12 = 50。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`一辆车 2 时行 84 千米，平均每时行<div class="blank"></div>千米`, a:`42`, step:`速度 = 路程 ÷ 时间，所以 84÷2 = 42。` }) }],
+                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`60 千米/时行 1.2 时，共行<div class="blank"></div>千米`, a:`72`, step:`路程 = 速度 × 时间，所以 60×1.2 = 72。` }) }]
+                    ],
+            };
+            return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
         }
 
         function buildClosureProgramSet() {
+            const phase = getClosurePhaseInfo();
             return {
-                programId: 'elementary_closure_v1',
-                c_k_bridge: buildClosureBridgeSection('KAI', 'kai'),
-                c_k_unit: buildClosureUnitSection('KAI', 'kai'),
+                programId: CLOSURE_PROGRAM_ID,
+                phaseKey: phase.key,
+                phaseLabel: phase.label,
+                phaseCue: phase.cue,
+                phaseMeta: phase,
+                c_k_bridge: buildClosureBridgeSection('KAI', 'kai', phase.key),
+                c_k_unit: buildClosureUnitSection('KAI', 'kai', phase.key),
                 c_k_maint_core: GenKAI.decimalsDiv(),
-                c_k_rate: buildClosureRateEqSection('KAI', 'kai'),
-                c_k_mix: buildClosureMixSection('KAI', 'kai'),
+                c_k_rate: buildClosureRateEqSection('KAI', 'kai', phase.key),
+                c_k_mix: buildClosureMixSection('KAI', 'kai', phase.key),
                 c_k_maint_mix: Engine.shuffle([...GenKAI.decimalsMult(), ...GenKAI.bigSub()]),
-                c_l_bridge: buildClosureBridgeSection('Lorik', 'lorik'),
-                c_l_unit: buildClosureUnitSection('Lorik', 'lorik'),
+                c_l_bridge: buildClosureBridgeSection('Lorik', 'lorik', phase.key),
+                c_l_unit: buildClosureUnitSection('Lorik', 'lorik', phase.key),
                 c_l_maint_core: GenLorik.div(),
-                c_l_rate: buildClosureRateEqSection('Lorik', 'lorik'),
-                c_l_mix: buildClosureMixSection('Lorik', 'lorik'),
+                c_l_rate: buildClosureRateEqSection('Lorik', 'lorik', phase.key),
+                c_l_mix: buildClosureMixSection('Lorik', 'lorik', phase.key),
                 c_l_maint_mix: Engine.shuffle([...GenLorik.mul(), ...GenLorik.sub()]),
-                stateLabel: '[Phase: Elementary Closure Preview]'
+                stateLabel: `[Phase: ${phase.label}]`
             };
         }
 
@@ -3299,30 +3522,31 @@
                 let closureLorikProfile = StorageDB.getProfile("Lorik", CLOSURE_PROGRAM_ID) || { history: [] };
                 let closureKaiSession = closureKaiProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
                 let closureLorikSession = closureLorikProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
+                const phaseMeta = data.phaseMeta || getClosurePhaseInfo(window.currentSetNumber);
 
                 const closureScore = 8 + 8 + 8 + 8 + 8 + 16;
-                let k_p1 = buildQSection(`一、 收束桥接：百分数·分数·比`, `I. Closure Bridge: Percent, Fraction & Ratio`, '(统一表示再计算 / Normalize first)', data.c_k_bridge, 'h-conv', 4) +
-                           buildQSection(`二、 单位链与量纲统一`, `II. Unit Chains & Dimensional Alignment`, '(先统一单位 / Unify units first)', data.c_k_unit, 'h-mixed', 2) +
-                           buildQSection(`三、 旧知保温：关键除法`, `III. Maintenance: Core Division`, '(保留第一阶段手感 / Keep fluency warm)', data.c_k_maint_core, 'h-vert', 2);
-                let k_p2 = buildQSection(`四、 百分率、折扣与方程`, `IV. Rates, Discounts & Equations`, '(整体与比率统一 / Whole-rate model)', data.c_k_rate, 'h-mixed', 2) +
-                           buildQSection(`五、 估算、速度与结果判断`, `V. Estimation, Speed & Validation`, '(先估后判 / Estimate before trust)', data.c_k_mix, 'h-mixed', 2) +
-                           buildQSection(`六、 旧知保温：乘减综合`, `VI. Maintenance: Multiplication & Subtraction`, '(防止旧成果回落 / Prevent skill fade)', data.c_k_maint_mix, 'h-mixed', 2);
+                let k_p1 = buildQSection(`一、 ${phaseMeta.bridgeTitle}`, `I. Closure Bridge: Percent, Fraction & Ratio`, `(${phaseMeta.bridgeHint})`, data.c_k_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 ${phaseMeta.unitTitle}`, `II. Unit Chains & Dimensional Alignment`, `(${phaseMeta.unitHint})`, data.c_k_unit, 'h-mixed', 2) +
+                           buildQSection(`三、 ${phaseMeta.maintCoreTitle}`, `III. Maintenance: Core Division`, `(${phaseMeta.maintCoreHint})`, data.c_k_maint_core, 'h-vert', 2);
+                let k_p2 = buildQSection(`四、 ${phaseMeta.rateTitle}`, `IV. Rates, Discounts & Equations`, `(${phaseMeta.rateHint})`, data.c_k_rate, 'h-mixed', 2) +
+                           buildQSection(`五、 ${phaseMeta.mixTitle}`, `V. Estimation, Speed & Validation`, `(${phaseMeta.mixHint})`, data.c_k_mix, 'h-mixed', 2) +
+                           buildQSection(`六、 ${phaseMeta.maintMixTitle}`, `VI. Maintenance: Multiplication & Subtraction`, `(${phaseMeta.maintMixHint})`, data.c_k_maint_mix, 'h-mixed', 2);
 
-                let l_p1 = buildQSection(`一、 收束桥接：百分数·分数·比`, `I. Closure Bridge: Percent, Fraction & Ratio`, '(统一表示再计算 / Normalize first)', data.c_l_bridge, 'h-conv', 4) +
-                           buildQSection(`二、 单位链与量纲统一`, `II. Unit Chains & Dimensional Alignment`, '(先统一单位 / Unify units first)', data.c_l_unit, 'h-mixed', 2) +
-                           buildQSection(`三、 旧知保温：关键除法`, `III. Maintenance: Core Division`, '(保留第一阶段手感 / Keep fluency warm)', data.c_l_maint_core, 'h-vert', 2);
-                let l_p2 = buildQSection(`四、 百分率、折扣与方程`, `IV. Rates, Discounts & Equations`, '(整体与比率统一 / Whole-rate model)', data.c_l_rate, 'h-mixed', 2) +
-                           buildQSection(`五、 估算、速度与结果判断`, `V. Estimation, Speed & Validation`, '(先估后判 / Estimate before trust)', data.c_l_mix, 'h-mixed', 2) +
-                           buildQSection(`六、 旧知保温：乘减综合`, `VI. Maintenance: Multiplication & Subtraction`, '(防止旧成果回落 / Prevent skill fade)', data.c_l_maint_mix, 'h-mixed', 2);
+                let l_p1 = buildQSection(`一、 ${phaseMeta.bridgeTitle}`, `I. Closure Bridge: Percent, Fraction & Ratio`, `(${phaseMeta.bridgeHint})`, data.c_l_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 ${phaseMeta.unitTitle}`, `II. Unit Chains & Dimensional Alignment`, `(${phaseMeta.unitHint})`, data.c_l_unit, 'h-mixed', 2) +
+                           buildQSection(`三、 ${phaseMeta.maintCoreTitle}`, `III. Maintenance: Core Division`, `(${phaseMeta.maintCoreHint})`, data.c_l_maint_core, 'h-vert', 2);
+                let l_p2 = buildQSection(`四、 ${phaseMeta.rateTitle}`, `IV. Rates, Discounts & Equations`, `(${phaseMeta.rateHint})`, data.c_l_rate, 'h-mixed', 2) +
+                           buildQSection(`五、 ${phaseMeta.mixTitle}`, `V. Estimation, Speed & Validation`, `(${phaseMeta.mixHint})`, data.c_l_mix, 'h-mixed', 2) +
+                           buildQSection(`六、 ${phaseMeta.maintMixTitle}`, `VI. Maintenance: Multiplication & Subtraction`, `(${phaseMeta.maintMixHint})`, data.c_l_maint_mix, 'h-mixed', 2);
 
-                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (Closure Bridge)</div>${buildAnsGrid(data.c_k_bridge, 'KAI', '收束桥接', closureKaiSession)}</div>` +
+                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (${phaseMeta.label})</div>${buildAnsGrid(data.c_k_bridge, 'KAI', phaseMeta.label, closureKaiSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildAnsGrid(data.c_k_unit, 'KAI', '单位链', closureKaiSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildAnsGrid(data.c_k_maint_core, 'KAI', '旧知保温', closureKaiSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildAnsGrid(data.c_k_rate, 'KAI', '比率方程', closureKaiSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">五、估算与速度 (Estimate & Speed)</div>${buildAnsGrid(data.c_k_mix, 'KAI', '结果判断', closureKaiSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildAnsGrid(data.c_k_maint_mix, 'KAI', '旧知保温', closureKaiSession)}</div>`;
 
-                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (Closure Bridge)</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', '收束桥接', closureLorikSession)}</div>` +
+                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (${phaseMeta.label})</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', phaseMeta.label, closureLorikSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildAnsGrid(data.c_l_unit, 'Lorik', '单位链', closureLorikSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildAnsGrid(data.c_l_maint_core, 'Lorik', '旧知保温', closureLorikSession)}</div>` +
                             `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildAnsGrid(data.c_l_rate, 'Lorik', '比率方程', closureLorikSession)}</div>` +
@@ -3331,9 +3555,9 @@
 
                 const closureIntroCard = `
                     <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
-                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段</h3>
+                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}</h3>
                         <div style="padding:14px 18px; color:#7c2d12; font-size:14px; line-height:1.7; font-family:sans-serif;">
-                            这一阶段不是单纯拔高，而是从六年级到初中的视角，把整数、小数、分数、百分数、比、比例、单位和策略训练更系统地收束起来。每天仍然保持两页训练，系统也会继续记录、批改和调训。
+                            <strong>${phaseMeta.label}</strong> 当前重点是：${phaseMeta.cue}。这一阶段不是单纯拔高，而是从六年级到初中的视角，把整数、小数、分数、百分数、比、比例、单位和策略训练更系统地收束起来。每天仍然保持两页训练，系统也会继续记录、批改和调训。
                         </div>
                     </div>`;
 

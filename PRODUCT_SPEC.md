@@ -138,6 +138,14 @@ v23.23 completes the stage-promotion loop:
 - The transition now preserves learning continuity better: `Advanced` and `Closure` keep their own set counters, and first entry into phase two performs a light bootstrap from first-stage weak domains.
 - The product stance remains the same: the second stage is not "hard mode". It is the formal closure stage for elementary-school calculation, viewed from grade-6 to junior-high readiness.
 
+v23.24 deepens the second-stage training quality:
+
+- `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
+- `收口期` focuses on normalization first: common representations, base unit alignment, and estimate-before-exact habits.
+- `收束期` focuses on integrated transfer: mixed percent/fraction/ratio work, method choice, and quicker switching across structures.
+- `毕业判定期` focuses on stable checking: reverse representations, boundary discrimination, and validating whether the result is reasonable.
+- The product goal remains unchanged: finish elementary-school calculation training efficiently and personally, while still keeping first-stage core algorithms warm enough that prior gains do not fade.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.
