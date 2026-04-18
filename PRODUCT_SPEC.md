@@ -515,3 +515,9 @@ profile = {
 - Secondary tutor actions now render in a denser two-column grid instead of one long vertical stack.
 - The shell keeps the same entry points, but they are easier to reach within one viewport.
 - Cloud-status presentation is also shorter, helping the menu stay more compact without removing useful actions.
+
+- v23.61 further trims tutor-shell redundancy:
+
+- The separate current-program title row is no longer shown in the floating menu because the active stage switch and phase chip already communicate the same state.
+- Card spacing, insight pills, and button rhythm are all tighter, reducing the menu’s vertical footprint again.
+- The goal stays the same: keep the tutor shell easy to find and use without pushing lower controls off-screen.

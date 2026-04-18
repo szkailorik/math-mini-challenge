@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.61 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed the now-redundant current-program title row from the floating tutor shell, then tightened menu width, spacing, chip density, and button rhythm so the same controls occupy less vertical space.
+- Open questions: whether the next shell pass should stop here or continue by shortening a few bilingual button labels even more.
+- Risks: compacting the shell further improves fit, but if labels are shortened too far it could become less instantly scannable for the tutor.
+- Next steps: review the live menu on real short-height windows, then decide whether the shell has reached the right balance or needs one final copy pass.
+
 ## Current v23.60 Iteration Notes
 
 ### Iteration 1
