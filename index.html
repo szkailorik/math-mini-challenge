@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.28 (Assessment Booklet 试卷深化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.29 (Answer Key Booklet 对齐)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -318,6 +318,29 @@
             font-family: 'Georgia', 'Songti SC', serif;
             font-weight: 700;
         }
+        .sheet-footer {
+            position: absolute;
+            left: 15mm;
+            right: 15mm;
+            bottom: 8.2mm;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            color: #64748b;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            border-top: 1px solid rgba(18, 59, 115, 0.12);
+            padding-top: 4px;
+            z-index: 2;
+        }
+        .sheet-footer strong {
+            color: #123b73;
+            font-weight: 700;
+            letter-spacing: 0.16em;
+        }
         .blank { flex-grow: 1; border-bottom: 1.8px solid var(--math-line); margin-left: 8px; margin-right: 8px; height: 17px; min-width: 48px; }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
@@ -347,8 +370,31 @@
 
         .ans-sheet { font-size: 14.5px; }
         .ans-sheet .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .ans-sheet .sheet-meta-band { margin-bottom: 14px; }
         .ans-grid-block { margin-bottom: 12px; }
         .ans-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fc; border-left: 3px solid #002D72; padding: 8px 10px; margin-bottom: 6px; border-radius: 0 4px 4px 0; transition: background 0.2s;}
+        .ans-section { margin-bottom: 14px; }
+        .ans-section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 8px 0;
+            padding: 0 0 6px 0;
+            border-bottom: 1px solid rgba(18, 59, 115, 0.18);
+            color: #123b73;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            font-family: 'Georgia', 'Songti SC', serif;
+        }
+        .ans-section-title::before {
+            content: '';
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(18, 59, 115, 0.9), rgba(18, 59, 115, 0.35));
+            flex: 0 0 auto;
+        }
         .ans-content { display: flex; flex-direction: column; flex: 1; padding-right: 15px; gap: 6px;}
         .ans-q-line { font-size: 14px; color: #555; display: flex; align-items: center; }
         .ans-a-line { font-size: 15.5px; color: #002D72; margin-left: 25px;}
@@ -591,7 +637,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.28</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.29</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -643,7 +689,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.28 Assessment Booklet 试卷深化：<br><strong>题卷加入更清楚的 section 标识与 page meta band<br>学生页和打印页更接近正式 assessment booklet</strong>
+                💡 23.29 Answer Key Booklet 对齐：<br><strong>答案页与题卷统一成同一套 booklet 语言<br>新增统一页脚和更清楚的解析 section 标题</strong>
             </div>
         </div>
 
@@ -670,9 +716,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.28';
-        const APP_RELEASE_LABEL = 'Assessment Booklet 试卷深化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.28 Assessment Booklet 试卷深化：<br><strong>题卷加入更清楚的 section 标识与 page meta band<br>学生页和打印页更接近正式 assessment booklet</strong>';
+        const APP_VERSION = 'v23.29';
+        const APP_RELEASE_LABEL = 'Answer Key Booklet 对齐';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.29 Answer Key Booklet 对齐：<br><strong>答案页与题卷统一成同一套 booklet 语言<br>新增统一页脚和更清楚的解析 section 标题</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4068,6 +4114,12 @@
             setSeed(window.currentSetNumber * 12345);
             const programId = getCurrentProgramId();
             let data = generateOrLoadSetData();
+            const buildSheetFooter = (paperCode, flavor = 'Question Paper') => `
+                <div class="sheet-footer">
+                    <span>${flavor}</span>
+                    <strong>${paperCode}</strong>
+                    <span>Mini Challenge ${window.currentSetNumber}</span>
+                </div>`;
             const buildSheetMetaBand = (meta = []) => `
                 <div class="sheet-meta-band">
                     ${meta.map(item => `
@@ -4077,7 +4129,7 @@
                         </div>
                     `).join('')}
                 </div>`;
-            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '', meta = []) => `
+            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '', meta = [], paperCode = 'QP') => `
                 <div class="sheet question-sheet ${extraClass}">
                     ${stamp}
                     <div class="header">
@@ -4091,9 +4143,10 @@
                     </div>
                     ${buildSheetMetaBand(meta)}
                     ${content}
+                    ${buildSheetFooter(paperCode, 'Question Paper')}
                 </div>`;
 
-            const getAnsSheetHTML = (name, content, isCompleted) => {
+            const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK') => {
                 let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
                 let btnText = isCompleted ? `✅ 重新提交 ${name} 的批改并覆盖记录 (Resubmit & Overwrite)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
                 let btnStyle = isCompleted ? `background: #4caf50;` : ``;
@@ -4107,12 +4160,14 @@
                         </div>
                         <h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1>
                     </div>
+                    ${buildSheetMetaBand(meta)}
                     ${content}
                     <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
+                    ${buildSheetFooter(paperCode, 'Answer Key')}
                 </div>`;
             };
 
-            const getClosureAnsSheetHTML = (name, content, isCompleted) => `
+            const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK') => `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 第二阶段已批改<br><span style="font-size:12px;">Closure Graded</span></div>` : ''}
                     <div class="header">
@@ -4122,11 +4177,13 @@
                         </div>
                         <h1>【第二阶段解析 Closure Solutions】 - ${name} (Set ${window.currentSetNumber})</h1>
                     </div>
+                    ${buildSheetMetaBand(meta)}
                     <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
                     </div>
                     ${content}
                     <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `✅ 重新提交 ${name} 的第二阶段批改 (Resubmit Closure)` : `📝 提交 ${name} 的第二阶段批改`}</button>
+                    ${buildSheetFooter(paperCode, 'Closure Answer Key')}
                 </div>`;
 
             if (programId === 'elementary_closure_v1') {
@@ -4196,24 +4253,32 @@
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'A1 / KAI' },
                         { label: 'Focus', value: phaseMeta.bridgeTitle }
-                    ]) +
+                    ], 'C-A1') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '', '', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'A2 / KAI' },
                         { label: 'Focus', value: kFocusMeta.title }
-                    ]) +
+                    ], 'C-A2') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '', '', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'B1 / Lorik' },
                         { label: 'Focus', value: phaseMeta.bridgeTitle }
-                    ]) +
+                    ], 'C-B1') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, closureScore, '', 'print-last-question', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'B2 / Lorik' },
                         { label: 'Focus', value: lFocusMeta.title }
-                    ]) +
-                    getClosureAnsSheetHTML('KAI', k_ans, !!closureKaiSession) +
-                    getClosureAnsSheetHTML('Lorik', l_ans, !!closureLorikSession);
+                    ], 'C-B2') +
+                    getClosureAnsSheetHTML('KAI', k_ans, !!closureKaiSession, [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'Answer / KAI' },
+                        { label: 'Focus', value: 'Solutions & Review' }
+                    ], 'C-AK') +
+                    getClosureAnsSheetHTML('Lorik', l_ans, !!closureLorikSession, [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'Answer / Lorik' },
+                        { label: 'Focus', value: 'Solutions & Review' }
+                    ], 'C-BK');
                 return;
             }
 
@@ -4269,23 +4334,31 @@
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'A1 / KAI' },
                     { label: 'Focus', value: 'Core Algorithms' }
-                ]) +
+                ], 'A-A1') +
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, totalScore, stampKAI, '', [
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'A2 / KAI' },
                     { label: 'Focus', value: 'Conversions & Strategy' }
-                ]) +
+                ], 'A-A2') +
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, totalScore, stampLorik, '', [
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'B1 / Lorik' },
                     { label: 'Focus', value: 'Vertical Algorithms' }
-                ]) +
+                ], 'A-B1') +
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik, 'print-last-question', [
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'B2 / Lorik' },
                     { label: 'Focus', value: 'Fractions & Shortcuts' }
-                ]) +
-                getAnsSheetHTML('KAI', k_ans, !!kaiSession) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession);
+                ], 'A-B2') +
+                getAnsSheetHTML('KAI', k_ans, !!kaiSession, [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'Answer / KAI' },
+                    { label: 'Focus', value: 'Solutions & Review' }
+                ], 'A-AK') + getAnsSheetHTML('Lorik', l_ans, !!lorikSession, [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'Answer / Lorik' },
+                    { label: 'Focus', value: 'Solutions & Review' }
+                ], 'A-BK');
         }
 
         // ================= v22 重写：错题本渲染（独立存储 · 去重计数 · 分组 · 一键掌握） =================

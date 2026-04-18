@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.28 Iteration Notes
+## Current v23.29 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the `v23.28` question-paper booklet structure and extended the same language into the answer pages instead of treating them as a separate utilitarian surface.
+- Open questions: none.
+- Risks: answer sheets already carry more content density than question papers, so any added chrome must stay compact.
+- Next steps: if future answer-sheet polish continues, prioritize teacher speed and scanability over decoration.
+
+### Iteration 2
+
+- What I changed: added a shared footer system and aligned meta bands so question sheets and answer keys now sort and read like one coherent printed packet.
+- Open questions: none.
+- Risks: extra footer and header metadata reduce vertical space slightly, so verification and print preview remain necessary.
+- Next steps: keep any future page identity elements one-line and low-height.
+
+### Iteration 3
+
+- What I changed: strengthened answer-section headings so the solutions booklet has clearer internal navigation while still preserving the underlying grading workflow.
+- Open questions: none.
+- Risks: stronger answer headings must not overwhelm the actual worked solutions or grading controls.
+- Next steps: continue polishing only where it helps adults review faster and more accurately.
+
+## Previous v23.28 Iteration Notes
 
 ### Iteration 1
 

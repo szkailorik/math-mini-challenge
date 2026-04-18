@@ -166,6 +166,18 @@ v23.28 deepens the assessment-booklet feel of the student paper:
   - adults orient faster when handling multiple printed pages
   - learners see a calmer, more legible hierarchy and can start the page with less friction
 
+v23.29 aligns the answer key with the same booklet system:
+
+- The answer key is no longer treated like a purely functional grading screen. It now shares the same booklet language as the question paper:
+  - compact meta band
+  - unified footer
+  - clearer section headings for worked solutions
+- This matters product-wise because the adult print workflow is part of the learning system. If the teacher key feels visually disconnected from the student paper, reviewing and reusing printed materials takes more effort than it should.
+- The goal is still efficiency, not ornament:
+  - faster sorting of printed pages
+  - clearer teacher orientation during grading
+  - stronger feeling that question paper and solution booklet belong to one intentional system
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

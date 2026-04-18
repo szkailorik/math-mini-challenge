@@ -1,4 +1,4 @@
-# Mini Challenge · 专家私教引擎 v23.28
+# Mini Challenge · 专家私教引擎 v23.29
 
 小学数学高密度训练单页应用：基于遗忘曲线的智能出题 + 永久错题本 + GitHub Gist 多设备同步。
 
@@ -37,6 +37,15 @@
 | 数据迁移 | — | 从旧版 `history` 自动重建 errorBook |
 
 核心错题唯一 ID：`tag + FNV-1a(normalized(q))`，不同题不会碰撞，同题跨 set 稳定命中。
+
+## v23.29 Answer Key Booklet 对齐
+
+- 这一轮继续完善“整本册子”的一致性，重点落在答案页和页脚。
+- 现在题卷页和答案页已经统一进同一套 booklet 语言：
+  - 每页都有统一的页脚信息
+  - 答案页也有自己的 meta band
+  - 解析区的大题标题更清楚，更像正式 teacher key / solutions booklet
+- 这次没有改训练逻辑，只继续优化老师拿在手里的整套打印材料。
 
 ## v23.28 Assessment Booklet 试卷深化
 

@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with a more booklet-like printable surface in `v23.28`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, manually switchable, and paired with booklet-style question sheets plus aligned answer-booklet presentation in `v23.29`.
 
 ## Local Environment
 
@@ -68,6 +68,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - The no-print shell now separates from the paper more clearly: the control area behaves like a teacher workbench, while printable sheets stay exam-like and closer to Singapore-style math booklet presentation.
 - `buildQSection`: now parses the visible Chinese section ordinal and renders it as a dedicated section marker, so large-question structure reads more like a booklet than a dashboard.
 - `buildSheetMetaBand`: adds a compact per-page meta strip for program, paper identity, and current focus without changing the adaptive training logic or print root behavior.
+- `buildSheetFooter`: adds a compact bottom footer with paper flavor and code so question sheets and answer keys feel like one coherent printed set.
+- `getAnsSheetHTML` / `getClosureAnsSheetHTML`: now use the same meta-band and footer language as the question sheets, making answer pages feel like the same booklet rather than a separate utility view.
 - `SET_CACHE_PREFIX`: versioned set-cache namespace; bumping it forces future set numbers to regenerate under new generator rules instead of reusing stale papers from older releases.
 - Training-quality passes now also target explanation quality, not only coverage: key generated items should expose a real worked hint instead of relying solely on fallback knowledge advice.
 - Question-sheet rendering now intentionally suppresses training metadata such as weakness badges, level badges, and phase strips; only exact error-book replay items may show a tiny non-layout-affecting review marker.
@@ -133,6 +135,7 @@ python3 -m http.server 8080
 - Confirm the `Closure` sheets visibly combine integrated closure topics with explicit old-skill maintenance sections.
 - Confirm the top workbench uses direct stage buttons, while the question sheets remain exam-like rather than dashboard-like.
 - Confirm each question sheet shows the compact page meta band and clearer section markers without crowding the paper or changing pagination.
+- Confirm answer sheets also show the aligned meta band and footer, and that the new answer-section titles remain readable without crowding the page.
 - Confirm `Closure` set 1 shows `收口期`, set 12 shows `收束期`, and set 26 shows `毕业判定期`, with matching cue text on the paper.
 - Grade and submit one `Closure` set, then confirm a closure-specific report appears and the first-stage profile remains untouched.
 - After creating a clear second-stage weak point, confirm the next `Closure` set turns section V into the matching `重点强化` lane instead of leaving it fixed.
