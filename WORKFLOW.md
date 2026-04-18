@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.34 Iteration Notes
+## Current v23.35 Iteration Notes
+
+### Iteration 1
+
+- What I changed: stopped treating the notation issue as another local bug and instead compared the current worksheet against the older printed look the user preferred.
+- Open questions: none.
+- Risks: keeping newer layout abstractions while trying to mimic the old paper by styling alone would keep causing conflicts.
+- Next steps: favor structural rollback to older worksheet behavior over more micro-fixes.
+
+### Iteration 2
+
+- What I changed: removed the newer split answer-tail model from the active paper path and restored a single inline flow for expression, equals sign, blank line, and any suffix text.
+- Open questions: none.
+- Risks: some especially long prompts may still need generator-level shortening rather than layout changes.
+- Next steps: if more paper issues remain, inspect concrete generated prompt families instead of adding another generic wrapper layer.
+
+### Iteration 3
+
+- What I changed: updated validation to confirm that legacy `= blank` prompts normalize into the restored inline rendering path rather than the newer detached tail component.
+- Open questions: none.
+- Risks: the paper can still regress if future edits mix both rendering styles again.
+- Next steps: keep one worksheet notation path active at a time.
+
+## Previous v23.34 Iteration Notes
 
 ### Iteration 1
 

@@ -246,55 +246,46 @@ const fractionPrompt = context.normalizeQuestionPrompt(
   '<div class="frac"><span>3</span><span class="bottom">4</span></div> &times; <span class="paren-l"></span><div class="frac"><span>1</span><span class="bottom">2</span></div> + <div class="frac"><span>1</span><span class="bottom">8</span></div><span class="paren-r"></span> = ',
   'h-frac',
 );
-if (!fractionPrompt?.hasAnswerTail) {
-  throw new Error('Trailing equals questions should render through the shared answer tail');
-}
 if (fractionPrompt.bodyHtml.includes('math-eq')) {
-  throw new Error('Trailing equals should be removed from question body before answer-tail rendering');
+  throw new Error('Trailing equals should be removed from question body before inline answer rendering');
 }
 if (!fractionPrompt.bodyHtml.includes('math-paren-group')) {
   throw new Error('Parenthesized fraction groups are not normalized into a stable inline wrapper');
 }
-if (!fractionPrompt.answerTailHtml.includes('math-answer-tail') || !fractionPrompt.answerTailHtml.includes('math-answer-slot')) {
-  throw new Error('Shared answer tail is missing the expected equals and answer-slot markup');
-}
-if (!fractionPrompt.prefersExamInline) {
-  throw new Error('Fraction prompts should request exam-inline layout treatment');
+if (!fractionPrompt.suffixHtml.includes('math-eq') || !fractionPrompt.suffixHtml.includes('math-inline-blank')) {
+  throw new Error('Inline answer rendering is missing the expected equals and blank markup');
 }
 
 const fractionNoEqualsPrompt = context.normalizeQuestionPrompt(
   '<div class="frac"><span>2</span><span class="bottom">9</span></div> &times; <div class="frac"><span>1</span><span class="bottom">2</span></div> &divide; <div class="frac"><span>1</span><span class="bottom">2</span></div>',
   'h-frac',
 );
-if (!fractionNoEqualsPrompt?.hasAnswerTail) {
-  throw new Error('Fraction computation prompts without an explicit trailing equals should still receive a shared answer tail');
+if (!fractionNoEqualsPrompt?.suffixHtml.includes('math-eq')) {
+  throw new Error('Fraction computation prompts without an explicit trailing equals should still receive an inline answer suffix');
 }
 
 const comparisonPrompt = context.normalizeQuestionPrompt(
   '<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.8',
   'h-conv',
 );
-if (comparisonPrompt?.hasAnswerTail) {
-  throw new Error('Comparison prompts with circle blanks should not receive a trailing answer tail');
+if (comparisonPrompt?.suffixHtml) {
+  throw new Error('Comparison prompts with circle blanks should not receive an inline answer suffix');
 }
 
 const blankTailPrompt = context.normalizeQuestionPrompt(
   '<div class="frac"><span>9</span><span class="bottom">25</span></div> =<div class="blank"></div>%',
   'h-conv',
 );
-if (!blankTailPrompt?.hasAnswerTail) {
-  throw new Error('Inline blank equations should be normalized into the shared answer tail');
-}
 if (blankTailPrompt.bodyHtml.includes('math-inline-blank')) {
   throw new Error('Inline blank equations should not keep the old blank inside the question body');
 }
-if (!blankTailPrompt.answerTailHtml.includes('math-tail-suffix') || !blankTailPrompt.answerTailHtml.includes('%')) {
-  throw new Error('Inline blank equations with unit suffix should keep their suffix in the shared answer tail');
+if (!blankTailPrompt.suffixHtml.includes('math-inline-blank') || !blankTailPrompt.suffixHtml.includes('%')) {
+  throw new Error('Inline blank equations with unit suffix should keep their suffix in the inline answer suffix');
 }
 
 const equationPrompt = context.normalizeQuestionPrompt('3<i class="var">x</i> + 5 = 11', 'h-frac');
-if (equationPrompt?.hasAnswerTail) {
-  throw new Error('Internal equations should not receive a second trailing equals answer tail');
+if (equationPrompt?.suffixHtml) {
+  throw new Error('Internal equations should not receive a second inline answer suffix');
 }
 
 function assertPaper(setNumber) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.34 (等号与空格线统一修正)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.35 (恢复旧版题面行内规则)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -95,7 +95,6 @@
             body.print-sandbox-active #print-root .math-row {
                 line-height: 1.28 !important;
             }
-            body.print-sandbox-active #print-root .math-answer-slot,
             body.print-sandbox-active #print-root .blank {
                 width: 3.35em !important;
                 min-width: 3.35em !important;
@@ -106,32 +105,6 @@
             body.print-sandbox-active #print-root .paren-l,
             body.print-sandbox-active #print-root .paren-r {
                 font-size: 1.78em !important;
-            }
-            body.print-sandbox-active #print-root .h-frac,
-            body.print-sandbox-active #print-root .h-mixed {
-                font-size: 16.8px !important;
-            }
-            body.print-sandbox-active #print-root .h-frac .math-text.exam-expression,
-            body.print-sandbox-active #print-root .h-mixed .math-text.exam-expression {
-                font-size: 0.78em !important;
-                gap: 0.03em 0.06em !important;
-            }
-            body.print-sandbox-active #print-root .h-frac .math-answer-slot,
-            body.print-sandbox-active #print-root .h-mixed .math-answer-slot {
-                width: 2.7em !important;
-                min-width: 2.7em !important;
-            }
-            body.print-sandbox-active #print-root .h-frac .frac,
-            body.print-sandbox-active #print-root .h-mixed .frac {
-                min-width: 1.34em !important;
-                font-size: 0.72em !important;
-                margin: 0 0.06em 0 0.03em !important;
-            }
-            body.print-sandbox-active #print-root .h-frac .paren-l,
-            body.print-sandbox-active #print-root .h-frac .paren-r,
-            body.print-sandbox-active #print-root .h-mixed .paren-l,
-            body.print-sandbox-active #print-root .h-mixed .paren-r {
-                font-size: 1.42em !important;
             }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
@@ -316,13 +289,6 @@
             gap: 0.16em 0.22em;
             min-width: 0;
         }
-        .q-body.exam-inline {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            align-items: end;
-            column-gap: 0.12em;
-            row-gap: 0;
-        }
         .math-row {
             display: inline-flex;
             align-items: center;
@@ -354,27 +320,6 @@
         .math-op { color: var(--math-blue); font-size: 1.04em; }
         .math-eq { color: var(--math-warm); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
-        .math-answer-tail {
-            display: inline-flex;
-            align-items: flex-end;
-            gap: 0.12em;
-            flex: 0 0 auto;
-            white-space: nowrap;
-            margin-left: 0;
-            min-height: 1em;
-        }
-        .math-tail-suffix {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.06em;
-            margin-left: 0.04em;
-            white-space: nowrap;
-        }
-        .math-text.exam-expression {
-            flex-wrap: nowrap;
-            white-space: nowrap;
-            gap: 0.04em 0.08em;
-        }
         .review-flag {
             position: absolute;
             top: -2px;
@@ -446,43 +391,6 @@
         .paren-r::before { content: ')'; }
 
         .h-vert   { min-height: 140px; } .h-sub    { min-height: 75px; } .h-frac   { min-height: 115px; } .h-mixed  { min-height: 135px; }
-        .h-frac,
-        .h-mixed {
-            font-size: 18.5px;
-        }
-        .h-frac .q-body.exam-inline,
-        .h-mixed .q-body.exam-inline {
-            align-items: center;
-        }
-        .h-frac .math-text.exam-expression,
-        .h-mixed .math-text.exam-expression {
-            font-size: 0.82em;
-            letter-spacing: 0;
-            line-height: 1.16;
-        }
-        .h-frac .math-answer-slot,
-        .h-mixed .math-answer-slot {
-            width: 3.05em;
-            min-width: 3.05em;
-            margin-left: 0.04em;
-        }
-        .h-frac .frac,
-        .h-mixed .frac {
-            min-width: 1.48em;
-            font-size: 0.78em;
-            margin: 0 0.08em 0 0.04em;
-        }
-        .h-frac .frac > span,
-        .h-mixed .frac > span {
-            padding: 0 0.16em;
-        }
-        .h-frac .paren-l,
-        .h-frac .paren-r,
-        .h-mixed .paren-l,
-        .h-mixed .paren-r {
-            font-size: 1.56em;
-            margin: 0 -0.05em;
-        }
         .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -545,17 +453,17 @@
         .math-answer-slot {
             display: inline-block;
             flex: 0 0 auto;
-            width: 3.6em;
-            min-width: 3.6em;
+            width: 4.6em;
+            min-width: 4.6em;
             height: 0.92em;
             border-bottom: 1.8px solid var(--math-line);
-            margin: 0 0.16em 0.06em;
+            margin: 0 0.2em 0.06em;
             vertical-align: baseline;
             transform: translateY(-0.02em);
         }
         .math-answer-slot {
-            width: 4.2em;
-            min-width: 4.2em;
+            width: 4.6em;
+            min-width: 4.6em;
         }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
@@ -852,7 +760,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.34</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.35</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -931,9 +839,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.34';
-        const APP_RELEASE_LABEL = '等号与空格线统一修正';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.34 等号与空格线统一修正：<br><strong>把题干自带的“= 空格线”统一折叠成共享答题尾部<br>减少等号重复、等号乱位和空格线乱跑的问题</strong>';
+        const APP_VERSION = 'v23.35';
+        const APP_RELEASE_LABEL = '恢复旧版题面行内规则';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.35 恢复旧版题面行内规则：<br><strong>撤掉最近那套分离式答题尾部组件，改回更接近旧版的单一行内排版<br>让等号、空格线、分数和后缀重新按同一行节奏显示</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2616,11 +2524,9 @@
             value = value.replace(/\s=(?=<)/g, ' <span class="math-eq">=</span>');
             return value;
         }
-        function buildAnswerTailHtml(tailSuffixHtml = '') {
-            const suffixHtml = tailSuffixHtml
-                ? `<span class="math-tail-suffix">${beautifyMathHTML(tailSuffixHtml)}</span>`
-                : '';
-            return `<span class="math-answer-tail"><span class="math-eq">=</span><span class="math-answer-slot"></span>${suffixHtml}</span>`;
+        function buildInlineAnswerHtml(tailSuffixHtml = '') {
+            const suffixHtml = tailSuffixHtml ? ` ${beautifyMathHTML(tailSuffixHtml)}` : '';
+            return `<span class="math-eq">=</span><span class="blank math-inline-blank"></span>${suffixHtml}`;
         }
         function normalizeQuestionPrompt(questionHtml = '', heightClass = '') {
             const raw = String(questionHtml || '').trim();
@@ -2630,9 +2536,7 @@
                 const tailSuffix = blankTailMatch[2].trim();
                 return {
                     bodyHtml: beautifyMathHTML(bodySource),
-                    hasAnswerTail: true,
-                    prefersExamInline: /class="frac"|paren-l|paren-r/.test(bodySource),
-                    answerTailHtml: buildAnswerTailHtml(tailSuffix)
+                    suffixHtml: buildInlineAnswerHtml(tailSuffix)
                 };
             }
             const hasTrailingEquals = /\s*=\s*$/.test(raw);
@@ -2646,13 +2550,10 @@
                 .replace(/\s+/g, ' ')
                 .trim();
             const hasInternalEquals = !hasTrailingEquals && semanticMathText.includes('=');
-            const prefersExamInline = /class="frac"|paren-l|paren-r/.test(rawWithoutTerminalEquals);
             const hasAnswerTail = (hasTrailingEquals || (heightClass !== 'h-conv' && !hasInlineBlank && !hasCircleBlank && !hasInternalEquals));
             return {
                 bodyHtml,
-                hasAnswerTail,
-                prefersExamInline,
-                answerTailHtml: hasAnswerTail ? buildAnswerTailHtml() : ''
+                suffixHtml: hasAnswerTail ? buildInlineAnswerHtml() : ''
             };
         }
         window.beautifyMathHTML = beautifyMathHTML;
@@ -4365,9 +4266,7 @@
                     ${items.map((q,i) => {
                         let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        const bodyClass = prompt.prefersExamInline ? 'q-body exam-inline' : 'q-body';
-                        const textClass = prompt.prefersExamInline ? 'math-text exam-expression' : 'math-text';
-                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="${bodyClass}"><span class="${textClass}">${prompt.bodyHtml}</span>${prompt.answerTailHtml}</div></div>`;
+                        return `<div class="item ${heightClass}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
                     }).join('')}
                 </div>
             </div>`;

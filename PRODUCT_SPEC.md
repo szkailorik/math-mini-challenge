@@ -212,6 +212,12 @@ v23.34 unifies equals signs and blank lines into one rule:
 - This keeps conversion, unit, and simple equation items from mixing legacy in-body blanks with newer tail-based blanks, which was making some equals signs feel duplicated or oddly placed.
 - Product-wise, this matters because students and tutors read trust from consistency: one worksheet should not feel like it was assembled from multiple conflicting notation systems.
 
+v23.35 restores an older worksheet rhythm:
+
+- The paper now returns to a more traditional inline question model, where the expression, equals sign, blank line, and trailing suffix live in the same visual flow instead of being split across a separate answer-tail container.
+- This is intentionally closer to the older worksheet look that felt calmer and more paper-native in real printouts.
+- Product-wise, this matters because the app is not trying to invent a novel notation system; it should feel like a reliable exam sheet first.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.
