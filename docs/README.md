@@ -4,3 +4,4 @@
 - [2026-04-18-next-stage-calculation-implementation-plan.md](./2026-04-18-next-stage-calculation-implementation-plan.md)
 - [2026-04-18-phase-two-frontend-ux-spec.md](./2026-04-18-phase-two-frontend-ux-spec.md)
 - [2026-04-19-shared-training-quality-spec.md](./2026-04-19-shared-training-quality-spec.md)
+- [2026-04-19-shared-training-quality-implementation-plan.md](./2026-04-19-shared-training-quality-implementation-plan.md)
