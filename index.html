@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.26 (第二阶段重点强化区回炉)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.27 (手动切阶段与考试卷工作台)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -15,6 +15,11 @@
             --math-warm: #9a3412;
             --math-violet: #6d28d9;
             --math-line: #334155;
+            --desk-ink: #10233f;
+            --desk-paper: #f7f1e3;
+            --desk-cream: #fffaf0;
+            --desk-accent: #a44a1f;
+            --desk-line: rgba(16, 35, 63, 0.15);
         }
         @page { size: A4; margin: 0 !important; }
         @media print {
@@ -62,16 +67,77 @@
                 padding-bottom: 20mm !important;
             }
         }
-        body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
+        body {
+            margin: 0;
+            padding: 20px;
+            background:
+                radial-gradient(circle at top left, rgba(190, 214, 235, 0.55), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(220, 192, 166, 0.36), transparent 30%),
+                linear-gradient(180deg, #e7edf4 0%, #d9e1ea 100%);
+            font-family: 'Georgia', 'Baskerville', 'Songti SC', 'STSong', 'SimSun', serif;
+            color: #222;
+        }
 
-        .sheet { width: 210mm !important; height: 297mm !important; box-sizing: border-box; padding: 12mm 15mm; page-break-after: always; overflow: hidden; background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.15); margin: 0 auto 25px auto; position: relative; }
+        .sheet {
+            width: 210mm !important;
+            height: 297mm !important;
+            box-sizing: border-box;
+            padding: 12mm 15mm;
+            page-break-after: always;
+            overflow: hidden;
+            background: #fffef9;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            box-shadow: 0 14px 35px rgba(15, 23, 42, 0.14);
+            margin: 0 auto 25px auto;
+            position: relative;
+        }
         .sheet.ans-sheet { height: auto !important; min-height: 297mm !important; overflow: visible !important; padding-bottom: 20mm;}
         .sheet:last-child { page-break-after: auto; margin-bottom: 0; }
+        .sheet::before {
+            content: '';
+            position: absolute;
+            inset: 8mm;
+            border: 1px solid rgba(18, 59, 115, 0.08);
+            pointer-events: none;
+        }
 
         /* ================= 二、 视觉与双语排版系统 ================= */
-        .header { text-align: center; margin-bottom: 12px; border-bottom: 3px double #002D72; padding-bottom: 8px; position: relative; }
-        .header h1 { margin: 0 0 8px 0; font-size: 28px; color: #002D72; letter-spacing: 2px; font-weight: bold; }
-        .info-row { display: flex; justify-content: space-between; font-size: 16px; font-weight: bold; padding: 0 10px; font-family: 'KaiTi', '楷体', serif; }
+        .header {
+            text-align: center;
+            margin-bottom: 14px;
+            border-bottom: 2px solid rgba(18, 59, 115, 0.75);
+            padding: 0 8px 10px;
+            position: relative;
+        }
+        .header::before {
+            content: 'MATHEMATICS PRACTICE PAPER';
+            display: block;
+            margin-bottom: 6px;
+            font-size: 10px;
+            letter-spacing: 0.28em;
+            color: #7c2d12;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            font-weight: 700;
+        }
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 24px;
+            color: #0f172a;
+            letter-spacing: 0.12em;
+            font-weight: 700;
+        }
+        .info-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 0 4px;
+            color: #334155;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
         .score-box { position: absolute; top: 0; right: 0; border: 2px solid #d32f2f; color: #d32f2f; padding: 5px 15px; font-size: 16px; font-weight: bold; border-radius: 4px; transform: rotate(-3deg); }
 
         .completed-stamp {
@@ -81,10 +147,22 @@
         }
 
         .section { margin-bottom: 14px; }
-        .section-title { font-size: 17px; font-weight: bold; margin: 0 0 11px 0; padding-left: 10px; border-left: 5px solid #002D72; color: #002D72; display: flex; justify-content: space-between; align-items: flex-end; font-family: 'KaiTi', '楷体', serif; letter-spacing: 0.2px; }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0 0 11px 0;
+            padding: 0 0 6px 0;
+            border-bottom: 1px solid rgba(18, 59, 115, 0.22);
+            color: #123b73;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-family: 'Georgia', 'Songti SC', serif;
+            letter-spacing: 0.02em;
+        }
         .title-text { display: flex; flex-direction: column; line-height: 1.26; }
-        .title-en { font-size: 13px; color: #64748b; font-weight: normal; font-family: 'Times New Roman', serif; }
-        .points { font-size: 14px; font-weight: normal; color: #d32f2f; letter-spacing: 1px; font-family: 'Times New Roman', 'SimSun', serif; white-space: nowrap; margin-left: 15px;}
+        .title-en { font-size: 11px; color: #64748b; font-weight: 700; font-family: 'Arial Narrow', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+        .points { font-size: 12px; font-weight: 700; color: #9a3412; letter-spacing: 0.12em; font-family: 'Arial Narrow', sans-serif; white-space: nowrap; margin-left: 15px; text-transform: uppercase;}
 
         .grid { display: grid; gap: 18px 14px; width: 100%; }
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
@@ -252,23 +330,66 @@
         .knowledge-tag.weak { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
 
         /* ================= 控制面板 ================= */
-        .control-panel { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 12px 16px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; flex-direction: column; gap: 8px; font-family: sans-serif; backdrop-filter: blur(5px); width: 320px; }
-        .panel-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 6px;}
-        .panel-header h3 { margin: 0; font-size: 15px; text-align: left; flex: 1;}
-        .toggle-btn { background: none; border: none; color: white; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
-        .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: #ffde99;}
-        .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px;}
-        .ctrl-btn { background: #fff; color: #002D72; border: none; padding: 6px 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; flex:1; text-align:center; font-size: 13px;}
-        .ctrl-btn:hover { background: #d32f2f; color: #fff; transform: scale(1.05); }
-        .set-indicator { font-size: 16px; font-weight: bold; color: #ffde99; white-space: nowrap;}
-        .program-shell-card, .stage-status-card {
-            background: rgba(255,255,255,0.11);
-            border: 1px solid rgba(255,255,255,0.16);
-            border-radius: 10px;
-            padding: 10px 11px;
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(180deg, rgba(252, 248, 241, 0.98), rgba(245, 238, 227, 0.98));
+            color: var(--desk-ink);
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(16, 35, 63, 0.12);
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+            z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            font-family: 'Georgia', 'Baskerville', serif;
+            backdrop-filter: blur(10px);
+            width: 348px;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--desk-line);
+            padding-bottom: 8px;
+        }
+        .panel-header h3 {
+            margin: 0;
+            font-size: 17px;
+            text-align: left;
+            flex: 1;
+            color: var(--desk-ink);
+            letter-spacing: 0.03em;
+        }
+        .toggle-btn { background: none; border: none; color: #475569; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
+        .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: var(--desk-accent);}
+        .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 8px;}
+        .ctrl-btn {
+            background: #ffffff;
+            color: var(--desk-ink);
+            border: 1px solid rgba(16, 35, 63, 0.12);
+            padding: 8px 10px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex:1;
+            text-align:center;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+        }
+        .ctrl-btn:hover { background: var(--desk-accent); color: #fff; transform: translateY(-1px); border-color: var(--desk-accent); }
+        .set-indicator { font-size: 16px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
+        .program-shell-card, .stage-status-card {
+            background: rgba(255,255,255,0.72);
+            border: 1px solid rgba(16, 35, 63, 0.1);
+            border-radius: 14px;
+            padding: 12px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
         .program-shell-card { margin-top: 8px; }
         .program-shell-head, .stage-status-head {
@@ -282,7 +403,7 @@
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: #bfdbfe;
+            color: #64748b;
         }
         .program-chip, .status-chip {
             display: inline-flex;
@@ -295,67 +416,90 @@
             white-space: nowrap;
         }
         .program-chip.phase-1, .status-chip.phase-1 {
-            background: rgba(191, 219, 254, 0.22);
-            color: #dbeafe;
-            border: 1px solid rgba(191, 219, 254, 0.35);
+            background: rgba(18, 59, 115, 0.08);
+            color: #123b73;
+            border: 1px solid rgba(18, 59, 115, 0.18);
         }
         .program-chip.phase-2, .status-chip.phase-2 {
-            background: rgba(16, 185, 129, 0.18);
-            color: #d1fae5;
-            border: 1px solid rgba(110, 231, 183, 0.35);
+            background: rgba(164, 74, 31, 0.1);
+            color: #8a3412;
+            border: 1px solid rgba(164, 74, 31, 0.22);
         }
-        .program-main-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
+        .program-switcher { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .program-switch-btn {
+            border: 1px solid rgba(16, 35, 63, 0.14);
+            background: rgba(255,255,255,0.84);
+            color: var(--desk-ink);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
         }
+        .program-switch-btn:hover { transform: translateY(-1px); border-color: rgba(164, 74, 31, 0.35); }
+        .program-switch-btn.is-active {
+            background: linear-gradient(135deg, #123b73, #315a91);
+            color: #fff;
+            border-color: rgba(18, 59, 115, 0.55);
+            box-shadow: 0 10px 18px rgba(18, 59, 115, 0.2);
+        }
+        .program-switch-btn[data-program="elementary_closure_v1"].is-active {
+            background: linear-gradient(135deg, #8a3412, #b45309);
+            border-color: rgba(180, 83, 9, 0.5);
+            box-shadow: 0 10px 18px rgba(180, 83, 9, 0.2);
+        }
+        .program-main-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
         .program-copy { min-width: 0; flex: 1; }
         .program-title {
             font-size: 14px;
             font-weight: 700;
-            color: #ffffff;
+            color: var(--desk-ink);
             line-height: 1.25;
             margin-bottom: 3px;
         }
         .program-desc, .stage-status-body, .stage-status-action {
             font-size: 12px;
             line-height: 1.45;
-            color: #dbeafe;
+            color: #475569;
         }
-        .program-select {
-            width: 132px;
-            border: 1px solid rgba(255,255,255,0.28);
-            border-radius: 8px;
-            background: rgba(255,255,255,0.96);
-            color: #0f172a;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 8px;
-            cursor: pointer;
-        }
+        .program-select { display: none; }
         .program-select:focus { outline: 2px solid rgba(191, 219, 254, 0.65); outline-offset: 1px; }
         .stage-status-title {
             font-size: 13px;
             font-weight: 700;
-            color: #fff;
+            color: var(--desk-ink);
             line-height: 1.3;
         }
-        .stage-status-card.is-ready {
-            border-color: rgba(110, 231, 183, 0.45);
-            background: linear-gradient(180deg, rgba(16, 185, 129, 0.16), rgba(255,255,255,0.08));
+        .stage-status-card.is-advanced {
+            border-color: rgba(18, 59, 115, 0.18);
+            background: linear-gradient(180deg, rgba(18, 59, 115, 0.06), rgba(255,255,255,0.66));
         }
-        .stage-status-card.is-soon {
-            border-color: rgba(253, 186, 116, 0.42);
-            background: linear-gradient(180deg, rgba(180, 83, 9, 0.16), rgba(255,255,255,0.08));
+        .stage-status-card.is-closure {
+            border-color: rgba(180, 83, 9, 0.22);
+            background: linear-gradient(180deg, rgba(180, 83, 9, 0.08), rgba(255,255,255,0.68));
+        }
+        .stage-insights { display: flex; flex-wrap: wrap; gap: 6px; }
+        .stage-insight {
+            font-size: 11px;
+            line-height: 1.2;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.78);
+            border: 1px solid rgba(16, 35, 63, 0.1);
+            color: #334155;
+            font-family: 'Arial Narrow', sans-serif;
+            letter-spacing: 0.04em;
         }
 
         #toast-msg { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #4caf50; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: sans-serif; opacity: 0; transition: opacity 0.3s; z-index: 10000; pointer-events: none;}
-        #cloud-status { font-size: 11px; color: #bbf7d0; text-align: center; margin-top: 2px; font-weight: normal; }
+        #cloud-status { font-size: 11px; color: #475569; text-align: center; margin-top: 2px; font-weight: normal; }
 
-        .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(0, 45, 114, 0.95); color: white; padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 9999; cursor: pointer; font-family: sans-serif; font-weight: bold; font-size: 14px; backdrop-filter: blur(5px); display: none; }
-        .export-btn { position: fixed; top: 20px; right: 360px; background-color: #002D72; color: white; border: none; padding: 10px 15px; font-size: 14px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; transition: 0.2s; }
-        .export-btn:hover { background-color: #d32f2f; transform: scale(1.05); }
+        .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(247, 241, 227, 0.96); color: var(--desk-ink); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(16,35,63,0.12); box-shadow: 0 8px 18px rgba(15,23,42,0.14); z-index: 9999; cursor: pointer; font-family: 'Georgia', serif; font-weight: 700; font-size: 14px; backdrop-filter: blur(8px); display: none; }
+        .export-btn { position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
+        .export-btn:hover { background: linear-gradient(135deg, #8a3412, #b45309); transform: translateY(-1px); }
 
         /* 报告弹窗 */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; backdrop-filter: blur(3px); }
@@ -378,10 +522,9 @@
         @media (max-width: 640px) {
             body { padding: 10px; }
             .control-panel { width: calc(100vw - 24px); right: 12px; top: 12px; }
-            .program-main-row { flex-direction: column; }
-            .program-select { width: 100%; }
             .mini-panel-btn { top: 12px; right: 12px; }
             .export-btn { right: 12px; bottom: 12px; }
+            .info-row { grid-template-columns: 1fr; text-align: left; }
         }
     </style>
 </head>
@@ -391,34 +534,39 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.26</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.27</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
         <button id="cloud-connect-shortcut" class="ctrl-btn" style="display:none; background:#0ea5e9; color:white; width:100%;" onclick="window.showDataModal()">☁️ 连接云同步 / Connect Sync</button>
         <div class="program-shell-card" id="program-shell-card">
             <div class="program-shell-head">
-                <span class="program-kicker">当前训练</span>
+                <span class="program-kicker">Teacher Workbench</span>
                 <span class="program-chip phase-1" id="program-phase-chip">第一阶段</span>
+            </div>
+            <div class="program-switcher">
+                <button class="program-switch-btn is-active" id="program-switch-advanced" data-program="advanced_fluency_v1" onclick="window.changeProgram('advanced_fluency_v1')">第一阶段<br><span style="font-size:11px; opacity:0.72;">Advanced</span></button>
+                <button class="program-switch-btn" id="program-switch-closure" data-program="elementary_closure_v1" onclick="window.changeProgram('elementary_closure_v1')">第二阶段<br><span style="font-size:11px; opacity:0.72;">Closure</span></button>
             </div>
             <div class="program-main-row">
                 <div class="program-copy">
                     <div class="program-title" id="program-title-label">Mini Challenge Advanced</div>
-                    <div class="program-desc" id="program-desc-label">持续强化核心算法、互化、方程和策略训练。</div>
+                    <div class="program-desc" id="program-desc-label">持续强化核心算法、互化、方程和策略训练，由老师手动决定何时切到第二阶段。</div>
                 </div>
-                <select id="program-selector" class="program-select" onchange="window.changeProgram(this.value)">
+                <select id="program-selector" class="program-select" onchange="window.changeProgram(this.value)" aria-hidden="true" tabindex="-1">
                     <option value="advanced_fluency_v1">Advanced</option>
                     <option value="elementary_closure_v1">Closure</option>
                 </select>
             </div>
         </div>
-        <div class="stage-status-card is-soon" id="stage-status-card">
+        <div class="stage-status-card is-advanced" id="stage-status-card">
             <div class="stage-status-head">
-                <div class="stage-status-title" id="stage-status-title">第一阶段 · 稳定训练中</div>
-                <span class="status-chip phase-1" id="stage-status-chip">主线阶段</span>
+                <div class="stage-status-title" id="stage-status-title">第一阶段 · 核心算法稳态训练</div>
+                <span class="status-chip phase-1" id="stage-status-chip">手动切换</span>
             </div>
-            <div class="stage-status-body" id="stage-status-body">当前版本默认仍从第一阶段进入，但第二阶段已经升级成按阶段推进的三段式收束训练。</div>
-            <div class="stage-status-action" id="stage-status-action">建议动作：继续当前训练；进入第二阶段后观察收口期、收束期和毕业判定期的变化。</div>
+            <div class="stage-status-body" id="stage-status-body">一阶段继续做核心算法、互化、方程和策略训练。阶段切换完全由老师手动决定，系统不再做晋级判断。</div>
+            <div class="stage-insights" id="stage-status-insights"></div>
+            <div class="stage-status-action" id="stage-status-action">建议动作：如需查看第二阶段题卷，直接点上方“第二阶段”；底层数据会自动接续。</div>
         </div>
 
         <div id="normal-ctrls">
@@ -438,7 +586,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.26 第二阶段重点强化区回炉：<br><strong>Closure 第五大题现在会把当前重点 gap 里的错题原题或同类变式塞回当天训练<br>同样保持三段式收束 + 旧知保温</strong>
+                💡 23.27 手动切阶段与考试卷工作台：<br><strong>一二阶段现在由老师手动直接切换<br>控制区更像老师工作台，题目页更接近新加坡数学考试卷风格</strong>
             </div>
         </div>
 
@@ -465,9 +613,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.26';
-        const APP_RELEASE_LABEL = '第二阶段重点强化区回炉';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.26 第二阶段重点强化区回炉：<br><strong>Closure 第五大题现在会把当前重点 gap 里的错题原题或同类变式塞回当天训练<br>同样保持三段式收束 + 旧知保温</strong>';
+        const APP_VERSION = 'v23.27';
+        const APP_RELEASE_LABEL = '手动切阶段与考试卷工作台';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.27 手动切阶段与考试卷工作台：<br><strong>一二阶段现在由老师手动直接切换<br>控制区更像老师工作台，题目页更接近新加坡数学考试卷风格</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -480,22 +628,22 @@
             [ADVANCED_PROGRAM_ID]: {
                 label: 'Mini Challenge Advanced',
                 phaseText: '第一阶段',
-                statusChip: '主线阶段',
-                desc: '持续强化核心算法、互化、方程和策略训练。',
-                statusTitle: '第一阶段 · 稳定训练中',
-                statusBody: '当前版本仍以第一阶段为默认主训练程序，出卷、打印、批改、错题本和同步主链保持不变。',
-                statusAction: '建议动作：继续当前高价值训练，保持稳定节奏。',
+                statusChip: '老师判断',
+                desc: '持续强化核心算法、互化、方程和策略训练，阶段切换由老师手动决定。',
+                statusTitle: '第一阶段 · 核心算法稳态训练',
+                statusBody: '当前版本仍以第一阶段为默认主训练程序，什么时候切到第二阶段，由老师直接判断。',
+                statusAction: '建议动作：继续当前训练，或随时手动切到第二阶段查看收束卷。',
                 enabled: true,
                 tone: 'phase-1'
             },
             [CLOSURE_PROGRAM_ID]: {
                 label: '小学计算收束阶段',
                 phaseText: '第二阶段',
-                statusChip: '闭环运行',
+                statusChip: '手动切换',
                 desc: '站在六年级到初中的视角，收束小学阶段全部高价值计算能力，并持续保温第一阶段成果。',
                 statusTitle: '第二阶段 · 训练闭环已接通',
                 statusBody: '现在可以切换到第二阶段，直接完成“总收束 + 保温”的出卷、批改、报告与独立画像沉淀。',
-                statusAction: '建议动作：直接观察第二阶段的错题分布和 5 类 gap 信号，判断下一步的 readiness 设计。',
+                statusAction: '建议动作：直接观察第二阶段的题卷、重点强化和 gap 变化。',
                 enabled: true,
                 tone: 'phase-2'
             }
@@ -622,41 +770,29 @@
 
         function buildPromotionReadinessSnapshot() {
             const currentSet = window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID);
-            const students = ['KAI', 'Lorik'].map(summarizeAdvancedStudentReadiness);
-            const avgScore = students.length ? students.reduce((sum, item) => sum + item.score, 0) / students.length : 0;
-            const minScore = students.length ? Math.min(...students.map(item => item.score)) : 0;
-            const deferUntilSet = Number(window.promotionState?.closureDeferUntilSet || 0);
-            let status = 'reinforce';
-            if (deferUntilSet > currentSet) status = 'reinforce';
-            else if (avgScore >= 78 && minScore >= 74 && currentSet >= 92) status = 'ready';
-            else if (avgScore >= 62 || currentSet >= 88) status = 'near';
-
-            const statusWord = status === 'ready' ? '可进入第二阶段' : (status === 'near' ? '接近切换' : '继续巩固');
-            const statusChip = status === 'ready' ? '可切换' : (status === 'near' ? '接近切换' : '继续巩固');
-            const statusTitle = status === 'ready'
-                ? '第一阶段 · 已具备第二阶段入口条件'
-                : (status === 'near' ? '第一阶段 · 接近第二阶段入口' : '第一阶段 · 继续巩固中');
-            let statusBody = `当前基于最近训练记录判断：${statusWord}。两位学生最近训练更像是在${status === 'ready' ? '稳定收口' : '继续压错和稳固'}。`;
-            let statusAction = status === 'ready'
-                ? '建议动作：可以进入第二阶段；如果想再稳一层，也可以继续巩固 7 套。'
-                : (status === 'near'
-                    ? '建议动作：再保持 3-5 套高价值训练，准备进入第二阶段。'
-                    : '建议动作：继续巩固当前高价值训练，先把准确率、稳定度和迁移度拉齐。');
-            if (deferUntilSet > currentSet) {
-                statusBody = `你已选择继续留在第一阶段巩固到第 ${deferUntilSet} 套，再决定是否切换。`;
-                statusAction = `建议动作：先完成到第 ${deferUntilSet} 套；如果想提前进入第二阶段，也可以随时重新判断。`;
-            }
+            const students = ['KAI', 'Lorik'].map(student => {
+                const profile = StorageDB.getProfile(student, ADVANCED_PROGRAM_ID) || createProgramProfile(ADVANCED_PROGRAM_ID);
+                return {
+                    student,
+                    activeErrors: Object.values(profile.errorBook || {}).filter(entry => !entry.mastered).length
+                };
+            });
 
             return {
                 currentSet,
-                deferUntilSet,
-                score: Math.round(avgScore),
-                status,
-                statusWord,
-                statusChip,
-                statusTitle,
-                statusBody,
-                statusAction,
+                status: 'advanced',
+                statusWord: '手动切换',
+                statusChip: '老师判断',
+                statusTitle: '第一阶段 · 核心算法稳态训练',
+                statusBody: '这里继续训练核心算法、互化、方程和策略。什么时候切到第二阶段，由老师和监护人直接决定，系统不做拦截。',
+                statusAction: `建议动作：如需查看第二阶段题卷，直接点上方“第二阶段”。当前套号 Set ${currentSet}；底层数据会自动接续。`,
+                cardTone: 'is-advanced',
+                insights: [
+                    `当前套号 Set ${currentSet}`,
+                    `KAI 活跃错题 ${students[0]?.activeErrors ?? 0}`,
+                    `Lorik 活跃错题 ${students[1]?.activeErrors ?? 0}`,
+                    window.promotionState?.closureBootstrapped ? '二阶段底层已联通' : '首次切二阶段会自动带入一阶段信号'
+                ],
                 students,
             };
         }
@@ -678,18 +814,18 @@
                 statusTitle: `第二阶段 · ${phase.label}进行中`,
                 statusBody: `${phase.label}当前重点是“${phase.cue}”。这一阶段不是单纯加难，而是把整数、小数、分数、百分数、比、比例、单位与策略训练更系统地收束起来。`,
                 statusAction: `建议动作：继续观察 5 类 gap 信号和旧知保温表现。当前平均 gap 压力 ${Math.round(signalAvg * 10) / 10}；当前重点强化 KAI ${kaiFocus.label} / Lorik ${lorikFocus.label}。`,
+                cardTone: 'is-closure',
+                insights: [
+                    `当前阶段 ${phase.label}`,
+                    `当前重点 ${phase.cue}`,
+                    `KAI 强化 ${kaiFocus.label}`,
+                    `Lorik 强化 ${lorikFocus.label}`
+                ]
             };
         }
 
         function getProgramStageSnapshot(programId = getCurrentProgramId()) {
             return programId === CLOSURE_PROGRAM_ID ? buildClosureStageSnapshot() : buildPromotionReadinessSnapshot();
-        }
-
-        function renderReadinessMetricRow(snapshot) {
-            return snapshot.students.map(item => {
-                const accuracy = `${Math.round(item.accuracyRate * 100)}%`;
-                return `<span class="knowledge-tag">${item.student} ${item.score} 分 · 准确率 ${accuracy} · 活跃错题 ${item.activeErrors}</span>`;
-            }).join('');
         }
 
         function switchProgram(programId, { resetToDefault = false } = {}) {
@@ -702,7 +838,7 @@
             if (typeof window.renderPaper === 'function') window.renderPaper();
         }
 
-        function bootstrapClosureProfiles(readinessSnapshot) {
+        function bootstrapClosureProfiles(readinessSnapshot = null) {
             if (window.promotionState?.closureBootstrapped) return;
             ['KAI', 'Lorik'].forEach(student => {
                 const advancedProfile = StorageDB.getProfile(student, ADVANCED_PROGRAM_ID) || createProgramProfile(ADVANCED_PROGRAM_ID);
@@ -722,39 +858,13 @@
             window.promotionState.closureBootstrapped = true;
             window.promotionState.promotionHistory.push({
                 ts: Date.now(),
-                fromSet: readinessSnapshot.currentSet,
-                score: readinessSnapshot.score,
-                status: readinessSnapshot.status,
+                fromSet: window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID),
+                score: readinessSnapshot?.score || null,
+                status: readinessSnapshot?.status || 'manual-switch',
             });
             window.promotionState.pendingProgramId = '';
             window.promotionState.lastReadinessSnapshot = readinessSnapshot;
             savePromotionState();
-        }
-
-        function openClosurePromotionGate() {
-            setProgramSetNumber(ADVANCED_PROGRAM_ID, window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID));
-            const snapshot = buildPromotionReadinessSnapshot();
-            window.promotionState.pendingProgramId = CLOSURE_PROGRAM_ID;
-            window.promotionState.lastReadinessSnapshot = snapshot;
-            savePromotionState();
-            document.getElementById('modal-title').innerText = '🚪 第二阶段入口 / Promotion Gate';
-            document.getElementById('report-content-area').innerHTML = `
-                <div class="report-section">
-                    <h3>当前判断：${snapshot.statusWord}</h3>
-                    <div style="padding:15px; font-size:14px; line-height:1.7; color:#334155;">
-                        <div style="margin-bottom:10px;">${snapshot.statusBody}</div>
-                        <div style="margin-bottom:10px; color:#0f172a;"><strong>综合 readiness：</strong>${snapshot.score} / 100</div>
-                        <div class="knowledge-tags" style="margin-bottom:14px;">${renderReadinessMetricRow(snapshot)}</div>
-                        <div style="padding:12px 14px; border:1px solid #dbeafe; background:#f8fbff; border-radius:8px; color:#1e3a8a;">${snapshot.statusAction}</div>
-                        <div style="display:flex; gap:10px; margin-top:14px;">
-                            <button class="modal-btn" style="background:#0f766e; color:#fff; flex:1;" onclick="window.acceptClosurePromotion()">${snapshot.status === 'ready' ? '进入第二阶段' : '仍然进入第二阶段'}</button>
-                            <button class="modal-btn" style="background:#b45309; color:#fff; flex:1;" onclick="window.deferClosurePromotion()">继续巩固 7 套</button>
-                        </div>
-                        <button class="modal-btn" style="background:#64748b; color:#fff; width:100%; margin-top:10px;" onclick="window.closeReportModal()">暂不切换</button>
-                    </div>
-                </div>`;
-            document.getElementById('report-modal').style.display = 'block';
-            renderProgramShell();
         }
 
         function renderProgramShell() {
@@ -765,26 +875,34 @@
             const phaseChip = document.getElementById('program-phase-chip');
             const titleLabel = document.getElementById('program-title-label');
             const descLabel = document.getElementById('program-desc-label');
+            const advancedSwitch = document.getElementById('program-switch-advanced');
+            const closureSwitch = document.getElementById('program-switch-closure');
             const stageCard = document.getElementById('stage-status-card');
             const stageChip = document.getElementById('stage-status-chip');
             const stageTitle = document.getElementById('stage-status-title');
             const stageBody = document.getElementById('stage-status-body');
+            const stageInsights = document.getElementById('stage-status-insights');
             const stageAction = document.getElementById('stage-status-action');
 
             if (selector) selector.value = programId;
+            if (advancedSwitch) advancedSwitch.className = `program-switch-btn${programId === ADVANCED_PROGRAM_ID ? ' is-active' : ''}`;
+            if (closureSwitch) closureSwitch.className = `program-switch-btn${programId === CLOSURE_PROGRAM_ID ? ' is-active' : ''}`;
             if (phaseChip) {
                 phaseChip.textContent = config.phaseText;
                 phaseChip.className = `program-chip ${config.tone}`;
             }
             if (titleLabel) titleLabel.textContent = config.label;
             if (descLabel) descLabel.textContent = config.desc;
-            if (stageCard) stageCard.className = `stage-status-card ${snapshot.status === 'ready' || programId === CLOSURE_PROGRAM_ID ? 'is-ready' : 'is-soon'}`;
+            if (stageCard) stageCard.className = `stage-status-card ${snapshot.cardTone || (programId === CLOSURE_PROGRAM_ID ? 'is-closure' : 'is-advanced')}`;
             if (stageChip) {
                 stageChip.textContent = snapshot.statusChip;
                 stageChip.className = `status-chip ${config.tone}`;
             }
             if (stageTitle) stageTitle.textContent = snapshot.statusTitle;
             if (stageBody) stageBody.textContent = snapshot.statusBody;
+            if (stageInsights) {
+                stageInsights.innerHTML = (snapshot.insights || []).map(item => `<span class="stage-insight">${item}</span>`).join('');
+            }
             if (stageAction) stageAction.textContent = snapshot.statusAction;
         }
 
@@ -799,45 +917,18 @@
                 }
                 return;
             }
-            if (programId === CLOSURE_PROGRAM_ID && getCurrentProgramId() === ADVANCED_PROGRAM_ID) {
-                if (window.promotionState?.closureBootstrapped) {
-                    switchProgram(programId);
-                    return;
-                }
-                openClosurePromotionGate();
-                return;
+            setProgramSetNumber(getCurrentProgramId(), window.currentSetNumber || getStoredSetNumber(getCurrentProgramId()));
+            if (programId === CLOSURE_PROGRAM_ID && !window.promotionState?.closureBootstrapped) {
+                bootstrapClosureProfiles();
             }
             switchProgram(programId);
-        };
-
-        window.deferClosurePromotion = function() {
-            const currentSet = window.currentSetNumber || getStoredSetNumber(ADVANCED_PROGRAM_ID);
-            window.promotionState.closureDeferUntilSet = currentSet + 7;
-            window.promotionState.pendingProgramId = '';
-            savePromotionState();
-            if (typeof window.closeReportModal === 'function') window.closeReportModal();
-            renderProgramShell();
             if (typeof window.showToast === 'function') {
-                window.showToast(`已选择继续巩固，到第 ${currentSet + 7} 套后再判断是否切换第二阶段。`, { background: '#b45309', duration: 3200 });
-            }
-        };
-
-        window.acceptClosurePromotion = function() {
-            const snapshot = buildPromotionReadinessSnapshot();
-            window.promotionState.closureDeferUntilSet = 0;
-            bootstrapClosureProfiles(snapshot);
-            if (!Number.isInteger((window.setCounterByProgram || {})[CLOSURE_PROGRAM_ID])) {
-                setProgramSetNumber(CLOSURE_PROGRAM_ID, getDefaultSetNumberForProgram(CLOSURE_PROGRAM_ID));
-            }
-            if (typeof window.closeReportModal === 'function') window.closeReportModal();
-            switchProgram(CLOSURE_PROGRAM_ID);
-            if (typeof window.showToast === 'function') {
-                window.showToast('已进入第二阶段：接下来会做总收束，并继续保温第一阶段成果。', { background: '#0f766e', duration: 3200 });
+                const label = programId === CLOSURE_PROGRAM_ID ? '已切到第二阶段：你现在可以直接看收束卷页面。' : '已切回第一阶段：继续核心算法主线训练。';
+                window.showToast(label, { background: programId === CLOSURE_PROGRAM_ID ? '#8a3412' : '#123b73', duration: 2400 });
             }
         };
 
         window.getCurrentProgramId = getCurrentProgramId;
-        window.getPromotionReadinessSnapshot = buildPromotionReadinessSnapshot;
 
         window.setCounterByProgram = getStoredSetCounters();
         window.promotionState = ensurePromotionStateShape(readStoredJSON(PROMOTION_STATE_STORAGE_KEY, {}));
@@ -3918,6 +4009,10 @@
                 <div class="sheet question-sheet ${extraClass}">
                     ${stamp}
                     <div class="header">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:'Arial Narrow','Helvetica Neue',sans-serif; font-size:10px; letter-spacing:0.18em; color:#64748b; text-transform:uppercase;">
+                            <span>Mini Challenge Mathematics</span>
+                            <span>${name}</span>
+                        </div>
                         <div class="score-box">得分 (Score): &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / ${tScore}</div>
                         <h1>${title}</h1>
                         <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
@@ -3932,7 +4027,13 @@
                 return `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${ansStamp}
-                    <div class="header"><h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
+                    <div class="header">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:'Arial Narrow','Helvetica Neue',sans-serif; font-size:10px; letter-spacing:0.18em; color:#64748b; text-transform:uppercase;">
+                            <span>Answer Key</span>
+                            <span>${name}</span>
+                        </div>
+                        <h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1>
+                    </div>
                     ${content}
                     <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
                 </div>`;
@@ -3941,7 +4042,13 @@
             const getClosureAnsSheetHTML = (name, content, isCompleted) => `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 第二阶段已批改<br><span style="font-size:12px;">Closure Graded</span></div>` : ''}
-                    <div class="header"><h1>【第二阶段解析 Closure Solutions】 - ${name} (Set ${window.currentSetNumber})</h1></div>
+                    <div class="header">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:'Arial Narrow','Helvetica Neue',sans-serif; font-size:10px; letter-spacing:0.18em; color:#64748b; text-transform:uppercase;">
+                            <span>Closure Answer Key</span>
+                            <span>${name}</span>
+                        </div>
+                        <h1>【第二阶段解析 Closure Solutions】 - ${name} (Set ${window.currentSetNumber})</h1>
+                    </div>
                     <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
                     </div>

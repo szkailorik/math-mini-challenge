@@ -9,7 +9,7 @@ This is a static single-page app. The production artifact is `index.html`; there
 - Optional sync: GitHub Gist API using a user-provided PAT with `gist` scope.
 - Export: `html2canvas` from CDN for PNG sheet export.
 - Deploy: GitHub Pages workflow in `.github/workflows/pages.yml`.
-- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a promotion-state store; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, and focus-replay-aware in `v23.26`.
+- Program shell: the app now exposes a `TRAINING_PROGRAMS` registry, a persisted `currentProgramId`, program-aware set counters, and a lightweight closure-bootstrap state; `advanced_fluency_v1` remains the default while fully writable `elementary_closure_v1` is enabled, phase-aware, gap-adaptive, focus-replay-aware, and manually switchable in `v23.27`.
 
 ## Local Environment
 
@@ -40,10 +40,10 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `currentSetNumber`: drives deterministic seeding and set cache keys.
 - `TRAINING_PROGRAMS` / `currentProgramId`: switch between the first-stage advanced trainer and the second-stage closure program while keeping the first-stage default path intact.
 - `SET_COUNTERS_STORAGE_KEY`: keeps `Advanced` and `Closure` on their own set counters so stage switching does not overwrite the other stage's progress pointer.
-- `PROMOTION_STATE_STORAGE_KEY`: keeps the second-stage defer window, promotion history, and bootstrap state in local storage.
+- `PROMOTION_STATE_STORAGE_KEY`: now mainly keeps closure bootstrap history and intro-dismiss state for backward compatibility; stage switching itself is manual.
 - `renderProgramShell`: updates the control-panel program switcher and stage-status card without affecting printable question-sheet DOM.
-- `buildPromotionReadinessSnapshot`: turns recent first-stage history into a readiness status word and action guidance for stage promotion.
-- `openClosurePromotionGate` / `acceptClosurePromotion` / `deferClosurePromotion`: formalize second-stage entry, including the "continue reinforcing for 7 more sets" branch.
+- `buildPromotionReadinessSnapshot`: now serves as the first-stage manual workbench snapshot instead of an automatic promotion judge.
+- `bootstrapClosureProfiles`: seeds the second-stage profile from first-stage signals on the first manual switch into `Closure`.
 - `getSetCacheKey`: namespaces cached set snapshots by program so closure papers do not collide with advanced papers.
 - `getClosurePhaseInfo`: maps the second-stage set counter to `收口期 / 收束期 / 毕业判定期`, and provides phase-specific cue text plus section labels.
 - `selectClosureFocus`: combines closure signal fields, active closure error-book counts, recent closure mistakes, and phase bias to choose the dominant learner-specific reinforcement lane.
@@ -65,6 +65,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `printQuestionSheets` / `printAnswerSheets`: stages cloned printable sheets into `#print-root`, switches the body into a print sandbox mode, and relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - Print output now uses a dedicated print sandbox instead of paginating the live long page directly, reducing browser-specific blank-even-page regressions.
 - Question-sheet printing uses a slightly sub-A4 fixed page height in the sandbox to avoid rounding overflow that can make one printed sheet consume two physical pages.
+- The no-print shell now separates from the paper more clearly: the control area behaves like a teacher workbench, while printable sheets stay exam-like and closer to Singapore-style math booklet presentation.
 - `SET_CACHE_PREFIX`: versioned set-cache namespace; bumping it forces future set numbers to regenerate under new generator rules instead of reusing stale papers from older releases.
 - Training-quality passes now also target explanation quality, not only coverage: key generated items should expose a real worked hint instead of relying solely on fallback knowledge advice.
 - Question-sheet rendering now intentionally suppresses training metadata such as weakness badges, level badges, and phase strips; only exact error-book replay items may show a tiny non-layout-affecting review marker.
@@ -87,7 +88,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `GenLorik.basicMixed`: now guarantees one shortcut-structure item, one order/parentheses item, one distributive item, and one combination item.
 - `StorageDB.pullRemoteChanges` / `setupAutoCloudPull`: pulls cloud changes on startup, page focus, visibility return, and a light interval when Gist sync is connected.
 - `showSetReview`: renders the current set's wrong/careless items with paper question number, original question, correct answer, and review advice.
-- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then validates promotion gating, defer-for-7-sets behavior, program-aware set counters, closure bootstrap, phase-aware closure generation, adaptive closure focus selection, focus-lane replay injection, isolated profile writes, closure signal updates, and print-sandbox behavior.
+- `scripts/validate-runtime.mjs`: runs the module script in a stubbed DOM, checks sets 73-102 for the advanced trainer, then validates manual program switching, program-aware set counters, closure bootstrap, phase-aware closure generation, adaptive closure focus selection, focus-lane replay injection, isolated profile writes, closure signal updates, and print-sandbox behavior.
 - `mergeProfiles`: merges local and cloud profiles without discarding local-only history.
 
 ## Data Safety
@@ -124,11 +125,11 @@ python3 -m http.server 8080
 - Export JSON and import it in a fresh browser profile.
 - Confirm exported backup JSON includes the current app version and export metadata fields.
 - Confirm the control panel now shows the program switcher and stage-status card, and that the switcher defaults to `Advanced`.
-- Try switching to `Closure` from `Advanced` and confirm the promotion gate appears before the actual switch.
-- Choose `继续巩固 7 套` once and confirm the stage-status card reflects the deferred target set.
+- Try switching to `Closure` from `Advanced` and confirm the app enters second stage directly without a promotion gate.
 - Enter `Closure`, then switch back and forth once to confirm `Advanced` and `Closure` restore their own set counters.
 - Confirm `Closure` renders four question sheets plus two writable answer sheets.
 - Confirm the `Closure` sheets visibly combine integrated closure topics with explicit old-skill maintenance sections.
+- Confirm the top workbench uses direct stage buttons, while the question sheets remain exam-like rather than dashboard-like.
 - Confirm `Closure` set 1 shows `收口期`, set 12 shows `收束期`, and set 26 shows `毕业判定期`, with matching cue text on the paper.
 - Grade and submit one `Closure` set, then confirm a closure-specific report appears and the first-stage profile remains untouched.
 - After creating a clear second-stage weak point, confirm the next `Closure` set turns section V into the matching `重点强化` lane instead of leaving it fixed.

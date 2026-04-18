@@ -133,10 +133,26 @@ v23.22 turns phase two into a real trainable program without disrupting the curr
 
 v23.23 completes the stage-promotion loop:
 
+- This was an intermediate transition design and is now superseded by the teacher-controlled manual switcher in `v23.27`.
 - The first stage now gives a human-readable readiness status instead of only exposing a raw second-stage switch.
 - Families can formally choose between `进入第二阶段` and `继续巩固 7 套`, which matches the product goal of high-quality transition rather than mechanical stage flipping.
 - The transition now preserves learning continuity better: `Advanced` and `Closure` keep their own set counters, and first entry into phase two performs a light bootstrap from first-stage weak domains.
 - The product stance remains the same: the second stage is not "hard mode". It is the formal closure stage for elementary-school calculation, viewed from grade-6 to junior-high readiness.
+
+v23.27 replaces automatic stage judgment with a teacher workbench and exam-paper presentation:
+
+- Stage switching is now explicitly teacher-controlled. The system no longer blocks or scores readiness before allowing `Closure`; the guardian or tutor decides when to move from stage one to stage two.
+- The product keeps the useful continuity from the earlier stage-gate work:
+  - `Advanced` and `Closure` still maintain their own set counters
+  - first entry into `Closure` still bootstraps from first-stage weak-domain signals
+  - the two stages still share the same local-first storage model and sync path
+- The on-screen product is now intentionally split into two layers:
+  - a no-print teacher workbench for switching stage, reading status, and controlling the session
+  - a student-facing paper surface that stays calm, print-safe, and closer to a Singapore-style mathematics booklet
+- This matters product-wise because the adult-facing control experience and the child-facing paper should solve different problems:
+  - the teacher needs clarity, switching control, and signal visibility
+  - the learner needs a page that feels like a real assessment handout rather than a dashboard
+- The new paper direction is not decorative. It is meant to improve training efficiency by reducing visual noise and making symbols, section breaks, blanks, units, and comparison structure easier to parse under print conditions.
 
 v23.24 deepens the second-stage training quality:
 

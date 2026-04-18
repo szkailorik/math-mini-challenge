@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.26 Iteration Notes
+## Current v23.27 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed the stage-promotion gate from the active path and replaced it with direct manual switching between `Advanced` and `Closure`, while preserving program-specific set counters and first-entry bootstrap into phase two.
+- Open questions: none.
+- Risks: because switching is now fully teacher-controlled, the control panel must stay extremely clear about which stage is active and what each stage is for.
+- Next steps: keep the top shell focused on adult decision-making and avoid drifting back toward automatic gating language.
+
+### Iteration 2
+
+- What I changed: redesigned the no-print top area into a teacher workbench with explicit stage buttons, clearer status copy, and compact insights that explain current set position and phase-two focus without touching print layout.
+- Open questions: none.
+- Risks: visual polish in the workbench must stay separated from the printable question sheets; otherwise dashboard styling could leak into paper mode.
+- Next steps: keep future control features inside the no-print shell and treat the student paper as a separate design surface.
+
+### Iteration 3
+
+- What I changed: pushed the printable sheets further toward an exam-paper feel, with a calmer header, more restrained section treatment, and a Singapore-math-inspired booklet tone while keeping math symbol polish and print safety intact.
+- Open questions: none.
+- Risks: "more like an exam paper" is partly visual judgment, so human print preview remains the final quality gate even when runtime validation passes.
+- Next steps: continue improving sheet typography and training quality together, but never at the cost of pagination stability.
+
+## Previous v23.26 Iteration Notes
 
 ### Iteration 1
 

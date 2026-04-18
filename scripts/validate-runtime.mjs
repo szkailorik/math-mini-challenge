@@ -223,8 +223,8 @@ if (!String(programTitleLabel?.textContent || '').includes('Mini Challenge Advan
 if (!String(stageStatusTitle?.textContent || '').includes('第一阶段')) {
   throw new Error('Stage status card did not render first-stage status text');
 }
-if (!String(stageStatusAction?.textContent || '').includes('继续巩固')) {
-  throw new Error('Stage status card did not render first-stage readiness guidance');
+if (!String(stageStatusAction?.textContent || '').includes('第二阶段')) {
+  throw new Error('Stage status card did not render manual stage-switch guidance');
 }
 
 function assertPaper(setNumber) {
@@ -854,24 +854,6 @@ for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.renderPaper();
   checked.push(`${setNumber}:${assertPaper(setNumber)}`);
 }
-context.window.changeProgram('elementary_closure_v1');
-if (programSelector.value !== 'advanced_fluency_v1' || context.window.getCurrentProgramId?.() !== 'advanced_fluency_v1') {
-  throw new Error('Closure switch should first open the promotion gate instead of switching immediately');
-}
-if (!String(elements.get('modal-title')?.innerText || '').includes('第二阶段入口')) {
-  throw new Error('Promotion gate modal did not open when requesting closure');
-}
-if (!String(elements.get('report-content-area')?.innerHTML || '').includes('继续巩固 7 套')) {
-  throw new Error('Promotion gate is missing the continue-reinforcing branch');
-}
-const advancedSetBeforeDefer = context.window.currentSetNumber;
-context.window.deferClosurePromotion?.();
-if (context.window.promotionState?.closureDeferUntilSet !== advancedSetBeforeDefer + 7) {
-  throw new Error('Deferring closure promotion did not record a seven-set reinforcement window');
-}
-if (!String(stageStatusAction?.textContent || '').includes(`第 ${advancedSetBeforeDefer + 7} 套`)) {
-  throw new Error('Stage status card did not reflect the deferred promotion target set');
-}
 
 function seedAdvancedReadiness(student, setStart) {
   const profile = context.window.StorageDB.getProfile(student, 'advanced_fluency_v1');
@@ -920,27 +902,19 @@ function seedAdvancedReadiness(student, setStart) {
 
 seedAdvancedReadiness('KAI', 95);
 seedAdvancedReadiness('Lorik', 95);
-context.window.currentSetNumber = context.window.promotionState.closureDeferUntilSet + 1;
+context.window.currentSetNumber = 103;
 context.window.changeProgram('elementary_closure_v1');
-const readinessSnapshot = context.window.getPromotionReadinessSnapshot?.();
-if (!readinessSnapshot || readinessSnapshot.status !== 'ready') {
-  throw new Error('Promotion readiness snapshot did not report ready after strong advanced training history');
-}
-if (!String(elements.get('report-content-area')?.innerHTML || '').includes('可进入第二阶段')) {
-  throw new Error('Promotion gate did not render the ready-to-promote state');
-}
-context.window.acceptClosurePromotion?.();
 if (programSelector.value !== 'elementary_closure_v1' || context.window.getCurrentProgramId?.() !== 'elementary_closure_v1') {
-  throw new Error('Accepting the promotion gate did not enter closure');
+  throw new Error('Manual stage switch did not enter closure directly');
 }
 if (!String(programTitleLabel?.textContent || '').includes('小学计算收束阶段')) {
-  throw new Error('Program shell did not render the closure program label after accepting promotion');
+  throw new Error('Program shell did not render the closure program label after manual switch');
 }
 if (!String(stageStatusTitle?.textContent || '').includes('第二阶段')) {
-  throw new Error('Stage status card did not render second-stage status text after accepting promotion');
+  throw new Error('Stage status card did not render second-stage status text after manual switch');
 }
 if (!context.window.promotionState?.closureBootstrapped || !Array.isArray(context.window.promotionState?.promotionHistory) || !context.window.promotionState.promotionHistory.length) {
-  throw new Error('Accepting the promotion gate did not record promotion bootstrap history');
+  throw new Error('Manual switch into closure did not record closure bootstrap history');
 }
 if (context.window.currentSetNumber !== 1) {
   throw new Error(`Expected closure to open on its own set counter at 1, got ${context.window.currentSetNumber}`);
@@ -959,7 +933,7 @@ context.window.changeProgram('advanced_fluency_v1');
 if (context.window.getCurrentProgramId?.() !== 'advanced_fluency_v1') {
   throw new Error('Switching back to advanced did not succeed');
 }
-if (context.window.currentSetNumber !== readinessSnapshot.currentSet) {
+if (context.window.currentSetNumber !== 103) {
   throw new Error('Advanced set counter was not restored after returning from closure');
 }
 context.window.changeProgram('elementary_closure_v1');
