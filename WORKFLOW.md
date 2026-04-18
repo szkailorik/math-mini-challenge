@@ -29,7 +29,16 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.44 Iteration Notes
+## Current v23.45 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded `Closure` method-gap `L3` replay from a plain higher-level variant into dedicated boundary-style reinforcement items, and tightened runtime validation so the second-stage focus lane now has to prove it used the boundary path.
+- Open questions: whether the next boundary pass should prioritize `unit_rate_speed` families or start exposing these stronger focus modes more explicitly in reports.
+- Risks: the strongest custom `L3` depth is still concentrated in a few second-stage families, so some focus lanes remain more generic than others.
+- Next steps: widen dedicated closure boundary items to more method and validation families, then consider surfacing focus mode in reports for teachers.
+
+## Previous v23.44 Iteration Notes
 
 ### Iteration 1
 

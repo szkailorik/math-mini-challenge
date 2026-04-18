@@ -1204,6 +1204,50 @@ for (const item of explanationSamples) {
 if (closureProfile.representationGap <= 0 || closureProfile.methodGap <= 0 || closureProfile.stabilityGap <= 0 || closureProfile.speedGap <= 0) {
   throw new Error('Phase-two grading did not update the expected closure gap signals');
 }
+closureProfile.representationGap = 0;
+closureProfile.methodGap = 8;
+closureProfile.stabilityGap = 0;
+closureProfile.speedGap = 0;
+closureProfile.validationGap = 0;
+Object.keys(closureProfile.errorBook || {}).forEach(uid => {
+  const entry = closureProfile.errorBook[uid];
+  if (!entry) return;
+  if (entry.tag === 'c2_eq_percent') {
+    entry.count = 4;
+    entry.lastSet = 104;
+    entry.mastered = false;
+  } else {
+    entry.mastered = true;
+  }
+});
+context.window.currentSetNumber = 105;
+context.window.renderPaper();
+const closureMethodData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 105)) || '{}');
+if (closureMethodData.c_k_focusMeta?.field !== 'methodGap') {
+  throw new Error(`Expected KAI closure focus to retarget methodGap, got ${closureMethodData.c_k_focusMeta?.field || '(missing)'}`);
+}
+const closureMethodReplay = closureMethodData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+if (!closureMethodReplay) {
+  throw new Error('Method-gap closure focus did not inject an explicit closure focus replay item');
+}
+if (closureMethodReplay?.qualityFamily !== 'equation_method') {
+  throw new Error(`Expected method-gap closure focus replay to use equation_method, got ${closureMethodReplay?.qualityFamily || '(missing)'}`);
+}
+if (closureMethodReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected method-gap closure focus replay to escalate to L3, got ${closureMethodReplay?.replayLevel || '(missing)'}`);
+}
+if (closureMethodReplay?.closureFocusMode !== 'L3_boundary') {
+  throw new Error(`Expected method-gap closure focus replay to use L3_boundary mode, got ${closureMethodReplay?.closureFocusMode || '(missing)'}`);
+}
+if (closureMethodReplay?.explanationMode !== 'rule') {
+  throw new Error(`Expected method-gap closure focus replay to use rule explanation mode, got ${closureMethodReplay?.explanationMode || '(missing)'}`);
+}
+if (!String(closureMethodReplay?.step || '').includes('[重点强化 Boundary]')) {
+  throw new Error('Expected method-gap L3 closure focus replay to use a dedicated boundary-style explanation');
+}
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：单位与建模')) {
+  throw new Error('Method-gap closure focus title did not render on the next KAI closure paper');
+}
 context.window.showSetReview(103, 'KAI');
 const closureReviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!closureReviewHtml.includes('第二阶段') || !closureReviewHtml.includes('表征切换') || !closureReviewHtml.includes('旧知保温')) {

@@ -266,6 +266,12 @@ v23.44 widens shared training-quality coverage across both stages:
 - Closure equation items now join the `equation_method` family instead of remaining outside the shared quality layer.
 - Product-wise, this matters because “两个阶段共同优化” should not stop at one learner lane or one paper family; it should cover the high-value bridges across both phase-one and phase-two work.
 
+v23.45 upgrades second-stage `L3` reinforcement from symbolic escalation to real boundary checks:
+
+- Method-heavy closure items no longer stop at “same-family variant with a higher level label”.
+- The `Closure` focus lane can now emit dedicated boundary-style questions for rate/equation/unit reasoning when a learner reaches `L3` intensity in `methodGap`.
+- Product-wise, this matters because a true closure phase should test method choice under slightly twisted conditions, not only rehearse a familiar template.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

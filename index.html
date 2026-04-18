@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.44 (共享质量家族扩面)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.45 (第二阶段边界强化升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.44</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.45</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.44';
-        const APP_RELEASE_LABEL = '共享质量家族扩面';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.44 共享质量家族扩面：<br><strong>KAI 分数计算题和第二阶段方程题现在也正式接入共享质量家族<br>高价值回炉、讲解模式和后续训练质量逻辑会覆盖得更完整</strong>';
+        const APP_VERSION = 'v23.45';
+        const APP_RELEASE_LABEL = '第二阶段边界强化升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.45 第二阶段边界强化升级：<br><strong>Closure 的 methodGap L3 现在会优先出真正的边界强化题<br>不再只是普通同类变式挂一个更高层级标签</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3821,6 +3821,63 @@
             }
         }
 
+        function buildClosureBoundaryReplayItem(entry) {
+            const tip = getKnowledgeTip(entry?.tag);
+            const reviewPrefix = '[重点强化 Boundary] ';
+            switch (entry?.tag) {
+                case 'c2_eq_percent':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `某数的 40% 比 18 少 2，这个数是<div class="blank"></div>`,
+                            a: `40`,
+                            step: `${reviewPrefix}先判断 40% 的量是 16，再用“整体 = 部分 ÷ 比率”算出 16 ÷ 0.4 = 40。${tip.advice}`
+                        },
+                        {
+                            tag: entry.tag,
+                            q: `<i class="var">x</i> 的 25% 比 18 多 7，<i class="var">x</i> =<div class="blank"></div>`,
+                            a: `100`,
+                            step: `${reviewPrefix}先把“比 18 多 7”转成 25% 的量是 25，再用 <i class="var">x</i> = 25 ÷ 0.25 = 100。${tip.advice}`
+                        }
+                    ]);
+                case 'c2_rate_discount':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `现价 153 元，打了八五折，原价是<div class="blank"></div>元`,
+                            a: `180`,
+                            step: `${reviewPrefix}先把八五折看成 85%，再用“整体 = 部分 ÷ 比率”，列式 153 ÷ 0.85 = 180。${tip.advice}`
+                        },
+                        {
+                            tag: entry.tag,
+                            q: `原价 240 元，现价比原价少 15%，现价是<div class="blank"></div>元`,
+                            a: `204`,
+                            step: `${reviewPrefix}先判断现价保留的是 85%，再算 240 × 0.85 = 204。${tip.advice}`
+                        }
+                    ]);
+                case 'c2_unit_length':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `2.4 km =<div class="blank"></div> cm`,
+                            a: `240000`,
+                            step: `${reviewPrefix}先把 km 化成 m，再把 m 化成 cm：2.4 × 1000 × 100 = 240000。${tip.advice}`
+                        }
+                    ]);
+                case 'c2_unit_mass':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `3 kg 250 g =<div class="blank"></div> kg`,
+                            a: `3.25`,
+                            step: `${reviewPrefix}先把 250 g 化成 0.25 kg，再和 3 kg 合并成 3.25 kg。${tip.advice}`
+                        }
+                    ]);
+                default:
+                    return null;
+            }
+        }
+
         function buildClosureFocusReplayItem(entry, usedThisPaper = new Set(), recent = new Set()) {
             if (!entry?.tag) return null;
             const replayLevel = getReplayLevel(entry);
@@ -3832,6 +3889,13 @@
             if (variantItem && (usedThisPaper.has(variantItem.q) || recent.has(variantItem.q))) {
                 variantItem = null;
             }
+            let boundaryItem = buildClosureBoundaryReplayItem(entry);
+            if (boundaryItem) {
+                boundaryItem = attachQualityMetadata(boundaryItem);
+            }
+            if (boundaryItem && (usedThisPaper.has(boundaryItem.q) || recent.has(boundaryItem.q))) {
+                boundaryItem = null;
+            }
 
             let chosen = null;
             let closureFocusMode = '';
@@ -3842,8 +3906,8 @@
                 chosen = variantItem || exactItem;
                 closureFocusMode = chosen?.isErrorVariant ? 'L2_variant' : 'L2_exact';
             } else {
-                chosen = variantItem || exactItem;
-                closureFocusMode = chosen?.isErrorVariant ? 'L3_boundary' : 'L3_exact';
+                chosen = boundaryItem || variantItem || exactItem;
+                closureFocusMode = chosen === boundaryItem ? 'L3_boundary' : (chosen?.isErrorVariant ? 'L3_variant' : 'L3_exact');
             }
             if (!chosen) return null;
             return attachQualityMetadata({
