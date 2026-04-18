@@ -1602,7 +1602,12 @@
                     } }
                 ];
                 let selCalcs = Engine.weightedSelect(calcs, "KAI", 8);
-                let selEqs = Engine.weightedSelect(eqs, "KAI", 4);
+                let selEqs = buildCoveredSection("KAI", [
+                    [eqs[0], eqs[1]],
+                    [eqs[2], eqs[5]],
+                    [eqs[3], eqs[4]],
+                    [eqs[6]]
+                ]);
                 return Engine.shuffle(selCalcs.concat(selEqs));
             },
             olympiad: () => Engine.weightedSelect([
@@ -1826,18 +1831,34 @@
             ])
         };
 
-        const getConversions = () => Engine.weightedSelect([
-            { tag: "k_conv_1", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "k_conv_1", q:`${v}% =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
-            { tag: "k_conv_2", gen: () => { let v = Engine.randInt(1,49)*2; return { tag: "k_conv_2", q:`${(v/10).toFixed(1)}% =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } },
-            { tag: "k_conv_3", gen: () => { let v = Engine.randInt(1,8); return { tag: "k_conv_3", q:`0.<span class="dot-top">${v}</span> =<div class="blank"></div>`, a: new Frac(v, 9).toHTML() }; } },
-            { tag: "k_conv_4", gen: () => { let v1 = Engine.randInt(1,5); let v2 = Engine.randInt(1,8); if(v1===v2)v2++; return { tag: "k_conv_4", q:`0.${v1}<span class="dot-top">${v2}</span> =<div class="blank"></div>`, a: new Frac(v1*9+v2, 90).toHTML() }; } },
-            { tag: "k_conv_5", gen: () => { let v = Engine.randInt(1,24); return { tag: "k_conv_5", q:`<div class="frac"><span>${v}</span><span class="bottom">25</span></div> =<div class="blank"></div>%`, a: `${v*4}` }; } },
-            { tag: "k_conv_6", gen: () => { let w = Engine.randInt(1,9), v = Engine.randInt(1,9); return { tag: "k_conv_6", q:`${w}.0${v} =<div class="blank"></div>`, a: `<div class="mixed">${w}${new Frac(v, 100).toHTML()}</div>` }; } },
-            { tag: "k_conv_7", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "k_conv_7", q:`${(v/10000).toFixed(4).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 10000).toHTML() }; } },
-            { tag: "k_conv_8", gen: () => { let n = Engine.randInt(1,39); if(n%2===0)n++; if(n%5===0)n++; return { tag: "k_conv_8", q:`<div class="frac"><span>${n}</span><span class="bottom">40</span></div> =<div class="blank"></div>`, a: formatDecimal(n/40) }; } },
-            { tag: "k_conv_9", gen: () => { let n = Engine.randChoice([1,3,5,7,9,11,13,15]); return { tag: "k_conv_9", q:`<div class="frac"><span>${n}</span><span class="bottom">16</span></div> =<div class="blank"></div>`, a: formatDecimal(n/16) }; } },
-            { tag: "k_conv_10", gen: () => { let v = Engine.randChoice([0.0625,0.1875,0.3125,0.4375,0.5625,0.6875,0.8125,0.9375]); return { tag: "k_conv_10", q:`${v} =<div class="blank"></div>`, a: new Frac(v, 1).toHTML() }; } }
-        ], "KAI", 8);
+        const getConversions = () => buildCoveredSection("KAI", [
+            [
+                { tag: "k_conv_1", gen: () => { let v = Engine.randInt(1,19)*5; return { tag: "k_conv_1", q:`${v}% =<div class="blank"></div>`, a: new Frac(v, 100).toHTML() }; } },
+                { tag: "k_conv_2", gen: () => { let v = Engine.randInt(1,49)*2; return { tag: "k_conv_2", q:`${(v/10).toFixed(1)}% =<div class="blank"></div>`, a: new Frac(v, 1000).toHTML() }; } }
+            ],
+            [
+                { tag: "k_conv_3", gen: () => { let v = Engine.randInt(1,8); return { tag: "k_conv_3", q:`0.<span class="dot-top">${v}</span> =<div class="blank"></div>`, a: new Frac(v, 9).toHTML() }; } }
+            ],
+            [
+                { tag: "k_conv_4", gen: () => { let v1 = Engine.randInt(1,5); let v2 = Engine.randInt(1,8); if(v1===v2)v2++; return { tag: "k_conv_4", q:`0.${v1}<span class="dot-top">${v2}</span> =<div class="blank"></div>`, a: new Frac(v1*9+v2, 90).toHTML() }; } }
+            ],
+            [
+                { tag: "k_conv_5", gen: () => { let v = Engine.randInt(1,24); return { tag: "k_conv_5", q:`<div class="frac"><span>${v}</span><span class="bottom">25</span></div> =<div class="blank"></div>%`, a: `${v*4}` }; } }
+            ],
+            [
+                { tag: "k_conv_6", gen: () => { let w = Engine.randInt(1,9), v = Engine.randInt(1,9); return { tag: "k_conv_6", q:`${w}.0${v} =<div class="blank"></div>`, a: `<div class="mixed">${w}${new Frac(v, 100).toHTML()}</div>` }; } },
+                { tag: "k_conv_7", gen: () => { let v = Engine.randInt(1,7)*125; return { tag: "k_conv_7", q:`${(v/10000).toFixed(4).replace(/0$/,'')} =<div class="blank"></div>`, a: new Frac(v, 10000).toHTML() }; } }
+            ],
+            [
+                { tag: "k_conv_8", gen: () => { let n = Engine.randInt(1,39); if(n%2===0)n++; if(n%5===0)n++; return { tag: "k_conv_8", q:`<div class="frac"><span>${n}</span><span class="bottom">40</span></div> =<div class="blank"></div>`, a: formatDecimal(n/40) }; } }
+            ],
+            [
+                { tag: "k_conv_9", gen: () => { let n = Engine.randChoice([1,3,5,7,9,11,13,15]); return { tag: "k_conv_9", q:`<div class="frac"><span>${n}</span><span class="bottom">16</span></div> =<div class="blank"></div>`, a: formatDecimal(n/16) }; } }
+            ],
+            [
+                { tag: "k_conv_10", gen: () => { let v = Engine.randChoice([0.0625,0.1875,0.3125,0.4375,0.5625,0.6875,0.8125,0.9375]); return { tag: "k_conv_10", q:`${v} =<div class="blank"></div>`, a: new Frac(v, 1).toHTML() }; } }
+            ]
+        ]);
 
         const getLorikConv = () => Engine.weightedSelect([
             { tag: "l_conv_1", gen: () => { let v = Engine.randInt(1,7); if(v%2===0)v++; return { tag: "l_conv_1", q:`<div class="frac"><span>${v}</span><span class="bottom">8</span></div> =<div class="blank"></div>`, a: formatDecimal(v/8) }; } },

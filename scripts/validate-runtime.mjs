@@ -198,6 +198,8 @@ function assertSetData(setNumber) {
   const fallbackName = context.window.FallbackAdvice?.name;
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
   const kaiDivTags = new Set((data.k_d || []).map(item => item?.tag));
+  const kaiConvTags = new Set((data.k_c || []).map(item => item?.tag));
+  const kaiFracEqTags = new Set((data.k_f || []).map(item => item?.tag));
   const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
   const lorikMixedTags = new Set((data.l_o || []).map(item => item?.tag));
 
@@ -225,6 +227,42 @@ function assertSetData(setNumber) {
   }
   if (![...kaiDivTags].some(tag => tag === 'k_ddiv_pure')) {
     throw new Error(`Set ${setNumber} is missing KAI same-scale decimal division coverage`);
+  }
+  if (![...kaiConvTags].some(tag => ['k_conv_1', 'k_conv_2'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI percent conversion coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_3')) {
+    throw new Error(`Set ${setNumber} is missing KAI repeating-decimal coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_4')) {
+    throw new Error(`Set ${setNumber} is missing KAI mixed repeating-decimal coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_5')) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction-to-percent coverage`);
+  }
+  if (![...kaiConvTags].some(tag => ['k_conv_6', 'k_conv_7'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI decimal-to-fraction coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_8')) {
+    throw new Error(`Set ${setNumber} is missing KAI fortieth benchmark coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_9')) {
+    throw new Error(`Set ${setNumber} is missing KAI sixteenth benchmark coverage`);
+  }
+  if (![...kaiConvTags].some(tag => tag === 'k_conv_10')) {
+    throw new Error(`Set ${setNumber} is missing KAI exact decimal benchmark coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => ['k_eq_move', 'k_eq_coeff'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI core inverse-equation coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => ['k_eq_merge', 'k_eq_twostep'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI multi-step equation coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => ['k_eq_sub', 'k_eq_divisor'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI special-position equation coverage`);
+  }
+  if (![...kaiFracEqTags].some(tag => tag === 'k_eq_prop')) {
+    throw new Error(`Set ${setNumber} is missing KAI proportion equation coverage`);
   }
 
   if (![...lorikDivTags].some(tag => ['l_div_decimal_dividend', 'l_div_dec1'].includes(tag))) {

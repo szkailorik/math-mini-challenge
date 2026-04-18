@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.7 Iteration Notes
+## Current v23.8 Iteration Notes
+
+### Iteration 1
+
+- What I changed: extended must-cover generation into KAI conversions so each set now includes percent, repeating-decimal, benchmark-denominator, and decimal-to-fraction practice.
+- Open questions: none.
+- Risks: conversion sections are now more pedagogically stable but slightly less surprising from set to set.
+- Next steps: monitor whether one conversion family should rotate by phase rather than appear daily.
+
+### Iteration 2
+
+- What I changed: made KAI equations cover inverse-operation, multi-step, special-position unknown, and proportion forms every set.
+- Open questions: none.
+- Risks: stronger archetype coverage means the equation block is more intentionally structured, so future tag additions should slot into a clear archetype instead of just enlarging the pool.
+- Next steps: consider the same archetype-based approach for fraction calculation subtypes if that section starts drifting.
+
+### Iteration 3
+
+- What I changed: updated runtime validation and docs so conversion/equation coverage is explicit and protected.
+- Open questions: none.
+- Risks: validator strictness is higher, so future content expansions must update the expectations intentionally.
+- Next steps: if the app keeps growing, extract per-section coverage rules into named constants instead of repeating them in validators.
+
+## Previous v23.7 Iteration Notes
 
 ### Iteration 1
 

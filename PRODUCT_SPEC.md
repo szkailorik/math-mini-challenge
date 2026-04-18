@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.8 extends must-cover guarantees into conversion and equation reasoning:
+
+- KAI conversion sets now guarantee a balanced mix of percent, repeating decimal, benchmark denominator, and exact decimal-to-fraction work.
+- KAI equation sets now guarantee inverse-operation, multi-step, special-position unknown, and proportion forms in every set.
+- The goal is not just more variety, but more reliable retrieval of the core misconception families a tutor expects to see each day.
+
 ## Practice Flow
 
 1. Tutor opens a numbered set.
