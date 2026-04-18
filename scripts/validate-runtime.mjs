@@ -321,6 +321,51 @@ function decimalPlacesFromText(value) {
   return match?.[1]?.length || 0;
 }
 
+function assertClosureFocusCoverage(tags, focusMeta, studentKey, setNumber) {
+  const field = focusMeta?.field || 'legacyMix';
+  if (field === 'legacyMix') {
+    if (!tags.has('c2_est_product') || !tags.has('c2_speed_mix')) {
+      throw new Error(`Closure set ${setNumber} is missing legacy mixed coverage for ${studentKey}`);
+    }
+    return;
+  }
+  if (field === 'representationGap') {
+    if (!tags.has('c2_bridge_pct_frac') || !tags.has('c2_bridge_ratio_frac')) {
+      throw new Error(`Closure set ${setNumber} is missing representation focus coverage for ${studentKey}`);
+    }
+    return;
+  }
+  if (field === 'methodGap') {
+    const hasUnit = [...tags].some(tag => ['c2_unit_length', 'c2_unit_mass'].includes(tag));
+    const hasModel = [...tags].some(tag => ['c2_rate_discount', 'c2_eq_percent'].includes(tag));
+    if (!hasUnit || !hasModel) {
+      throw new Error(`Closure set ${setNumber} is missing method focus coverage for ${studentKey}`);
+    }
+    return;
+  }
+  if (field === 'stabilityGap') {
+    const prefix = studentKey === 'KAI' ? ['k_ddiv_', 'k_dmul_', 'k_sub_'] : ['l_div_', 'l_mul_', 'l_sub_'];
+    const hasRequired = prefix.every(base => [...tags].some(tag => String(tag || '').startsWith(base)));
+    if (!hasRequired) {
+      throw new Error(`Closure set ${setNumber} is missing stability focus coverage for ${studentKey}`);
+    }
+    return;
+  }
+  if (field === 'speedGap') {
+    if (!tags.has('c2_speed_mix')) {
+      throw new Error(`Closure set ${setNumber} is missing speed focus coverage for ${studentKey}`);
+    }
+    return;
+  }
+  if (field === 'validationGap') {
+    if (!tags.has('c2_est_product')) {
+      throw new Error(`Closure set ${setNumber} is missing validation focus coverage for ${studentKey}`);
+    }
+    return;
+  }
+  throw new Error(`Closure set ${setNumber} has unknown focus field ${field} for ${studentKey}`);
+}
+
 function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
   const raw = store.get(getProgramCacheKey(programId, setNumber)) || (
     programId === 'advanced_fluency_v1' ? store.get(`${cachePrefix}_${setNumber}`) : null
@@ -382,12 +427,8 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (!lRateTags.has('c2_rate_discount') || !lRateTags.has('c2_eq_percent')) {
       throw new Error(`Closure set ${setNumber} is missing Lorik rate-equation coverage`);
     }
-    if (!kMixTags.has('c2_est_product') || !kMixTags.has('c2_speed_mix')) {
-      throw new Error(`Closure set ${setNumber} is missing KAI estimation-speed coverage`);
-    }
-    if (!lMixTags.has('c2_est_product') || !lMixTags.has('c2_speed_mix')) {
-      throw new Error(`Closure set ${setNumber} is missing Lorik estimation-speed coverage`);
-    }
+    assertClosureFocusCoverage(kMixTags, data.c_k_focusMeta, 'KAI', setNumber);
+    assertClosureFocusCoverage(lMixTags, data.c_l_focusMeta, 'Lorik', setNumber);
     if (![...kMaintCoreTags].some(tag => String(tag || '').startsWith('k_ddiv_'))) {
       throw new Error(`Closure set ${setNumber} is missing KAI division maintenance coverage`);
     }
@@ -953,6 +994,7 @@ const advancedBefore = JSON.stringify({
 });
 await context.window.StorageDB.saveSession('KAI', [
   { tag: 'c2_bridge_pct_frac', grade: 'wrong', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[0]?.q, a: closureData.c_k_bridge?.[0]?.a, step: closureData.c_k_bridge?.[0]?.step } },
+  { tag: 'c2_bridge_ratio_frac', grade: 'wrong', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[1]?.q, a: closureData.c_k_bridge?.[1]?.a, step: closureData.c_k_bridge?.[1]?.step } },
   { tag: 'c2_eq_percent', grade: 'wrong', info: { sec: '比率方程', num: 2, q: closureData.c_k_rate?.[0]?.q, a: closureData.c_k_rate?.[0]?.a, step: closureData.c_k_rate?.[0]?.step } },
   { tag: 'c2_speed_mix', grade: 'careless', info: { sec: '结果判断', num: 3, q: closureData.c_k_mix?.[0]?.q, a: closureData.c_k_mix?.[0]?.a, step: closureData.c_k_mix?.[0]?.step } },
   { tag: closureData.c_k_maint_core?.[0]?.tag, grade: 'wrong', info: { sec: '旧知保温', num: 4, q: closureData.c_k_maint_core?.[0]?.q, a: closureData.c_k_maint_core?.[0]?.a, step: closureData.c_k_maint_core?.[0]?.step } },
@@ -978,6 +1020,15 @@ for (const field of ['representationGap', 'methodGap', 'stabilityGap', 'speedGap
   if (typeof closureProfile[field] !== 'number') {
     throw new Error(`Phase-two profile is missing ${field}`);
   }
+}
+context.window.currentSetNumber = 104;
+context.window.renderPaper();
+const closureAdaptiveData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 104)) || '{}');
+if (closureAdaptiveData.c_k_focusMeta?.field !== 'representationGap') {
+  throw new Error(`Expected KAI adaptive closure focus to target representationGap, got ${closureAdaptiveData.c_k_focusMeta?.field || '(missing)'}`);
+}
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：跨表示桥接')) {
+  throw new Error('Adaptive closure focus title did not render on the next KAI closure paper');
 }
 if (closureProfile.representationGap <= 0 || closureProfile.methodGap <= 0 || closureProfile.stabilityGap <= 0 || closureProfile.speedGap <= 0) {
   throw new Error('Phase-two grading did not update the expected closure gap signals');

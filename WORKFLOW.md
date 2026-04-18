@@ -29,8 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.24 Iteration Notes
+## Current v23.25 Iteration Notes
 
+### Iteration 1
+
+- What I changed: kept the second-stage six-section paper shape stable, but turned section V into a learner-specific `重点强化区` driven by the strongest current closure gap.
+- Open questions: none.
+- Risks: the adaptive lane is now part of the product contract, so future closure edits must preserve both print stability and clear reinforcement identity.
+- Next steps: keep tuning the focus pools so each gap lane stays obviously different in live use.
+
+### Iteration 2
+
+- What I changed: made the adaptive focus decision use four signals together: stored closure gap fields, active closure error-book entries, recent closure mistakes, and the current phase bias.
+- Open questions: none.
+- Risks: if the weighting is too weak, the lane will feel cosmetic; if too strong, it may overreact to one noisy set.
+- Next steps: observe whether the current weighting needs tightening after real tutoring sessions.
+
+### Iteration 3
+
+- What I changed: added runtime validation that creates a clear second-stage `representationGap`, then confirms the next closure set really changes section V into `重点强化：跨表示桥接`.
+- Open questions: none.
+- Risks: validator proves the lane can switch, but human review is still needed to judge whether the new focus pool feels high-value enough.
+- Next steps: continue from adaptive section selection into stronger adaptive difficulty and error-book variant replay inside the chosen lane.
+
+## Previous v23.24 Iteration Notes
 ### Iteration 1
 
 - What I changed: turned `Closure` from a single blended paper into a phase-aware program with `收口期 / 收束期 / 毕业判定期`, so the second stage now changes emphasis across the monthly arc instead of repeating the same balance forever.

@@ -146,6 +146,16 @@ v23.24 deepens the second-stage training quality:
 - `毕业判定期` focuses on stable checking: reverse representations, boundary discrimination, and validating whether the result is reasonable.
 - The product goal remains unchanged: finish elementary-school calculation training efficiently and personally, while still keeping first-stage core algorithms warm enough that prior gains do not fade.
 
+v23.25 makes phase two more personally efficient:
+
+- The second-stage paper now has one learner-specific reinforcement lane instead of giving both learners the same fifth section by default.
+- The system uses second-stage gap signals, active closure error-book entries, recent closure mistakes, and phase bias together to decide what that learner most needs today.
+- This keeps the paper shape stable for printing and tutoring, but makes the second stage behave more like a coach:
+  - one learner may get `重点强化：跨表示桥接`
+  - another may get `重点强化：单位与建模`
+  - another may get `重点强化：旧知稳态` or `结果检验`
+- Product-wise, this is important because the closure stage is not meant to be a generic harder worksheet. It should finish elementary-school calculation efficiently by concentrating more time on the most valuable current gap while still preserving the common closure spine.
+
 v23.18 improves global training efficiency, not only local item quality:
 
 - The selection engine now gives extra priority to high-value misconception families instead of treating all weak spots as equally urgent.
