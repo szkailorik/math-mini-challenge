@@ -284,6 +284,12 @@ v23.47 extends real boundary checks into speed stability:
 - The `Closure` focus lane can now emit dedicated boundary-style speed questions that foreground structure recognition and fast-method choice before raw execution.
 - Product-wise, this matters because fluent calculation at the upper end is not just fast hands, but fast recognition of the best route.
 
+v23.48 extends real boundary checks into stability:
+
+- Stability-heavy closure items no longer stop at ordinary maintenance variants once they reach `L3`.
+- The `Closure` focus lane can now emit dedicated boundary-style stability questions that foreground quotient size, decimal-point placement, and whether an answer can plausibly stay below or above 1 before exact computation.
+- Product-wise, this matters because keeping old knowledge warm is not only repetition, but stable judgment under familiar but easy-to-slip structures.
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

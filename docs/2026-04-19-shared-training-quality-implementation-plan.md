@@ -464,6 +464,7 @@ Status note:
 - The closure focus lane has also started moving from symbolic `L3` escalation to dedicated boundary-style replay items for method-heavy families.
 - Boundary-style `L3` replay is now also live for validation-heavy closure families, not only method-heavy ones.
 - Boundary-style `L3` replay is now also live for speed-heavy closure families.
+- Boundary-style `L3` replay is now also live for stability-heavy closure families.
 
 - [ ] **Step 7: Commit**
 

@@ -1362,6 +1362,63 @@ if (!String(closureSpeedReplay?.step || '').includes('[重点强化 Boundary]'))
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：速度稳定')) {
   throw new Error('Speed-gap closure focus title did not render on the next KAI closure paper');
 }
+closureProfile.representationGap = 0;
+closureProfile.methodGap = 0;
+closureProfile.stabilityGap = 9;
+closureProfile.speedGap = 0;
+closureProfile.validationGap = 0;
+Object.keys(closureProfile.errorBook || {}).forEach(uid => {
+  const entry = closureProfile.errorBook[uid];
+  if (!entry) return;
+  if (entry.tag === 'k_ddiv_decimal_q' || entry.tag === 'k_ddiv_shift') {
+    entry.count = 4;
+    entry.lastSet = 107;
+    entry.mastered = false;
+  } else {
+    entry.mastered = true;
+  }
+});
+closureProfile.errorBook.stabilityL3 = {
+  tag: 'k_ddiv_decimal_q',
+  grade: 'wrong',
+  count: 4,
+  firstSet: 107,
+  lastSet: 107,
+  mastered: false,
+  info: {
+    q: '0.84 &divide; 1.2',
+    a: '0.7',
+    step: '先判断商小于 1，再决定小数点位置。'
+  }
+};
+context.window.currentSetNumber = 108;
+context.window.renderPaper();
+const closureStabilityData = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 108)) || '{}');
+if (closureStabilityData.c_k_focusMeta?.field !== 'stabilityGap') {
+  throw new Error(`Expected KAI closure focus to retarget stabilityGap, got ${closureStabilityData.c_k_focusMeta?.field || '(missing)'}`);
+}
+const closureStabilityReplay = closureStabilityData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+if (!closureStabilityReplay) {
+  throw new Error('Stability-gap closure focus did not inject an explicit closure focus replay item');
+}
+if (closureStabilityReplay?.qualityFamily !== 'decimal_division') {
+  throw new Error(`Expected stability-gap closure focus replay to use decimal_division, got ${closureStabilityReplay?.qualityFamily || '(missing)'}`);
+}
+if (closureStabilityReplay?.replayLevel !== 'L3') {
+  throw new Error(`Expected stability-gap closure focus replay to escalate to L3, got ${closureStabilityReplay?.replayLevel || '(missing)'}`);
+}
+if (closureStabilityReplay?.closureFocusMode !== 'L3_boundary') {
+  throw new Error(`Expected stability-gap closure focus replay to use L3_boundary mode, got ${closureStabilityReplay?.closureFocusMode || '(missing)'}`);
+}
+if (closureStabilityReplay?.explanationMode !== 'rule') {
+  throw new Error(`Expected stability-gap closure focus replay to use rule explanation mode, got ${closureStabilityReplay?.explanationMode || '(missing)'}`);
+}
+if (!String(closureStabilityReplay?.step || '').includes('[重点强化 Boundary]')) {
+  throw new Error('Expected stability-gap L3 closure focus replay to use a dedicated boundary-style explanation');
+}
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点强化：旧知稳态')) {
+  throw new Error('Stability-gap closure focus title did not render on the next KAI closure paper');
+}
 context.window.showSetReview(103, 'KAI');
 const closureReviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!closureReviewHtml.includes('第二阶段') || !closureReviewHtml.includes('表征切换') || !closureReviewHtml.includes('旧知保温')) {

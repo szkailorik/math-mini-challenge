@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.47 (速度稳定边界强化升级)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.48 (旧知稳态边界强化升级)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -832,7 +832,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.47</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.48</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -911,9 +911,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.47';
-        const APP_RELEASE_LABEL = '速度稳定边界强化升级';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.47 速度稳定边界强化升级：<br><strong>Closure 的 speedGap L3 现在也会优先出真正的边界强化题<br>第二阶段在速度与结构识别上也开始有更强的针对性追打</strong>';
+        const APP_VERSION = 'v23.48';
+        const APP_RELEASE_LABEL = '旧知稳态边界强化升级';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.48 旧知稳态边界强化升级：<br><strong>Closure 的 stabilityGap L3 现在也会优先出真正的边界强化题<br>第二阶段在保温旧知和稳定完成上也开始有更强的针对性追打</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3901,6 +3901,22 @@
                             q: `一辆车 2.4 时行 192 千米，平均每时大约行<div class="blank"></div>千米`,
                             a: `80`,
                             step: `${reviewPrefix}先判断 192÷2.4 可以看成 1920÷24，商应先稳定在 80 左右，再决定结果是否合理。${tip.advice}`
+                        }
+                    ]);
+                case 'k_ddiv_shift':
+                case 'k_ddiv_decimal_q':
+                    return Engine.randChoice([
+                        {
+                            tag: entry.tag,
+                            q: `0.84 &divide; 1.2 的结果应<div class="blank"></div>1`,
+                            a: `小于`,
+                            step: `${reviewPrefix}先看被除数比除数小，商一定小于 1，所以小数点位置必须先判断对，再做精算。${tip.advice}`
+                        },
+                        {
+                            tag: entry.tag,
+                            q: `1.08 &divide; 2.4 的结果更接近<div class="blank"></div>`,
+                            a: `0.5`,
+                            step: `${reviewPrefix}先判断 1.08 ÷ 2.4 可看成 10.8 ÷ 24，商应先落在 0 点几，再判断最接近 0.5。${tip.advice}`
                         }
                     ]);
                 default:
