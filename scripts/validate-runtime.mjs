@@ -34,6 +34,18 @@ const localStorage = {
 };
 
 const elements = new Map();
+function extractQuestionSheets() {
+  const paper = elements.get('paper-container')?.innerHTML || '';
+  const starts = [...paper.matchAll(/<div class="sheet question-sheet/g)].map(match => match.index);
+  const answerStart = paper.indexOf('<div class="sheet ans-sheet"');
+  if (answerStart === -1 || starts.length === 0) return [];
+  starts.push(answerStart);
+  const sheets = [];
+  for (let i = 0; i < starts.length - 1; i += 1) {
+    sheets.push(paper.slice(starts[i], starts[i + 1]));
+  }
+  return sheets;
+}
 function makeElement(id) {
   const classNames = new Set();
   return {
@@ -96,13 +108,11 @@ const document = {
     return null;
   },
   querySelectorAll(selector) {
-    const paper = elements.get('paper-container')?.innerHTML || '';
     if (selector === '.sheet.question-sheet') {
-      return Array.from({ length: (paper.match(/class="sheet question-sheet/g) || []).length }, () => ({
-        outerHTML: '<div class="sheet question-sheet"></div>',
-      }));
+      return extractQuestionSheets().map(outerHTML => ({ outerHTML }));
     }
     if (selector === '.sheet.ans-sheet') {
+      const paper = elements.get('paper-container')?.innerHTML || '';
       return Array.from({ length: (paper.match(/class="sheet ans-sheet/g) || []).length }, () => ({
         outerHTML: '<div class="sheet ans-sheet"></div>',
       }));
@@ -505,11 +515,17 @@ if (typeof context.window.printQuestionSheets !== 'function' || typeof context.w
 context.window.printQuestionSheets();
 await new Promise(resolve => setTimeout(resolve, 260));
 const printRootHtml = elements.get('print-root')?.innerHTML || '';
+const sourceQuestionSheets = extractQuestionSheets();
 if (!context.document.body.classList.contains('print-questions-only') || !context.document.body.classList.contains('print-sandbox-active') || context.__printCalls !== 1) {
   throw new Error('Question-sheet print mode did not activate correctly');
 }
 if ((printRootHtml.match(/question-sheet/g) || []).length !== 4) {
   throw new Error('Question-sheet print sandbox did not stage exactly four printable question sheets');
+}
+const sourceItemCount = sourceQuestionSheets.reduce((count, sheet) => count + (sheet.match(/class="item /g) || []).length, 0);
+const stagedItemCount = (printRootHtml.match(/class="item /g) || []).length;
+if (sourceItemCount !== stagedItemCount || stagedItemCount !== 72) {
+  throw new Error(`Question-sheet print sandbox item mismatch: source ${sourceItemCount}, staged ${stagedItemCount}`);
 }
 emit('afterprint');
 if (context.document.body.classList.contains('print-questions-only') || context.document.body.classList.contains('print-answers-only')) {
