@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.15 Iteration Notes
+## Current v23.16 Iteration Notes
+
+### Iteration 1
+
+- What I changed: moved question and answer printing onto a dedicated `#print-root` sandbox so the browser prints a staged copy of the target sheets instead of the live long page.
+- Open questions: none.
+- Risks: native print engines still vary, so the final confirmation remains a real print preview on the target browser/printer combination.
+- Next steps: if any printer still misbehaves, capture that printer/browser pair and tune the sandbox sheet height rather than the live page layout.
+
+### Iteration 2
+
+- What I changed: restored a more rigid A4 question-sheet print height inside the sandbox, but trimmed it slightly below `297mm` to avoid rounding overflow that can produce blank even-numbered pages.
+- Open questions: none.
+- Risks: if future sections become materially taller, they may need density tuning rather than more print CSS relaxation.
+- Next steps: keep `打印AB四页` in the release smoke tests whenever sheet density changes.
+
+### Iteration 3
+
+- What I changed: updated validation and docs so the dedicated print sandbox is now part of the guarded runtime contract.
+- Open questions: none.
+- Risks: validator can confirm the sandbox flow structurally, but it still cannot replace a native print preview.
+- Next steps: after print stabilizes in real use, return to deeper training-quality upgrades.
+
+## Previous v23.15 Iteration Notes
 
 ### Iteration 1
 

@@ -6,14 +6,14 @@ const match = html.match(/<script type="module">([\s\S]*?)<\/script>/);
 if (!match) {
   throw new Error('Cannot find module script in index.html');
 }
-if (!html.includes('body.print-questions-only .question-sheet + .question-sheet')) {
-  throw new Error('Print CSS is missing adjacent question-sheet page breaks');
+if (!html.includes('id="print-root"')) {
+  throw new Error('Dedicated print sandbox root is missing from HTML');
 }
-if (!html.includes('body.print-answers-only .ans-sheet + .ans-sheet')) {
-  throw new Error('Print CSS is missing adjacent answer-sheet page breaks');
+if (!html.includes('body.print-sandbox-active > *:not(#print-root)')) {
+  throw new Error('Print CSS is missing sandbox isolation for the print root');
 }
-if (html.includes('body.print-questions-only .question-sheet.print-last-question')) {
-  throw new Error('Legacy last-question print override should not remain in print CSS');
+if (!html.includes('const PRINT_ROOT_ID = \'print-root\';')) {
+  throw new Error('Print sandbox constant is missing from runtime script');
 }
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
@@ -95,7 +95,18 @@ const document = {
   querySelector() {
     return null;
   },
-  querySelectorAll() {
+  querySelectorAll(selector) {
+    const paper = elements.get('paper-container')?.innerHTML || '';
+    if (selector === '.sheet.question-sheet') {
+      return Array.from({ length: (paper.match(/class="sheet question-sheet/g) || []).length }, () => ({
+        outerHTML: '<div class="sheet question-sheet"></div>',
+      }));
+    }
+    if (selector === '.sheet.ans-sheet') {
+      return Array.from({ length: (paper.match(/class="sheet ans-sheet/g) || []).length }, () => ({
+        outerHTML: '<div class="sheet ans-sheet"></div>',
+      }));
+    }
     return [];
   },
 };
@@ -493,12 +504,19 @@ if (typeof context.window.printQuestionSheets !== 'function' || typeof context.w
 }
 context.window.printQuestionSheets();
 await new Promise(resolve => setTimeout(resolve, 260));
-if (!context.document.body.classList.contains('print-questions-only') || context.__printCalls !== 1) {
+const printRootHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-questions-only') || !context.document.body.classList.contains('print-sandbox-active') || context.__printCalls !== 1) {
   throw new Error('Question-sheet print mode did not activate correctly');
+}
+if ((printRootHtml.match(/question-sheet/g) || []).length !== 4) {
+  throw new Error('Question-sheet print sandbox did not stage exactly four printable question sheets');
 }
 emit('afterprint');
 if (context.document.body.classList.contains('print-questions-only') || context.document.body.classList.contains('print-answers-only')) {
   throw new Error('Print mode did not clear after afterprint');
+}
+if ((elements.get('print-root')?.innerHTML || '') !== '') {
+  throw new Error('Print sandbox did not clear after afterprint');
 }
 if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
   throw new Error('Automatic cloud pull helpers are not available');

@@ -3,49 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.15 (错题回炉升级版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.16 (打印稳定修正版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
+        :root { --print-sheet-height: 296.4mm; }
         @page { size: A4; margin: 0 !important; }
         @media print {
-            body { margin: 0 !important; padding: 0 !important; background-color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .sheet {
-                width: auto !important;
-                min-height: 0 !important;
-                height: auto !important;
-                max-height: none !important;
-                box-shadow: none !important;
+            html, body {
                 margin: 0 !important;
-                page-break-after: auto !important;
-                break-after: auto !important;
-                page-break-before: auto !important;
-                break-before: auto !important;
+                padding: 0 !important;
+                background-color: #fff !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-            .sheet.question-sheet { overflow: visible !important; }
-            .sheet.ans-sheet { overflow: visible !important; }
             .no-print { display: none !important; }
             .modal-overlay, #toast-msg { display: none !important; }
-            body.print-questions-only .sheet:not(.question-sheet) { display: none !important; }
-            body.print-questions-only .question-sheet {
+            body.print-sandbox-active > *:not(#print-root) { display: none !important; }
+            body.print-sandbox-active #print-root {
                 display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            body.print-sandbox-active #print-root .sheet {
+                width: 210mm !important;
+                min-height: var(--print-sheet-height) !important;
+                height: var(--print-sheet-height) !important;
+                max-height: var(--print-sheet-height) !important;
+                box-sizing: border-box !important;
+                padding: 12mm 15mm !important;
+                overflow: hidden !important;
+                background: #fff !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                position: relative !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid-page !important;
+                page-break-after: always !important;
+                break-after: page !important;
             }
-            body.print-questions-only .question-sheet + .question-sheet {
-                page-break-before: always !important;
-                break-before: page !important;
+            body.print-sandbox-active #print-root .sheet:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
             }
-            body.print-answers-only .question-sheet { display: none !important; }
-            body.print-answers-only .ans-sheet {
-                display: block !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid-page !important;
-            }
-            body.print-answers-only .ans-sheet + .ans-sheet {
-                page-break-before: always !important;
-                break-before: page !important;
+            body.print-sandbox-active #print-root .sheet.ans-sheet {
+                min-height: var(--print-sheet-height) !important;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+                padding-bottom: 20mm !important;
             }
         }
         body { margin: 0; padding: 20px; background-color: #cbd5e1; font-family: 'Times New Roman', 'KaiTi', '楷体', 'SimSun', '宋体', serif; color: #222; }
@@ -230,6 +237,7 @@
         .archive-table { width: 100%; border-collapse: collapse; text-align: center; font-family: sans-serif; font-size: 14px; margin-bottom: 15px;}
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
+        #print-root { display: none; }
     </style>
 </head>
 <body>
@@ -238,7 +246,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.15</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.16</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -261,7 +269,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.15 错题回炉升级版：<br><strong>原题回炉 + 同类变式回炉<br>重点题更像真正巩固训练</strong>
+                💡 23.16 打印稳定修正版：<br><strong>AB 四页改用独立打印舞台<br>重点修复空白偶数页</strong>
             </div>
         </div>
 
@@ -285,12 +293,14 @@
     <div id="toast-msg">✅ 批改数据已作为历史记录永久存档！</div>
 
     <div id="paper-container"></div>
+    <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.15';
-        const APP_RELEASE_LABEL = '错题回炉升级版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.15 错题回炉升级版：<br><strong>原题回炉 + 同类变式回炉<br>重点题更像真正巩固训练</strong>';
+        const APP_VERSION = 'v23.16';
+        const APP_RELEASE_LABEL = '打印稳定修正版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.16 打印稳定修正版：<br><strong>AB 四页改用独立打印舞台<br>重点修复空白偶数页</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
+        const PRINT_ROOT_ID = 'print-root';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
         // Firebase 相关导入已移除，改用原生 fetch 直连 GitHub API
@@ -2110,7 +2120,7 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v31_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v32_${window.currentSetNumber - i}`, `MathSetData_v31_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {
@@ -2782,12 +2792,27 @@
         let printCleanupTimer = null;
         let printMediaQuery = null;
 
+        function getPrintRoot() {
+            return document.getElementById(PRINT_ROOT_ID);
+        }
+
+        function buildPrintSandbox(mode) {
+            const root = getPrintRoot();
+            if (!root) return 0;
+            const selector = mode === 'print-questions-only' ? '.sheet.question-sheet' : '.sheet.ans-sheet';
+            const sheets = Array.from(document.querySelectorAll(selector));
+            root.innerHTML = sheets.map(sheet => sheet.outerHTML).join('');
+            return sheets.length;
+        }
+
         function clearPrintMode() {
             if (printCleanupTimer) {
                 clearTimeout(printCleanupTimer);
                 printCleanupTimer = null;
             }
-            document.body.classList.remove('print-questions-only', 'print-answers-only');
+            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-sandbox-active');
+            const root = getPrintRoot();
+            if (root) root.innerHTML = '';
         }
 
         function schedulePrintCleanupFallback() {
@@ -2819,7 +2844,12 @@
         function runPrintMode(mode) {
             ensurePrintLifecycleHooks();
             clearPrintMode();
-            document.body.classList.add(mode);
+            const sheetCount = buildPrintSandbox(mode);
+            if (!sheetCount) {
+                showToast('打印内容还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            document.body.classList.add(mode, 'print-sandbox-active');
             showToast(
                 mode === 'print-questions-only' ? PRINT_HINT_HTML : '🧾 打印答案提示：建议关闭页眉页脚，并确认只打印答案页。',
                 { background: '#0f766e', duration: 2600 }

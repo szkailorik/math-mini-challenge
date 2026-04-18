@@ -118,6 +118,12 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.16 hardens the print path:
+
+- Print actions now stage a dedicated print-only DOM container instead of asking the browser to paginate the live long page directly.
+- Question-sheet printing uses a slightly sub-A4 fixed page height inside that sandbox, reducing rounding/overflow cases that can create blank even-numbered pages.
+- The print sandbox is cleared after print lifecycle cleanup, so the interactive app view and the print flow stay isolated.
+
 v23.15 upgrades review practice quality:
 
 - Error-book practice is no longer limited to replaying the exact same item; selected high-value tags can now return as nearby same-skill variants.
