@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.10 Iteration Notes
+## Current v23.11 Iteration Notes
+
+### Iteration 1
+
+- What I changed: bumped the set-cache namespace so future papers regenerate under the latest generator rules instead of reusing stale cached sets.
+- Open questions: none.
+- Risks: old cached papers still exist in browser storage but are no longer the active source for newly generated sets.
+- Next steps: if needed later, add a small UI action to purge obsolete cached set versions explicitly.
+
+### Iteration 2
+
+- What I changed: reinforced Lorik Set B division so the section keeps one integer item plus the full decimal trio, and expanded decimal-divisor cases to include stronger decimal-point shifting practice.
+- Open questions: none.
+- Risks: daily division structure is now more deliberate, so difficulty tuning should happen inside each subtype rather than by dropping one subtype entirely.
+- Next steps: keep an eye on whether double-decimal items should occasionally use two-decimal divisors more often.
+
+### Iteration 3
+
+- What I changed: converted additional high-value blocks from random subsets to must-cover structures, specifically Lorik multiplication, Lorik subtraction, KAI large subtraction, and KAI olympiad reasoning.
+- Open questions: none.
+- Risks: stronger scaffolding reduces surprise slightly, but it improves diagnostic consistency and makes daily review more reliable.
+- Next steps: if the app keeps expanding, extract the section-coverage manifests into named constants shared by generators and validators.
+
+## Previous v23.10 Iteration Notes
 
 ### Iteration 1
 

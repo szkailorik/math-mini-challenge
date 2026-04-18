@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.10 (打印分页修正版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.11 (训练质量重构版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -224,7 +224,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.10</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.11</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -247,7 +247,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.10 打印分页修正版：<br><strong>打印AB四页不再夹空白页<br>题卷改为相邻分页模式</strong>
+                💡 23.11 训练质量重构版：<br><strong>B卷除法强制更新新题<br>更多核心区块改为固定覆盖</strong>
             </div>
         </div>
 
@@ -273,9 +273,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.10';
-        const APP_RELEASE_LABEL = '打印分页修正版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.10 打印分页修正版：<br><strong>打印AB四页不再夹空白页<br>题卷改为相邻分页模式</strong>';
+        const APP_VERSION = 'v23.11';
+        const APP_RELEASE_LABEL = '训练质量重构版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.11 训练质量重构版：<br><strong>B卷除法强制更新新题<br>更多核心区块改为固定覆盖</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
@@ -394,7 +394,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v30';
+        const SET_CACHE_PREFIX = 'MathSetData_v31';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1519,13 +1519,21 @@
                     { tag: "k_ddiv_pure", gen: () => { let d=Engine.randInt(21,99), ans=Engine.randInt(21,99); return {tag:"k_ddiv_pure", q:`${((ans*d)/100).toFixed(2)} &divide; ${(d/100).toFixed(2)}`, a:`${ans}`, step:`被除数和除数一起扩大100倍，保持商不变。`}; } }
                 ]
             ]),
-            bigSub: () => Engine.weightedSelect([
-                { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
-                { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
-                { tag: "k_sub_100k", gen: () => { let b=Engine.randInt(21111,88888); return {tag:"k_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`}; } },
-                { tag: "k_sub_near_million", gen: () => { let b=Engine.randInt(211111,888888); return {tag:"k_sub_near_million", q:`1000000 &minus; ${b}`, a:`${1000000-b}`, step:`从百万位借1，中间连续0依次变9，个位参与最后相减。`}; } },
-                { tag: "k_sub_6digit", gen: () => { let a=Engine.randInt(30,60)*10000+Engine.randInt(111,999), b=Engine.randInt(4,6)*10000+Engine.randInt(111,999); return {tag:"k_sub_6digit", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
-            ], "KAI", 4),
+            bigSub: () => buildCoveredSection("KAI", [
+                [
+                    { tag: "k_sub_cross", gen: () => { let a=Engine.randInt(5,9)*10000+Engine.randInt(11,99), b=Engine.randInt(1,4)*10000+Engine.randInt(111,999); return {tag:"k_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ],
+                [
+                    { tag: "k_sub_inner0", gen: () => { let a=Engine.randInt(4,9)*100000 + Engine.randInt(1,9); let b=Engine.randInt(1,3)*10000+Engine.randInt(1111,9999); return {tag:"k_sub_inner0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ],
+                [
+                    { tag: "k_sub_100k", gen: () => { let b=Engine.randInt(21111,88888); return {tag:"k_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`}; } },
+                    { tag: "k_sub_near_million", gen: () => { let b=Engine.randInt(211111,888888); return {tag:"k_sub_near_million", q:`1000000 &minus; ${b}`, a:`${1000000-b}`, step:`从百万位借1，中间连续0依次变9，个位参与最后相减。`}; } }
+                ],
+                [
+                    { tag: "k_sub_6digit", gen: () => { let a=Engine.randInt(30,60)*10000+Engine.randInt(111,999), b=Engine.randInt(4,6)*10000+Engine.randInt(111,999); return {tag:"k_sub_6digit", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ]
+            ]),
             fracEquations: () => {
                 let calcs = [
                     { tag: "k_fcalc_addsub", gen: () => {
@@ -1630,116 +1638,143 @@
                 ]);
                 return Engine.shuffle(selCalcs.concat(selEqs));
             },
-            olympiad: () => Engine.weightedSelect([
-                { tag: "k_oly_dist", gen: () => {
-                    let a=Engine.randInt(3,9), b=Engine.randInt(15,85), c=(100-b)/10;
-                    let ans = `${a}${10-a}0`;
-                    return {tag:"k_oly_dist", q:`${a}.${10-a} &times; ${b} + ${a}${10-a} &times; ${c}`, a:ans, step:`积不变移位: ${a}${10-a}&times;${b/10} + ${a}${10-a}&times;${c} &rarr; 提取公因数: ${a}${10-a}&times;(${b/10}+${c}) = <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_frac1", gen: () => {
-                    let s=Engine.randInt(2,10), k=Engine.randInt(3,5); let terms=[];
-                    for(let i=0;i<k;i++) terms.push(`<div class="frac"><span>1</span><span class="bottom">${s+i}&times;${s+i+1}</span></div>`);
-                    let ans = new Frac(1,s).sub(new Frac(1,s+k)).toHTML();
-                    return {tag:"k_oly_frac1", q:terms.join(' + '), a:ans, step:`裂项相消抵消中间项, 首尾相减: 1/${s} &minus; 1/${s+k} = <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_125", gen: () => {
-                    let k=Engine.randInt(3,19); let mid = k * 8;
-                    let ans = 100 * k * 0.25;
-                    return {tag:"k_oly_125", q:`12.5 &times; ${mid} &times; 0.25`, a:`${ans}`, step:`拆解数字凑整: (12.5 &times; 8) &times; (${k} &times; 0.25) = 100 &times; ${k*0.25} = <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_balance", gen: () => {
-                    let a=Engine.randInt(23,89), near=Engine.randChoice([99,101,999]);
-                    let sign = near === 101 ? '&minus;' : '+';
-                    let ans = near === 999 ? a*1000 : a*100;
-                    let q = near === 101 ? `${near} &times; ${a} &minus; ${a}` : `${near} &times; ${a} + ${a}`;
-                    return {tag:"k_oly_balance", q, a:`${ans}`, step:`把${near}个${a}和${sign === '+' ? '1个' : '减去1个'}${a}合成整百或整千个${a}: <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_reverse", gen: () => {
-                    let a=Engine.randInt(24,96), b=Engine.randInt(11,39), c=Engine.randInt(41,79);
-                    let ans=a*(b+c);
-                    return {tag:"k_oly_reverse", q:`${a} &times; ${b} + ${a} &times; ${c}`, a:`${ans}`, step:`提取相同因数${a}: ${a}&times;(${b}+${c}) = ${a}&times;${b+c} = <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_unit_fraction", gen: () => {
-                    let d=Engine.randChoice([6,8,9,12]), n=Engine.randInt(2,d-2), unit=Engine.randInt(8,18), total=d*unit;
-                    let ans=total - unit*n;
-                    return {tag:"k_oly_unit_fraction", q:`${total} &minus; ${total} &times; <div class="frac"><span>${n}</span><span class="bottom">${d}</span></div>`, a:`${ans}`, step:`先求${total}的${n}/${d}: ${total}&divide;${d}&times;${n}=${unit*n}，再用总量相减得 <strong class="highlight">${ans}</strong>`};
-                } },
-                { tag: "k_oly_frac2", gen: () => {
-                    let n=Engine.randInt(13,29), n2=Engine.randInt(7,15), n3=Engine.randInt(4,11);
-                    let ans = new Frac(n3,n).toHTML();
-                    return {tag:"k_oly_frac2", q:`<div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; <div class="frac"><span>${n2-1}</span><span class="bottom">${n2}</span></div> + <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &divide; <div class="frac"><span>${n2}</span><span class="bottom">1</span></div>`, a:ans, step:`除法转乘倒数后, 提取公因数: <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; (${new Frac(n2-1,n2).toHTML()} + 1/${n2}) = <strong class="highlight">${ans}</strong>`};
-                } }
-            ], "KAI", 4)
+            olympiad: () => buildCoveredSection("KAI", [
+                [
+                    { tag: "k_oly_dist", gen: () => {
+                        let a=Engine.randInt(3,9), b=Engine.randInt(15,85), c=(100-b)/10;
+                        let ans = `${a}${10-a}0`;
+                        return {tag:"k_oly_dist", q:`${a}.${10-a} &times; ${b} + ${a}${10-a} &times; ${c}`, a:ans, step:`积不变移位: ${a}${10-a}&times;${b/10} + ${a}${10-a}&times;${c} &rarr; 提取公因数: ${a}${10-a}&times;(${b/10}+${c}) = <strong class="highlight">${ans}</strong>`};
+                    } },
+                    { tag: "k_oly_balance", gen: () => {
+                        let a=Engine.randInt(23,89), near=Engine.randChoice([99,101,999]);
+                        let sign = near === 101 ? '&minus;' : '+';
+                        let ans = near === 999 ? a*1000 : a*100;
+                        let q = near === 101 ? `${near} &times; ${a} &minus; ${a}` : `${near} &times; ${a} + ${a}`;
+                        return {tag:"k_oly_balance", q, a:`${ans}`, step:`把${near}个${a}和${sign === '+' ? '1个' : '减去1个'}${a}合成整百或整千个${a}: <strong class="highlight">${ans}</strong>`};
+                    } },
+                    { tag: "k_oly_reverse", gen: () => {
+                        let a=Engine.randInt(24,96), b=Engine.randInt(11,39), c=Engine.randInt(41,79);
+                        let ans=a*(b+c);
+                        return {tag:"k_oly_reverse", q:`${a} &times; ${b} + ${a} &times; ${c}`, a:`${ans}`, step:`提取相同因数${a}: ${a}&times;(${b}+${c}) = ${a}&times;${b+c} = <strong class="highlight">${ans}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "k_oly_frac1", gen: () => {
+                        let s=Engine.randInt(2,10), k=Engine.randInt(3,5); let terms=[];
+                        for(let i=0;i<k;i++) terms.push(`<div class="frac"><span>1</span><span class="bottom">${s+i}&times;${s+i+1}</span></div>`);
+                        let ans = new Frac(1,s).sub(new Frac(1,s+k)).toHTML();
+                        return {tag:"k_oly_frac1", q:terms.join(' + '), a:ans, step:`裂项相消抵消中间项, 首尾相减: 1/${s} &minus; 1/${s+k} = <strong class="highlight">${ans}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "k_oly_125", gen: () => {
+                        let k=Engine.randInt(3,19); let mid = k * 8;
+                        let ans = 100 * k * 0.25;
+                        return {tag:"k_oly_125", q:`12.5 &times; ${mid} &times; 0.25`, a:`${ans}`, step:`拆解数字凑整: (12.5 &times; 8) &times; (${k} &times; 0.25) = 100 &times; ${k*0.25} = <strong class="highlight">${ans}</strong>`};
+                    } }
+                ],
+                [
+                    { tag: "k_oly_unit_fraction", gen: () => {
+                        let d=Engine.randChoice([6,8,9,12]), n=Engine.randInt(2,d-2), unit=Engine.randInt(8,18), total=d*unit;
+                        let ans=total - unit*n;
+                        return {tag:"k_oly_unit_fraction", q:`${total} &minus; ${total} &times; <div class="frac"><span>${n}</span><span class="bottom">${d}</span></div>`, a:`${ans}`, step:`先求${total}的${n}/${d}: ${total}&divide;${d}&times;${n}=${unit*n}，再用总量相减得 <strong class="highlight">${ans}</strong>`};
+                    } },
+                    { tag: "k_oly_frac2", gen: () => {
+                        let n=Engine.randInt(13,29), n2=Engine.randInt(7,15), n3=Engine.randInt(4,11);
+                        let ans = new Frac(n3,n).toHTML();
+                        return {tag:"k_oly_frac2", q:`<div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; <div class="frac"><span>${n2-1}</span><span class="bottom">${n2}</span></div> + <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &divide; <div class="frac"><span>${n2}</span><span class="bottom">1</span></div>`, a:ans, step:`除法转乘倒数后, 提取公因数: <div class="frac"><span>${n3}</span><span class="bottom">${n}</span></div> &times; (${new Frac(n2-1,n2).toHTML()} + 1/${n2}) = <strong class="highlight">${ans}</strong>`};
+                    } }
+                ]
+            ])
         };
 
         const GenLorik = {
-            mul: () => Engine.weightedSelect([
-                { tag: "l_mul_3x3", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(301,999); return {tag:"l_mul_3x3", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
-                { tag: "l_mul_3x20", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(11,99); return {tag:"l_mul_3x20", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
-                { tag: "l_mul_dec", gen: () => { let a=Engine.randInt(11,99)/10, b=Engine.randInt(11,99)/10; return {tag:"l_mul_dec", q:`${a.toFixed(1)} &times; ${b.toFixed(1)}`, a:`${(a*b).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}`}; } },
-                { tag: "l_mul_near100", gen: () => { let a=Engine.randChoice([98,99,101,102]), b=Engine.randInt(23,89); return {tag:"l_mul_near100", q:`${a} &times; ${b}`, a:`${a*b}`, step:`把${a}看成${a < 100 ? '100-' + (100-a) : '100+' + (a-100)}，先算100倍再补偿。`}; } },
-                { tag: "l_mul_25", gen: () => { let a=Engine.randInt(12,96)*4; return {tag:"l_mul_25", q:`25 &times; ${a}`, a:`${25*a}`, step:`25&times;4=100，先把${a}拆成4&times;${a/4}。`}; } },
-                { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
-                { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
-            ], "Lorik", 4),
+            mul: () => buildCoveredSection("Lorik", [
+                [
+                    { tag: "l_mul_3x3", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(301,999); return {tag:"l_mul_3x3", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
+                    { tag: "l_mul_3x20", gen: () => { let a=Engine.randInt(301,999), b=Engine.randInt(11,99); return {tag:"l_mul_3x20", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+                ],
+                [
+                    { tag: "l_mul_dec", gen: () => { let a=Engine.randInt(11,99)/10, b=Engine.randInt(11,99)/10; return {tag:"l_mul_dec", q:`${a.toFixed(1)} &times; ${b.toFixed(1)}`, a:`${(a*b).toFixed(2).replace(/0+$/,'').replace(/\.$/,'')}`}; } }
+                ],
+                [
+                    { tag: "l_mul_near100", gen: () => { let a=Engine.randChoice([98,99,101,102]), b=Engine.randInt(23,89); return {tag:"l_mul_near100", q:`${a} &times; ${b}`, a:`${a*b}`, step:`把${a}看成${a < 100 ? '100-' + (100-a) : '100+' + (a-100)}，先算100倍再补偿。`}; } },
+                    { tag: "l_mul_25", gen: () => { let a=Engine.randInt(12,96)*4; return {tag:"l_mul_25", q:`25 &times; ${a}`, a:`${25*a}`, step:`25&times;4=100，先把${a}拆成4&times;${a/4}。`}; } }
+                ],
+                [
+                    { tag: "l_mul_big0", gen: () => { let a=Engine.randInt(10,99)*1000+Engine.randInt(101,999), b=Engine.randInt(2,9); return {tag:"l_mul_big0", q:`${a} &times; ${b}`, a:`${a*b}`}; } },
+                    { tag: "l_mul_end0", gen: () => { let a=Engine.randInt(11,99)*100, b=Engine.randInt(11,99); return {tag:"l_mul_end0", q:`${a} &times; ${b}`, a:`${a*b}`}; } }
+                ]
+            ]),
             div: () => {
-                const integerDivision = Engine.weightedSelect([
-                    { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
-                    { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
-                    { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
-                    { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
-                    { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
-                ], "Lorik", 1);
-                const decimalDividend = Engine.weightedSelect([
-                    { tag: "l_div_decimal_dividend", gen: () => {
-                        let divisor = Engine.randInt(12,48);
-                        let quotient = Engine.randInt(12,96) / 10;
-                        let dividend = divisor * quotient;
-                        return {
-                            tag:"l_div_decimal_dividend",
-                            q:`${dividend.toFixed(1)} &divide; ${divisor}`,
-                            a:formatDecimal(quotient),
-                            step:`先估商在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间，再按整数除法列式，商的小数点与被除数对齐。`
-                        };
-                    } },
-                    { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } }
-                ], "Lorik", 1);
-                const decimalDivisor = Engine.weightedSelect([
-                    { tag: "l_div_decimal_divisor", gen: () => {
-                        let divisor = Engine.randChoice([0.2, 0.4, 0.5, 0.8, 1.2, 2.5]);
-                        let quotient = Engine.randChoice([12, 15, 18, 24, 32, 36, 45]);
-                        let dividend = divisor * quotient;
-                        return {
-                            tag:"l_div_decimal_divisor",
-                            q:`${formatDecimal(dividend)} &divide; ${divisor.toFixed(1)}`,
-                            a:formatDecimal(quotient),
-                            step:`把被除数和除数同时扩大10倍，先化成整数除法 ${formatDecimal(dividend * 10)} &divide; ${formatDecimal(divisor * 10)}。`
-                        };
-                    } }
-                ], "Lorik", 1);
-                const doubleDecimal = Engine.weightedSelect([
-                    { tag: "l_div_decimal_both", gen: () => {
-                        let divisor = Engine.randChoice([1.2, 1.5, 2.4, 2.5, 3.2]);
-                        let quotient = Engine.randChoice([1.5, 2.4, 3.5, 4.8, 6.4, 7.5]);
-                        let dividend = divisor * quotient;
-                        return {
-                            tag:"l_div_decimal_both",
-                            q:`${dividend.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')} &divide; ${divisor.toFixed(1)}`,
-                            a:formatDecimal(quotient),
-                            step:`被除数和除数都带小数点时，同乘10先变成 ${formatDecimal(dividend * 10)} &divide; ${formatDecimal(divisor * 10)}，再做整数除法。`
-                        };
-                    } },
-                    { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } }
-                ], "Lorik", 1);
-                return Engine.shuffle([...integerDivision, ...decimalDividend, ...decimalDivisor, ...doubleDecimal]);
+                return buildCoveredSection("Lorik", [
+                    [
+                        { tag: "l_div_mid0", gen: () => { let a=Engine.randInt(2,9), q=Engine.randInt(1,9)*100+Engine.randInt(1,9); return {tag:"l_div_mid0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                        { tag: "l_div_2d", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(101,299); return {tag:"l_div_2d", q:`${a*q} &divide; ${a}`, a:`${q}`}; } },
+                        { tag: "l_div_scale10", gen: () => { let d=Engine.randChoice([20,30,40,50,60,80]), q=Engine.randInt(12,98)*10; return {tag:"l_div_scale10", q:`${d*q} &divide; ${d}`, a:`${q}`, step:`被除数和除数都有0，先同步缩小再除。`}; } },
+                        { tag: "l_div_25", gen: () => { let q=Engine.randInt(12,96)*4; return {tag:"l_div_25", q:`${q*25} &divide; 25`, a:`${q}`, step:`除以25等于先除以100再乘4，或直接用25&times;4=100反推。`}; } },
+                        { tag: "l_div_end0", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)*10; return {tag:"l_div_end0", q:`${a*q} &divide; ${a}`, a:`${q}`}; } }
+                    ],
+                    [
+                        { tag: "l_div_decimal_dividend", gen: () => {
+                            let divisor = Engine.randInt(12,48);
+                            let quotient = Engine.randInt(12,96) / 10;
+                            let dividend = divisor * quotient;
+                            return {
+                                tag:"l_div_decimal_dividend",
+                                q:`${dividend.toFixed(1)} &divide; ${divisor}`,
+                                a:formatDecimal(quotient),
+                                step:`先估商在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间，再按整数除法列式，商的小数点与被除数对齐。`
+                            };
+                        } },
+                        { tag: "l_div_dec1", gen: () => { let a=Engine.randInt(11,49), q=Engine.randInt(11,49)/10; return {tag:"l_div_dec1", q:`${(a*q).toFixed(1)} &divide; ${a}`, a:`${q}`}; } }
+                    ],
+                    [
+                        { tag: "l_div_decimal_divisor", gen: () => {
+                            let divisor = Engine.randChoice([0.2, 0.4, 0.5, 0.8, 1.2, 2.5, 0.25, 0.75]);
+                            let quotient = Engine.randChoice([12, 15, 18, 24, 32, 36, 45, 6, 8]);
+                            let dividend = divisor * quotient;
+                            const scale = Number.isInteger(divisor * 10) ? 10 : 100;
+                            return {
+                                tag:"l_div_decimal_divisor",
+                                q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
+                                a:formatDecimal(quotient),
+                                step:`把被除数和除数同时扩大${scale}倍，先化成整数除法 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}。`
+                            };
+                        } }
+                    ],
+                    [
+                        { tag: "l_div_decimal_both", gen: () => {
+                            let divisor = Engine.randChoice([0.8, 1.2, 1.5, 2.4, 2.5, 3.2, 0.25]);
+                            let quotient = Engine.randChoice([1.5, 2.4, 3.5, 4.8, 6.4, 7.5, 0.8, 1.25]);
+                            let dividend = divisor * quotient;
+                            const scale = Number.isInteger(divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
+                            return {
+                                tag:"l_div_decimal_both",
+                                q:`${formatDecimal(dividend)} &divide; ${formatDecimal(divisor)}`,
+                                a:formatDecimal(quotient),
+                                step:`被除数和除数都带小数点时，同乘${scale}先变成 ${formatDecimal(dividend * scale)} &divide; ${formatDecimal(divisor * scale)}，再做整数除法。`
+                            };
+                        } },
+                        { tag: "l_div_dec2", gen: () => { let a=Engine.randInt(11,29)/10, q=Engine.randInt(31,99)/10; return {tag:"l_div_dec2", q:`${(a*q).toFixed(2)} &divide; ${a}`, a:`${q}`}; } }
+                    ]
+                ]);
             },
-            sub: () => Engine.weightedSelect([
-                { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
-                { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
-                { tag: "l_sub_100k", gen: () => { let b=Engine.randInt(21001,88999); return {tag:"l_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`, step:`从十万位借位，中间0连续变9。`}; } },
-                { tag: "l_sub_jump0", gen: () => { let a=Engine.randInt(60,90)*1000+Engine.randInt(1,5)*100+Engine.randInt(1,6), b=Engine.randInt(18,29)*1000+Engine.randInt(100,999); return {tag:"l_sub_jump0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
-                { tag: "l_sub_norm", gen: () => { let a=Engine.randInt(50,90)*1000+Engine.randInt(100,400), b=Engine.randInt(11,49)*1000+Engine.randInt(500,999); return {tag:"l_sub_norm", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
-            ], "Lorik", 4),
+            sub: () => buildCoveredSection("Lorik", [
+                [
+                    { tag: "l_sub_cross", gen: () => { let a=Engine.randInt(40,90)*1000+Engine.randInt(100,800), b=Engine.randInt(6,9)*1000+Engine.randInt(100,999); return {tag:"l_sub_cross", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ],
+                [
+                    { tag: "l_sub_all0", gen: () => { let a=Engine.randInt(5,9)*10000, b=Engine.randInt(11111,44444); return {tag:"l_sub_all0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } },
+                    { tag: "l_sub_100k", gen: () => { let b=Engine.randInt(21001,88999); return {tag:"l_sub_100k", q:`100000 &minus; ${b}`, a:`${100000-b}`, step:`从十万位借位，中间0连续变9。`}; } }
+                ],
+                [
+                    { tag: "l_sub_jump0", gen: () => { let a=Engine.randInt(60,90)*1000+Engine.randInt(1,5)*100+Engine.randInt(1,6), b=Engine.randInt(18,29)*1000+Engine.randInt(100,999); return {tag:"l_sub_jump0", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ],
+                [
+                    { tag: "l_sub_norm", gen: () => { let a=Engine.randInt(50,90)*1000+Engine.randInt(100,400), b=Engine.randInt(11,49)*1000+Engine.randInt(500,999); return {tag:"l_sub_norm", q:`${a} &minus; ${b}`, a:`${a-b}`}; } }
+                ]
+            ]),
             fracMix: () => {
                 let pool = [
                     { tag: "l_fmix_add", gen: () => {
@@ -1920,7 +1955,7 @@
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
-                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
+                [`${SET_CACHE_PREFIX}_${window.currentSetNumber - i}`, `MathSetData_v30_${window.currentSetNumber - i}`, `MathSetData_v25_${window.currentSetNumber - i}`, `MathSetData_v24_${window.currentSetNumber - i}`, `MathSetData_v22_${window.currentSetNumber - i}`].forEach(key => {
                     let raw = localStorage.getItem(key);
                     if (!raw) return;
                     try {

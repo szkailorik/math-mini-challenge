@@ -15,7 +15,7 @@ if (!html.includes('body.print-answers-only .ans-sheet + .ans-sheet')) {
 if (html.includes('body.print-questions-only .question-sheet.print-last-question')) {
   throw new Error('Legacy last-question print override should not remain in print CSS');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v30';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v31';
 
 const store = new Map();
 const localStorage = {
@@ -207,9 +207,13 @@ function assertSetData(setNumber) {
   const fallbackName = context.window.FallbackAdvice?.name;
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
   const kaiDivTags = new Set((data.k_d || []).map(item => item?.tag));
+  const kaiSubTags = new Set((data.k_s || []).map(item => item?.tag));
   const kaiConvTags = new Set((data.k_c || []).map(item => item?.tag));
   const kaiFracEqTags = new Set((data.k_f || []).map(item => item?.tag));
+  const kaiOlyTags = new Set((data.k_o || []).map(item => item?.tag));
+  const lorikMulTags = new Set((data.l_m || []).map(item => item?.tag));
   const lorikDivTags = new Set((data.l_d || []).map(item => item?.tag));
+  const lorikSubTags = new Set((data.l_s || []).map(item => item?.tag));
   const lorikFracTags = new Set((data.l_f || []).map(item => item?.tag));
   const lorikMixedTags = new Set((data.l_o || []).map(item => item?.tag));
 
@@ -237,6 +241,18 @@ function assertSetData(setNumber) {
   }
   if (![...kaiDivTags].some(tag => tag === 'k_ddiv_pure')) {
     throw new Error(`Set ${setNumber} is missing KAI same-scale decimal division coverage`);
+  }
+  if (![...kaiSubTags].some(tag => tag === 'k_sub_cross')) {
+    throw new Error(`Set ${setNumber} is missing KAI cross-borrow subtraction coverage`);
+  }
+  if (![...kaiSubTags].some(tag => tag === 'k_sub_inner0')) {
+    throw new Error(`Set ${setNumber} is missing KAI inner-zero subtraction coverage`);
+  }
+  if (![...kaiSubTags].some(tag => ['k_sub_100k', 'k_sub_near_million'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI benchmark whole subtraction coverage`);
+  }
+  if (![...kaiSubTags].some(tag => tag === 'k_sub_6digit')) {
+    throw new Error(`Set ${setNumber} is missing KAI six-digit subtraction coverage`);
   }
   if (![...kaiConvTags].some(tag => ['k_conv_1', 'k_conv_2'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing KAI percent conversion coverage`);
@@ -298,6 +314,31 @@ function assertSetData(setNumber) {
   if (![...kaiFracEqTags].some(tag => tag === 'k_fcalc_fd4')) {
     throw new Error(`Set ${setNumber} is missing KAI decimal-times-fraction-plus-half coverage`);
   }
+  if (![...kaiOlyTags].some(tag => ['k_oly_dist', 'k_oly_balance', 'k_oly_reverse'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI distributive-balance olympiad coverage`);
+  }
+  if (![...kaiOlyTags].some(tag => tag === 'k_oly_frac1')) {
+    throw new Error(`Set ${setNumber} is missing KAI telescoping-fraction olympiad coverage`);
+  }
+  if (![...kaiOlyTags].some(tag => tag === 'k_oly_125')) {
+    throw new Error(`Set ${setNumber} is missing KAI 12.5 strategy olympiad coverage`);
+  }
+  if (![...kaiOlyTags].some(tag => ['k_oly_unit_fraction', 'k_oly_frac2'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing KAI fraction-application olympiad coverage`);
+  }
+
+  if (![...lorikMulTags].some(tag => ['l_mul_3x3', 'l_mul_3x20'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik core vertical multiplication coverage`);
+  }
+  if (![...lorikMulTags].some(tag => tag === 'l_mul_dec')) {
+    throw new Error(`Set ${setNumber} is missing Lorik decimal multiplication coverage`);
+  }
+  if (![...lorikMulTags].some(tag => ['l_mul_near100', 'l_mul_25'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik multiplication strategy coverage`);
+  }
+  if (![...lorikMulTags].some(tag => ['l_mul_big0', 'l_mul_end0'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik trailing-zero multiplication coverage`);
+  }
 
   if (![...lorikDivTags].some(tag => ['l_div_decimal_dividend', 'l_div_dec1'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik decimal-dividend division practice`);
@@ -307,6 +348,18 @@ function assertSetData(setNumber) {
   }
   if (![...lorikDivTags].some(tag => ['l_div_decimal_both', 'l_div_dec2'].includes(tag))) {
     throw new Error(`Set ${setNumber} is missing Lorik double-decimal division practice`);
+  }
+  if (![...lorikSubTags].some(tag => tag === 'l_sub_cross')) {
+    throw new Error(`Set ${setNumber} is missing Lorik cross-borrow subtraction coverage`);
+  }
+  if (![...lorikSubTags].some(tag => ['l_sub_all0', 'l_sub_100k'].includes(tag))) {
+    throw new Error(`Set ${setNumber} is missing Lorik zero-chain subtraction coverage`);
+  }
+  if (![...lorikSubTags].some(tag => tag === 'l_sub_jump0')) {
+    throw new Error(`Set ${setNumber} is missing Lorik jump-zero subtraction coverage`);
+  }
+  if (![...lorikSubTags].some(tag => tag === 'l_sub_norm')) {
+    throw new Error(`Set ${setNumber} is missing Lorik standard regrouping subtraction coverage`);
   }
   if (![...lorikFracTags].some(tag => tag === 'l_fmix_add')) {
     throw new Error(`Set ${setNumber} is missing Lorik same-denominator fraction addition`);

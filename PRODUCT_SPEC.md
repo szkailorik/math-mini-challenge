@@ -118,6 +118,13 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.11 upgrades overall training quality and refreshes stale cached papers:
+
+- The set-cache namespace now advances with generator changes, so future papers regenerate under the latest logic instead of silently reusing stale older sets.
+- Lorik Set B division keeps a fixed four-part spine every day: one integer division item, one decimal dividend item, one decimal divisor item, and one double-decimal item.
+- Additional core blocks now use must-cover structure instead of random subsets, including Lorik multiplication, Lorik subtraction, KAI large subtraction, and KAI olympiad reasoning.
+- The practical result is more diagnostically trustworthy daily practice: tutors can expect key misconception families to appear consistently instead of hoping random selection happens to hit them.
+
 v23.10 fixes a high-friction print failure:
 
 - The four-page AB print flow no longer relies on full-height preview shells during print, which could create blank even-numbered pages on some browsers or printer presets.
