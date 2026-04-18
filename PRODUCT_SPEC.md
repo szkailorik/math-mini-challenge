@@ -154,6 +154,18 @@ v23.27 replaces automatic stage judgment with a teacher workbench and exam-paper
   - the learner needs a page that feels like a real assessment handout rather than a dashboard
 - The new paper direction is not decorative. It is meant to improve training efficiency by reducing visual noise and making symbols, section breaks, blanks, units, and comparison structure easier to parse under print conditions.
 
+v23.28 deepens the assessment-booklet feel of the student paper:
+
+- The paper now makes the hierarchy of each large question clearer through stronger section markers instead of relying only on inline Chinese numbering text.
+- Each printed page now also carries a compact meta band so the tutor can immediately tell:
+  - which program this page belongs to
+  - which paper it is within the AB flow
+  - what the current page is mainly training
+- This is still intentionally not a "dashboard on paper". The product goal is to make the sheet read like a real practice booklet while preserving print safety and adaptive logic under the hood.
+- Product-wise, this improves efficiency in two ways:
+  - adults orient faster when handling multiple printed pages
+  - learners see a calmer, more legible hierarchy and can start the page with less friction
+
 v23.24 deepens the second-stage training quality:
 
 - `Closure` now follows a month-like three-phase arc instead of repeating one blended paper shape forever.

@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.27 Iteration Notes
+## Current v23.28 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the `v23.27` teacher workbench intact and continued only on the student paper surface, adding clearer section markers so each large question reads more like a formal booklet section.
+- Open questions: none.
+- Risks: stronger section identity must not become decorative clutter; it should help orientation without stealing attention from the math itself.
+- Next steps: keep future booklet polish subordinate to readability and print density.
+
+### Iteration 2
+
+- What I changed: added a compact page meta band to each question sheet, making the printed stack easier for adults to sort by program, paper position, and current training emphasis.
+- Open questions: none.
+- Risks: any extra line added near the top of the sheet reduces vertical budget, so print preview remains part of release confirmation.
+- Next steps: if further metadata is ever added, prefer tightening copy rather than adding more rows.
+
+### Iteration 3
+
+- What I changed: tuned grid spacing and line rhythm again so the assessment-booklet look feels more deliberate without changing the underlying training structure or print sandbox behavior.
+- Open questions: none.
+- Risks: even subtle rhythm changes can reveal hidden density problems on edge-case pages, so runtime validation still needs to be paired with human print review.
+- Next steps: continue polishing the paper in ways that improve reading speed and print quality, not in ways that add ornament.
+
+## Previous v23.27 Iteration Notes
 
 ### Iteration 1
 

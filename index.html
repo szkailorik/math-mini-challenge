@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.27 (手动切阶段与考试卷工作台)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.28 (Assessment Booklet 试卷深化)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -146,25 +146,51 @@
             pointer-events: none; z-index: 100; font-family: 'KaiTi', '楷体', serif; letter-spacing: 2px; box-shadow: 0 0 15px rgba(76, 175, 80, 0.1) inset;
         }
 
-        .section { margin-bottom: 14px; }
+        .section { margin-bottom: 15px; }
         .section-title {
             font-size: 16px;
             font-weight: 700;
-            margin: 0 0 11px 0;
-            padding: 0 0 6px 0;
+            margin: 0 0 12px 0;
+            padding: 0 0 7px 0;
             border-bottom: 1px solid rgba(18, 59, 115, 0.22);
             color: #123b73;
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
+            align-items: flex-start;
+            gap: 12px;
             font-family: 'Georgia', 'Songti SC', serif;
             letter-spacing: 0.02em;
+        }
+        .section-copy {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            min-width: 0;
+            flex: 1;
+        }
+        .section-index {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.25em;
+            height: 2.25em;
+            border: 1px solid rgba(18, 59, 115, 0.16);
+            border-radius: 999px;
+            background: linear-gradient(180deg, rgba(18, 59, 115, 0.08), rgba(18, 59, 115, 0.02));
+            color: #123b73;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            flex: 0 0 auto;
+            margin-top: 1px;
         }
         .title-text { display: flex; flex-direction: column; line-height: 1.26; }
         .title-en { font-size: 11px; color: #64748b; font-weight: 700; font-family: 'Arial Narrow', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
         .points { font-size: 12px; font-weight: 700; color: #9a3412; letter-spacing: 0.12em; font-family: 'Arial Narrow', sans-serif; white-space: nowrap; margin-left: 15px; text-transform: uppercase;}
 
-        .grid { display: grid; gap: 18px 14px; width: 100%; }
+        .grid { display: grid; gap: 20px 15px; width: 100%; }
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-2 { grid-template-columns: repeat(2, 1fr); }
@@ -173,7 +199,7 @@
         .badge-weak { background-color: #ef4444; }
         .badge-forget { background-color: #3b82f6; }
 
-        .item { display: flex; align-items: flex-start; font-size: 20px; position: relative; padding-right: 4px; line-height: 1.42; }
+        .item { display: flex; align-items: flex-start; font-size: 20px; position: relative; padding: 1px 4px 2px 0; line-height: 1.44; }
         .q-num {
             width: 1.65em;
             flex: 0 0 1.65em;
@@ -261,6 +287,37 @@
         .h-vert   { height: 140px; } .h-sub    { height: 75px; } .h-frac   { height: 115px; } .h-mixed  { height: 135px; }
         .h-conv { display: flex; align-items: center; min-height: 44px; height: 44px; width: 100%; font-size: 19px; }
         .h-conv .math-row { align-items: center; }
+        .sheet-meta-band {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin: 0 0 12px 0;
+        }
+        .sheet-meta-cell {
+            border: 1px solid rgba(18, 59, 115, 0.12);
+            background: linear-gradient(180deg, rgba(248, 250, 252, 0.88), rgba(255, 255, 255, 0.95));
+            padding: 6px 8px 7px;
+            border-radius: 8px;
+            min-width: 0;
+        }
+        .sheet-meta-label {
+            display: block;
+            margin-bottom: 2px;
+            font-size: 9px;
+            color: #64748b;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+        .sheet-meta-value {
+            display: block;
+            color: #0f172a;
+            font-size: 12px;
+            line-height: 1.3;
+            font-family: 'Georgia', 'Songti SC', serif;
+            font-weight: 700;
+        }
         .blank { flex-grow: 1; border-bottom: 1.8px solid var(--math-line); margin-left: 8px; margin-right: 8px; height: 17px; min-width: 48px; }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
@@ -534,7 +591,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.27</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.28</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -586,7 +643,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.27 手动切阶段与考试卷工作台：<br><strong>一二阶段现在由老师手动直接切换<br>控制区更像老师工作台，题目页更接近新加坡数学考试卷风格</strong>
+                💡 23.28 Assessment Booklet 试卷深化：<br><strong>题卷加入更清楚的 section 标识与 page meta band<br>学生页和打印页更接近正式 assessment booklet</strong>
             </div>
         </div>
 
@@ -613,9 +670,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.27';
-        const APP_RELEASE_LABEL = '手动切阶段与考试卷工作台';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.27 手动切阶段与考试卷工作台：<br><strong>一二阶段现在由老师手动直接切换<br>控制区更像老师工作台，题目页更接近新加坡数学考试卷风格</strong>';
+        const APP_VERSION = 'v23.28';
+        const APP_RELEASE_LABEL = 'Assessment Booklet 试卷深化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.28 Assessment Booklet 试卷深化：<br><strong>题卷加入更清楚的 section 标识与 page meta band<br>学生页和打印页更接近正式 assessment booklet</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3978,12 +4035,18 @@
 
         // 双语标题处理
         const buildQSection = (cnTitle, enTitle, pointsStr, items, heightClass, cols) => {
+            const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
+            const sectionIndex = match ? match[1] : '';
+            const sectionTitle = match ? match[2] : cnTitle;
             return `
             <div class="section">
                 <div class="section-title">
-                    <div class="title-text">
-                        <span>${cnTitle}</span>
-                        <span class="title-en">${enTitle}</span>
+                    <div class="section-copy">
+                        ${sectionIndex ? `<span class="section-index">${sectionIndex}</span>` : ''}
+                        <div class="title-text">
+                            <span>${sectionTitle}</span>
+                            <span class="title-en">${enTitle}</span>
+                        </div>
                     </div>
                     <span class="points">${pointsStr}</span>
                 </div>
@@ -4005,7 +4068,16 @@
             setSeed(window.currentSetNumber * 12345);
             const programId = getCurrentProgramId();
             let data = generateOrLoadSetData();
-            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '') => `
+            const buildSheetMetaBand = (meta = []) => `
+                <div class="sheet-meta-band">
+                    ${meta.map(item => `
+                        <div class="sheet-meta-cell">
+                            <span class="sheet-meta-label">${item.label}</span>
+                            <span class="sheet-meta-value">${item.value}</span>
+                        </div>
+                    `).join('')}
+                </div>`;
+            const getSheetHTML = (title, name, content, tScore, stamp, extraClass = '', meta = []) => `
                 <div class="sheet question-sheet ${extraClass}">
                     ${stamp}
                     <div class="header">
@@ -4017,6 +4089,7 @@
                         <h1>${title}</h1>
                         <div class="info-row"><span>挑战者 Challenger: ${name}</span><span>日期 Date: __________</span><span>用时 Time: __________</span></div>
                     </div>
+                    ${buildSheetMetaBand(meta)}
                     ${content}
                 </div>`;
 
@@ -4119,10 +4192,26 @@
 
                 document.getElementById('paper-container').innerHTML =
                     closureIntroCard +
-                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, closureScore, '') +
-                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '') +
-                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '') +
-                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, closureScore, '', 'print-last-question') +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, closureScore, '', '', [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'A1 / KAI' },
+                        { label: 'Focus', value: phaseMeta.bridgeTitle }
+                    ]) +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '', '', [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'A2 / KAI' },
+                        { label: 'Focus', value: kFocusMeta.title }
+                    ]) +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '', '', [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'B1 / Lorik' },
+                        { label: 'Focus', value: phaseMeta.bridgeTitle }
+                    ]) +
+                    getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, closureScore, '', 'print-last-question', [
+                        { label: 'Programme', value: phaseMeta.label },
+                        { label: 'Paper', value: 'B2 / Lorik' },
+                        { label: 'Focus', value: lFocusMeta.title }
+                    ]) +
                     getClosureAnsSheetHTML('KAI', k_ans, !!closureKaiSession) +
                     getClosureAnsSheetHTML('Lorik', l_ans, !!closureLorikSession);
                 return;
@@ -4176,10 +4265,26 @@
                         `<div class="ans-section"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
 
             document.getElementById('paper-container').innerHTML =
-                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI) +
-                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, totalScore, stampKAI) +
-                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, totalScore, stampLorik) +
-                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik, 'print-last-question') +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI, '', [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'A1 / KAI' },
+                    { label: 'Focus', value: 'Core Algorithms' }
+                ]) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, totalScore, stampKAI, '', [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'A2 / KAI' },
+                    { label: 'Focus', value: 'Conversions & Strategy' }
+                ]) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, totalScore, stampLorik, '', [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'B1 / Lorik' },
+                    { label: 'Focus', value: 'Vertical Algorithms' }
+                ]) +
+                getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, totalScore, stampLorik, 'print-last-question', [
+                    { label: 'Programme', value: 'Advanced' },
+                    { label: 'Paper', value: 'B2 / Lorik' },
+                    { label: 'Focus', value: 'Fractions & Shortcuts' }
+                ]) +
                 getAnsSheetHTML('KAI', k_ans, !!kaiSession) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession);
         }
 
