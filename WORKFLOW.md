@@ -29,7 +29,30 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.14 Iteration Notes
+## Current v23.15 Iteration Notes
+
+### Iteration 1
+
+- What I changed: upgraded error-book review from exact replay only to a two-lane model: exact replay plus targeted same-tag review variants.
+- Open questions: none.
+- Risks: variant coverage is still selective by tag family, so future rounds should expand it intentionally rather than universally.
+- Next steps: keep extending the variant lane to other high-value misconception families after observing which ones benefit most.
+
+### Iteration 2
+
+- What I changed: added targeted review variants for Lorik benchmark-comparison items and decimal-division items, where near-boundary variation is especially valuable.
+- Open questions: none.
+- Risks: stronger near-boundary review items increase discrimination demand, so answer-sheet hints must continue staying explicit.
+- Next steps: expand the same pattern to selected KAI decimal-division and equation traps if needed.
+
+### Iteration 3
+
+- What I changed: kept review variants under the same lightweight `复习题` marker so the paper stays exam-like while review logic becomes smarter.
+- Open questions: none.
+- Risks: review variants still depend on the same-tag trigger path, so they appear only when the error-book signal is strong enough.
+- Next steps: consider a future three-lane model with exact replay, near-boundary variant, and reverse-form transfer.
+
+## Previous v23.14 Iteration Notes
 
 ### Iteration 1
 

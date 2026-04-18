@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.14 (互化辨析强化版)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.15 (错题回炉升级版)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -238,7 +238,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.14</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.15</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -261,7 +261,7 @@
             <button class="ctrl-btn" style="background:#7c3aed; color:white; width:100%; margin-top:6px;" onclick="window.showKnowledgeMap()">🧭 知识点地图 / Knowledge Map</button>
             <button class="ctrl-btn" style="background:#f59e0b; color:white; width:100%; margin-top:6px;" onclick="window.renderErrorBook()">📓 专属错题本 / Error Book</button>
             <div id="release-note-label" style="font-size:11px; color:#ccc; text-align:center; margin-top:6px; line-height: 1.4;">
-                💡 23.14 互化辨析强化版：<br><strong>比较题更贴近易错边界<br>互化题答案页复盘更完整</strong>
+                💡 23.15 错题回炉升级版：<br><strong>原题回炉 + 同类变式回炉<br>重点题更像真正巩固训练</strong>
             </div>
         </div>
 
@@ -287,9 +287,9 @@
     <div id="paper-container"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.14';
-        const APP_RELEASE_LABEL = '互化辨析强化版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.14 互化辨析强化版：<br><strong>比较题更贴近易错边界<br>互化题答案页复盘更完整</strong>';
+        const APP_VERSION = 'v23.15';
+        const APP_RELEASE_LABEL = '错题回炉升级版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.15 错题回炉升级版：<br><strong>原题回炉 + 同类变式回炉<br>重点题更像真正巩固训练</strong>';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
 
         // v23.7 云同步：改用 GitHub Gist（只需一个 PAT，无 Firebase 依赖）
@@ -408,7 +408,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v33';
+        const SET_CACHE_PREFIX = 'MathSetData_v34';
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -1282,6 +1282,13 @@
                         const entry = pickErrorReplayEntry(x.errorSignal.exactEntries);
                         if (entry && !usedThisPaper.has(entry.info.q)) genItem = buildErrorReplayItem(entry);
                     }
+                    if (!genItem && x.selectReason === 'variant' && x.errorSignal?.exactEntries?.length) {
+                        const entry = pickErrorReplayEntry(x.errorSignal.exactEntries);
+                        if (entry) {
+                            genItem = buildErrorVariantItem(entry, () => x.item.gen());
+                            if (genItem?.q && recent.has(genItem.q)) genItem = null;
+                        }
+                    }
                     if (!genItem) {
                         for (let t = 0; t < 15; t++) {
                             let candidate = x.item.gen();
@@ -1293,7 +1300,7 @@
                             genItem = candidate;
                         }
                     }
-                    genItem.reason = genItem.isErrorReplay ? 'replay' : x.selectReason;
+                    genItem.reason = genItem.isErrorReplay ? 'replay' : (genItem.isErrorVariant ? 'variant' : x.selectReason);
                     genItem.level = x.level;
                     genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
                     usedThisPaper.add(genItem.q);
@@ -1441,7 +1448,101 @@
                 replayUid: entry.uid,
                 replayCount: Math.max(1, entry.count || 1),
                 sourceSet: entry.lastSet || entry.firstSet || '',
-                isErrorReplay: true
+                isErrorReplay: true,
+                isReviewItem: true
+            };
+        }
+        function buildErrorVariantItem(entry, fallbackFactory = null) {
+            if (!entry?.tag) return fallbackFactory ? fallbackFactory() : null;
+            const tip = getKnowledgeTip(entry.tag);
+            const reviewPrefix = '[同类变式 Review Variant] ';
+            const decimalCompare = (leftHtml, rightText, rightValue, benchmark, leftIsFraction = true) => ({
+                q: leftIsFraction
+                    ? `${leftHtml}<span class="circle-blank"></span>${rightText}`
+                    : `${rightText}<span class="circle-blank"></span>${leftHtml}`,
+                a: benchmark > rightValue ? '&gt;' : '&lt;',
+                step: `${reviewPrefix}先把基准数化成小数 ${formatDecimal(benchmark)}，再和 ${rightText} 逐位比较。${tip.advice}`,
+            });
+            let built = null;
+            switch (entry.tag) {
+                case 'l_conv_5': {
+                    const right = Engine.randChoice([0.79, 0.81, 0.78, 0.82]);
+                    built = decimalCompare('<div class="frac"><span>4</span><span class="bottom">5</span></div>', right.toFixed(2), right, 0.8, true);
+                    break;
+                }
+                case 'l_conv_6': {
+                    const left = Engine.randChoice([0.49, 0.48, 0.51, 0.52]);
+                    built = decimalCompare('<div class="frac"><span>1</span><span class="bottom">2</span></div>', left.toFixed(2), left, 0.5, false);
+                    break;
+                }
+                case 'l_conv_7': {
+                    const right = Engine.randChoice([0.62, 0.63, 0.61, 0.64]);
+                    built = decimalCompare('<div class="frac"><span>5</span><span class="bottom">8</span></div>', right.toFixed(2), right, 0.625, true);
+                    break;
+                }
+                case 'l_conv_8': {
+                    const left = Engine.randChoice([0.74, 0.73, 0.76, 0.77]);
+                    built = decimalCompare('<div class="frac"><span>3</span><span class="bottom">4</span></div>', left.toFixed(2), left, 0.75, false);
+                    break;
+                }
+                case 'l_div_decimal_dividend':
+                case 'l_div_dec1': {
+                    const divisor = Engine.randInt(12, 48);
+                    const quotient = Engine.randChoice([0.6, 0.8, 1.2, 1.5, 2.4, 3.2]);
+                    const dividend = divisor * quotient;
+                    built = {
+                        q: `${formatDecimal(dividend, 2)} &divide; ${divisor}`,
+                        a: formatDecimal(quotient),
+                        step: `${reviewPrefix}先估商${quotient < 1 ? '小于1，要先写0再点小数点；' : `约在 ${Math.floor(quotient)} 到 ${Math.ceil(quotient)} 之间；`}再列竖式。${tip.advice}`,
+                    };
+                    break;
+                }
+                case 'l_div_decimal_divisor': {
+                    const variant = Engine.randChoice([
+                        { divisor: 0.25, quotient: 3.2 },
+                        { divisor: 0.75, quotient: 0.8 },
+                        { divisor: 1.2, quotient: 1.5 },
+                        { divisor: 2.5, quotient: 0.6 }
+                    ]);
+                    const dividend = variant.divisor * variant.quotient;
+                    const scale = Number.isInteger(variant.divisor * 10) ? 10 : 100;
+                    built = {
+                        q: `${formatDecimal(dividend)} &divide; ${formatDecimal(variant.divisor)}`,
+                        a: formatDecimal(variant.quotient),
+                        step: `${reviewPrefix}把被除数和除数同时扩大${scale}倍，先化成整数除法，再检查商的小数点。${tip.advice}`,
+                    };
+                    break;
+                }
+                case 'l_div_decimal_both':
+                case 'l_div_dec2': {
+                    const variant = Engine.randChoice([
+                        { divisor: 0.25, quotient: 1.2 },
+                        { divisor: 0.75, quotient: 0.4 },
+                        { divisor: 1.5, quotient: 0.8 },
+                        { divisor: 2.4, quotient: 1.25 }
+                    ]);
+                    const dividend = variant.divisor * variant.quotient;
+                    const scale = Number.isInteger(variant.divisor * 10) && Number.isInteger(dividend * 10) ? 10 : 100;
+                    built = {
+                        q: `${formatDecimal(dividend)} &divide; ${formatDecimal(variant.divisor)}`,
+                        a: formatDecimal(variant.quotient),
+                        step: `${reviewPrefix}两数同乘${scale}化成整数除法，再根据商的大小决定是否先写0。${tip.advice}`,
+                    };
+                    break;
+                }
+                default:
+                    built = fallbackFactory ? fallbackFactory() : null;
+                    break;
+            }
+            if (!built) return null;
+            return {
+                tag: entry.tag,
+                ...built,
+                replayUid: entry.uid,
+                replayCount: Math.max(1, entry.count || 1),
+                sourceSet: entry.lastSet || entry.firstSet || '',
+                isErrorVariant: true,
+                isReviewItem: true
             };
         }
         function getDomainSignal(profile, tag) {
@@ -2131,7 +2232,7 @@
                 <div class="grid grid-${cols}">
                     ${items.map((q,i) => {
                         let suffix = (heightClass !== 'h-conv' && !q.q.includes('=')) ? ' =' : '';
-                        let reviewFlag = q.isErrorReplay ? `<span class="review-flag">复习题</span>` : '';
+                        let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
                         return `<div class="item ${heightClass}">${reviewFlag}<div class="math-row"><span class="q-num" style="color:#222; font-weight:bold;">${i+1}.</span> ${q.q}${suffix}</div></div>`;
                     }).join('')}
                 </div>

@@ -118,6 +118,11 @@ v23.7 strengthens training quality through must-cover item diversity:
 - Lorik basic mixed-operation sets now guarantee structure diversity across compensation, order of operations, distributive reasoning, and combination splitting.
 - Runtime validation now treats these coverage guarantees as release-blocking checks.
 
+v23.15 upgrades review practice quality:
+
+- Error-book practice is no longer limited to replaying the exact same item; selected high-value tags can now return as nearby same-skill variants.
+- This makes remediation closer to real mastery checking: the learner must solve the same idea again in a slightly changed form, not just remember a prior answer.
+
 v23.14 sharpens conversion and comparison discrimination:
 
 - Comparison items now sit closer to common benchmark values, reducing "obvious answer" cases and increasing real decimal-fraction discrimination practice.

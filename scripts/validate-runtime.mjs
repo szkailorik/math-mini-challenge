@@ -475,8 +475,18 @@ const sampleReplay = context.window.buildErrorReplayItem?.({
   lastSet: 72,
   info: { q: '2 &times; 3', a: '6', step: '2乘3等于6。' },
 });
-if (!sampleReplay?.isErrorReplay || sampleReplay.q !== '2 &times; 3' || !sampleReplay.step.includes('Replay')) {
+if (!sampleReplay?.isErrorReplay || !sampleReplay?.isReviewItem || sampleReplay.q !== '2 &times; 3' || !sampleReplay.step.includes('Replay')) {
   throw new Error('Error replay item builder is not producing replay items');
+}
+const sampleVariant = context.window.buildErrorVariantItem?.({
+  uid: 'e4',
+  tag: 'l_conv_6',
+  count: 2,
+  lastSet: 91,
+  info: { q: '0.49 ? 1/2', a: '&lt;' },
+});
+if (!sampleVariant?.isErrorVariant || !sampleVariant?.isReviewItem || !sampleVariant.q.includes('circle-blank') || !sampleVariant.step.includes('Review Variant')) {
+  throw new Error('Error variant item builder is not producing targeted review variants');
 }
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
