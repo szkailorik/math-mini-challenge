@@ -129,9 +129,9 @@
             body.print-sandbox-active #print-root .h-frac { min-height: 42px !important; }
             body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
             body.print-sandbox-active #print-root .h-conv {
-                min-height: 36px !important;
-                font-size: 14.8px !important;
-                line-height: 1.02 !important;
+                min-height: 34px !important;
+                font-size: 14.2px !important;
+                line-height: 1.01 !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-body,
             body.print-sandbox-active #print-root .h-conv .math-text,
@@ -139,15 +139,26 @@
             body.print-sandbox-active #print-root .h-conv .math-group-body {
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
-                gap: 0.05em 0.1em !important;
+                gap: 0.04em 0.08em !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
-                font-size: 14.6px !important;
-                line-height: 1.02 !important;
+                font-size: 14px !important;
+                line-height: 1.01 !important;
             }
             body.print-sandbox-active #print-root .h-conv .frac {
-                font-size: 0.78em !important;
-                margin: 0 0.03em 0 0.02em !important;
+                font-size: 0.72em !important;
+                margin: 0 0.02em 0 0.01em !important;
+            }
+            body.print-sandbox-active #print-root .h-conv .math-op,
+            body.print-sandbox-active #print-root .h-conv .math-eq,
+            body.print-sandbox-active #print-root .h-conv .math-compare {
+                min-width: 0.72em !important;
+                font-size: 0.96em !important;
+            }
+            body.print-sandbox-active #print-root .math-compact-paren-answer {
+                min-width: 1.24em !important;
+                margin: 0 0.03em !important;
+                letter-spacing: -0.03em !important;
             }
             body.print-sandbox-active #print-root .sheet-meta-band {
                 gap: 6px !important;
@@ -656,18 +667,18 @@
             margin: 0 0.03em 0 0.02em;
         }
         .h-conv {
-            min-height: 40px;
+            min-height: 38px;
             width: 100%;
-            font-size: 16.4px;
-            line-height: 1.03;
-            grid-template-columns: 1.55em minmax(0, 1fr);
-            column-gap: 5px;
+            font-size: 15.9px;
+            line-height: 1.02;
+            grid-template-columns: 1.36em minmax(0, 1fr);
+            column-gap: 4px;
         }
         .h-conv .q-body,
         .h-conv .math-row,
         .h-conv .math-text {
             align-items: baseline;
-            gap: 0.05em 0.1em;
+            gap: 0.04em 0.08em;
         }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -677,24 +688,44 @@
             white-space: nowrap;
         }
         .h-conv .q-num {
-            font-size: 16.4px;
-            line-height: 1.03;
-            min-width: 1.38em;
+            font-size: 15.8px;
+            line-height: 1.02;
+            min-width: 1.24em;
         }
         .h-conv .frac {
-            font-size: 0.75em;
+            font-size: 0.72em;
             margin: 0 0.02em 0 0.01em;
         }
+        .h-conv .math-op,
+        .h-conv .math-eq,
+        .h-conv .math-compare {
+            min-width: 0.76em;
+            font-size: 0.98em;
+        }
+        .h-conv .mixed {
+            gap: 0.08em;
+        }
         .item.h-conv.item-dense {
-            font-size: 16.9px;
-            line-height: 1.08;
+            font-size: 15.4px;
+            line-height: 1.02;
         }
         .item.h-conv.item-dense .q-num {
-            font-size: 17.1px;
-            line-height: 1.1;
+            font-size: 15.4px;
+            line-height: 1.02;
         }
         .item.h-conv.item-dense .frac {
-            font-size: 0.75em;
+            font-size: 0.7em;
+        }
+        .item.h-conv.item-ultra-dense {
+            font-size: 14.9px;
+            line-height: 1.01;
+        }
+        .item.h-conv.item-ultra-dense .q-num {
+            font-size: 14.9px;
+            line-height: 1.01;
+        }
+        .item.h-conv.item-ultra-dense .frac {
+            font-size: 0.67em;
         }
         .sheet-meta-band {
             display: grid;
@@ -782,13 +813,13 @@
             display: inline-flex;
             align-items: baseline;
             justify-content: center;
-            min-width: 1.8em;
-            margin: 0 0.08em;
+            min-width: 1.36em;
+            margin: 0 0.04em;
             font-family: 'Times New Roman', 'Songti SC', serif;
             font-size: 1em;
             line-height: 1;
             color: var(--math-ink);
-            letter-spacing: 0.02em;
+            letter-spacing: -0.02em;
             white-space: nowrap;
         }
         .math-inline-circle { transform: translateY(0.02em); }
@@ -2064,9 +2095,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.99';
+        const APP_VERSION = 'v23.100';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.99 继续压缩第二大题桥接短句：把“先统一成 / 直接判”收成更短的试卷表达。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.100 第二大题继续压短：桥接短句更像实卷短题，括号答案位再收窄。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4387,10 +4418,10 @@
             return raw
                 .replace(/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, '$1 中，最接近 $2 的是<div class="blank"></div>')
                 .replace(/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, '$1 中，最接近 0 的是<div class="blank"></div>')
-                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '算 $1 时，$2 先化成<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '比 $1 时，$2 先化成<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '比 $1 时，先统一成<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '比 $1 时，直接判<div class="blank"></div>')
+                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '$1，$2 →<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '$1，$2 →<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '$1：统一成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '$1：直接判<div class="blank"></div>')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，它们的和是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 先化成分数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，较大的是<div class="blank"><\/div>$/, '$1、$2 中较大的是<div class="blank"></div>')
@@ -4400,7 +4431,10 @@
                 .replace(/^把 (.+?)、(.+?) 和 (.+?) 先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
                 .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
                 .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
-                .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '$1 =<div class="blank"></div>');
+                .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '$1 =<div class="blank"></div>')
+                .replace(/^(.+?)，(.+?) →<div class="blank"><\/div>$/, '$1，$2→<div class="blank"></div>')
+                .replace(/^(.+?)：统一成<div class="blank"><\/div>$/, '$1：统一成<div class="blank"></div>')
+                .replace(/^(.+?)：直接判<div class="blank"><\/div>$/, '$1：直接判<div class="blank"></div>');
         }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
@@ -4428,7 +4462,8 @@
                 return '';
             }
             if (heightClass === 'h-conv' || heightClass === 'h-mixed') {
-                if (score >= 54) return 'item-dense';
+                if (score >= 60) return 'item-ultra-dense';
+                if (score >= 48) return 'item-dense';
             }
             return '';
         }
