@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.67 Iteration Notes
+
+### Iteration 1
+
+- What I changed: extended `本套报告 / Set Review` with a per-student same-skill variant follow-up block that reuses the current set’s graded mistakes, groups them by mistake family, generates a compact 4-8 item reinforcement sheet, and supports printing either the follow-up page alone or the follow-up page plus answers.
+- Open questions: whether the first-pass variant pools already feel strong enough for every common family, or whether the next pass should deepen family-specific builders for fractions, conversions, and unit/rate tags.
+- Risks: if a tag falls back too often to generic follow-up language, the new block may feel weaker than intended; family coverage should keep expanding where real set data shows repetition.
+- Next steps: review the live `本套报告` flow with real graded sets, then decide whether the next pass should focus on follow-up question quality, report layout polish, or print presentation.
+
 ## Current v23.66 Iteration Notes
 
 ### Iteration 1

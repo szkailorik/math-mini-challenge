@@ -551,3 +551,9 @@ profile = {
 - The printed quick-review page now uses a more unified handout rhythm across hero, focus cards, navigation chips, topic cards, flow steps, and support/example blocks.
 - The goal is not to add content, but to make the printed result look more like a teacher-prepared review handout and less like a captured web page.
 - This improves the practicality of using the page as a physical review sheet before or after practice.
+
+- v23.67 adds immediate same-skill follow-up inside the current-set report:
+
+- After grading a set, families can now stay inside `本套报告 / Set Review` and generate a short variant-follow-up block based on the actual mistakes from that set.
+- The product intent is not to repeat the exact same questions. It is to target the same knowledge point and error mechanism with changed numbers, changed answers, and a compact amount of immediate reinforcement.
+- The follow-up is intentionally short and printable, so it behaves like a high-value “补透内页” rather than a second full worksheet.

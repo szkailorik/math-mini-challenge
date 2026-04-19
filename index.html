@@ -1557,6 +1557,28 @@
         .archive-table { width: 100%; border-collapse: collapse; text-align: center; font-family: sans-serif; font-size: 14px; margin-bottom: 15px;}
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
+        .set-review-followup-wrap { padding: 0 15px 16px; background:#fff; }
+        .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; }
+        .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+        .set-review-followup-head h4 { margin:0; color:#0f172a; font-size:16px; }
+        .set-review-followup-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .set-review-followup-summary { margin-top:10px; padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; color:#475569; line-height:1.55; }
+        .set-review-followup-sheet { margin-top:12px; display:grid; gap:8px; }
+        .followup-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.65; }
+        .followup-num { width:24px; flex:0 0 24px; font-weight:700; color:#0f172a; }
+        .followup-q { flex:1; min-width:0; }
+        .followup-family { margin-left:8px; font-size:12px; color:#0f766e; font-weight:700; white-space:nowrap; }
+        .set-review-followup-answer { margin-top:14px; }
+        .set-review-followup-answer h5 { margin:0 0 8px; font-size:14px; color:#334155; }
+        .set-review-followup-empty { margin-top:10px; padding:12px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:13px; }
+        .set-review-followup-print-shell { width:190mm; margin:0 auto; color:#0f172a; font-family: "Times New Roman", Georgia, serif; }
+        .set-review-followup-print-shell .sheet-title { margin:10px 0 14px; font-size:22px; letter-spacing:0.02em; }
+        .followup-print-meta { margin-top:10px; padding:8px 10px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:8px; font-size:12px; color:#475569; }
+        .followup-print-sheet { display:grid; gap:10px; margin-top:12px; }
+        .followup-print-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.7; page-break-inside:avoid; }
+        body.print-set-review-followup #print-root,
+        body.print-set-review-followup-with-answers #print-root { display:block; }
+        body.print-set-review-followup #print-root .set-review-followup-answer { display:none; }
         #print-root { display: none; }
 
         @media (max-width: 1100px) {
@@ -1678,9 +1700,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.66';
-        const APP_RELEASE_LABEL = '计算知识页打印讲义优化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.66 计算知识页打印讲义优化：更像可直接发的小讲义。';
+        const APP_VERSION = 'v23.67';
+        const APP_RELEASE_LABEL = '本套报告错题变式跟训';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.67 本套报告错题变式跟训：根据本套错题直接生成可打印的同类变式训练。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6427,6 +6449,270 @@
             return (profile?.history || []).slice().reverse().find(session => session.set === setNum) || null;
         }
 
+        const SET_REVIEW_FOLLOWUP_LABELS = {
+            decimal_division: '小数除法',
+            fraction_operation: '分数运算',
+            conversion_bridge: '互化比较',
+            unit_rate_speed: '单位比率',
+            equation_method: '方程方法',
+            validation_estimation: '估算检验',
+            generic_followup: '同类跟训'
+        };
+
+        function getSetReviewFollowupFamily(tag, info = {}) {
+            const qualityFamily = getQualityFamilyForTag(tag || '');
+            if (qualityFamily) return qualityFamily;
+            const source = `${tag || ''} ${info?.q || ''} ${info?.step || ''}`;
+            if (/div|division|除/.test(source)) return 'decimal_division';
+            if (/frac|fraction|分数/.test(source)) return 'fraction_operation';
+            if (/conv|percent|compare|互化|百分/.test(source)) return 'conversion_bridge';
+            if (/unit|rate|speed|单位|速度|比率/.test(source)) return 'unit_rate_speed';
+            if (/eq|equation|方程/.test(source)) return 'equation_method';
+            if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
+            return 'generic_followup';
+        }
+
+        function buildSetReviewFollowupCandidates(session) {
+            return (session?.details || []).map((detail, index) => {
+                const info = detail.info || {};
+                return {
+                    id: `${detail.uid || detail.tag || 'mistake'}-${index}`,
+                    uid: detail.uid || computeErrorUid(detail.tag, info.q || ''),
+                    tag: detail.tag,
+                    grade: detail.grade,
+                    info,
+                    family: getSetReviewFollowupFamily(detail.tag, info),
+                    severity: detail.grade === 'wrong' ? 2 : 1
+                };
+            });
+        }
+
+        function buildSetReviewFollowupTargets(session) {
+            const grouped = new Map();
+            buildSetReviewFollowupCandidates(session).forEach(candidate => {
+                const key = `${candidate.family}:${candidate.grade}`;
+                const bucket = grouped.get(key) || {
+                    family: candidate.family,
+                    grade: candidate.grade,
+                    sourceItems: []
+                };
+                bucket.sourceItems.push(candidate);
+                grouped.set(key, bucket);
+            });
+            return Array.from(grouped.values()).sort((a, b) => {
+                const severityA = a.grade === 'wrong' ? 2 : 1;
+                const severityB = b.grade === 'wrong' ? 2 : 1;
+                return severityB - severityA || b.sourceItems.length - a.sourceItems.length;
+            });
+        }
+
+        function buildGenericSetReviewVariant(target) {
+            const entry = target?.sourceItems?.[0];
+            const tip = getKnowledgeTip(entry?.tag || '');
+            return attachQualityMetadata({
+                tag: entry?.tag || '',
+                q: `请再做一道${SET_REVIEW_FOLLOWUP_LABELS[target?.family] || '同类'}练习，并特别注意刚才容易错的步骤。`,
+                a: tip.name || '按同类方法完成',
+                step: `方法提醒：先回想原来的错误点，再按同一方法完成这道变式题。${tip.advice || ''}`,
+                qualityFamily: target?.family || 'generic_followup',
+                replayLevel: target?.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
+            });
+        }
+
+        function buildSetReviewFractionVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            if (/k_fcalc_/.test(entry.tag || '')) {
+                const left = new Frac(Engine.randChoice([3, 5, 7, 9]), Engine.randChoice([4, 6, 8, 10]));
+                const right = new Frac(Engine.randChoice([1, 2, 3]), Engine.randChoice([2, 4, 5]));
+                const ans = left.div(right);
+                return attachQualityMetadata({
+                    tag: entry.tag,
+                    q: `${left.toHTML()} &divide; ${right.toHTML()} =`,
+                    a: ans.toMixedHTML(),
+                    step: '方法提醒：先把除法看成乘倒数，再检查能不能约分。',
+                    qualityFamily: 'fraction_operation',
+                    replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                    isSetReviewFollowup: true,
+                    isReviewItem: true
+                });
+            }
+            const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
+            return built ? { ...built, isSetReviewFollowup: true } : buildGenericSetReviewVariant(target);
+        }
+
+        function buildSetReviewConversionVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
+            if (built) return { ...built, isSetReviewFollowup: true };
+            const decimal = Engine.randChoice([0.125, 0.2, 0.25, 0.375, 0.625, 0.75]);
+            const fractionMap = {
+                0.125: new Frac(1, 8).toHTML(),
+                0.2: new Frac(1, 5).toHTML(),
+                0.25: new Frac(1, 4).toHTML(),
+                0.375: new Frac(3, 8).toHTML(),
+                0.625: new Frac(5, 8).toHTML(),
+                0.75: new Frac(3, 4).toHTML()
+            };
+            return attachQualityMetadata({
+                tag: entry.tag,
+                q: `${decimal} = (   )% = (   )`,
+                a: `${decimal * 100}% ，${fractionMap[decimal]}`,
+                step: '方法提醒：先统一形式，再写成题目要求的表示法。',
+                qualityFamily: 'conversion_bridge',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
+            });
+        }
+
+        function buildSetReviewEquationVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const built = buildKaiEquationVariant(entry.tag || 'k_eq_twostep', '[本套变式 Follow-up] ');
+            return built
+                ? attachQualityMetadata({
+                    ...built,
+                    qualityFamily: 'equation_method',
+                    replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                    isSetReviewFollowup: true,
+                    isReviewItem: true
+                })
+                : buildGenericSetReviewVariant(target);
+        }
+
+        function buildSetReviewUnitRateVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const pool = [
+                { q: `2.4 km = (   ) m`, a: '2400', step: '规则提醒：先统一单位，再开始算。' },
+                { q: `每本 12 元，买 5 本，一共 (   ) 元`, a: '60', step: '方法提醒：先找单价和数量，再求总价。' },
+                { q: `60 km/h 跑 2.5 h，路程是 (   ) km`, a: '150', step: '方法提醒：先想路程 = 速度 × 时间。' }
+            ];
+            const selected = Engine.randChoice(pool);
+            return attachQualityMetadata({
+                tag: entry.tag,
+                ...selected,
+                qualityFamily: 'unit_rate_speed',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
+            });
+        }
+
+        function buildSetReviewValidationVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const pool = [
+                { q: `4.8 ÷ 0.6 的商应该比 1 大还是小？`, a: '大于 1', step: '检验提醒：先判断数量级，再看结果合不合理。' },
+                { q: `0.25 × 0.4 的结果会不会大于 1？`, a: '不会', step: '检验提醒：两个都小于 1，相乘结果通常更小。' }
+            ];
+            const selected = Engine.randChoice(pool);
+            return attachQualityMetadata({
+                tag: entry.tag,
+                ...selected,
+                qualityFamily: 'validation_estimation',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
+            });
+        }
+
+        function buildSetReviewVariantQuestion(target, student, programId) {
+            const entry = target?.sourceItems?.[0] || {};
+            if (target.family === 'decimal_division') {
+                const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
+                if (built) return { ...built, isSetReviewFollowup: true };
+                const kaiBuilt = buildKaiDecimalDivisionVariant(entry.tag || 'k_ddiv_shift', '[本套变式 Follow-up] ');
+                if (kaiBuilt) {
+                    return attachQualityMetadata({
+                        ...kaiBuilt,
+                        qualityFamily: 'decimal_division',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
+            if (target.family === 'fraction_operation') return buildSetReviewFractionVariant(target);
+            if (target.family === 'conversion_bridge') return buildSetReviewConversionVariant(target);
+            if (target.family === 'equation_method') return buildSetReviewEquationVariant(target);
+            if (target.family === 'unit_rate_speed') return buildSetReviewUnitRateVariant(target);
+            if (target.family === 'validation_estimation') return buildSetReviewValidationVariant(target);
+            return buildGenericSetReviewVariant(target);
+        }
+
+        function buildSetReviewFollowupItems(session, student, programId) {
+            const targets = buildSetReviewFollowupTargets(session);
+            const items = [];
+            targets.forEach(target => {
+                const quota = target.grade === 'wrong'
+                    ? Math.min(2, Math.max(1, target.sourceItems.length))
+                    : 1;
+                for (let index = 0; index < quota; index += 1) {
+                    const item = buildSetReviewVariantQuestion(target, student, programId);
+                    if (item) items.push({ ...item, followupFamily: target.family, followupGrade: target.grade });
+                }
+            });
+            return items.slice(0, 8);
+        }
+
+        function buildSetReviewFollowupAnswerHTML(items) {
+            if (!items.length) return '';
+            const rows = items.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><div class="math-row">${item.a || item.answer || '-'}</div></td>
+                    <td>${item.step || ''}</td>
+                </tr>
+            `).join('');
+            return `
+            <div class="set-review-followup-answer">
+                <h5>参考答案</h5>
+                <table class="archive-table">
+                    <tr><th>#</th><th>答案</th><th>检查提醒</th></tr>
+                    ${rows}
+                </table>
+            </div>`;
+        }
+
+        function buildSetReviewFollowupHTML(student, session) {
+            const programId = session?.programId || getCurrentProgramId();
+            const items = buildSetReviewFollowupItems(session, student, programId);
+            if (!items.length) {
+                return `
+                <div class="set-review-followup">
+                    <div class="set-review-followup-head">
+                        <h4>🧩 本套错题变式跟训</h4>
+                    </div>
+                    <div class="set-review-followup-empty">本套没有可追加的变式跟训，建议直接进入下一套，或做少量口算保温。</div>
+                </div>`;
+            }
+            const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
+            const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
+            const familySummary = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const rows = items.map((item, idx) => `
+                <div class="followup-item">
+                    <span class="followup-num">${idx + 1}.</span>
+                    <span class="followup-q math-row">${item.q || item.prompt || '-'}</span>
+                    <span class="followup-family">${SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'}</span>
+                </div>
+            `).join('');
+            return `
+            <div class="set-review-followup" data-student="${student}">
+                <div class="set-review-followup-head">
+                    <h4>🧩 本套错题变式跟训</h4>
+                    <div class="set-review-followup-actions no-print">
+                        <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
+                        <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
+                    </div>
+                </div>
+                <div class="set-review-followup-summary">
+                    本次跟训共 ${items.length} 题 · 概念错 ${wrongCount} 题优先 · 粗心保温 ${carelessCount} 题轻量补温 · 主要覆盖：${familySummary}
+                </div>
+                <div class="set-review-followup-sheet">${rows}</div>
+                ${buildSetReviewFollowupAnswerHTML(items)}
+            </div>`;
+        }
+
         const CLOSURE_SIGNAL_LABELS = {
             representationGap: '表征切换',
             methodGap: '方法建模',
@@ -6465,6 +6751,7 @@
             const carelessCount = details.filter(item => item.grade === 'careless').length;
             const perfectCount = Math.max(0, allGrades.length - details.length);
             const isClosureSession = session.programId === CLOSURE_PROGRAM_ID;
+            const followupHTML = buildSetReviewFollowupHTML(student, session);
 
             const rows = details.length ? details.map((detail, idx) => {
                 const info = detail.info || {};
@@ -6495,6 +6782,9 @@
                         <tr><th>#</th><th>分区</th><th>纸面题号</th><th>类型</th><th>原题</th><th>正确答案</th><th>复盘提醒</th></tr>
                         ${rows}
                     </table>
+                </div>
+                <div class="set-review-followup-wrap">
+                    ${followupHTML}
                 </div>
             </div>`;
         }
@@ -6536,7 +6826,7 @@
                 clearTimeout(printCleanupTimer);
                 printCleanupTimer = null;
             }
-            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-quick-review', 'print-sandbox-active');
+            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-quick-review', 'print-set-review-followup', 'print-set-review-followup-with-answers', 'print-sandbox-active');
             const root = getPrintRoot();
             if (root) root.innerHTML = '';
         }
@@ -6610,6 +6900,62 @@
             root.innerHTML = `<div class="quick-review-print-shell">${buildCalculationQuickReviewHTML({ forPrint: true })}</div>`;
             document.body.classList.add('print-quick-review', 'print-sandbox-active');
             showToast('📘 打印知识总览提示：建议纵向打印，并关闭页眉页脚。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        function buildSetReviewFollowupPrintHTML(student, setNum, includeAnswers = false) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            if (!items.length) return '';
+            const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
+            const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
+            const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const rows = items.map((item, idx) => `
+                <div class="followup-print-item">
+                    <span class="followup-num">${idx + 1}.</span>
+                    <span class="followup-q math-row">${item.q || '-'}</span>
+                </div>
+            `).join('');
+            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items) : '';
+            return `
+            <section class="set-review-followup-print-shell">
+                <header class="booklet-meta-band">
+                    <span>${student} · Set ${setNum}</span>
+                    <span>本套错题变式跟训</span>
+                </header>
+                <h2 class="sheet-title">错题变式跟训</h2>
+                <div class="followup-print-meta">共 ${items.length} 题 · 概念错 ${wrongCount} 题优先 · 粗心保温 ${carelessCount} 题 · 覆盖：${families}</div>
+                <div class="followup-print-sheet">${rows}</div>
+                ${answerBlock}
+            </section>`;
+        }
+
+        window.printSetReviewFollowup = function(student, includeAnswers = false) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const html = buildSetReviewFollowupPrintHTML(student, window.currentSetNumber, includeAnswers);
+            if (!html) {
+                showToast('这位学生本套还没有可打印的变式训练。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
+            showToast(includeAnswers ? '🖨️ 打印提示：将输出变式训练和答案参考。' : '🖨️ 打印提示：将只输出变式训练页。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();

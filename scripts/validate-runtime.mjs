@@ -42,6 +42,36 @@ if (!html.includes('function getQualityFamilyForTag')) {
 if (!html.includes('function getReplayLevel')) {
   throw new Error('Replay level helper is missing from runtime script');
 }
+if (!html.includes('function getSetReviewFollowupFamily')) {
+  throw new Error('Set Review follow-up family helper is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupCandidates')) {
+  throw new Error('Set Review follow-up candidate helper is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupTargets')) {
+  throw new Error('Set Review follow-up target helper is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewVariantQuestion')) {
+  throw new Error('Set Review follow-up variant dispatcher is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupItems')) {
+  throw new Error('Set Review follow-up item builder is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupHTML')) {
+  throw new Error('Set Review follow-up renderer is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupAnswerHTML')) {
+  throw new Error('Set Review follow-up answer renderer is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewFollowupPrintHTML')) {
+  throw new Error('Set Review follow-up print shell is missing from runtime script');
+}
+if (!html.includes('window.printSetReviewFollowup = function(')) {
+  throw new Error('Set Review follow-up print entrypoint is missing from runtime script');
+}
+if (!html.includes('set-review-followup')) {
+  throw new Error('Set Review follow-up styles or markup are missing from runtime script');
+}
 if (!html.includes('const CALCULATION_QUICK_REVIEW_TOPICS = [')) {
   throw new Error('Calculation Quick Review topic registry is missing from runtime script');
 }
@@ -1096,6 +1126,28 @@ context.window.showSetReview(106, 'KAI');
 const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('第 2 题') || !reviewHtml.includes('2 &times; 3') || !reviewHtml.includes('6')) {
   throw new Error('Set review report is missing set number, paper number, question, or answer');
+}
+if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练')) {
+  throw new Error('Set review report is missing the in-report variant follow-up block');
+}
+const sampleFollowupCandidates = context.window.buildSetReviewFollowupCandidates?.(context.window.StorageDB.cache.KAI.history[0]);
+if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 1) {
+  throw new Error('Set review follow-up candidates are not being built from current-set details');
+}
+const sampleFollowupTargets = context.window.buildSetReviewFollowupTargets?.(context.window.StorageDB.cache.KAI.history[0]);
+if (!Array.isArray(sampleFollowupTargets) || !sampleFollowupTargets.length) {
+  throw new Error('Set review follow-up targets are not grouping current-set mistakes');
+}
+const sampleFollowupItems = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
+if (!Array.isArray(sampleFollowupItems) || !sampleFollowupItems.length || sampleFollowupItems.length > 8) {
+  throw new Error('Set review follow-up item builder is not producing a compact follow-up set');
+}
+if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
+  throw new Error('Set review follow-up items are missing review metadata');
+}
+const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
+if (!sampleFollowupPrintHtml.includes('错题变式跟训') || !sampleFollowupPrintHtml.includes('参考答案')) {
+  throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
