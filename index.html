@@ -2047,9 +2047,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.95';
+        const APP_VERSION = 'v23.96';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.95 第二阶段第二大题改成 6 道高价值桥接题，优先压住超页和错位。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.96 压缩第二大题题干：桥接题统一改成更短的试卷式表达，继续压住超页和乱排。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4358,8 +4358,29 @@
                 suffixHtml: hasAnswerTail ? buildInlineAnswerHtml() : ''
             };
         }
+        function compactConversionPrompt(questionHtml = '') {
+            const raw = String(questionHtml || '').replace(/\s+/g, ' ').trim();
+            return raw
+                .replace(/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, '$1 中，最接近 $2 的是<div class="blank"></div>')
+                .replace(/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, '$1 中，最接近 0 的是<div class="blank"></div>')
+                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '算 $1 时，$2 先化成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '比 $1 时，$2 先化成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '比 $1 时，先统一成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '比 $1 时，直接判<div class="blank"></div>')
+                .replace(/^把 (.+?) 和 (.+?) 先统一表示后，它们的和是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
+                .replace(/^把 (.+?) 先化成分数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
+                .replace(/^把 (.+?) 和 (.+?) 先统一表示后，较大的是<div class="blank"><\/div>$/, '$1、$2 中较大的是<div class="blank"></div>')
+                .replace(/^把 (.+?) 先化成小数后，再和 (.+?) 相减，结果是<div class="blank"><\/div>$/, '$1 - $2 =<div class="blank"></div>')
+                .replace(/^把 (.+?) 和 (.+?) 先统一表示后，它们的差是<div class="blank"><\/div>$/, '$1 - $2 =<div class="blank"></div>')
+                .replace(/^把 (.+?) 和 (.+?) 先统一表示后，再相加，结果更接近<div class="blank"><\/div>$/, '$1 + $2 更接近<div class="blank"></div>')
+                .replace(/^把 (.+?)、(.+?) 和 (.+?) 先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
+                .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
+                .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
+                .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '$1 =<div class="blank"></div>');
+        }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
+        window.compactConversionPrompt = compactConversionPrompt;
         function estimateQuestionComplexity(questionHtml = '') {
             const raw = String(questionHtml || '');
             const plain = raw
@@ -6572,9 +6593,10 @@
                 </div>
                 <div class="${gridClass}">
                     ${items.map((q,i) => {
-                        let prompt = normalizeQuestionPrompt(q.q, heightClass);
+                        let questionHtml = heightClass === 'h-conv' ? compactConversionPrompt(q.q) : q.q;
+                        let prompt = normalizeQuestionPrompt(questionHtml, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
-                        const densityClass = getItemDensityClass(q.q, heightClass);
+                        const densityClass = getItemDensityClass(questionHtml, heightClass);
                         return `<div class="item${lineLockClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
                     }).join('')}
                 </div>
