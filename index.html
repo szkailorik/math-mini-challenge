@@ -1632,42 +1632,108 @@
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
         .set-review-followup-answer-note { margin:0 0 10px; color:#64748b; font-size:12px; line-height:1.45; }
         .set-review-followup-empty { margin-top:10px; padding:12px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:13px; }
-        .set-review-followup-print-shell { width:190mm; margin:0 auto; color:#0f172a; font-family: "Times New Roman", Georgia, serif; }
-        .set-review-followup-print-shell .sheet-title { margin:10px 0 8px; font-size:22px; letter-spacing:0.02em; }
-        .followup-print-lead { margin:0; font-size:11px; line-height:1.55; color:#475569; }
-        .followup-print-meta { margin-top:10px; padding:8px 10px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:8px; font-size:12px; color:#475569; }
-        .followup-print-summary-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; margin-top:10px; }
-        .followup-print-summary-card { border:1px solid #cbd5e1; border-radius:8px; padding:7px 8px; background:#fff; }
-        .followup-print-summary-card strong { display:block; font-size:14px; line-height:1.2; color:#0f172a; }
-        .followup-print-summary-card span { display:block; margin-top:2px; font-size:10px; line-height:1.3; letter-spacing:0.04em; text-transform:uppercase; color:#64748b; }
-        .followup-print-sheet { display:grid; gap:10px; margin-top:12px; }
-        .followup-print-group { margin-top:12px; page-break-inside:avoid; border-top:1px solid #cbd5e1; padding-top:10px; }
-        .followup-print-group:first-child { border-top:none; padding-top:0; margin-top:0; }
-        .followup-print-group h3 { margin:0 0 4px; font-size:14px; color:#0f172a; }
-        .followup-print-kicker { display:inline-block; margin-bottom:5px; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:#8a3412; font-weight:700; }
-        .followup-print-group p { margin:0 0 8px; font-size:11px; color:#64748b; }
-        .followup-print-list { display:grid; gap:6px; }
+        .set-review-followup-print-shell {
+            width: 184mm;
+            margin: 0 auto;
+            color:#0f172a;
+            font-family: "Times New Roman", Georgia, serif;
+        }
+        .set-review-followup-print-head {
+            text-align: center;
+            margin: 8px 0 10px;
+        }
+        .set-review-followup-print-shell .sheet-title {
+            margin: 6px 0 3px;
+            font-size: 21px;
+            letter-spacing: 0.02em;
+            font-weight: 700;
+        }
+        .followup-print-subtitle {
+            margin: 0;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #475569;
+            font-family: 'Georgia', 'Songti SC', serif;
+        }
+        .followup-print-meta {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            margin: 0 0 8px;
+            padding: 0 0 5px;
+            border-bottom: 1px solid rgba(18, 59, 115, 0.18);
+            font-size: 10.5px;
+            line-height: 1.35;
+            color:#475569;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .followup-print-meta strong {
+            color:#123b73;
+            font-weight:700;
+            letter-spacing:0.08em;
+        }
+        .followup-print-sheet { display:grid; gap:8px; }
+        .followup-print-group {
+            page-break-inside:avoid;
+            break-inside:avoid;
+            margin-top: 0;
+        }
+        .followup-print-group-head {
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-end;
+            gap:10px;
+            margin: 0 0 5px;
+            padding: 0 0 4px;
+            border-bottom: 1px solid rgba(18, 59, 115, 0.14);
+        }
+        .followup-print-group h3 {
+            margin:0;
+            font-size:13.5px;
+            color:#123b73;
+            line-height:1.3;
+            font-family: 'Georgia', 'Songti SC', serif;
+            font-weight:700;
+        }
+        .followup-print-kicker {
+            display:inline-block;
+            font-size:9.6px;
+            letter-spacing:0.06em;
+            text-transform:uppercase;
+            color:#8a3412;
+            font-weight:700;
+            white-space:nowrap;
+        }
+        .followup-print-note {
+            margin: 0 0 4px;
+            font-size: 10.2px;
+            line-height: 1.35;
+            color: #64748b;
+        }
+        .followup-print-list { display:grid; gap:4px; }
         .followup-print-item {
             display:grid;
             grid-template-columns: 24px minmax(0, 1fr);
             column-gap:8px;
             align-items:flex-start;
-            font-size:16px;
-            line-height:1.7;
+            font-size:15px;
+            line-height:1.52;
             page-break-inside:avoid;
         }
         .followup-print-item[data-density="dense"] {
-            font-size:13.7px;
-            line-height:1.44;
+            font-size:13.4px;
+            line-height:1.34;
         }
         .followup-print-item[data-density="ultra"] {
-            font-size:13px;
-            line-height:1.36;
+            font-size:12.6px;
+            line-height:1.28;
         }
         .followup-print-item[data-shape="fraction"],
         .followup-print-item[data-shape="conversion"] {
-            font-size:14.1px;
-            line-height:1.52;
+            font-size:13.5px;
+            line-height:1.34;
         }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
@@ -1679,10 +1745,16 @@
         .followup-print-item[data-density="ultra"] .frac,
         .followup-print-item[data-shape="fraction"] .frac,
         .followup-print-item[data-shape="conversion"] .frac {
-            font-size:0.76em;
+            font-size:0.72em;
             margin:0 0.04em 0 0.02em;
         }
-        .set-review-followup-answer.print-answer-sheet { page-break-before:always; break-before:page; margin-top:16px; border-color:#cbd5e1; background:#fff; }
+        .set-review-followup-answer.print-answer-sheet {
+            page-break-before:always;
+            break-before:page;
+            margin-top:16px;
+            border-color:#cbd5e1;
+            background:#fff;
+        }
         body.print-set-review-followup #print-root,
         body.print-set-review-followup-with-answers #print-root { display:block; }
         body.print-set-review-followup #print-root .set-review-followup-answer { display:none; }
@@ -1813,9 +1885,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.73';
-        const APP_RELEASE_LABEL = '本套报告变式跟训复杂题分级排版';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.73 本套报告变式跟训复杂题分级排版：带分数、长互化题和复杂分数题更稳。';
+        const APP_VERSION = 'v23.74';
+        const APP_RELEASE_LABEL = '本套变式训练打印页试卷化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.74 本套变式训练打印页试卷化：更像正式 AB 卷，尽量压在一页里。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7031,10 +7103,15 @@
             return 'normal';
         }
 
+        function getSetReviewFollowupPrintSectionTitle(index, label) {
+            const numerals = ['一', '二', '三', '四', '五', '六', '七', '八'];
+            return `${numerals[index] || `${index + 1}`}、 ${label}`;
+        }
+
         function renderSetReviewFollowupGroups(items = [], { forPrint = false } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
-            return groups.map(group => {
+            return groups.map((group, groupIndex) => {
                 const label = SET_REVIEW_FOLLOWUP_LABELS[group.family] || '同类跟训';
                 const note = getSetReviewFollowupGroupNote(group);
                 const rows = group.items.map((item, idx) => {
@@ -7056,9 +7133,11 @@
                 if (forPrint) {
                     return `
                     <section class="followup-print-group">
-                        <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
-                        <h3>${label}</h3>
-                        <p>${note}</p>
+                        <div class="followup-print-group-head">
+                            <h3>${getSetReviewFollowupPrintSectionTitle(groupIndex, label)}</h3>
+                            <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
+                        </div>
+                        <p class="followup-print-note">${note}</p>
                         <div class="followup-print-list">${rows}</div>
                     </section>`;
                 }
@@ -7363,16 +7442,15 @@
             <section class="set-review-followup-print-shell">
                 <header class="booklet-meta-band">
                     <span>${student} · Set ${setNum}</span>
-                    <span>本套错题变式跟训</span>
+                    <span>Follow-up Practice</span>
                 </header>
-                <h2 class="sheet-title">错题变式跟训</h2>
-                <p class="followup-print-lead">按这套卷里真正错过的知识点继续补一轮。先独立完成这一页，再翻到后面的答案参考页核对。</p>
-                <div class="followup-print-meta">共 ${items.length} 题 · 概念错 ${wrongCount} 题优先 · 粗心保温 ${carelessCount} 题 · 覆盖：${families}</div>
-                <div class="followup-print-summary-grid">
-                    <div class="followup-print-summary-card"><strong>${items.length} 题</strong><span>本次题量</span></div>
-                    <div class="followup-print-summary-card"><strong>${wrongCount} 题</strong><span>概念错优先</span></div>
-                    <div class="followup-print-summary-card"><strong>${carelessCount} 题</strong><span>粗心保温</span></div>
-                    <div class="followup-print-summary-card"><strong>${Array.from(new Set(items.map(item => item.followupFamily))).length} 类</strong><span>覆盖家族</span></div>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">错题变式训练</h2>
+                    <p class="followup-print-subtitle">根据本套 AB 卷错题生成 · 独立完成后再核对答案</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
+                    <span>${wrongCount} 题概念错优先 · ${carelessCount} 题粗心保温</span>
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}

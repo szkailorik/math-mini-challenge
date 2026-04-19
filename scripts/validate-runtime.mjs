@@ -1165,7 +1165,7 @@ if (!Array.isArray(sampleFollowupGroups) || !sampleFollowupGroups.length) {
   throw new Error('Set review follow-up grouping helper is not producing grouped practice sections');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
-if (!sampleFollowupPrintHtml.includes('错题变式跟训') || !sampleFollowupPrintHtml.includes('参考答案')) {
+if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };

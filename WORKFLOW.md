@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.74 Iteration Notes
+
+### Iteration 1
+
+- What I changed: reworked the printable `本套错题变式训练` page toward a more formal AB-paper look by removing the heavier summary-card layer, using a lighter title/meta strip, and turning the grouped families into exam-style section headings.
+- Open questions: whether the next pass should now tune the answer-reference page to match the same paper language more closely, or keep focusing on the practice sheet only.
+- Risks: the leaner print header frees more space for questions, but extremely mistake-heavy sessions can still spill beyond one page if too many dense prompts land in the same follow-up sheet.
+- Next steps: review the print preview with real follow-up sets, then decide whether to tune the answer sheet or do one final pass on one-page packing.
+
 ## Current v23.73 Iteration Notes
 
 ### Iteration 1

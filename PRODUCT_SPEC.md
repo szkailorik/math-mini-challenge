@@ -593,3 +593,9 @@ profile = {
 - Not every generated follow-up row has the same visual complexity, so the renderer now distinguishes between normal, dense, and ultra-dense prompt shapes.
 - Mixed numbers, multi-fraction expressions, and longer conversion-style prompts now get their own spacing and font treatment instead of sharing the plain-text baseline.
 - The intended result is better stability for the most notation-heavy rows without shrinking the simpler rows unnecessarily.
+
+- v23.74 shifts the printable follow-up page closer to the formal AB-paper aesthetic:
+
+- The printed sheet now favors a lighter title block, a single compact metadata line, and exam-style grouped section headings instead of report-like summary cards.
+- The design goal is to preserve the learner-facing “worksheet” feeling, keep the page visually close to the main AB papers, and still fit into one page whenever the current mistake set is not too large.
+- The answer key remains separate and teacher-facing so the practice sheet itself stays clean.
