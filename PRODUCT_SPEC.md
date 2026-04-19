@@ -563,3 +563,9 @@ profile = {
 - The follow-up block now groups items by mistake family instead of presenting one flat list.
 - The learning order is clearer: concept-error families lead, lighter careless-review groups follow.
 - This makes the report more usable as a parent-guided reinforcement page, not just a generated list of extra problems.
+
+- v23.69 improves the pedagogical quality of those follow-up variants:
+
+- More follow-up families now reuse existing high-value variant builders and boundary-style reinforcement patterns instead of falling back too early to generic prompts.
+- This is especially important for fractions, conversions, unit/rate work, and second-stage closure tags, where “same error mechanism” matters more than surface similarity.
+- The result should feel less like “another extra problem” and more like “a better-shaped second chance at the same idea”.

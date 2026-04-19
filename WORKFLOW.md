@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.69 Iteration Notes
+
+### Iteration 1
+
+- What I changed: deepened the pedagogical quality of the new `本套错题变式跟训` block by routing more follow-up families through existing high-value variant builders and closure boundary-reinforcement builders, especially for fractions, conversions, unit/rate work, and `c2_*` tags.
+- Open questions: whether the next pass should now focus on visible report polish and print aesthetics, or keep expanding family-specific builders where fallbacks still feel too generic.
+- Risks: stronger routing improves relevance, but the feature still depends on family coverage; if a family lacks enough dedicated builders, some tags may still feel more generic than ideal.
+- Next steps: review the live follow-up sheets with real wrong-set data, then decide whether to prioritize visual polish or another wave of family-specific question builders.
+
 ## Current v23.68 Iteration Notes
 
 ### Iteration 1

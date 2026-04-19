@@ -1708,9 +1708,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.68';
-        const APP_RELEASE_LABEL = '本套报告变式跟训分组优化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.68 本套报告变式跟训分组优化：按错误点家族分组显示，补练顺序更清楚。';
+        const APP_VERSION = 'v23.69';
+        const APP_RELEASE_LABEL = '本套报告变式题质量增强';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.69 本套报告变式题质量增强：分数、互化、单位比率和第二阶段变式更贴原错点。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6532,6 +6532,38 @@
         function buildSetReviewFractionVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             if (/k_fcalc_/.test(entry.tag || '')) {
+                if (entry.tag === 'k_fcalc_addsub') {
+                    const f1 = new Frac(Engine.randChoice([1, 3, 5]), 6);
+                    const f2 = new Frac(Engine.randChoice([1, 5, 7]), 12);
+                    const f3 = new Frac(Engine.randChoice([1, 3]), 4);
+                    const ans = f1.add(f2).sub(f3);
+                    return attachQualityMetadata({
+                        tag: entry.tag,
+                        q: `${f1.toHTML()} + ${f2.toHTML()} &minus; ${f3.toHTML()} =`,
+                        a: ans.toMixedHTML(),
+                        step: '方法提醒：先判断要不要通分，再按顺序加减，最后看要不要化简。',
+                        qualityFamily: 'fraction_operation',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+                if (entry.tag === 'k_fcalc_muldiv' || entry.tag === 'k_fcalc_cancel') {
+                    const left = new Frac(Engine.randChoice([3, 5, 7, 9]), Engine.randChoice([4, 6, 8, 10]));
+                    const right = new Frac(Engine.randChoice([1, 2, 3]), Engine.randChoice([2, 4, 5]));
+                    const third = new Frac(Engine.randChoice([2, 3, 4]), Engine.randChoice([3, 5, 6]));
+                    const ans = left.div(right).mul(third);
+                    return attachQualityMetadata({
+                        tag: entry.tag,
+                        q: `${left.toHTML()} &divide; ${right.toHTML()} &times; ${third.toHTML()} =`,
+                        a: ans.toMixedHTML(),
+                        step: '方法提醒：先把除法变成乘倒数，再看能不能交叉约分。',
+                        qualityFamily: 'fraction_operation',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
                 const left = new Frac(Engine.randChoice([3, 5, 7, 9]), Engine.randChoice([4, 6, 8, 10]));
                 const right = new Frac(Engine.randChoice([1, 2, 3]), Engine.randChoice([2, 4, 5]));
                 const ans = left.div(right);
@@ -6546,12 +6578,159 @@
                     isReviewItem: true
                 });
             }
+            if (/^l_fmix_/.test(entry.tag || '')) {
+                switch (entry.tag) {
+                    case 'l_fmix_add': {
+                        const d = Engine.randChoice([6, 8, 10, 12]);
+                        const a = Engine.randChoice([1, 2, 3]);
+                        const b = Engine.randChoice([1, 2, 3, 4]);
+                        const c = Engine.randChoice([1, 2]);
+                        const ans = new Frac(a + b + c, d);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `<div class="frac"><span>${a}</span><span class="bottom">${d}</span></div> + <div class="frac"><span>${b}</span><span class="bottom">${d}</span></div> + <div class="frac"><span>${c}</span><span class="bottom">${d}</span></div> =`,
+                            a: ans.toMixedHTML(),
+                            step: '规则提醒：同分母先不动分母，只把分子相加，最后再看要不要化简。',
+                            qualityFamily: 'fraction_operation',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'l_fmix_sub': {
+                        const f1 = new Frac(Engine.randChoice([5, 7, 9]), Engine.randChoice([6, 8, 10]));
+                        const f2 = new Frac(Engine.randChoice([1, 3]), Engine.randChoice([4, 5, 12]));
+                        const ans = f1.sub(f2);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `${f1.toHTML()} &minus; ${f2.toHTML()} =`,
+                            a: ans.toMixedHTML(),
+                            step: '方法提醒：先看是不是异分母，异分母先通分，再减，最后别忘约成最简。',
+                            qualityFamily: 'fraction_operation',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'l_fmix_ofwhole': {
+                        const whole = Engine.randChoice([24, 30, 36, 40, 48]);
+                        const n = Engine.randChoice([2, 3, 5]);
+                        const d = Engine.randChoice([4, 6, 8]);
+                        const unit = whole / d;
+                        const ans = unit * n;
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `${whole} &times; <div class="frac"><span>${n}</span><span class="bottom">${d}</span></div> =`,
+                            a: `${ans}`,
+                            step: '方法提醒：先求一份，再乘分子，不要上来就拿大数硬乘。',
+                            qualityFamily: 'fraction_operation',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    default: {
+                        const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
+                        if (built) return { ...built, isSetReviewFollowup: true };
+                    }
+                }
+            }
             const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
             return built ? { ...built, isSetReviewFollowup: true } : buildGenericSetReviewVariant(target);
         }
 
         function buildSetReviewConversionVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            if (/^c2_bridge_/.test(entry.tag || '')) {
+                const built = buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
+                if (built) {
+                    return attachQualityMetadata({
+                        ...built,
+                        qualityFamily: 'conversion_bridge',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
+            if (/^k_conv_/.test(entry.tag || '')) {
+                switch (entry.tag) {
+                    case 'k_conv_1':
+                    case 'k_conv_2': {
+                        const v = Engine.randChoice([15, 25, 35, 45, 62.5]);
+                        const frac = v === 62.5 ? new Frac(5, 8).toHTML() : new Frac(Math.round(v * 10), 1000).toHTML();
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `${v}% = (   )`,
+                            a: frac,
+                            step: '规则提醒：百分数先写成分母 100 的分数，再约分成最简。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'k_conv_5': {
+                        const n = Engine.randChoice([3, 7, 9, 11, 17]);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `<div class="frac"><span>${n}</span><span class="bottom">25</span></div> = (   )%`,
+                            a: `${n * 4}`,
+                            step: '方法提醒：分母 25 先扩成 100，再直接读成百分数。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'k_conv_8':
+                    case 'k_conv_9': {
+                        const den = entry.tag === 'k_conv_8' ? 40 : 16;
+                        const n = entry.tag === 'k_conv_8' ? Engine.randChoice([3, 7, 9, 13, 17]) : Engine.randChoice([1, 3, 5, 7, 9, 11, 13, 15]);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `<div class="frac"><span>${n}</span><span class="bottom">${den}</span></div> = (   )`,
+                            a: formatDecimal(n / den),
+                            step: '方法提醒：先想这个分母对应的基准小数，再按倍数推出结果。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                }
+            }
+            if (/^l_conv_[1-4]$/.test(entry.tag || '')) {
+                switch (entry.tag) {
+                    case 'l_conv_1': {
+                        const n = Engine.randChoice([1, 3, 5, 7]);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `<div class="frac"><span>${n}</span><span class="bottom">8</span></div> = (   )`,
+                            a: formatDecimal(n / 8),
+                            step: '方法提醒：先记住 1/8 = 0.125，再按倍数推出。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'l_conv_2':
+                    case 'l_conv_4': {
+                        const built = entry.tag === 'l_conv_2'
+                            ? { q: `0.375 = (   )`, a: new Frac(3, 8).toHTML(), step: '方法提醒：先写成分母 1000 的分数，再约分。' }
+                            : { q: `0.45 = (   )`, a: new Frac(9, 20).toHTML(), step: '方法提醒：先写成分母 100 的分数，再约分。' };
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            ...built,
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                }
+            }
             const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
             if (built) return { ...built, isSetReviewFollowup: true };
             const decimal = Engine.randChoice([0.125, 0.2, 0.25, 0.375, 0.625, 0.75]);
@@ -6577,6 +6756,20 @@
 
         function buildSetReviewEquationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            if (/^c2_eq_/.test(entry.tag || '')) {
+                const built = target.grade === 'wrong'
+                    ? buildClosureBoundaryReplayItem(entry)
+                    : buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
+                if (built) {
+                    return attachQualityMetadata({
+                        ...built,
+                        qualityFamily: 'equation_method',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
             const built = buildKaiEquationVariant(entry.tag || 'k_eq_twostep', '[本套变式 Follow-up] ');
             return built
                 ? attachQualityMetadata({
@@ -6591,6 +6784,20 @@
 
         function buildSetReviewUnitRateVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            if (/^(c2_unit_|c2_rate_|c2_speed_)/.test(entry.tag || '')) {
+                const built = target.grade === 'wrong'
+                    ? buildClosureBoundaryReplayItem(entry)
+                    : buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
+                if (built) {
+                    return attachQualityMetadata({
+                        ...built,
+                        qualityFamily: getSetReviewFollowupFamily(entry.tag, entry.info || {}),
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
             const pool = [
                 { q: `2.4 km = (   ) m`, a: '2400', step: '规则提醒：先统一单位，再开始算。' },
                 { q: `每本 12 元，买 5 本，一共 (   ) 元`, a: '60', step: '方法提醒：先找单价和数量，再求总价。' },
@@ -6609,6 +6816,20 @@
 
         function buildSetReviewValidationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            if (/^c2_est_/.test(entry.tag || '')) {
+                const built = target.grade === 'wrong'
+                    ? buildClosureBoundaryReplayItem(entry)
+                    : buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
+                if (built) {
+                    return attachQualityMetadata({
+                        ...built,
+                        qualityFamily: 'validation_estimation',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
             const pool = [
                 { q: `4.8 ÷ 0.6 的商应该比 1 大还是小？`, a: '大于 1', step: '检验提醒：先判断数量级，再看结果合不合理。' },
                 { q: `0.25 × 0.4 的结果会不会大于 1？`, a: '不会', step: '检验提醒：两个都小于 1，相乘结果通常更小。' }
