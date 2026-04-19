@@ -149,6 +149,30 @@
                 font-size: 0.72em !important;
                 margin: 0 0.02em 0 0.01em !important;
             }
+            body.print-sandbox-active #print-root .item.h-conv.item-dense {
+                font-size: 13.7px !important;
+                line-height: 1 !important;
+            }
+            body.print-sandbox-active #print-root .item.h-conv.item-dense .q-num {
+                font-size: 13.5px !important;
+                line-height: 1 !important;
+            }
+            body.print-sandbox-active #print-root .item.h-conv.item-dense .frac {
+                font-size: 0.68em !important;
+                margin: 0 0.015em 0 0.008em !important;
+            }
+            body.print-sandbox-active #print-root .item.h-conv.item-ultra-dense {
+                font-size: 13.1px !important;
+                line-height: 0.99 !important;
+            }
+            body.print-sandbox-active #print-root .item.h-conv.item-ultra-dense .q-num {
+                font-size: 12.9px !important;
+                line-height: 0.99 !important;
+            }
+            body.print-sandbox-active #print-root .item.h-conv.item-ultra-dense .frac {
+                font-size: 0.64em !important;
+                margin: 0 0.012em 0 0.006em !important;
+            }
             body.print-sandbox-active #print-root .h-conv .math-op,
             body.print-sandbox-active #print-root .h-conv .math-eq,
             body.print-sandbox-active #print-root .h-conv .math-compare {
@@ -2095,9 +2119,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.100';
+        const APP_VERSION = 'v23.102';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.100 第二大题继续压短：桥接短句更像实卷短题，括号答案位再收窄。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.102 第二大题题干回到清楚的考试式短句：不再过度简写。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4418,10 +4442,10 @@
             return raw
                 .replace(/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, '$1 中，最接近 $2 的是<div class="blank"></div>')
                 .replace(/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, '$1 中，最接近 0 的是<div class="blank"></div>')
-                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '$1，$2 →<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '$1，$2 →<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '$1：统一成<div class="blank"></div>')
-                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '$1：直接判<div class="blank"></div>')
+                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '算 $1 时，先把 $2 化成<div class="blank"></div>再算')
+                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '比 $1 时，先把 $2 化成<div class="blank"></div>更方便')
+                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '比 $1 时，先统一成<div class="blank"></div>再比')
+                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '比 $1 时，直接判断成<div class="blank"></div>更快')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，它们的和是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 先化成分数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，较大的是<div class="blank"><\/div>$/, '$1、$2 中较大的是<div class="blank"></div>')
@@ -4431,10 +4455,7 @@
                 .replace(/^把 (.+?)、(.+?) 和 (.+?) 先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
                 .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
                 .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
-                .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '$1 =<div class="blank"></div>')
-                .replace(/^(.+?)，(.+?) →<div class="blank"><\/div>$/, '$1，$2→<div class="blank"></div>')
-                .replace(/^(.+?)：统一成<div class="blank"><\/div>$/, '$1：统一成<div class="blank"></div>')
-                .replace(/^(.+?)：直接判<div class="blank"><\/div>$/, '$1：直接判<div class="blank"></div>');
+                .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '先统一表示后，$1 =<div class="blank"></div>');
         }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
