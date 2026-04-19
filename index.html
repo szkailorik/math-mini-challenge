@@ -2213,9 +2213,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.106';
-        const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.106 第二阶段双语题块继续收密：dense / print 下的英文辅助行更稳。';
+        const APP_VERSION = 'v23.107';
+        const APP_RELEASE_LABEL = '第二阶段双语英文提示继续补强';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.107 第二阶段桥接 / 单位率 / 混合题的英文辅助行更少落到 Solve 兜底。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4564,25 +4564,32 @@
                 [/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, (_, set, target) => `Among ${set}, the one closest to ${target} is<div class="blank"></div>`],
                 [/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, (_, set) => `Among ${set}, the one closest to 0 is<div class="blank"></div>`],
                 [/^算 (.+?)：先把 (.+?) 化成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
+                [/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
                 [/^比 (.+?)：先把 (.+?) 化成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
                 [/^比 (.+?)：先统一成<div class="blank"><\/div>$/, (_, expr) => `For ${expr}, first write them as<div class="blank"></div>`],
                 [/^比 (.+?)：直接判断成<div class="blank"><\/div>$/, (_, expr) => `For ${expr}, directly judge it as<div class="blank"></div>`],
+                [/^比较 (.+?) 和 (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, (_, a, b) => `For ${a} and ${b}, first write them as<div class="blank"></div>`],
+                [/^比较 (.+?) 和 (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, (_, a, b) => `For ${a} and ${b}, directly judge them as<div class="blank"></div>`],
                 [/^(.+?)、(.+?) 中较大的是<div class="blank"><\/div>$/, (_, a, b) => `Between ${a} and ${b}, the greater one is<div class="blank"></div>`],
                 [/^(.+?)、(.+?)、(.+?) 中，最接近 (.+?) 的是<div class="blank"><\/div>$/, (_, a, b, c, t) => `Among ${a}, ${b}, and ${c}, the one closest to ${t} is<div class="blank"></div>`],
+                [/^(.+?) ([A-Za-z%]+) =<div class="blank"><\/div> ([A-Za-z%]+)$/, (_, value, fromUnit, toUnit) => `${value} ${fromUnit} =<div class="blank"></div> ${toUnit}`],
                 [/^(.+?) \+ (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} + ${b} =<div class="blank"></div>`],
                 [/^(.+?) \- (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} - ${b} =<div class="blank"></div>`],
                 [/^(.+?) \&times; (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} &times; ${b} =<div class="blank"></div>`],
                 [/^(.+?) \&divide; (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} &divide; ${b} =<div class="blank"></div>`],
                 [/^(.+?) \+ (.+?) 更接近<div class="blank"><\/div>$/, (_, a, b) => `${a} + ${b} is closer to<div class="blank"></div>`],
+                [/^(.+?) 的结果比 1<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is<div class="blank"></div> than 1`],
                 [/^先统一表示后，(.+?) =<div class="blank"><\/div>$/, (_, expr) => `After writing them in the same form, ${expr} =<div class="blank"></div>`],
                 [/^一件商品打(.+)折后卖 (.+?) 元，原价是<div class="blank"><\/div>元$/, (_, discount, price) => `An item sells for ${price} yuan after a ${discount} discount. The original price is<div class="blank"></div> yuan`],
                 [/^原价 (.+?) 元的商品打(.+)折后是<div class="blank"><\/div>元$/, (_, price, discount) => `An item costs ${price} yuan before a ${discount} discount. The sale price is<div class="blank"></div> yuan`],
-                [/^一件商品现价 (.+?) 元，是原价的 (.+?)，原价是<div class="blank"><\/div>元$/, (_, sale, rate) => `The sale price is ${sale} yuan, which is ${rate} of the original price. The original price is<div class="blank"></div> yuan`],
+                [/^.+?现价 (.+?) 元，是原价的 (.+?)，原价是<div class="blank"><\/div>元$/, (_, sale, rate) => `The sale price is ${sale} yuan, which is ${rate} of the original price. The original price is<div class="blank"></div> yuan`],
                 [/^x 的 (.+?) 是 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, value) => `${rate} of x is ${value}, so x =<div class="blank"></div>`],
                 [/^x 的 (.+?) 比 (.+?) 多 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, base, diff) => `${rate} of x is ${diff} more than ${base}, so x =<div class="blank"></div>`],
                 [/^一(?:辆车|艘船|列火车|架飞机) (.+?) 时行 (.+?) 千米，平均每时行<div class="blank"><\/div>千米$/, (_, time, distance) => `It travels ${distance} km in ${time} h, so it travels<div class="blank"></div> km each hour`],
                 [/^(.+?) 的结果更接近<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is closer to<div class="blank"></div>`],
+                [/^(.+?) 更适合先把 (.+?) 看成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, it is better to first see ${target} as<div class="blank"></div>`],
                 [/^(.+?) 可以先看成<div class="blank"><\/div>$/, (_, expr) => `${expr} can first be seen as<div class="blank"></div>`],
+                [/^(.+?) 更适合先算 (.+?) 再<div class="blank"><\/div>$/, (_, expr, first) => `For ${expr}, first do ${first}, then<div class="blank"></div>`],
                 [/^(.+?) 可以先算 (.+?) 再<div class="blank"><\/div>$/, (_, expr, first) => `For ${expr}, first do ${first}, then<div class="blank"></div>`],
                 [/^(.+?) =<div class="blank"><\/div>%$/, (_, expr) => `${expr} =<div class="blank"></div>%`],
                 [/^(.+?) =<div class="blank"><\/div>$/, (_, expr) => `${expr} =<div class="blank"></div>`]
