@@ -1305,9 +1305,15 @@ if (!Array.isArray(sampleFollowupItems) || !sampleFollowupItems.length || sample
 if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
   throw new Error('Set review follow-up items are missing review metadata');
 }
+if (!sampleFollowupItems.every(item => item.followupMechanismKey)) {
+  throw new Error('Set review follow-up items are missing followupMechanismKey metadata');
+}
 const sampleFollowupGroups = context.window.buildSetReviewFollowupGroups?.(sampleFollowupItems);
 if (!Array.isArray(sampleFollowupGroups) || !sampleFollowupGroups.length) {
   throw new Error('Set review follow-up grouping helper is not producing grouped practice sections');
+}
+if (!sampleFollowupGroups.every(group => group.mechanismKey)) {
+  throw new Error('Set review follow-up groups are missing mechanismKey metadata');
 }
 const normalizedUidA = context.window.computeErrorUid?.('l_fmix_sub', '<div class="frac"><span>3</span><span class="bottom">4</span></div> &minus; <div class="frac"><span>1</span><span class="bottom">2</span></div> = <div class="blank"></div>');
 const normalizedUidB = context.window.computeErrorUid?.('l_fmix_sub', '<span class="frac"><span>3</span><span class="bottom">4</span></span> &minus; <span class="frac"><span>1</span><span class="bottom">2</span></span> = <span class="blank math-inline-blank"></span>');

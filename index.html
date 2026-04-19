@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.86';
-        const APP_RELEASE_LABEL = '错题机制层补齐';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.86 在原题记录之上补了一层错误机制 key，让错题本和后续统计更容易看出孩子反复卡住的机制，而不只是单题列表。';
+        const APP_VERSION = 'v23.87';
+        const APP_RELEASE_LABEL = '机制层接入跟训';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.87 把错误机制层接进了本套错题变式跟训和 errorBook 信号，补练不再只看同 tag，也会更看重同机制。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4203,22 +4203,26 @@
             const exactEntries = getActiveErrorEntries(profile, tag);
             const family = getKnowledgeFamily(tag);
             const domain = getKnowledgeDomain(tag);
+            const mechanismKey = getErrorMechanismKey(tag);
             let exactCount = 0;
+            let mechanismCount = 0;
             let familyCount = 0;
             let domainCount = 0;
             Object.values(profile?.errorBook || {}).forEach(entry => {
                 if (!entry || entry.mastered || !entry.tag) return;
                 const count = Math.max(1, entry.count || 1);
                 if (entry.tag === tag) exactCount += count;
+                else if (entry.mechanismKey && mechanismKey && entry.mechanismKey === mechanismKey) mechanismCount += count;
                 else if (family && String(entry.tag).startsWith(family.prefix)) familyCount += count;
                 else if (domain && getKnowledgeDomain(entry.tag)?.id === domain.id) domainCount += count;
             });
             return {
                 exactEntries,
                 exactCount,
+                mechanismCount,
                 familyCount,
                 domainCount,
-                score: Math.min(exactCount * 2.2 + familyCount * 0.9 + domainCount * 0.25, 10)
+                score: Math.min(exactCount * 2.2 + mechanismCount * 0.55 + familyCount * 0.9 + domainCount * 0.25, 10)
             };
         }
         function getHighValueTrainingSignal(profile, tag) {
@@ -4231,6 +4235,7 @@
             const score = Math.min(
                 tier * 1.8 +
                 Math.min(errorSignal.exactCount * 0.85, 2.6) +
+                Math.min(errorSignal.mechanismCount * 0.2, 1.1) +
                 Math.min(errorSignal.familyCount * 0.18, 1.2) +
                 Math.min(domainSignal.activeErrors * 0.12, 0.9) +
                 spacing,
@@ -4362,6 +4367,7 @@
                 replayLevel: getReplayLevel(entry),
                 replayUid: entry.uid,
                 replayCount: Math.max(1, entry.count || 1),
+                mechanismKey: entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info),
                 sourceSet: entry.lastSet || entry.firstSet || '',
                 isErrorReplay: true,
                 isReviewItem: true
@@ -4582,6 +4588,7 @@
                 replayLevel: getReplayLevel(entry),
                 replayUid: entry.uid,
                 replayCount: Math.max(1, entry.count || 1),
+                mechanismKey: entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info),
                 sourceSet: entry.lastSet || entry.firstSet || '',
                 isErrorVariant: true,
                 isReviewItem: true
@@ -7169,6 +7176,7 @@
                     tag: detail.tag,
                     grade: detail.grade,
                     info,
+                    mechanismKey: detail.mechanismKey || getErrorMechanismKey(detail.tag, info),
                     family: getSetReviewFollowupFamily(detail.tag, info),
                     severity: detail.grade === 'wrong' ? 2 : 1
                 };
@@ -7183,6 +7191,7 @@
                     tag: candidate.tag || '',
                     family: candidate.family,
                     grade: candidate.grade,
+                    mechanismKey: candidate.mechanismKey || '',
                     sourceItems: []
                 };
                 bucket.sourceItems.push(candidate);
@@ -7958,7 +7967,14 @@
                     : 1;
                 for (let index = 0; index < quota; index += 1) {
                     const item = buildSetReviewVariantQuestion(target, student, programId);
-                    if (item) items.push({ ...item, followupFamily: target.family, followupGrade: target.grade });
+                    if (item) {
+                        items.push({
+                            ...item,
+                            followupFamily: target.family,
+                            followupGrade: target.grade,
+                            followupMechanismKey: target.mechanismKey || item.mechanismKey || ''
+                        });
+                    }
                 }
             });
             return items.slice(0, 8);
@@ -7967,10 +7983,11 @@
         function buildSetReviewFollowupGroups(items = []) {
             const groups = new Map();
             items.forEach(item => {
-                const key = `${item.followupGrade}:${item.followupFamily}`;
+                const key = `${item.followupGrade}:${item.followupFamily}:${item.followupMechanismKey || ''}`;
                 const current = groups.get(key) || {
                     family: item.followupFamily,
                     grade: item.followupGrade,
+                    mechanismKey: item.followupMechanismKey || '',
                     items: []
                 };
                 current.items.push(item);
@@ -7984,8 +8001,9 @@
         }
 
         function getSetReviewFollowupGroupNote(group) {
-            if (group.grade === 'wrong') return '先补透这一类概念错，再继续下面的保温题。';
-            return '这一组主要用来防止重复粗心，做完记得检查。';
+            const mechanism = group?.mechanismKey ? `重点机制：${getErrorMechanismLabel(group.mechanismKey)}。` : '';
+            if (group.grade === 'wrong') return `${mechanism}先补透这一类概念错，再继续下面的保温题。`.trim();
+            return `${mechanism}这一组主要用来防止重复粗心，做完记得检查。`.trim();
         }
 
         function getSetReviewFollowupItemShape(item = {}) {
@@ -8025,6 +8043,7 @@
             return groups.map((group, groupIndex) => {
                 const label = SET_REVIEW_FOLLOWUP_LABELS[group.family] || '同类跟训';
                 const note = getSetReviewFollowupGroupNote(group);
+                const mechanismLabel = group.mechanismKey ? getErrorMechanismLabel(group.mechanismKey) : '';
                 const rows = group.items.map((item, idx) => {
                     const number = items.indexOf(item) + 1;
                     const shape = getSetReviewFollowupItemShape(item);
@@ -8048,6 +8067,7 @@
                             <h3>${getSetReviewFollowupPrintSectionTitle(groupIndex, label)}</h3>
                             <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
                         </div>
+                        ${mechanismLabel ? `<div class="followup-print-group-note">${mechanismLabel}</div>` : ''}
                         <div class="followup-print-list">${rows}</div>
                     </section>`;
                 }
@@ -8060,6 +8080,7 @@
                         </div>
                         <span class="followup-group-note">${note}</span>
                     </div>
+                    ${mechanismLabel ? `<div class="knowledge-tags" style="margin:0 0 8px;"><span class="knowledge-tag">${mechanismLabel}</span></div>` : ''}
                     <div class="followup-group-list">${rows}</div>
                 </section>`;
             }).join('');
