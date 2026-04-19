@@ -745,6 +745,14 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
       }
     }
 
+    const closureItems = context.window.flattenPaperSections?.(
+      data,
+      ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
+    ) || [];
+    if (!closureItems.every(item => typeof item?.qEn === 'string' && item.qEn.trim())) {
+      throw new Error(`Closure set ${setNumber} is missing bilingual question copy`);
+    }
+
     const mixLaneEmphasis = data.phaseMeta?.mixLaneEmphasis || {};
     if (setNumber === 1 && mixLaneEmphasis.method !== 'high') {
       throw new Error(`Closure set ${setNumber} should already prioritize method choice in Section III`);
