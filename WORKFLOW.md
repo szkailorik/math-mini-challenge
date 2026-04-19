@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.76 Iteration Notes
+
+### Iteration 1
+
+- What I changed: refined the print-only compact mode for `本套错题变式训练` by removing the subtitle in dense cases, shortening the metadata line, and tightening dense/ultra math rows another step.
+- Open questions: whether the next pass should finally style the separate answer sheet to match the same AB-paper language, or pause here because the practice sheet itself is now close to the one-page target.
+- Risks: additional compression helps dense sheets fit, but the ultra-dense fraction cases are approaching the readability limit; another full global shrink would likely hurt more than help.
+- Next steps: check the heaviest real print previews and decide whether the next iteration should move to the answer sheet instead of squeezing the practice sheet further.
+
 ## Current v23.75 Iteration Notes
 
 ### Iteration 1

@@ -605,3 +605,9 @@ profile = {
 - The printable sheet now suppresses more explanatory copy and uses a compact-mode switch when the current follow-up set is especially dense.
 - Compact mode is driven by the generated item mix rather than a blanket global shrink, so only harder follow-up sheets are packed more tightly.
 - The intended effect is to keep the formal-paper look while increasing the chance that a real same-set follow-up can stay on one page.
+
+- v23.76 deepens the compact-pack behavior for dense printable follow-up sheets:
+
+- When the generated follow-up set is dense enough, the print shell now removes the secondary subtitle, shortens the metadata line, and tightens the math layout one more step.
+- This continues the one-page priority without forcing every sheet into the same compressed baseline.
+- The intended effect is better page-fit odds on hard follow-up sheets while keeping easier sheets visually closer to the main AB-paper rhythm.

@@ -1641,6 +1641,9 @@
         .set-review-followup-print-shell[data-pack="compact"] {
             width: 186mm;
         }
+        .set-review-followup-print-shell[data-pack="compact"] .booklet-meta-band {
+            margin-bottom: 5px;
+        }
         .set-review-followup-print-head {
             text-align: center;
             margin: 8px 0 10px;
@@ -1666,8 +1669,7 @@
             font-family: 'Georgia', 'Songti SC', serif;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-subtitle {
-            font-size: 10px;
-            line-height: 1.28;
+            display: none;
         }
         .followup-print-meta {
             display:flex;
@@ -1763,21 +1765,21 @@
             line-height:1.34;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item {
-            font-size: 14.1px;
-            line-height: 1.38;
+            font-size: 13.7px;
+            line-height: 1.32;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="dense"] {
-            font-size: 12.9px;
-            line-height: 1.26;
+            font-size: 12.5px;
+            line-height: 1.2;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="ultra"] {
-            font-size: 12.2px;
-            line-height: 1.22;
+            font-size: 11.85px;
+            line-height: 1.16;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="fraction"],
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="conversion"] {
-            font-size: 12.9px;
-            line-height: 1.24;
+            font-size: 12.45px;
+            line-height: 1.18;
         }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
@@ -1796,7 +1798,7 @@
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="ultra"] .frac,
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="fraction"] .frac,
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="conversion"] .frac {
-            font-size: 0.68em;
+            font-size: 0.64em;
         }
         .set-review-followup-answer.print-answer-sheet {
             page-break-before:always;
@@ -1935,9 +1937,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.75';
-        const APP_RELEASE_LABEL = '本套变式训练打印页一页优先';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.75 本套变式训练打印页一页优先：重说明更轻，复杂题自动进入紧凑纸面模式。';
+        const APP_VERSION = 'v23.76';
+        const APP_RELEASE_LABEL = '本套变式训练打印页继续压缩';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.76 本套变式训练打印页继续压缩：紧凑模式更轻，更容易落在一页。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7495,6 +7497,12 @@
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
+            const compactMetaLeft = printPack === 'compact'
+                ? `<strong>${items.length} 题</strong> · ${Array.from(new Set(items.map(item => item.followupFamily))).length} 类跟训`
+                : `<strong>${items.length} 题</strong> · 覆盖 ${families}`;
+            const compactMetaRight = printPack === 'compact'
+                ? `${wrongCount} 题概念错优先`
+                : `${wrongCount} 题概念错优先 · ${carelessCount} 题粗心保温`;
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell" data-pack="${printPack}">
@@ -7507,8 +7515,8 @@
                     <p class="followup-print-subtitle">根据本套 AB 卷错题生成 · 独立完成后再核对答案</p>
                 </div>
                 <div class="followup-print-meta">
-                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>${wrongCount} 题概念错优先 · ${carelessCount} 题粗心保温</span>
+                    <span>${compactMetaLeft}</span>
+                    <span>${compactMetaRight}</span>
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
