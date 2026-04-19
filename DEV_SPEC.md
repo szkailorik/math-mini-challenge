@@ -68,6 +68,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `renderPromptEnglish`: now normalizes remaining inline blanks and list connectors in the bilingual helper line itself, so Closure support copy stays fully English and keeps the same compact answer-slot geometry as the worksheet.
 - `normalizeQuestionPrompt`: now applies compact parenthetical answer slots across worksheet question-body blanks globally, so the paper no longer depends on long underline blanks that destabilize dense layouts.
 - `buildAnsRow`: now renders the answer-booklet `[原题 Question]` prompt through the same normalized prompt pipeline as the live worksheet, preventing legacy underline blanks from resurfacing only on the answer side.
+- `scripts/validate-runtime.mjs`: now audits both `advanced_fluency_v1` and `elementary_closure_v1` rendered papers for legacy underline blanks, so answer-slot regressions are caught even if they only reappear in one stage.
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.

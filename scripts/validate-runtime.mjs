@@ -1084,6 +1084,13 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
       seen.add(signature);
     });
   }
+  context.window.currentProgramId = 'advanced_fluency_v1';
+  context.window.currentSetNumber = setNumber;
+  context.window.renderPaper?.();
+  const advancedPaperHtml = elements.get('paper-container')?.innerHTML || '';
+  if (advancedPaperHtml.includes('class="blank math-inline-blank"') || advancedPaperHtml.includes('<div class="blank"></div>')) {
+    throw new Error(`Advanced set ${setNumber} paper still contains legacy underline blanks in question rendering`);
+  }
 }
 
 const checked = [];

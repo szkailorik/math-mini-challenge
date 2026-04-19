@@ -38,6 +38,11 @@ v23.108 further stabilizes Closure bilingual paper layout:
 - Compact parenthetical answer slots are now used more broadly across second-stage prompts instead of leaving long underline blanks inside the question body.
 - This keeps the paper closer to exam-style short answers while reducing overflow and overlap risk in dense bilingual sections.
 
+v23.111 extends the same answer-slot stability rule across both stages:
+
+- The advanced paper path is now checked with the same rendered-paper blank audit used by Closure.
+- This reduces the chance that legacy underline blanks resurface only in one stage, one answer booklet, or one print path.
+
 v23.110 finishes the same paper-stability rule across both worksheet and answer-booklet rendering:
 
 - Closure bilingual helper lines now cover more real stage-two bridge, discount, percent-of-a-number, and method-choice prompt shapes, so the support line is less likely to fall back to mixed Chinese/English copy.
