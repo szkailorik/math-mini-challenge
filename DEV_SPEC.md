@@ -70,6 +70,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildAnsRow`: now renders the answer-booklet `[原题 Question]` prompt through the same normalized prompt pipeline as the live worksheet, preventing legacy underline blanks from resurfacing only on the answer side.
 - `scripts/validate-runtime.mjs`: now audits both `advanced_fluency_v1` and `elementary_closure_v1` rendered papers for legacy underline blanks, so answer-slot regressions are caught even if they only reappear in one stage.
 - `printAnswerSheets` / print sandbox validation: now also audits the staged printable answer sheets for legacy underline blanks, so print-only regressions are caught instead of slipping past the live-paper checks.
+- `buildSetReviewFollowupPrintHTML` / `buildErrorBookMechanismPrintHTML`: their generated HTML is now also checked for legacy underline blanks, so follow-up worksheets and mechanism practice packs stay on the same compact answer-slot system as the main paper.
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.

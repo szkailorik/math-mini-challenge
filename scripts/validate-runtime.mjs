@@ -1363,6 +1363,9 @@ const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KA
 if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes('0.25')) {
   throw new Error('Error book mechanism print builder did not produce concrete practice content');
 }
+if (mechanismPrintHtml.includes('class="blank math-inline-blank"') || mechanismPrintHtml.includes('<div class="blank"></div>')) {
+  throw new Error('Error book mechanism print HTML still contains legacy underline blanks');
+}
 context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 context.window.StorageDB.cache.KAI.history = [{
@@ -1420,6 +1423,9 @@ if (!normalizedUidA || normalizedUidA !== normalizedUidB) {
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
+}
+if (sampleFollowupPrintHtml.includes('class="blank math-inline-blank"') || sampleFollowupPrintHtml.includes('<div class="blank"></div>')) {
+  throw new Error('Set review follow-up print HTML still contains legacy underline blanks');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
