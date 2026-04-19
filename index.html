@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.89';
-        const APP_RELEASE_LABEL = '错题本机制补练';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.89 让错题本里的高频机制不仅能筛选，还能直接打印这一机制的补练题和答案。';
+        const APP_VERSION = 'v23.90';
+        const APP_RELEASE_LABEL = '第二阶段缓存刷新';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.90 升级套卷缓存版本，强制刷新第二阶段题卷，避免继续读到旧的 Closure 缓存。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2504,7 +2504,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v36';
+        const SET_CACHE_PREFIX = 'MathSetData_v37';
 
         function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
             return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
