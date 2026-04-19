@@ -778,6 +778,19 @@
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
         .circle-blank { display: inline-block; width: 1.18em; height: 1.18em; border-radius: 50%; border: 1.7px solid var(--math-line); margin: 0 0.22em; align-self: center; flex: 0 0 auto; }
         .math-inline-blank { transform: translateY(-0.01em); }
+        .math-compact-paren-answer {
+            display: inline-flex;
+            align-items: baseline;
+            justify-content: center;
+            min-width: 1.8em;
+            margin: 0 0.08em;
+            font-family: 'Times New Roman', 'Songti SC', serif;
+            font-size: 1em;
+            line-height: 1;
+            color: var(--math-ink);
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
         .math-inline-circle { transform: translateY(0.02em); }
 
         /* ================= 错题本与交互 UI ================= */
@@ -2051,9 +2064,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.97';
+        const APP_VERSION = 'v23.98';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.97 第二大题继续收紧成短题条：题号列更窄、行高更紧、题干缝更小。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.98 第二大题去长横线：桥接题答案位改成紧凑括号，继续压住排版错位。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4334,6 +4347,12 @@
             const suffixHtml = tailSuffixHtml ? ` ${beautifyMathHTML(tailSuffixHtml)}` : '';
             return `<span class="math-eq">=</span><span class="math-write-gap"></span>${suffixHtml}`;
         }
+        function applyConversionAnswerStyle(html = '') {
+            return String(html || '').replace(
+                /<span class="blank math-inline-blank"><\/span>/g,
+                '<span class="math-compact-paren-answer">（&nbsp;）</span>'
+            );
+        }
         function normalizeQuestionPrompt(questionHtml = '', heightClass = '') {
             const raw = String(questionHtml || '').trim();
             const blankTailMatch = raw.match(/^(.*?)(?:\s*=)\s*<div class="blank"><\/div>\s*(.*)$/);
@@ -4357,8 +4376,9 @@
                 .trim();
             const hasInternalEquals = !hasTrailingEquals && semanticMathText.includes('=');
             const hasAnswerTail = (hasTrailingEquals || (heightClass !== 'h-conv' && !hasInlineBlank && !hasCircleBlank && !hasInternalEquals));
+            const finalBodyHtml = heightClass === 'h-conv' ? applyConversionAnswerStyle(bodyHtml) : bodyHtml;
             return {
-                bodyHtml,
+                bodyHtml: finalBodyHtml,
                 suffixHtml: hasAnswerTail ? buildInlineAnswerHtml() : ''
             };
         }
