@@ -167,6 +167,11 @@
                 border-bottom: 1px solid #cbd5e1 !important;
                 margin-bottom: 4mm !important;
             }
+            body.print-quick-review #print-root .quick-review-hero-top {
+                grid-template-columns: minmax(0, 1fr) auto !important;
+                gap: 3mm 4mm !important;
+                align-items: start !important;
+            }
             body.print-quick-review #print-root .quick-review-nav {
                 grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
                 gap: 4px !important;
@@ -198,6 +203,9 @@
             body.print-quick-review #print-root .quick-review-focus-card {
                 padding: 2.8mm 3mm !important;
             }
+            body.print-quick-review #print-root .quick-review-focus-top {
+                gap: 2mm !important;
+            }
             body.print-quick-review #print-root .quick-review-topics {
                 gap: 3mm !important;
             }
@@ -211,10 +219,75 @@
                 gap: 2.4mm 3mm !important;
                 margin-top: 2.4mm !important;
             }
+            body.print-quick-review #print-root .quick-review-summary-strip {
+                grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
+                gap: 2.2mm 2.6mm !important;
+                margin-bottom: 2.6mm !important;
+            }
             body.print-quick-review #print-root .quick-review-support-grid {
                 grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr) !important;
                 gap: 2.4mm 3mm !important;
                 margin-top: 2.4mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-stage-note,
+            body.print-quick-review #print-root .quick-review-recommendations,
+            body.print-quick-review #print-root .quick-review-hook,
+            body.print-quick-review #print-root .quick-review-memory-route,
+            body.print-quick-review #print-root .quick-review-flow-step,
+            body.print-quick-review #print-root .quick-review-support-block,
+            body.print-quick-review #print-root .quick-review-example {
+                background: #fff !important;
+                box-shadow: none !important;
+            }
+            body.print-quick-review #print-root .quick-review-stage-note {
+                max-width: 52mm !important;
+                padding: 2.2mm 2.8mm !important;
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-recommendations {
+                padding: 2.1mm 2.6mm !important;
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-focus-card,
+            body.print-quick-review #print-root .quick-review-topic {
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-focus-card {
+                border-left: 0.7mm solid #cbd5e1 !important;
+            }
+            body.print-quick-review #print-root .quick-review-nav-chip {
+                padding: 1.8mm 2.2mm !important;
+                border-radius: 999px !important;
+            }
+            body.print-quick-review #print-root .quick-review-nav-num {
+                width: 5mm !important;
+                height: 5mm !important;
+                font-size: 9px !important;
+            }
+            body.print-quick-review #print-root .quick-review-topic-head {
+                margin-bottom: 2.2mm !important;
+                padding-bottom: 2mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-hook,
+            body.print-quick-review #print-root .quick-review-memory-route {
+                padding: 2.2mm 2.5mm !important;
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-flow-step {
+                padding: 2.4mm 2.7mm !important;
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-flow-step::after {
+                display: none !important;
+            }
+            body.print-quick-review #print-root .quick-review-support-block,
+            body.print-quick-review #print-root .quick-review-example {
+                padding: 2.5mm 2.7mm !important;
+                border-radius: 3mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-topic-pin {
+                padding: 1.1mm 2mm !important;
+                font-size: 9.2px !important;
             }
             body.print-quick-review #print-root .quick-review-topic-title {
                 font-size: 15px !important;
@@ -1529,7 +1602,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.65</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.66</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -1605,9 +1678,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.65';
-        const APP_RELEASE_LABEL = '计算知识页内容提纯';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.65 计算知识页内容提纯：更短、更像孩子能马上想起的话。';
+        const APP_VERSION = 'v23.66';
+        const APP_RELEASE_LABEL = '计算知识页打印讲义优化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.66 计算知识页打印讲义优化：更像可直接发的小讲义。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';

@@ -545,3 +545,9 @@ profile = {
 - Topic copy is now shorter, more spoken, and closer to “what a child should remember right before solving” rather than “how an adult would explain the topic”.
 - Hooks, first moves, checks, and reminders were all rewritten to improve recall speed instead of descriptive completeness.
 - This keeps the page aligned with its real job: helping students quickly remember high-value calculation rules and avoid common slips.
+
+- v23.66 strengthens the printable handout quality of the quick-review page:
+
+- The printed quick-review page now uses a more unified handout rhythm across hero, focus cards, navigation chips, topic cards, flow steps, and support/example blocks.
+- The goal is not to add content, but to make the printed result look more like a teacher-prepared review handout and less like a captured web page.
+- This improves the practicality of using the page as a physical review sheet before or after practice.

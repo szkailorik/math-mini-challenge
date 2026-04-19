@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.66 Iteration Notes
+
+### Iteration 1
+
+- What I changed: shifted the quick-review work from content to print presentation by tightening and unifying the printed hero, focus cards, navigation chips, topic cards, flow steps, and support/example blocks so the page reads more like a prepared review handout on paper.
+- Open questions: whether the next pass should keep refining printed density, or move back to topic-level copy polish on screen.
+- Risks: denser print styling improves handout quality, but if pushed too far it could reduce margin for annotation and visual breathing room.
+- Next steps: review the actual print preview, then decide whether to stop at this level of polish or keep tuning paper density and hierarchy.
+
 ## Current v23.65 Iteration Notes
 
 ### Iteration 1
