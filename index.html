@@ -130,8 +130,8 @@
             body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
             body.print-sandbox-active #print-root .h-conv {
                 min-height: 36px !important;
-                font-size: 16.2px !important;
-                line-height: 1.08 !important;
+                font-size: 15.6px !important;
+                line-height: 1.04 !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-body,
             body.print-sandbox-active #print-root .h-conv .math-text,
@@ -139,10 +139,11 @@
             body.print-sandbox-active #print-root .h-conv .math-group-body {
                 flex-wrap: wrap !important;
                 white-space: normal !important;
+                gap: 0.05em 0.1em !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
-                font-size: 16px !important;
-                line-height: 1.08 !important;
+                font-size: 15.4px !important;
+                line-height: 1.04 !important;
             }
             body.print-sandbox-active #print-root .h-conv .frac {
                 font-size: 0.78em !important;
@@ -655,16 +656,18 @@
             margin: 0 0.03em 0 0.02em;
         }
         .h-conv {
-            min-height: 44px;
+            min-height: 40px;
             width: 100%;
-            font-size: 17.9px;
-            line-height: 1.12;
+            font-size: 17.2px;
+            line-height: 1.06;
+            grid-template-columns: 1.55em minmax(0, 1fr);
+            column-gap: 6px;
         }
         .h-conv .q-body,
         .h-conv .math-row,
         .h-conv .math-text {
             align-items: baseline;
-            gap: 0.06em 0.12em;
+            gap: 0.05em 0.1em;
         }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -674,8 +677,9 @@
             white-space: normal;
         }
         .h-conv .q-num {
-            font-size: 18px;
-            line-height: 1.12;
+            font-size: 17.2px;
+            line-height: 1.06;
+            min-width: 1.45em;
         }
         .h-conv .frac {
             font-size: 0.79em;
@@ -2047,9 +2051,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.96';
+        const APP_VERSION = 'v23.97';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.96 压缩第二大题题干：桥接题统一改成更短的试卷式表达，继续压住超页和乱排。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.97 第二大题继续收紧成短题条：题号列更窄、行高更紧、题干缝更小。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
