@@ -90,20 +90,23 @@
             }
             body.print-sandbox-active #print-root .q-body {
                 gap: 0.1em 0.18em !important;
+                align-items: baseline !important;
             }
             body.print-sandbox-active #print-root .math-text,
             body.print-sandbox-active #print-root .math-row {
                 line-height: 1.28 !important;
+                align-items: baseline !important;
             }
             body.print-sandbox-active #print-root .grid-frac-tight {
                 gap: 6px 8px !important;
             }
             body.print-sandbox-active #print-root .frac {
-                font-size: 0.88em !important;
+                font-size: 0.84em !important;
+                margin: 0 0.04em 0 0.03em !important;
             }
             body.print-sandbox-active #print-root .paren-l,
             body.print-sandbox-active #print-root .paren-r {
-                font-size: 1.78em !important;
+                font-size: 1.66em !important;
             }
             body.print-sandbox-active #print-root .math-write-gap {
                 width: 1.05em !important;
@@ -127,7 +130,16 @@
             body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
             body.print-sandbox-active #print-root .h-conv {
                 min-height: 36px !important;
-                font-size: 17px !important;
+                font-size: 16.2px !important;
+                line-height: 1.08 !important;
+            }
+            body.print-sandbox-active #print-root .h-conv .q-num {
+                font-size: 16px !important;
+                line-height: 1.08 !important;
+            }
+            body.print-sandbox-active #print-root .h-conv .frac {
+                font-size: 0.78em !important;
+                margin: 0 0.03em 0 0.02em !important;
             }
             body.print-sandbox-active #print-root .sheet-meta-band {
                 gap: 6px !important;
@@ -459,13 +471,13 @@
 
         .item {
             display: grid;
-            grid-template-columns: 1.72em minmax(0, 1fr);
+            grid-template-columns: 1.78em minmax(0, 1fr);
             column-gap: 8px;
             align-items: start;
             font-size: 20px;
             position: relative;
             padding: 1px 4px 2px 0;
-            line-height: 1.44;
+            line-height: 1.38;
         }
         .q-num {
             width: auto;
@@ -475,13 +487,15 @@
             font-family: 'Times New Roman', serif;
             font-weight: bold;
             font-size: 19px;
-            line-height: 1.36;
+            line-height: 1.24;
+            align-self: start;
+            padding-top: 0.04em;
         }
         .q-body {
             display: flex;
-            align-items: flex-start;
+            align-items: baseline;
             flex-wrap: wrap;
-            gap: 0.12em 0.18em;
+            gap: 0.1em 0.16em;
             min-width: 0;
         }
         .item.paper-line-lock .q-body,
@@ -492,35 +506,35 @@
             white-space: nowrap;
         }
         .item.paper-line-lock .q-body {
-            align-items: center;
+            align-items: baseline;
         }
         .math-row {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             flex-wrap: wrap;
-            gap: 0.12em 0.18em;
+            gap: 0.1em 0.16em;
             font-family: 'Times New Roman', serif;
             font-variant-numeric: lining-nums tabular-nums;
             letter-spacing: 0.02em;
-            line-height: 1.32;
+            line-height: 1.24;
             color: var(--math-ink);
         }
         .math-text {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             flex-wrap: wrap;
-            gap: 0.12em 0.18em;
+            gap: 0.1em 0.16em;
             min-width: 0;
         }
         .math-op, .math-eq, .math-compare {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             justify-content: center;
             min-width: 0.9em;
             font-weight: 700;
             letter-spacing: 0;
             line-height: 1;
-            transform: translateY(-0.01em);
+            transform: translateY(0.015em);
         }
         .math-op { color: var(--math-blue); font-size: 1.02em; }
         .math-eq { color: var(--math-ink); min-width: 1em; font-size: 1.02em; }
@@ -549,10 +563,10 @@
             justify-content: center;
             align-items: center;
             flex: 0 0 auto;
-            margin: 0 0.1em 0 0.08em;
+            margin: 0 0.06em 0 0.04em;
             min-width: 1.7em;
-            font-size: 0.88em;
-            vertical-align: -0.22em;
+            font-size: 0.84em;
+            vertical-align: -0.14em;
             line-height: 1;
         }
         .frac > span {
@@ -560,35 +574,35 @@
             align-items: center;
             justify-content: center;
             min-width: 100%;
-            padding: 0 0.22em;
-            line-height: 1.04;
+            padding: 0 0.18em;
+            line-height: 1.02;
         }
         .frac > span.bottom { border-top: 1.6px solid currentColor; width: 100%; box-sizing: border-box; }
-        .mixed { display: inline-flex; align-items: center; gap: 4px; font-size: 20px; }
+        .mixed { display: inline-flex; align-items: baseline; gap: 0.14em; font-size: 1em; line-height: 1; }
         i.var { font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; margin: 0 4px; }
 
         .math-paren-group {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             flex: 0 0 auto;
             gap: 0.02em;
         }
         .math-group-body {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             flex-wrap: nowrap;
-            gap: 0.16em 0.18em;
+            gap: 0.1em 0.16em;
         }
         .paren-l, .paren-r {
             display: inline-flex;
-            align-items: center;
+            align-items: baseline;
             justify-content: center;
-            font-size: 1.72em;
+            font-size: 1.58em;
             font-family: 'Times New Roman', serif;
             font-weight: 300;
             color: currentColor;
-            line-height: 0.86;
-            margin: 0 -0.03em;
+            line-height: 0.92;
+            margin: 0 -0.01em;
             transform: none;
             flex: 0 0 auto;
         }
@@ -602,41 +616,68 @@
         }
         .item.h-frac {
             font-size: 17.3px;
-            line-height: 1.1;
+            line-height: 1.04;
         }
         .h-frac .math-text,
         .h-mixed .math-text {
-            gap: 0.08em 0.14em;
-            line-height: 1.24;
+            gap: 0.08em 0.12em;
+            line-height: 1.18;
         }
         .item.item-dense {
             font-size: 17.6px;
-            line-height: 1.16;
+            line-height: 1.12;
         }
         .item.item-dense .q-num {
             font-size: 18px;
-            line-height: 1.22;
+            line-height: 1.16;
         }
         .item.item-dense .frac {
-            font-size: 0.84em;
-            margin: 0 0.07em 0 0.05em;
+            font-size: 0.8em;
+            margin: 0 0.04em 0 0.03em;
         }
         .item.item-ultra-dense {
             font-size: 16.8px;
-            line-height: 1.12;
+            line-height: 1.08;
         }
         .item.item-ultra-dense .q-num {
             font-size: 17.1px;
-            line-height: 1.18;
+            line-height: 1.12;
         }
         .item.item-ultra-dense .frac {
-            font-size: 0.8em;
-            margin: 0 0.05em 0 0.03em;
+            font-size: 0.76em;
+            margin: 0 0.03em 0 0.02em;
         }
-        .h-conv { min-height: 44px; width: 100%; font-size: 19px; }
+        .h-conv {
+            min-height: 44px;
+            width: 100%;
+            font-size: 17.9px;
+            line-height: 1.12;
+        }
         .h-conv .q-body,
         .h-conv .math-row,
-        .h-conv .math-text { align-items: center; }
+        .h-conv .math-text {
+            align-items: baseline;
+            gap: 0.06em 0.12em;
+        }
+        .h-conv .q-num {
+            font-size: 18px;
+            line-height: 1.12;
+        }
+        .h-conv .frac {
+            font-size: 0.79em;
+            margin: 0 0.03em 0 0.02em;
+        }
+        .item.h-conv.item-dense {
+            font-size: 16.9px;
+            line-height: 1.08;
+        }
+        .item.h-conv.item-dense .q-num {
+            font-size: 17.1px;
+            line-height: 1.1;
+        }
+        .item.h-conv.item-dense .frac {
+            font-size: 0.75em;
+        }
         .sheet-meta-band {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1630,9 +1671,9 @@
         .followup-q {
             min-width:0;
             display:flex;
-            align-items:center;
+            align-items:baseline;
             flex-wrap:wrap;
-            gap:0.12em 0.18em;
+            gap:0.1em 0.16em;
         }
         .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
@@ -1992,9 +2033,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.90';
+        const APP_VERSION = 'v23.91';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.90 升级套卷缓存版本，强制刷新第二阶段题卷，避免继续读到旧的 Closure 缓存。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.91 收紧第二大题排版：复杂桥接题自动降列，压住数字重叠和题干错位。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4338,7 +4379,9 @@
                 return maxScore >= 84 ? 2 : Math.min(3, fallbackCols);
             }
             if (heightClass === 'h-conv') {
-                return maxScore >= 42 ? Math.min(3, fallbackCols) : fallbackCols;
+                const heavyCount = (items || []).filter(item => estimateQuestionComplexity(item?.q || '') >= 42).length;
+                if (maxScore >= 56 || heavyCount >= 3) return 2;
+                return Math.min(3, fallbackCols);
             }
             if (heightClass === 'h-mixed') {
                 return maxScore >= 60 ? Math.max(2, fallbackCols - 1) : fallbackCols;
