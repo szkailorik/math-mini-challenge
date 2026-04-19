@@ -309,10 +309,28 @@ annotateClosureItem(item, {
 The pool should distinguish:
 
 ```js
-foundation -> unit normalization + simple rate relations
-integration -> rate/discount/average/quantity mixing
-graduation -> relationship judgement + compact model choice
+const closureUnitFamilies = {
+  unitNormalization: ['c2_unit_length', 'c2_unit_mass'],
+  rateAndPercentStructure: ['c2_rate_discount', 'c2_rate_percent'],
+  relationModelChoice: ['c2_speed_mix', 'c2_eq_percent'],
+  dimensionalJudgement: ['c2_unit_reasonable', 'c2_rate_reasonable']
+};
 ```
+
+Do not leave Section IV as a generic “unit and rate” bucket. Split it into four internal lanes and make the learner move through:
+
+- unit normalization
+- rate/percent structure recognition
+- relation/model choice
+- dimensional/result judgement
+
+Phase emphasis should then behave like:
+
+- foundation -> `unitNormalization + rateAndPercentStructure`
+- integration -> `rateAndPercentStructure + relationModelChoice`
+- graduation -> `relationModelChoice + dimensionalJudgement`
+
+The implementation should prefer “recognize the relation and choose the model” before it spends more paper budget on long word problems or low-value bare unit conversions.
 
 - [ ] **Step 5: Add one explicit number-sense item to keep-warm or bridge when missing**
 
