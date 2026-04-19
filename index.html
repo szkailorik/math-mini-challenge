@@ -2047,9 +2047,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.94';
+        const APP_VERSION = 'v23.95';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.94 第二大题不再强制单行：桥接/互化题允许有秩序地换行，优先消除重叠。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.95 第二阶段第二大题改成 6 道高价值桥接题，优先压住超页和错位。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5916,7 +5916,55 @@
                         ]
                     ],
             };
-            return buildCoveredSection(student, groupsByPhase[phaseKey] || groupsByPhase.integration);
+            return trimClosureBridgeItems(buildCoveredSection(student, groupsByPhase[phaseKey] || groupsByPhase.integration), phaseKey);
+        }
+
+        function trimClosureBridgeItems(items = [], phaseKey = 'integration') {
+            const targetsByPhase = {
+                foundation: {
+                    representation_conversion: 2,
+                    baseline_comparison: 2,
+                    representation_choice: 1,
+                    post_conversion_use: 1
+                },
+                integration: {
+                    representation_conversion: 1,
+                    baseline_comparison: 1,
+                    representation_choice: 2,
+                    post_conversion_use: 2
+                },
+                graduation: {
+                    representation_conversion: 1,
+                    baseline_comparison: 2,
+                    representation_choice: 1,
+                    post_conversion_use: 2
+                }
+            };
+            const targets = targetsByPhase[phaseKey] || targetsByPhase.integration;
+            const buckets = {
+                representation_conversion: [],
+                baseline_comparison: [],
+                representation_choice: [],
+                post_conversion_use: []
+            };
+            (items || []).forEach(item => {
+                const lane = item?.bridgeLane;
+                if (buckets[lane]) buckets[lane].push(item);
+            });
+            const chosen = [];
+            const used = new Set();
+            Object.entries(targets).forEach(([lane, count]) => {
+                (buckets[lane] || []).slice(0, count).forEach(item => {
+                    chosen.push(item);
+                    used.add(item);
+                });
+            });
+            (items || []).forEach(item => {
+                if (chosen.length >= 6) return;
+                if (used.has(item)) return;
+                chosen.push(item);
+            });
+            return Engine.shuffle(chosen.slice(0, 6));
         }
 
         function buildClosureUnitSection(student, track = 'kai', phaseKey = 'integration') {

@@ -609,12 +609,12 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
   if (programId === 'elementary_closure_v1') {
     const expectedClosureCounts = {
       c_k_keep: 8,
-      c_k_bridge: 8,
+      c_k_bridge: 6,
       c_k_mix: 4,
       c_k_unit: 8,
       c_k_focus: 4,
       c_l_keep: 8,
-      c_l_bridge: 8,
+      c_l_bridge: 6,
       c_l_mix: 4,
       c_l_unit: 8,
       c_l_focus: 4,
