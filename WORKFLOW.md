@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.78 Iteration Notes
+
+### Iteration 1
+
+- What I changed: deepened second-stage `Closure` Section III so it now carries explicit structure-recognition, method-choice, complex-execution, and result-judgement lanes, with method choice prioritized before raw complexity.
+- Open questions: whether the next pass should enrich Section II so representation transfer and complex mixed work interlock even more tightly, or first observe a few real papers to see whether Section III is now too heavy in graduation mode.
+- Risks: bracket-bearing graduation prompts now exist by design, so if later edits inflate them without preserving method-choice cues, the lane could drift back toward “harder calculations” instead of “higher-value calculations”.
+- Next steps: review several real `Closure` papers, then decide whether the next iteration should deepen Section II or further calibrate Section III density.
+
 ## Current v23.77 Iteration Notes
 
 ### Iteration 1

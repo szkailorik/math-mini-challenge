@@ -619,10 +619,10 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (!lBridgeTags.has('c2_bridge_pct_frac') || !lBridgeTags.has('c2_bridge_ratio_frac')) {
       throw new Error(`Closure set ${setNumber} is missing Lorik bridge coverage`);
     }
-    if (!kMixTags.has('c2_speed_mix') || !kMixTags.has('c2_est_product')) {
+    if (![...kMixTags].some(tag => String(tag || '').startsWith('c2_mix_'))) {
       throw new Error(`Closure set ${setNumber} is missing KAI complex-mixed coverage`);
     }
-    if (!lMixTags.has('c2_speed_mix') || !lMixTags.has('c2_est_product')) {
+    if (![...lMixTags].some(tag => String(tag || '').startsWith('c2_mix_'))) {
       throw new Error(`Closure set ${setNumber} is missing Lorik complex-mixed coverage`);
     }
     if (![...kUnitTags].some(tag => ['c2_unit_length', 'c2_unit_mass'].includes(tag)) || ![...kUnitTags].some(tag => ['c2_rate_discount', 'c2_eq_percent'].includes(tag))) {
@@ -684,6 +684,47 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     }
     if (setNumber === 26 && emphasis.complexMixed !== 'full_structure') {
       throw new Error(`Closure set ${setNumber} should use full-structure complex-mixed weight in graduation`);
+    }
+
+    const mixLaneEmphasis = data.phaseMeta?.mixLaneEmphasis || {};
+    if (setNumber === 1 && mixLaneEmphasis.method !== 'high') {
+      throw new Error(`Closure set ${setNumber} should already prioritize method choice in Section III`);
+    }
+    if (setNumber === 12 && mixLaneEmphasis.execution !== 'high') {
+      throw new Error(`Closure set ${setNumber} should raise complex execution weight in Section III`);
+    }
+    if (setNumber === 26 && mixLaneEmphasis.judgement !== 'high') {
+      throw new Error(`Closure set ${setNumber} should raise result-judgement weight in Section III`);
+    }
+
+    const validMixLanes = new Set(['structure_recognition', 'method_choice', 'complex_execution', 'result_judgement']);
+    const kMixLanes = new Set((data.c_k_mix || []).map(item => item?.mixLane).filter(Boolean));
+    const lMixLanes = new Set((data.c_l_mix || []).map(item => item?.mixLane).filter(Boolean));
+    if (![...kMixLanes, ...lMixLanes].every(lane => validMixLanes.has(lane))) {
+      throw new Error(`Closure set ${setNumber} has an invalid Section III mix-lane tag`);
+    }
+    if (setNumber === 1) {
+      if (!kMixLanes.has('method_choice') || !lMixLanes.has('method_choice')) {
+        throw new Error(`Closure set ${setNumber} should expose method-choice items for both students in Section III`);
+      }
+      if (!kMixLanes.has('structure_recognition') || !lMixLanes.has('structure_recognition')) {
+        throw new Error(`Closure set ${setNumber} should expose structure-recognition items for both students in Section III`);
+      }
+    }
+    if (setNumber === 12) {
+      if (!kMixLanes.has('complex_execution') || !lMixLanes.has('complex_execution')) {
+        throw new Error(`Closure set ${setNumber} should expose complex-execution items for both students in Section III`);
+      }
+    }
+    if (setNumber === 26) {
+      if (!kMixLanes.has('result_judgement') || !lMixLanes.has('result_judgement')) {
+        throw new Error(`Closure set ${setNumber} should expose result-judgement items for both students in Section III`);
+      }
+      const kBracketed = (data.c_k_mix || []).some(item => /[\[\{]/.test(stripHtml(item?.q || '')));
+      const lBracketed = (data.c_l_mix || []).some(item => /[\[\{]/.test(stripHtml(item?.q || '')));
+      if (!kBracketed || !lBracketed) {
+        throw new Error(`Closure set ${setNumber} should expose bracket-bearing complex mixed items for both students`);
+      }
     }
 
     for (const [section, expected] of Object.entries(expectedClosureCounts)) {

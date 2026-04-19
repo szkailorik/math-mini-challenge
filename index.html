@@ -1937,9 +1937,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.77';
-        const APP_RELEASE_LABEL = '第二阶段训练矩阵重排';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.77 第二阶段训练矩阵重排：核心保温更轻，表征互通、复杂混合和关系综合成为主体。';
+        const APP_VERSION = 'v23.78';
+        const APP_RELEASE_LABEL = '第二阶段复杂混合深化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.78 第二阶段复杂混合深化：Section III 现在按结构识别、方法选择、复杂执行、结果判断分层推进，方法选择优先。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2417,6 +2417,10 @@
         function getClosureSignalField(tag) {
             const t = String(tag || '');
             if (t.startsWith('c2_bridge_')) return 'representationGap';
+            if (t.startsWith('c2_mix_')) {
+                if (t === 'c2_mix_judgement') return 'validationGap';
+                return 'methodGap';
+            }
             if (t.startsWith('c2_unit_') || t.startsWith('c2_rate_') || t.startsWith('c2_eq_')) return 'methodGap';
             if (t.startsWith('c2_speed_')) return 'speedGap';
             if (t.startsWith('c2_est_')) return 'validationGap';
@@ -3422,6 +3426,7 @@
             { family: 'decimal_division', test: tag => /^(k_ddiv_|l_div_decimal_)/.test(tag) },
             { family: 'fraction_operation', test: tag => /^(k_fcalc_|l_fmix_)/.test(tag) },
             { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
+            { family: 'complex_mixed', test: tag => /^c2_mix_/.test(tag) },
             { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
             { family: 'equation_method', test: tag => /^(k_eq_|c2_eq_|c2_rate_eq)/.test(tag) },
             { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
@@ -3441,6 +3446,7 @@
             decimal_division: 'rule',
             fraction_operation: 'method',
             conversion_bridge: 'method',
+            complex_mixed: 'method',
             unit_rate_speed: 'method',
             equation_method: 'rule',
             validation_estimation: 'validation',
@@ -3598,6 +3604,10 @@
             "c2_unit_mass": { name: "第二阶段-质量单位换算", advice: "先统一单位再运算，避免一边是千克一边是克时直接相加减。" },
             "c2_rate_discount": { name: "第二阶段-百分率与折扣", advice: "先把折扣和百分率化成小数或分数，再套“整体×比率”的统一模型。" },
             "c2_eq_percent": { name: "第二阶段-百分数方程", advice: "看到“某数的百分之几是多少”，先写成 x×比率=结果，再做逆运算。" },
+            "c2_mix_structure": { name: "第二阶段-复杂混合结构识别", advice: "先认结构，再动笔：看哪一部分适合先算、先互化、先约分或先凑整。" },
+            "c2_mix_method": { name: "第二阶段-复杂混合方法选择", advice: "不要拿到题就硬算。先判断是先通分、先约分、先互化还是先拆分更快更稳。" },
+            "c2_mix_execute": { name: "第二阶段-复杂混合执行", advice: "方法选对后，再按顺序稳定执行；混合运算里要把小数、分数和括号结构看成一个整体。" },
+            "c2_mix_judgement": { name: "第二阶段-复杂混合结果判断", advice: "做完先回看结果范围、小数点位置和比 1 大还是小，再决定能不能信这个答案。" },
             "c2_est_product": { name: "第二阶段-估算乘法结果", advice: "先看数量级，再用接近整十整百的数估算，别急着做精确竖式。" },
             "c2_speed_mix": { name: "第二阶段-速度稳定短链", advice: "先看结构再计算，目标是又稳又快，而不是只靠抢速度。" }
         };
@@ -3618,6 +3628,7 @@
             { prefix: "l_fmix_", name: "分数混合-通分与顺序", advice: "同分母直接算，异分母先通分；混合运算先括号，再乘除，最后加减。" },
             { prefix: "l_bmix_", name: "混合简算-优先级", advice: "先看括号和乘除优先级，再找125、25、99、101等凑整结构。" },
             { prefix: "c2_bridge_", name: "第二阶段-跨表示桥接", advice: "同一个数量在百分数、小数、分数、比之间切换时，先统一表示，再计算。" },
+            { prefix: "c2_mix_", name: "第二阶段-复杂混合主训练", advice: "复杂混合题先认结构、再选方法、再执行、最后判断结果，不能直接硬算。" },
             { prefix: "c2_unit_", name: "第二阶段-单位换算链", advice: "先统一单位再计算；复杂题优先在草稿上写出转换后的量。" },
             { prefix: "c2_rate_", name: "第二阶段-比率与折扣", advice: "先识别“整体”和“比率”，再决定用乘法、除法还是按比分配。" },
             { prefix: "c2_eq_", name: "第二阶段-数量关系方程", advice: "把文字关系先压成等式，再做一步一步逆运算，不要脑算跳步。" },
@@ -3629,7 +3640,7 @@
             { id: "integer", name: "整数乘除与退位", patterns: ["l_mul_", "l_div_", "k_sub_", "l_sub_"], desc: "训练竖式位值、退位链、商中间0和反推验算。" },
             { id: "fraction", name: "分数与互化", patterns: ["k_fcalc_", "l_fmix_", "k_conv_", "l_conv_", "c2_bridge_"], desc: "训练通分、约分、分数小数百分数互化和分数意义。" },
             { id: "equation", name: "方程与未知数", patterns: ["k_eq_", "c2_eq_"], desc: "训练逆运算、未知数位置判断和两步方程顺序。" },
-            { id: "strategy", name: "简算与综合策略", patterns: ["k_oly_", "l_bmix_", "boss_", "c2_est_", "c2_speed_"], desc: "训练结构识别、分配律、补偿凑整和迁移题。" },
+            { id: "strategy", name: "简算与综合策略", patterns: ["k_oly_", "l_bmix_", "boss_", "c2_mix_", "c2_est_", "c2_speed_"], desc: "训练结构识别、方法选择、分配律、补偿凑整和迁移题。" },
             { id: "rate", name: "百分率与比", patterns: ["c2_rate_"], desc: "训练百分率、折扣、按比分配和比值表达的统一计算链。" },
             { id: "unit", name: "单位与量纲", patterns: ["c2_unit_"], desc: "训练长度、质量、时间等单位的统一换算与计算链。" }
         ];
@@ -3651,7 +3662,8 @@
             { type: 'prefix', value: 'k_conv_', tier: 2 },
             { type: 'prefix', value: 'l_div_decimal_', tier: 2 },
             { type: 'prefix', value: 'k_eq_', tier: 2 },
-            { type: 'prefix', value: 'k_fcalc_', tier: 2 }
+            { type: 'prefix', value: 'k_fcalc_', tier: 2 },
+            { type: 'prefix', value: 'c2_mix_', tier: 3 }
         ];
         function tagMatchesPatterns(tag, patterns) {
             const t = String(tag || '');
@@ -4974,6 +4986,12 @@
                         complexMixed: 'light',
                         unitRate: 'medium',
                         focus: 'diagnostic'
+                    },
+                    mixLaneEmphasis: {
+                        structure: 'high',
+                        method: 'high',
+                        execution: 'medium_low',
+                        judgement: 'medium'
                     }
                 };
             }
@@ -4998,6 +5016,12 @@
                         complexMixed: 'high',
                         unitRate: 'high',
                         focus: 'high_value_gap'
+                    },
+                    mixLaneEmphasis: {
+                        structure: 'medium',
+                        method: 'high',
+                        execution: 'high',
+                        judgement: 'medium_high'
                     }
                 };
             }
@@ -5021,6 +5045,12 @@
                     complexMixed: 'full_structure',
                     unitRate: 'judgement',
                     focus: 'last_short_board'
+                },
+                mixLaneEmphasis: {
+                    structure: 'medium',
+                    method: 'high',
+                    execution: 'high',
+                    judgement: 'high'
                 }
             };
         }
@@ -5052,7 +5082,8 @@
                 ...item,
                 trainingAxis: meta.trainingAxis || item.trainingAxis || '',
                 trainingTier: meta.trainingTier || item.trainingTier || '',
-                sectionRole: meta.sectionRole || item.sectionRole || ''
+                sectionRole: meta.sectionRole || item.sectionRole || '',
+                mixLane: meta.mixLane || item.mixLane || ''
             });
         }
 
@@ -5667,45 +5698,54 @@
         }
 
         function buildClosureMixSection(student, track = 'kai', phaseKey = 'integration') {
+            const frac = (n, d) => new Frac(n, d).toHTML();
+            const mixItem = (tag, mixLane, q, a, step, extra = {}) => ({
+                tag,
+                mixLane,
+                q,
+                a,
+                step,
+                ...extra
+            });
             const phaseGroups = {
                 foundation: track === 'kai'
                     ? [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.25 &times; 16 更适合先把 0.25 看成<div class="blank"></div>`, frac(1, 4), `先认出 0.25 = ${frac(1, 4)}，结构看清后再往下算更稳。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `4.8 &divide; 0.6 可以先看成<div class="blank"></div>`, `48 &divide; 6`, `先选方法：把被除数和除数同时乘 10，化成 48÷6 再算。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `1.2 + ${frac(3, 5)} &times; 2 =<div class="blank"></div>`, `2.4`, `先算 ${frac(3, 5)}×2 = 1.2，再和 1.2 相加，得到 2.4。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `0.48 &divide; 0.6 的结果比 1<div class="blank"></div>`, `小`, `0.48 比 0.6 小，所以 0.48÷0.6 的结果应小于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ]
                     : [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 2.1 &asymp;<div class="blank"></div>`, a:`80`, step:`39.8 约看成 40，2.1 约看成 2，所以结果约是 80。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`198 &divide; 4 &asymp;<div class="blank"></div>`, a:`50`, step:`把 198 看成 200，200÷4 = 50。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`120 米 &divide; 4 分 =<div class="blank"></div> 米/分`, a:`30`, step:`速度 = 路程 ÷ 时间，所以 120÷4 = 30 米/分。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`36 千米/时 &times; 2 时 =<div class="blank"></div> 千米`, a:`72`, step:`路程 = 速度 × 时间，所以 36 × 2 = 72。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.5 &times; 18 更适合先看成<div class="blank"></div> &times; 18`, frac(1, 2), `先认出 0.5 = ${frac(1, 2)}，再按“求一半”去想。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `420 &divide; 60 可以先看成<div class="blank"></div>`, `42 &divide; 6`, `先同步缩放，把被除数和除数同时去掉一个 0，再算 42÷6。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `0.8 + ${frac(1, 4)} &times; 4 =<div class="blank"></div>`, `1.8`, `先算 ${frac(1, 4)}×4 = 1，再和 0.8 相加，得到 1.8。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `0.45 &divide; 0.9 的结果比 1<div class="blank"></div>`, `小`, `被除数比除数小，所以结果应小于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ],
                 integration: track === 'kai'
                     ? [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`39.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`200`, step:`39.8 约看成 40，5.1 约看成 5，所以结果约是 200。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 19 &asymp;<div class="blank"></div>`, a:`30`, step:`把 598 看成 600，把 19 看成 20，600÷20 = 30。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`180 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`60`, step:`速度 = 路程 ÷ 时间，所以 180÷3 = 60 米/分。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时 &times; 1.5 时 =<div class="blank"></div> 千米`, a:`108`, step:`路程 = 速度 × 时间，所以 72 &times; 1.5 = 108。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.375 &times; 16 更适合先把 0.375 看成<div class="blank"></div>`, frac(3, 8), `先认出 0.375 = ${frac(3, 8)}，再看 16 与 8 的关系。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `25 &times; 48 可以先算 48 &divide;<div class="blank"></div> 再乘 100`, `4`, `先选方法：25 = 100÷4，所以先算 48÷4 = 12，再乘 100。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `${frac(3, 4)} + 1.5 &times; ${frac(2, 3)} =<div class="blank"></div>`, `1.75`, `先算 1.5×${frac(2, 3)} = 1，再和 ${frac(3, 4)} 相加，得到 1.75。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `0.6 &divide; ${frac(3, 4)} 的结果比 1<div class="blank"></div>`, `小`, `0.6 小于 ${frac(3, 4)}，所以商应小于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ]
                     : [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`19.8 &times; 5.1 &asymp;<div class="blank"></div>`, a:`100`, step:`19.8 约看成 20，5.1 约看成 5，所以结果约是 100。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`301 &divide; 6 &asymp;<div class="blank"></div>`, a:`50`, step:`把 301 看成 300，300÷6 = 50。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`150 米 &divide; 3 分 =<div class="blank"></div> 米/分`, a:`50`, step:`速度 = 路程 ÷ 时间，所以 150÷3 = 50 米/分。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`48 千米/时 &times; 2.5 时 =<div class="blank"></div> 千米`, a:`120`, step:`路程 = 速度 × 时间，所以 48 &times; 2.5 = 120。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.625 &times; 8 更适合先把 0.625 看成<div class="blank"></div>`, frac(5, 8), `先认出 0.625 = ${frac(5, 8)}，再看 8 与分母正好对应。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `1.25 &times; 16 可以先把 1.25 看成<div class="blank"></div>`, frac(5, 4), `1.25 = ${frac(5, 4)}，所以可以先算 16÷4，再乘 5。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `${frac(2, 5)} + 1.2 &times; ${frac(3, 4)} =<div class="blank"></div>`, `1.3`, `先算 1.2×${frac(3, 4)} = 0.9，再和 ${frac(2, 5)} 相加，得到 1.3。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `${frac(3, 5)} &divide; 0.4 的结果比 1<div class="blank"></div>`, `大`, `0.6 大于 0.4，所以商应大于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ],
                 graduation: track === 'kai'
                     ? [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`49.8 &times; 8.2 的结果更接近<div class="blank"></div>`, a:`400`, step:`49.8 约看成 50，8.2 约看成 8，所以结果约是 400。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`803 &divide; 16 的结果更接近<div class="blank"></div>`, a:`50`, step:`803 约看成 800，16 不变，800÷16 = 50。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`一辆车 1.5 时行 96 千米，平均每时行<div class="blank"></div>千米`, a:`64`, step:`速度 = 路程 ÷ 时间，所以 96 ÷ 1.5 = 64。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`72 千米/时行 0.5 时，再行 18 千米，共行<div class="blank"></div>千米`, a:`54`, step:`先算 72×0.5 = 36 千米，再加 18 千米，一共 54 千米。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.125 &times; 64 更适合先把 0.125 看成<div class="blank"></div>`, frac(1, 8), `先认出 0.125 = ${frac(1, 8)}，结构看清后可以直接把 64÷8。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `98 &times; 26 可以先算 100 &times; 26 再<div class="blank"></div>`, `减 52`, `把 98 看成 100-2，所以先算 2600，再减去 52。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `[1.5 + ${frac(3, 4)}] &times; 8 =<div class="blank"></div>`, `18`, `先算括号里 1.5 + ${frac(3, 4)} = 2.25，再乘 8，得到 18。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `{2.4 &minus; 0.48} &divide; 0.6 的结果比 1<div class="blank"></div>`, `大`, `先看 {2.4−0.48} = 1.92，而 1.92 大于 0.6，所以最后结果应大于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ]
                     : [
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`29.9 &times; 7.8 的结果更接近<div class="blank"></div>`, a:`240`, step:`29.9 约看成 30，7.8 约看成 8，所以结果约是 240。` }) }],
-                        [{ tag: "c2_est_product", gen: () => ({ tag: "c2_est_product", q:`598 &divide; 12 的结果更接近<div class="blank"></div>`, a:`50`, step:`598 约看成 600，600÷12 = 50。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`一辆车 2 时行 84 千米，平均每时行<div class="blank"></div>千米`, a:`42`, step:`速度 = 路程 ÷ 时间，所以 84÷2 = 42。` }) }],
-                        [{ tag: "c2_speed_mix", gen: () => ({ tag: "c2_speed_mix", q:`60 千米/时行 1.2 时，共行<div class="blank"></div>千米`, a:`72`, step:`路程 = 速度 × 时间，所以 60×1.2 = 72。` }) }]
+                        [{ tag: "c2_mix_structure", gen: () => mixItem("c2_mix_structure", 'structure_recognition', `0.625 &times; 24 更适合先把 0.625 看成<div class="blank"></div>`, frac(5, 8), `先认出 0.625 = ${frac(5, 8)}，再按 24÷8×5 去算更顺。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_method", gen: () => mixItem("c2_mix_method", 'method_choice', `99 &times; 48 可以先算 100 &times; 48 再<div class="blank"></div>`, `减 48`, `把 99 看成 100-1，所以先算 4800，再减去 48。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_execute", gen: () => mixItem("c2_mix_execute", 'complex_execution', `{2.4 &minus; ${frac(2, 5)}} &divide; 0.5 =<div class="blank"></div>`, `4`, `先算大括号里 2.4-${frac(2, 5)} = 2，再算 2÷0.5 = 4。`, { qualityFamily: 'complex_mixed' }) }],
+                        [{ tag: "c2_mix_judgement", gen: () => mixItem("c2_mix_judgement", 'result_judgement', `[0.75 &divide; ${frac(3, 5)}] 的结果比 1<div class="blank"></div>`, `大`, `0.75 大于 ${frac(3, 5)}，所以商应大于 1。`, { qualityFamily: 'validation_estimation' }) }]
                     ],
             };
             return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
@@ -5960,9 +6000,10 @@
                 sectionRole: 'representation_core'
             });
             const annotateMixItems = items => (items || []).map(item => annotateClosureItem(item, {
-                trainingAxis: item?.tag === 'c2_est_product' ? 'number_sense' : 'complex_mixed',
+                trainingAxis: item?.mixLane === 'result_judgement' ? 'number_sense' : 'complex_mixed',
                 trainingTier: 'A',
-                sectionRole: 'complex_mixed_core'
+                sectionRole: 'complex_mixed_core',
+                mixLane: item?.mixLane || ''
             }));
             const annotateUnitItems = items => (items || []).map(item => annotateClosureItem(item, {
                 trainingAxis: ['c2_unit_length', 'c2_unit_mass'].includes(item?.tag) ? 'unit_rate_bridge' : 'method_choice',

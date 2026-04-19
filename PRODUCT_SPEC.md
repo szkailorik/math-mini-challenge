@@ -27,6 +27,17 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.78 deepens the second-stage `复杂四则混合主训练` lane:
+
+- Section III is no longer just “the hardest mixed questions”.
+- It now explicitly trains four sub-abilities:
+  - structure recognition
+  - method choice
+  - complex execution
+  - result judgement
+- The learner is expected to decide how to simplify, convert, split, cancel, or bracket the work before brute-force execution.
+- Graduation papers now use clearer bracket-bearing mixed items so the system can check whether the learner is ready for junior-high style structured arithmetic.
+
 v23.77 rebuilds the second-stage training logic around high-value closure:
 
 - Phase two no longer treats elementary calculation topics equally.
