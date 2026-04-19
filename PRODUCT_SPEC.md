@@ -33,6 +33,11 @@ v23.107 improves the second-stage bilingual helper line:
 - The English support line now covers more real stage-two prompt shapes in the bridge, unit/rate, percent-equation, and mixed-result lanes.
 - This reduces confusing generic fallback copy and makes the bilingual layer more useful for children who rely on both languages to confirm task meaning.
 
+v23.108 further stabilizes Closure bilingual paper layout:
+
+- Compact parenthetical answer slots are now used more broadly across second-stage prompts instead of leaving long underline blanks inside the question body.
+- This keeps the paper closer to exam-style short answers while reducing overflow and overlap risk in dense bilingual sections.
+
 v23.79 deepens the second-stage `表征互通主训练` lane:
 
 - Section II is no longer just a conversion drill lane.

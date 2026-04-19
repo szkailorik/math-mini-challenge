@@ -65,6 +65,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `generateProgramSetData`: isolates advanced and closure generation behind one runtime entry point.
 - `buildClosureProgramSet`: now assembles the second-stage paper around a fixed five-part matrix: `keep_warm`, `representation_core`, `complex_mixed_core`, `unit_rate_bridge`, and `targeted_focus`, while still shifting emphasis by phase across the monthly arc and by learner-specific focus lane in section V.
 - `buildClosureQuestionEnglish`: now recognizes more bridge, unit/rate, percent-equation, and mixed-result prompt shapes so Closure bilingual helper lines stay exam-like and do not frequently fall back to generic `Solve:` wording.
+- `normalizeQuestionPrompt`: now applies compact parenthetical answer slots across Closure body blanks more broadly, not only the old conversion lane, so dense second-stage bilingual prompts are less likely to overflow because of underline geometry.
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.

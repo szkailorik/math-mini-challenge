@@ -2213,9 +2213,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.107';
-        const APP_RELEASE_LABEL = '第二阶段双语英文提示继续补强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.107 第二阶段桥接 / 单位率 / 混合题的英文辅助行更少落到 Solve 兜底。';
+        const APP_VERSION = 'v23.108';
+        const APP_RELEASE_LABEL = '第二阶段英文与答案位继续收稳';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.108 第二阶段更多小题改成紧凑括号答案位，英文辅助行继续减少中文兜底。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4525,7 +4525,8 @@
                 .trim();
             const hasInternalEquals = !hasTrailingEquals && semanticMathText.includes('=');
             const hasAnswerTail = (hasTrailingEquals || (heightClass !== 'h-conv' && !hasInlineBlank && !hasCircleBlank && !hasInternalEquals));
-            const finalBodyHtml = heightClass === 'h-conv' ? applyConversionAnswerStyle(bodyHtml) : bodyHtml;
+            const shouldCompactBlank = heightClass === 'h-conv' || getCurrentProgramId() === CLOSURE_PROGRAM_ID;
+            const finalBodyHtml = shouldCompactBlank ? applyConversionAnswerStyle(bodyHtml) : bodyHtml;
             return {
                 bodyHtml: finalBodyHtml,
                 suffixHtml: hasAnswerTail ? buildInlineAnswerHtml() : ''
@@ -4588,6 +4589,7 @@
                 [/^把 (.+?) 先化成小数后，再和 (.+?) 比较，较大的是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a decimal, then compare it with ${b}. The greater one is<div class="blank"></div>`],
                 [/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, (_, a, b, c, target) => `After changing ${a}, ${b}, and ${c} into decimals, the one closest to ${target} is<div class="blank"></div>`],
                 [/^把 (.+?) 和 (.+?) 先统一表示后，再相加，结果更接近<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, their sum is closer to<div class="blank"></div>`],
+                [/^把 (.+?) 和 (.+?) 先统一表示后，它们的差是<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, their difference is<div class="blank"></div>`],
                 [/^一件商品打(.+)折后卖 (.+?) 元，原价是<div class="blank"><\/div>元$/, (_, discount, price) => `An item sells for ${price} yuan after a ${discount} discount. The original price is<div class="blank"></div> yuan`],
                 [/^原价 (.+?) 元的商品打(.+)折后是<div class="blank"><\/div>元$/, (_, price, discount) => `An item costs ${price} yuan before a ${discount} discount. The sale price is<div class="blank"></div> yuan`],
                 [/^.+?现价 (.+?) 元，是原价的 (.+?)，原价是<div class="blank"><\/div>元$/, (_, sale, rate) => `The sale price is ${sale} yuan, which is ${rate} of the original price. The original price is<div class="blank"></div> yuan`],
@@ -4595,6 +4597,8 @@
                 [/^x 的 (.+?) 比 (.+?) 多 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, base, diff) => `${rate} of x is ${diff} more than ${base}, so x =<div class="blank"></div>`],
                 [/^一(?:辆车|艘船|列火车|架飞机) (.+?) 时行 (.+?) 千米，平均每时行<div class="blank"><\/div>千米$/, (_, time, distance) => `It travels ${distance} km in ${time} h, so it travels<div class="blank"></div> km each hour`],
                 [/^(.+?) 的结果更接近<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is closer to<div class="blank"></div>`],
+                [/^(.+?) 的结果是<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is<div class="blank"></div>`],
+                [/^(.+?) 的结果应是<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} should be<div class="blank"></div>`],
                 [/^(.+?) 更适合先把 (.+?) 看成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, it is better to first see ${target} as<div class="blank"></div>`],
                 [/^(.+?) 可以先看成<div class="blank"><\/div>$/, (_, expr) => `${expr} can first be seen as<div class="blank"></div>`],
                 [/^(.+?) 更适合先算 (.+?) 再<div class="blank"><\/div>$/, (_, expr, first) => `For ${expr}, first do ${first}, then<div class="blank"></div>`],
