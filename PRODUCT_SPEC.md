@@ -38,6 +38,16 @@ v23.108 further stabilizes Closure bilingual paper layout:
 - Compact parenthetical answer slots are now used more broadly across second-stage prompts instead of leaving long underline blanks inside the question body.
 - This keeps the paper closer to exam-style short answers while reducing overflow and overlap risk in dense bilingual sections.
 
+v23.110 finishes the same paper-stability rule across both worksheet and answer-booklet rendering:
+
+- Closure bilingual helper lines now cover more real stage-two bridge, discount, percent-of-a-number, and method-choice prompt shapes, so the support line is less likely to fall back to mixed Chinese/English copy.
+- The answer-booklet `[原题 Question]` row now uses the same compact parenthetical answer-slot style as the live worksheet, so the answer side no longer reintroduces legacy underline blanks that destabilize printing.
+
+v23.109 extends the paper-layout rule from phase two to the worksheet surface:
+
+- Short worksheet answers now favor compact parenthetical answer slots instead of long underline blanks across the paper.
+- Closure bilingual helper lines are also checked to stay fully English, so the support line does not collapse back into copied Chinese prompts.
+
 v23.79 deepens the second-stage `表征互通主训练` lane:
 
 - Section II is no longer just a conversion drill lane.

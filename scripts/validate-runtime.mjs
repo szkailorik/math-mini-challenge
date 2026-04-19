@@ -752,6 +752,9 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (!closureItems.every(item => typeof item?.qEn === 'string' && item.qEn.trim())) {
       throw new Error(`Closure set ${setNumber} is missing bilingual question copy`);
     }
+    if (!closureItems.every(item => !/[\u4e00-\u9fff]/.test(String(item?.qEn || '')))) {
+      throw new Error(`Closure set ${setNumber} still contains Chinese text inside English helper copy`);
+    }
 
     const mixLaneEmphasis = data.phaseMeta?.mixLaneEmphasis || {};
     if (setNumber === 1 && mixLaneEmphasis.method !== 'high') {
@@ -825,6 +828,13 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
         seen.add(signature);
       });
     });
+    context.window.currentProgramId = 'elementary_closure_v1';
+    context.window.currentSetNumber = setNumber;
+    context.window.renderPaper?.();
+    const closurePaperHtml = elements.get('paper-container')?.innerHTML || '';
+    if (closurePaperHtml.includes('class="blank math-inline-blank"') || closurePaperHtml.includes('<div class="blank"></div>')) {
+      throw new Error(`Closure set ${setNumber} paper still contains legacy underline blanks in question rendering`);
+    }
     return;
   }
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
