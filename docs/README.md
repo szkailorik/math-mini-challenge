@@ -10,6 +10,7 @@
 
 - [2026-04-19-calculation-quick-review-design.md](./superpowers/specs/2026-04-19-calculation-quick-review-design.md) · 新增“计算知识总览页”设计稿，面向小朋友快速复习，强调高价值内容、阅读友好和可打印讲义风格
 - [2026-04-19-set-review-variant-followup-design.md](./superpowers/specs/2026-04-19-set-review-variant-followup-design.md) · 新增“本套报告错题变式跟训”设计稿，基于本套错题在报告内生成短程高质量变式训练与可打印答案参考
+- [2026-04-19-closure-training-quality-design.md](./superpowers/specs/2026-04-19-closure-training-quality-design.md) · 第二阶段 `Closure` 高价值收束训练设计稿，明确两条主轴、三阶段弧线、A/B/C 题型分层与 section 训练矩阵
 
 ## Superpowers 实施计划
 
