@@ -90,6 +90,15 @@ if (!html.includes('followup-group')) {
 if (!html.includes('set-review-followup-overview')) {
   throw new Error('Set Review follow-up overview summary block is missing from runtime script');
 }
+if (!html.includes("complex_mixed: '复杂混合'")) {
+  throw new Error('Set Review follow-up complex mixed label is missing from runtime script');
+}
+if (!html.includes('function buildSetReviewComplexMixedVariant')) {
+  throw new Error('Set Review follow-up complex mixed builder is missing from runtime script');
+}
+if (html.includes('请再做一道同类练习，并特别注意刚才容易错的步骤。')) {
+  throw new Error('Set Review follow-up still contains the old non-concrete generic prompt');
+}
 if (!html.includes('const CALCULATION_QUICK_REVIEW_TOPICS = [')) {
   throw new Error('Calculation Quick Review topic registry is missing from runtime script');
 }
