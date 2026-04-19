@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.68 Iteration Notes
+
+### Iteration 1
+
+- What I changed: refined the new `本套错题变式跟训` block so items are grouped by mistake family and shown in a clearer training order, with concept-error families leading and lighter careless-review groups following; the same grouped structure now also carries into the print shell.
+- Open questions: whether the next pass should deepen family-specific variant pools further, or shift to purely visual polish inside the report and print layout.
+- Risks: the grouping logic improves readability, but if a family still falls back to generic variants too often, the experience may feel structurally strong but pedagogically uneven.
+- Next steps: review the live grouped follow-up block with real graded sets, then decide whether the next iteration should focus on richer variant builders or tighter report/print aesthetics.
+
 ## Current v23.67 Iteration Notes
 
 ### Iteration 1

@@ -57,6 +57,9 @@ if (!html.includes('function buildSetReviewVariantQuestion')) {
 if (!html.includes('function buildSetReviewFollowupItems')) {
   throw new Error('Set Review follow-up item builder is missing from runtime script');
 }
+if (!html.includes('function buildSetReviewFollowupGroups')) {
+  throw new Error('Set Review follow-up grouping helper is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupHTML')) {
   throw new Error('Set Review follow-up renderer is missing from runtime script');
 }
@@ -71,6 +74,9 @@ if (!html.includes('window.printSetReviewFollowup = function(')) {
 }
 if (!html.includes('set-review-followup')) {
   throw new Error('Set Review follow-up styles or markup are missing from runtime script');
+}
+if (!html.includes('followup-group')) {
+  throw new Error('Set Review follow-up grouped layout is missing from runtime script');
 }
 if (!html.includes('const CALCULATION_QUICK_REVIEW_TOPICS = [')) {
   throw new Error('Calculation Quick Review topic registry is missing from runtime script');
@@ -1144,6 +1150,10 @@ if (!Array.isArray(sampleFollowupItems) || !sampleFollowupItems.length || sample
 }
 if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
   throw new Error('Set review follow-up items are missing review metadata');
+}
+const sampleFollowupGroups = context.window.buildSetReviewFollowupGroups?.(sampleFollowupItems);
+if (!Array.isArray(sampleFollowupGroups) || !sampleFollowupGroups.length) {
+  throw new Error('Set review follow-up grouping helper is not producing grouped practice sections');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleFollowupPrintHtml.includes('错题变式跟训') || !sampleFollowupPrintHtml.includes('参考答案')) {

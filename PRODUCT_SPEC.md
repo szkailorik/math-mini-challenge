@@ -557,3 +557,9 @@ profile = {
 - After grading a set, families can now stay inside `本套报告 / Set Review` and generate a short variant-follow-up block based on the actual mistakes from that set.
 - The product intent is not to repeat the exact same questions. It is to target the same knowledge point and error mechanism with changed numbers, changed answers, and a compact amount of immediate reinforcement.
 - The follow-up is intentionally short and printable, so it behaves like a high-value “补透内页” rather than a second full worksheet.
+
+- v23.68 improves the learning order of the set-review follow-up block:
+
+- The follow-up block now groups items by mistake family instead of presenting one flat list.
+- The learning order is clearer: concept-error families lead, lighter careless-review groups follow.
+- This makes the report more usable as a parent-guided reinforcement page, not just a generated list of extra problems.
