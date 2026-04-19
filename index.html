@@ -1807,6 +1807,55 @@
             border-color:#cbd5e1;
             background:#fff;
         }
+        body.print-set-review-followup,
+        body.print-set-review-followup-with-answers {
+            background: #fff !important;
+        }
+        body.print-set-review-followup #print-root,
+        body.print-set-review-followup-with-answers #print-root {
+            background: #fff !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell,
+        body.print-set-review-followup #print-root .followup-print-sheet,
+        body.print-set-review-followup-with-answers #print-root .followup-print-sheet,
+        body.print-set-review-followup #print-root .followup-print-group,
+        body.print-set-review-followup-with-answers #print-root .followup-print-group,
+        body.print-set-review-followup #print-root .followup-print-list,
+        body.print-set-review-followup-with-answers #print-root .followup-print-list,
+        body.print-set-review-followup #print-root .followup-print-item,
+        body.print-set-review-followup-with-answers #print-root .followup-print-item,
+        body.print-set-review-followup #print-root .booklet-meta-band,
+        body.print-set-review-followup-with-answers #print-root .booklet-meta-band,
+        body.print-set-review-followup #print-root .followup-print-meta,
+        body.print-set-review-followup-with-answers #print-root .followup-print-meta,
+        body.print-set-review-followup #print-root .followup-print-group-head,
+        body.print-set-review-followup-with-answers #print-root .followup-print-group-head {
+            background: #fff !important;
+            background-image: none !important;
+            box-shadow: none !important;
+        }
+        body.print-set-review-followup #print-root .booklet-meta-band,
+        body.print-set-review-followup-with-answers #print-root .booklet-meta-band {
+            border-top: 1px solid rgba(15, 23, 42, 0.65) !important;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.18) !important;
+            color: #334155 !important;
+        }
+        body.print-set-review-followup #print-root .followup-print-group-head,
+        body.print-set-review-followup-with-answers #print-root .followup-print-group-head {
+            border-bottom-color: rgba(15, 23, 42, 0.2) !important;
+        }
+        body.print-set-review-followup #print-root .followup-print-group h3,
+        body.print-set-review-followup-with-answers #print-root .followup-print-group h3,
+        body.print-set-review-followup #print-root .followup-print-meta strong,
+        body.print-set-review-followup-with-answers #print-root .followup-print-meta strong {
+            color: #0f172a !important;
+        }
+        body.print-set-review-followup #print-root .followup-print-kicker,
+        body.print-set-review-followup-with-answers #print-root .followup-print-kicker {
+            color: #7c2d12 !important;
+            background: transparent !important;
+        }
         body.print-set-review-followup #print-root,
         body.print-set-review-followup-with-answers #print-root { display:block; }
         body.print-set-review-followup #print-root .set-review-followup-answer { display:none; }
@@ -1937,9 +1986,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.79';
-        const APP_RELEASE_LABEL = '第二阶段复杂混合深化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.79 第二阶段表征互通深化：Section II 现在按表示转换、基准比较、表示选择、转换后运用四条桥接训练线推进。';
+        const APP_VERSION = 'v23.80';
+        const APP_RELEASE_LABEL = '本套变式训练打印背景修正';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.80 修正本套错题变式跟训打印页的异常背景，打印题页现在统一回到纯白纸面和正式试卷风格。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
