@@ -134,6 +134,17 @@
             body.print-sandbox-active #print-root .closure-bilingual .q-body {
                 align-items: flex-start !important;
             }
+            body.print-sandbox-active #print-root .closure-bilingual .question-copy {
+                gap: 0.06em !important;
+            }
+            body.print-sandbox-active #print-root .closure-bilingual.item-dense .prompt-en {
+                font-size: 0.48em !important;
+                line-height: 1.04 !important;
+            }
+            body.print-sandbox-active #print-root .closure-bilingual.item-ultra-dense .prompt-en {
+                font-size: 0.45em !important;
+                line-height: 1.02 !important;
+            }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
             body.print-sandbox-active #print-root .h-frac { min-height: 42px !important; }
@@ -157,6 +168,10 @@
             }
             body.print-sandbox-active #print-root .h-conv.closure-bilingual .question-copy {
                 gap: 0.05em !important;
+            }
+            body.print-sandbox-active #print-root .h-mixed .prompt-en {
+                font-size: 0.5em !important;
+                line-height: 1.04 !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
                 font-size: 14px !important;
@@ -595,6 +610,17 @@
         .closure-bilingual .q-num {
             padding-top: 0.06em;
         }
+        .closure-bilingual .question-copy {
+            gap: 0.1em;
+        }
+        .closure-bilingual.item-dense .prompt-en {
+            font-size: 0.56em;
+            line-height: 1.1;
+        }
+        .closure-bilingual.item-ultra-dense .prompt-en {
+            font-size: 0.5em;
+            line-height: 1.06;
+        }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
         .item.paper-line-lock .math-text,
@@ -719,6 +745,10 @@
         .h-mixed .math-text {
             gap: 0.08em 0.12em;
             line-height: 1.18;
+        }
+        .h-mixed .prompt-en {
+            font-size: 0.58em;
+            line-height: 1.08;
         }
         .item.item-dense {
             font-size: 17.6px;
@@ -2183,9 +2213,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.105';
+        const APP_VERSION = 'v23.106';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.105 第二阶段中英题块继续稳排：英文辅助行更贴题、更不顶版。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.106 第二阶段双语题块继续收密：dense / print 下的英文辅助行更稳。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
