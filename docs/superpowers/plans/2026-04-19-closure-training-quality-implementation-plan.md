@@ -256,6 +256,25 @@ annotateClosureItem(item, {
 })
 ```
 
+Do not leave Section III as one generic mixed bucket. Split it into four internal sub-lanes and make method choice the first priority whenever there is a tradeoff:
+
+```js
+const closureMixFamilies = {
+  structureRecognition: ['c2_mix_order_light', 'c2_mix_structure_hint'],
+  methodChoice: ['c2_mix_fast_method_choice', 'c2_mix_convert_before_calc'],
+  complexExecution: ['c2_mix_decimal_fraction', 'c2_mix_laws_and_structure'],
+  resultJudgement: ['c2_mix_reasonable_result', 'c2_mix_decimal_point_check']
+};
+```
+
+Phase emphasis should then behave like:
+
+- foundation -> `structureRecognition + methodChoice`
+- integration -> `methodChoice + complexExecution`
+- graduation -> `methodChoice + complexExecution + resultJudgement`, with bracket-bearing prompts enabled
+
+The implementation should prefer “teach the learner how to choose a method” before it spends more paper budget on raw structural complexity.
+
 - [ ] **Step 4: Make Section IV explicitly unit/rate/relation bridge**
 
 Refactor the current unit/rate section so it carries one role and can be validated:
@@ -364,6 +383,22 @@ integration: '主体收束：混合运算、方法选择、综合切换'
 graduation: '毕业判定：括号结构、边界判断、稳定迁移'
 ```
 
+Also expose Section III-specific emphasis so future validation can prove the intended method-first ramp:
+
+```js
+mixLaneEmphasis: {
+  structure: 'high',
+  method: 'high',
+  execution: 'medium_low',
+  judgement: 'medium'
+}
+```
+
+with the values stepping to:
+
+- integration -> `structure: medium`, `method: high`, `execution: high`, `judgement: medium_high`
+- graduation -> `structure: medium`, `method: high`, `execution: high`, `judgement: high`
+
 - [ ] **Step 3: Make Section V prefer A-class shortboards first**
 
 Refactor `selectClosureFocus` ranking so A-class shortages outrank B/C unless clearly dominant:
@@ -400,6 +435,14 @@ const set26 = runtime.buildClosureProgramSetForTest(26);
 assert(set1.phaseMeta.trainingEmphasis.complexMixed === 'light', 'Set 1 should keep complex mixed light');
 assert(set12.phaseMeta.trainingEmphasis.complexMixed === 'high', 'Set 12 should raise complex mixed weight');
 assert(set26.phaseMeta.trainingEmphasis.complexMixed === 'full_structure', 'Set 26 should use full structure mode');
+```
+
+Add companion assertions for the new mix-lane emphasis:
+
+```js
+assert(set1.phaseMeta.mixLaneEmphasis.method === 'high', 'Set 1 should already prioritize method choice');
+assert(set12.phaseMeta.mixLaneEmphasis.execution === 'high', 'Set 12 should raise complex execution weight');
+assert(set26.phaseMeta.mixLaneEmphasis.judgement === 'high', 'Set 26 should raise result judgement weight');
 ```
 
 - [ ] **Step 5: Re-run validation**
@@ -456,6 +499,7 @@ Add bullets covering:
 - `Closure` now uses an explicit five-section training matrix instead of a looser blended-paper composition.
 - Section II and III are the daily A-class core battlefields.
 - Complex mixed arithmetic now appears throughout all phases, but ramps from light to fully structured with bracket upgrades.
+- Section III internally splits into structure recognition, method choice, complex execution, and result judgement, with method choice explicitly prioritized before raw complexity.
 ```
 
 - [ ] **Step 3: Document the learner/product rationale in `PRODUCT_SPEC.md`**
@@ -465,6 +509,7 @@ Add bullets covering:
 ```md
 - Phase two no longer treats elementary calculation topics equally.
 - The main goal is to create a high-value closure system: preserve first-stage gains, then spend most time on representation transfer, complex mixed arithmetic, number sense, and method choice.
+- Section III is not “the hardest pile of mixed questions”; it is the learner’s complex-calculation advantage lane, where method choice comes before brute-force execution.
 ```
 
 - [ ] **Step 4: Update README and workflow guardrails**
@@ -518,6 +563,7 @@ git commit -m "docs: document closure training quality rollout"
 - A / B / C value tiers: covered in Tasks 2–3.
 - Three-phase emphasis curve: covered in Task 4.
 - Complex mixed arithmetic present throughout, but stronger later with bracket upgrades: covered in Tasks 3–4.
+- Section III method-first deepening and stable mixed-arithmetic template families: covered in Tasks 3–5.
 - High-value filtering and non-average topic weighting: covered in Tasks 2–4 and documented in Task 5.
 
 ### Placeholder scan
