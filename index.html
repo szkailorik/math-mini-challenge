@@ -1937,9 +1937,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.78';
+        const APP_VERSION = 'v23.79';
         const APP_RELEASE_LABEL = '第二阶段复杂混合深化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.78 第二阶段复杂混合深化：Section III 现在按结构识别、方法选择、复杂执行、结果判断分层推进，方法选择优先。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.79 第二阶段表征互通深化：Section II 现在按表示转换、基准比较、表示选择、转换后运用四条桥接训练线推进。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4987,6 +4987,12 @@
                         unitRate: 'medium',
                         focus: 'diagnostic'
                     },
+                    bridgeLaneEmphasis: {
+                        conversion: 'high',
+                        baseline: 'high',
+                        choice: 'medium',
+                        postUse: 'medium_low'
+                    },
                     mixLaneEmphasis: {
                         structure: 'high',
                         method: 'high',
@@ -5017,6 +5023,12 @@
                         unitRate: 'high',
                         focus: 'high_value_gap'
                     },
+                    bridgeLaneEmphasis: {
+                        conversion: 'medium',
+                        baseline: 'high',
+                        choice: 'high',
+                        postUse: 'high'
+                    },
                     mixLaneEmphasis: {
                         structure: 'medium',
                         method: 'high',
@@ -5045,6 +5057,12 @@
                     complexMixed: 'full_structure',
                     unitRate: 'judgement',
                     focus: 'last_short_board'
+                },
+                bridgeLaneEmphasis: {
+                    conversion: 'medium_low',
+                    baseline: 'high',
+                    choice: 'high',
+                    postUse: 'high'
                 },
                 mixLaneEmphasis: {
                     structure: 'medium',
@@ -5083,6 +5101,7 @@
                 trainingAxis: meta.trainingAxis || item.trainingAxis || '',
                 trainingTier: meta.trainingTier || item.trainingTier || '',
                 sectionRole: meta.sectionRole || item.sectionRole || '',
+                bridgeLane: meta.bridgeLane || item.bridgeLane || '',
                 mixLane: meta.mixLane || item.mixLane || ''
             });
         }
@@ -5467,144 +5486,219 @@
         }
 
         function buildClosureBridgeSection(student, track = 'kai', phaseKey = 'integration') {
-            const phaseGroups = {
+            const frac = (n, d) => new Frac(n, d).toHTML();
+            const fracText = (n, d) => `${n}/${d}`;
+            const bridgeItem = (tag, bridgeLane, q, a, step) => ({ tag, bridgeLane, q, a, step });
+            const groupsByPhase = {
                 foundation: track === 'kai'
                     ? [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `25% =<div class="blank"></div>`, frac(1, 4), `先把 25% 写成 25/100，再约成 ${frac(1, 4)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `0.75 =<div class="blank"></div>%`, `75`, `把 0.75 乘 100，先转成 75%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `3 : 4 =<div class="blank"></div>`, `0.75`, `把 3:4 看成 3÷4，先化成 0.75。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(3, 5)} = 3 :<div class="blank"></div>`, `5`, `分数 a/b 可以先看成 a:b，所以 ${frac(3, 5)} 对应 3:5。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 40%、${fracText(1, 2)}、0.6 里，最接近 0.5 的是<div class="blank"></div>`, frac(1, 2), `先统一想成小数：0.4、0.5、0.6，离 0.5 最近的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 0.2、25%、${fracText(1, 10)} 里，最接近 0 的是<div class="blank"></div>`, frac(1, 10), `先统一想成小数：0.2、0.25、0.1，更接近 0 的是 ${frac(1, 10)}。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:2、0.4、${fracText(3, 5)} 里，最接近 1 的是<div class="blank"></div>`, frac(3, 5), `把它们先看成 0.5、0.4、0.6，更接近 1 的是 ${frac(3, 5)}。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:4、20%、0.3 里，最接近 ${fracText(1, 4)} 的是<div class="blank"></div>`, `1:4`, `1:4 = 0.25，20% = 0.2，0.3 = 0.3，所以最接近 ${frac(1, 4)} 的是 1:4。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.25 + 75% 时，先把 75% 化成<div class="blank"></div>更方便`, `0.75`, `这题已经有小数 0.25，所以先把 75% 化成 0.75 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比 0.4 和 35% 的大小时，先把 35% 化成<div class="blank"></div>更顺`, `0.35`, `要和 0.4 比，先把 35% 化成 0.35 更顺。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(1, 2)} + 0.25 时，先把 ${fracText(1, 2)} 化成<div class="blank"></div>更方便`, `0.5`, `题里已经有 0.25，所以先把 ${frac(1, 2)} 化成 0.5 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比较 3:5 和 0.7 时，先把 3:5 化成<div class="blank"></div>更快`, `0.6`, `比较大小时，先把 3:5 看成 0.6，再和 0.7 比更快。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 40% 和 0.25 先统一表示后，它们的和是<div class="blank"></div>`, `0.65`, `把 40% 先化成 0.4，再算 0.4 + 0.25 = 0.65。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 75% 先化成分数后，再和 ${fracText(1, 4)} 相加，结果是<div class="blank"></div>`, `1`, `75% = ${frac(3, 4)}，再算 ${frac(3, 4)} + ${frac(1, 4)} = 1。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 1:2 和 0.3 先统一表示后，较大的是<div class="blank"></div>`, `1:2`, `1:2 = 0.5，0.5 比 0.3 大，所以较大的是 1:2。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 2:5 先化成小数后，再和 20% 相减，结果是<div class="blank"></div>`, `0.2`, `2:5 = 0.4，20% = 0.2，再算 0.4 - 0.2 = 0.2。`) }
+                        ]
                     ]
                     : [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`20% =<div class="blank"></div>`, a:new Frac(1, 5).toHTML(), step:`20% = 20/100，再约成 ${new Frac(1, 5).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `20% =<div class="blank"></div>`, frac(1, 5), `20% 先写成 20/100，再约成 ${frac(1, 5)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `0.3 =<div class="blank"></div>%`, `30`, `把 0.3 乘 100，先转成 30%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`10% =<div class="blank"></div>`, a:new Frac(1, 10).toHTML(), step:`10% = 10/100，再约成 ${new Frac(1, 10).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.3 =<div class="blank"></div>`, a:`30%`, step:`0.3 写成 30/100，所以是 30%。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `1 : 4 =<div class="blank"></div>`, `0.25`, `把 1:4 看成 1÷4，先化成 0.25。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(1, 2)} = 1 :<div class="blank"></div>`, `2`, `分数 ${frac(1, 2)} 可以直接看成 1:2。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 4 =<div class="blank"></div>`, a:`0.25`, step:`把 1:4 看成 1÷4，结果是 0.25。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 5 =<div class="blank"></div>`, a:`0.6`, step:`把 3:5 看成 3÷5，结果是 0.6。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 20%、0.3、${fracText(1, 4)} 里，最接近 0 的是<div class="blank"></div>`, `20%`, `先统一想成小数：0.2、0.3、0.25，更接近 0 的是 20%。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 50%、0.45、${fracText(3, 5)} 里，最接近 0.5 的是<div class="blank"></div>`, `50%`, `50% = 0.5，另外两个是 0.45 和 0.6，所以最接近 0.5 的是 50%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.2 = 1 :<div class="blank"></div>`, a:`5`, step:`0.2 就是 1/5，所以对应 1:5。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:5、20%、0.3 里，最接近 ${fracText(1, 4)} 的是<div class="blank"></div>`, `20%`, `1:5 = 0.2，20% = 0.2，0.3 = 0.3，离 ${frac(1, 4)} 更近的是 20%。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:2、0.4、25% 里，最接近 1 的是<div class="blank"></div>`, `1:2`, `1:2 = 0.5，0.4，25% = 0.25，更接近 1 的是 1:2。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`60% =<div class="blank"></div>`, a:new Frac(3, 5).toHTML(), step:`60% = 60/100，再约成 ${new Frac(3, 5).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.6 =<div class="blank"></div>%`, a:`60`, step:`0.6 乘 100 就是 60%。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，得到 0.8。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>1</span><span class="bottom">2</span></div> = 1 :<div class="blank"></div>`, a:`2`, step:`分数 1/2 可以直接写成 1:2。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.2 + 30% 时，先把 30% 化成<div class="blank"></div>更方便`, `0.3`, `题里已经有 0.2，所以先把 30% 化成 0.3 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比较 0.6 和 25% 时，先把 25% 化成<div class="blank"></div>更顺`, `0.25`, `要和 0.6 比，先把 25% 化成 0.25 更顺。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(1, 5)} + 0.4 时，先把 ${fracText(1, 5)} 化成<div class="blank"></div>更方便`, `0.2`, `题里已经有 0.4，所以先把 ${frac(1, 5)} 化成 0.2 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比较 3:5 和 0.5 时，先把 3:5 化成<div class="blank"></div>更快`, `0.6`, `比较大小时，先把 3:5 看成 0.6，再和 0.5 比更快。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 20% 和 0.3 先统一表示后，它们的和是<div class="blank"></div>`, `0.5`, `把 20% 化成 0.2，再算 0.2 + 0.3 = 0.5。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 50% 先化成分数后，再和 ${fracText(1, 2)} 比较，结果是<div class="blank"></div>`, `相等`, `50% = ${frac(1, 2)}，所以和 ${frac(1, 2)} 比较时结果相等。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 1:4 和 0.3 先统一表示后，较大的是<div class="blank"></div>`, `0.3`, `1:4 = 0.25，0.25 比 0.3 小，所以较大的是 0.3。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 3:5 先化成小数后，再和 20% 相减，结果是<div class="blank"></div>`, `0.4`, `3:5 = 0.6，20% = 0.2，再算 0.6 - 0.2 = 0.4。`) }
+                        ]
                     ],
                 integration: track === 'kai'
                     ? [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`先把 37.5% 写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `62.5% =<div class="blank"></div>`, frac(5, 8), `先把 62.5% 写成 0.625，再化成 ${frac(5, 8)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `0.875 =<div class="blank"></div>%`, `87.5`, `把 0.875 乘 100，先转成 87.5%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`先写成 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`125% =<div class="blank"></div>`, a:`1.25`, step:`125% 就是 125/100，也就是 1.25。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `5 : 4 =<div class="blank"></div>`, `1.25`, `把 5:4 看成 5÷4，先化成 1.25。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(2, 5)} = 2 :<div class="blank"></div>`, `5`, `分数 ${frac(2, 5)} 可以直接看成 2:5。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 8 =<div class="blank"></div>`, a:`0.375`, step:`把 3:8 看成 3÷8，得到 0.375。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 4 =<div class="blank"></div>`, a:`1.25`, step:`把 5:4 看成 5÷4，先得 1 又 1/4，再写成 1.25。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 37.5%、0.4、${fracText(1, 2)} 里，最接近 ${fracText(1, 2)} 的是<div class="blank"></div>`, frac(1, 2), `先统一想成小数：0.375、0.4、0.5，更接近 ${frac(1, 2)} 的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 12.5%、0.2、${fracText(1, 4)} 里，最接近 0 的是<div class="blank"></div>`, `12.5%`, `先统一想成小数：0.125、0.2、0.25，更接近 0 的是 12.5%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 就是 3/4，所以 3 : 4 对应 0.75。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>2</span><span class="bottom">5</span></div> = 2 :<div class="blank"></div>`, a:`5`, step:`分数 a/b 可以看成 a:b，所以 2/5 对应 2:5。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 3:8、0.4、${fracText(1, 2)} 里，最接近 0.4 的是<div class="blank"></div>`, `0.4`, `3:8 = 0.375，${frac(1, 2)} = 0.5，所以最接近 0.4 的是 0.4。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 5:8、62.5%、0.7 里，最接近 1 的是<div class="blank"></div>`, `0.7`, `先统一想成小数：0.625、0.625、0.7，更接近 1 的是 0.7。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.4 =<div class="blank"></div>%`, a:`40`, step:`0.4 乘 100 就是 40%，注意别漏掉百分号。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.25 = 5 :<div class="blank"></div>`, a:`4`, step:`1.25 就是 5/4，所以对应 5:4。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.375 + 25% 时，先把 25% 化成<div class="blank"></div>更方便`, `0.25`, `题里已经有 0.375，所以先把 25% 化成 0.25 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比较 62.5% 和 ${fracText(5, 8)} 时，直接看成<div class="blank"></div>最省力`, `相等`, `62.5% 就是 0.625，${frac(5, 8)} 也是 0.625，所以直接判断相等最省力。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(3, 8)} + 0.25 时，先把 ${fracText(3, 8)} 化成<div class="blank"></div>更方便`, `0.375`, `题里已经有 0.25，所以先把 ${frac(3, 8)} 化成 0.375 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比较 5:4 和 125% 时，先统一成<div class="blank"></div>更顺`, `小数`, `5:4 和 125% 都可以化成 1.25，所以先统一成小数更顺。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 37.5% 先化成分数后，再和 ${fracText(1, 8)} 相加，结果是<div class="blank"></div>`, frac(1, 2), `37.5% = ${frac(3, 8)}，再算 ${frac(3, 8)} + ${frac(1, 8)} = ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 62.5% 和 0.25 先统一表示后，它们的和是<div class="blank"></div>`, `0.875`, `62.5% = 0.625，再算 0.625 + 0.25 = 0.875。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 3:8 先化成小数后，再和 0.5 比较，较大的是<div class="blank"></div>`, `0.5`, `3:8 = 0.375，0.375 比 0.5 小，所以较大的是 0.5。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 5:4 和 75% 先统一表示后，相差<div class="blank"></div>`, `0.5`, `5:4 = 1.25，75% = 0.75，所以相差 0.5。`) }
+                        ]
                     ]
                     : [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`25% =<div class="blank"></div>`, a:new Frac(1, 4).toHTML(), step:`25% 先写成 25/100，再约成 ${new Frac(1, 4).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`75% =<div class="blank"></div>`, a:new Frac(3, 4).toHTML(), step:`75% = 75/100，再约成 ${new Frac(3, 4).toHTML()}。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `75% =<div class="blank"></div>`, frac(3, 4), `把 75% 先写成 75/100，再约成 ${frac(3, 4)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `0.5 =<div class="blank"></div>%`, `50`, `把 0.5 乘 100，先转成 50%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.5 =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`0.5 先写成 5/10，再约成 ${new Frac(1, 2).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.2 =<div class="blank"></div>`, a:`20%`, step:`0.2 写成 20/100，所以是 20%。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `3 : 4 =<div class="blank"></div>`, `0.75`, `把 3:4 看成 3÷4，先化成 0.75。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(3, 5)} = 3 :<div class="blank"></div>`, `5`, `分数 ${frac(3, 5)} 可以直接看成 3:5。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 4 =<div class="blank"></div>`, a:`0.75`, step:`把 3:4 看成 3÷4，就得到 0.75。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1 : 5 =<div class="blank"></div>`, a:`0.2`, step:`把 1:5 看成 1÷5，结果是 0.2。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 25%、0.3、${fracText(1, 2)} 里，最接近 ${fracText(1, 2)} 的是<div class="blank"></div>`, frac(1, 2), `先统一想成小数：0.25、0.3、0.5，更接近 ${frac(1, 2)} 的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 20%、0.4、${fracText(1, 4)} 里，最接近 0 的是<div class="blank"></div>`, `20%`, `先统一想成小数：0.2、0.4、0.25，更接近 0 的是 20%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.5 = 1 :<div class="blank"></div>`, a:`2`, step:`0.5 就是 1/2，所以对应 1:2。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">5</span></div> = 3 :<div class="blank"></div>`, a:`5`, step:`分数 3/5 可以直接写成 3:5。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 2:5、0.5、${fracText(3, 4)} 里，最接近 1 的是<div class="blank"></div>`, frac(3, 4), `2:5 = 0.4，0.5，${frac(3, 4)} = 0.75，更接近 1 的是 ${frac(3, 4)}。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:5、20%、0.25 里，最接近 ${fracText(1, 4)} 的是<div class="blank"></div>`, `0.25`, `1:5 = 0.2，20% = 0.2，0.25 就是 ${frac(1, 4)}，所以最接近的是 0.25。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`50% =<div class="blank"></div>`, a:new Frac(1, 2).toHTML(), step:`50% 就是一半，所以可以写成 ${new Frac(1, 2).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.75 =<div class="blank"></div>%`, a:`75`, step:`0.75 乘 100 就是 75%。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`2 : 5 =<div class="blank"></div>`, a:`0.4`, step:`把 2:5 看成 2÷5，得到 0.4。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.25 = 1 :<div class="blank"></div>`, a:`4`, step:`0.25 就是 1/4，所以对应 1:4。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.5 + 25% 时，先把 25% 化成<div class="blank"></div>更方便`, `0.25`, `题里已经有 0.5，所以先把 25% 化成 0.25 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比较 75% 和 ${fracText(3, 4)} 时，直接看成<div class="blank"></div>最省力`, `相等`, `75% 和 ${frac(3, 4)} 都等于 0.75，所以直接判断相等最省力。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(1, 2)} + 0.2 时，先把 ${fracText(1, 2)} 化成<div class="blank"></div>更方便`, `0.5`, `题里已经有 0.2，所以先把 ${frac(1, 2)} 化成 0.5 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比较 3:5 和 60% 时，先统一成<div class="blank"></div>更顺`, `小数`, `3:5 和 60% 都可以化成 0.6，所以先统一成小数更顺。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 25% 先化成小数后，再和 0.5 相加，结果是<div class="blank"></div>`, `0.75`, `25% = 0.25，再算 0.25 + 0.5 = 0.75。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 50% 先化成分数后，再和 ${fracText(1, 4)} 相减，结果是<div class="blank"></div>`, frac(1, 4), `50% = ${frac(1, 2)}，再算 ${frac(1, 2)} - ${frac(1, 4)} = ${frac(1, 4)}。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 3:4 先化成小数后，再和 0.5 比较，较大的是<div class="blank"></div>`, `3:4`, `3:4 = 0.75，0.75 比 0.5 大，所以较大的是 3:4。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `把 1:5 和 20% 先统一表示后，它们的差是<div class="blank"></div>`, `0`, `1:5 = 0.2，20% = 0.2，所以它们的差是 0。`) }
+                        ]
                     ],
                 graduation: track === 'kai'
                     ? [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`12.5% = 1 :<div class="blank"></div>`, a:`8`, step:`12.5% = 0.125 = 1/8，所以对应 1:8。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.625 =<div class="blank"></div>%`, a:`62.5`, step:`0.625 乘 100，得到 62.5%。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `12.5% =<div class="blank"></div>`, frac(1, 8), `把 12.5% 先写成 0.125，再化成 ${frac(1, 8)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `1.25 =<div class="blank"></div>%`, `125`, `把 1.25 乘 100，先转成 125%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`87.5% =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`87.5% 先写成 0.875，再化成 ${new Frac(7, 8).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.375 =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`0.375 = 375/1000，再约成 ${new Frac(3, 8).toHTML()}。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `0.625 = 5 :<div class="blank"></div>`, `8`, `0.625 就是 ${frac(5, 8)}，所以对应 5:8。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(7, 5)} = 7 :<div class="blank"></div>`, `5`, `分数 ${frac(7, 5)} 可以直接看成 7:5。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.375 = 3 :<div class="blank"></div>`, a:`8`, step:`0.375 就是 3/8，所以可写成 3:8。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`5 : 8 =<div class="blank"></div>`, a:`0.625`, step:`把 5:8 看成 5÷8，结果是 0.625。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 37.5%、0.4、${fracText(1, 2)} 里，最接近 ${fracText(1, 2)} 的是<div class="blank"></div>`, frac(1, 2), `先统一想成小数：0.375、0.4、0.5，更接近 ${frac(1, 2)} 的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 12.5%、${fracText(1, 8)}、0.2 里，最接近 0 的是<div class="blank"></div>`, `12.5%`, `12.5% 和 ${frac(1, 8)} 都是 0.125，比 0.2 更接近 0。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`1.4 = 7 :<div class="blank"></div>`, a:`5`, step:`1.4 = 14/10 = 7/5，所以对应 7:5。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>5</span><span class="bottom">8</span></div> = 5 :<div class="blank"></div>`, a:`8`, step:`分数 5/8 可以直接写成 5:8。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 5:8、62.5%、0.7 里，最接近 1 的是<div class="blank"></div>`, `0.7`, `先统一想成小数：0.625、0.625、0.7，更接近 1 的是 0.7。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 1:4、0.2、25% 里，最接近 ${fracText(1, 4)} 的是<div class="blank"></div>`, `1:4`, `1:4 = 0.25，0.2，25% = 0.25，所以最接近 ${frac(1, 4)} 的是 1:4。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`62.5% =<div class="blank"></div>`, a:new Frac(5, 8).toHTML(), step:`62.5% 先写成 0.625，再识别成 ${new Frac(5, 8).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.125 =<div class="blank"></div>%`, a:`12.5`, step:`0.125 乘 100 就是 12.5%。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`4 : 5 =<div class="blank"></div>`, a:`0.8`, step:`把 4:5 看成 4÷5，结果是 0.8。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.875 = 7 :<div class="blank"></div>`, a:`8`, step:`0.875 = 7/8，所以对应 7:8。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.625 + 25% 时，先把 25% 化成<div class="blank"></div>更方便`, `0.25`, `题里已经有 0.625，所以先把 25% 化成 0.25 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比 62.5% 和 ${fracText(5, 8)} 时，先统一成<div class="blank"></div>最省力`, `小数`, `62.5% 和 ${frac(5, 8)} 都可以先看成 0.625，所以统一成小数最省力。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(3, 8)} + 0.125 时，先把 ${fracText(3, 8)} 化成<div class="blank"></div>更方便`, `0.375`, `题里已经有 0.125，所以先把 ${frac(3, 8)} 化成 0.375 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比 5:8 和 62.5% 时，直接判断成<div class="blank"></div>更快`, `相等`, `5:8 = 0.625，62.5% = 0.625，所以直接判断相等更快。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 37.5%、0.4 和 ${fracText(1, 2)} 先化成同一种表示后，哪个更接近 0.5？<div class="blank"></div>`, frac(1, 2), `先化成小数 0.375、0.4、0.5，再比较离 0.5 的距离，更接近 0.5 的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 62.5% 和 ${fracText(1, 4)} 先统一表示后，再相加，结果更接近<div class="blank"></div>`, `1`, `62.5% = 0.625，${frac(1, 4)} = 0.25，和是 0.875，所以结果更接近 1。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `比较 5:8、0.6、60% 时，先化成小数后，哪一个更接近 ${fracText(1, 2)}？<div class="blank"></div>`, `0.6`, `先化成 0.625、0.6、0.6，再看谁离 0.5 更近，更接近 ${frac(1, 2)} 的是 0.6。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `算 1:4 + 12.5% 时，先化成同一种表示更方便，结果是<div class="blank"></div>`, `0.375`, `先化成小数：1:4 = 0.25，12.5% = 0.125，再算 0.25 + 0.125 = 0.375。`) }
+                        ]
                     ]
                     : [
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`12.5% =<div class="blank"></div>`, a:new Frac(1, 8).toHTML(), step:`12.5% = 12.5/100 = 0.125，再化成 ${new Frac(1, 8).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`1.25 =<div class="blank"></div>%`, a:`125`, step:`1.25 乘 100，就得到 125%。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `25% =<div class="blank"></div>`, frac(1, 4), `把 25% 先写成 0.25，再化成 ${frac(1, 4)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_conversion', `0.625 =<div class="blank"></div>%`, `62.5`, `把 0.625 乘 100，先转成 62.5%。`) }
                         ],
                         [
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`37.5% =<div class="blank"></div>`, a:new Frac(3, 8).toHTML(), step:`37.5% 先写成 0.375，再化成 ${new Frac(3, 8).toHTML()}。` }) },
-                            { tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.875 =<div class="blank"></div>`, a:new Frac(7, 8).toHTML(), step:`0.875 = 875/1000，再约成 ${new Frac(7, 8).toHTML()}。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `0.75 = 3 :<div class="blank"></div>`, `4`, `0.75 就是 ${frac(3, 4)}，所以对应 3:4。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_conversion', `${fracText(4, 5)} = 4 :<div class="blank"></div>`, `5`, `分数 ${frac(4, 5)} 可以直接看成 4:5。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.625 = 5 :<div class="blank"></div>`, a:`8`, step:`0.625 就是 5/8，所以对应 5:8。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`7 : 10 =<div class="blank"></div>`, a:`0.7`, step:`把 7:10 看成 7÷10，结果是 0.7。` }) }
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 25%、0.3、${fracText(1, 8)} 里，最接近 0 的是<div class="blank"></div>`, frac(1, 8), `先统一想成小数：0.25、0.3、0.125，更接近 0 的是 ${frac(1, 8)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'baseline_comparison', `在 62.5%、0.7、${fracText(3, 4)} 里，最接近 1 的是<div class="blank"></div>`, frac(3, 4), `先统一想成小数：0.625、0.7、0.75，更接近 1 的是 ${frac(3, 4)}。`) }
                         ],
                         [
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.4 = 2 :<div class="blank"></div>`, a:`5`, step:`0.4 = 2/5，所以对应 2:5。` }) },
-                            { tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`<div class="frac"><span>3</span><span class="bottom">8</span></div> = 3 :<div class="blank"></div>`, a:`8`, step:`分数 3/8 可以直接写成 3:8。` }) }
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 2:5、0.45、${fracText(1, 2)} 里，最接近 ${fracText(1, 2)} 的是<div class="blank"></div>`, frac(1, 2), `2:5 = 0.4，0.45，${frac(1, 2)} = 0.5，更接近 ${frac(1, 2)} 的是 ${frac(1, 2)}。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'baseline_comparison', `在 3:10、25%、0.2 里，最接近 ${fracText(1, 4)} 的是<div class="blank"></div>`, `25%`, `3:10 = 0.3，25% = 0.25，0.2 离 ${frac(1, 4)} 更近的是 25%。`) }
                         ],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`150% =<div class="blank"></div>`, a:new Frac(3, 2).toHTML(), step:`150% = 150/100，再约成 ${new Frac(3, 2).toHTML()}。` }) }],
-                        [{ tag: "c2_bridge_pct_frac", gen: () => ({ tag: "c2_bridge_pct_frac", q:`0.375 =<div class="blank"></div>%`, a:`37.5`, step:`0.375 乘 100，就得到 37.5%。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`3 : 5 =<div class="blank"></div>`, a:`0.6`, step:`把 3:5 看成 3÷5，结果是 0.6。` }) }],
-                        [{ tag: "c2_bridge_ratio_frac", gen: () => ({ tag: "c2_bridge_ratio_frac", q:`0.75 = 3 :<div class="blank"></div>`, a:`4`, step:`0.75 = 3/4，所以对应 3:4。` }) }]
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `算 0.625 + 25% 时，先把 25% 化成<div class="blank"></div>更方便`, `0.25`, `题里已经有 0.625，所以先把 25% 化成 0.25 更方便。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'representation_choice', `比 62.5% 和 ${fracText(5, 8)} 时，直接判断成<div class="blank"></div>更快`, `相等`, `62.5% 和 ${frac(5, 8)} 都等于 0.625，所以直接判断相等更快。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `算 ${fracText(4, 5)} + 0.1 时，先把 ${fracText(4, 5)} 化成<div class="blank"></div>更方便`, `0.8`, `题里已经有 0.1，所以先把 ${frac(4, 5)} 化成 0.8 更方便。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'representation_choice', `比较 3:4 和 75% 时，先统一成<div class="blank"></div>更顺`, `小数`, `3:4 和 75% 都可以先看成 0.75，所以统一成小数更顺。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 25%、0.3 和 ${fracText(1, 8)} 先化成同一种表示后，哪个更接近 0？<div class="blank"></div>`, frac(1, 8), `先化成 0.25、0.3、0.125，再比较离 0 的距离，更接近 0 的是 ${frac(1, 8)}。`) },
+                            { tag: 'c2_bridge_pct_frac', gen: () => bridgeItem('c2_bridge_pct_frac', 'post_conversion_use', `把 62.5% 和 ${fracText(1, 8)} 先统一表示后，再相加，结果更接近<div class="blank"></div>`, `0.75`, `62.5% = 0.625，${frac(1, 8)} = 0.125，和是 0.75，所以结果更接近 0.75。`) }
+                        ],
+                        [
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `比较 3:4、62.5% 和 0.7 时，先化成同一种表示后，哪个更接近 1？<div class="blank"></div>`, `3:4`, `先化成 0.75、0.625、0.7，再看谁更接近 1，更接近 1 的是 3:4。`) },
+                            { tag: 'c2_bridge_ratio_frac', gen: () => bridgeItem('c2_bridge_ratio_frac', 'post_conversion_use', `算 4:5 + 25% 时，先化成同一种表示更方便，结果是<div class="blank"></div>`, `1.05`, `先化成小数：4:5 = 0.8，25% = 0.25，再算 0.8 + 0.25 = 1.05。`) }
+                        ]
                     ],
             };
-            return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
+            return buildCoveredSection(student, groupsByPhase[phaseKey] || groupsByPhase.integration);
         }
 
         function buildClosureUnitSection(student, track = 'kai', phaseKey = 'integration') {

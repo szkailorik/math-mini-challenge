@@ -27,6 +27,17 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.79 deepens the second-stage `表征互通主训练` lane:
+
+- Section II is no longer just a conversion drill lane.
+- It now explicitly trains four bridge abilities:
+  - representation conversion
+  - baseline comparison
+  - representation choice
+  - post-conversion use
+- The learner is expected to decide whether to convert, what to convert into, and then continue comparing, computing, or judging from that unified representation.
+- Graduation papers now use clearer “closer to / more convenient / more reasonable / convert first” prompts so the system can check whether representation transfer has become genuine number sense rather than isolated conversion memory.
+
 v23.78 deepens the second-stage `复杂四则混合主训练` lane:
 
 - Section III is no longer just “the hardest mixed questions”.

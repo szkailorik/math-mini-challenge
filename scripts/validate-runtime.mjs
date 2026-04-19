@@ -686,6 +686,47 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
       throw new Error(`Closure set ${setNumber} should use full-structure complex-mixed weight in graduation`);
     }
 
+    const bridgeLaneEmphasis = data.phaseMeta?.bridgeLaneEmphasis || {};
+    if (setNumber === 1 && bridgeLaneEmphasis.conversion !== 'high') {
+      throw new Error(`Closure set ${setNumber} should still prioritize direct conversion in Section II`);
+    }
+    if (setNumber === 12 && bridgeLaneEmphasis.choice !== 'high') {
+      throw new Error(`Closure set ${setNumber} should raise representation-choice weight in Section II`);
+    }
+    if (setNumber === 26 && bridgeLaneEmphasis.postUse !== 'high') {
+      throw new Error(`Closure set ${setNumber} should keep post-conversion use high in Section II`);
+    }
+
+    const validBridgeLanes = new Set(['representation_conversion', 'baseline_comparison', 'representation_choice', 'post_conversion_use']);
+    const kBridgeLanes = new Set((data.c_k_bridge || []).map(item => item?.bridgeLane).filter(Boolean));
+    const lBridgeLanes = new Set((data.c_l_bridge || []).map(item => item?.bridgeLane).filter(Boolean));
+    if (![...kBridgeLanes, ...lBridgeLanes].every(lane => validBridgeLanes.has(lane))) {
+      throw new Error(`Closure set ${setNumber} has an invalid Section II bridge-lane tag`);
+    }
+    if (setNumber === 1) {
+      if (!kBridgeLanes.has('representation_conversion') || !lBridgeLanes.has('representation_conversion')) {
+        throw new Error(`Closure set ${setNumber} should expose direct-conversion items for both students in Section II`);
+      }
+      if (!kBridgeLanes.has('baseline_comparison') || !lBridgeLanes.has('baseline_comparison')) {
+        throw new Error(`Closure set ${setNumber} should expose baseline-comparison items for both students in Section II`);
+      }
+    }
+    if (setNumber === 12) {
+      if (!kBridgeLanes.has('representation_choice') || !lBridgeLanes.has('representation_choice')) {
+        throw new Error(`Closure set ${setNumber} should expose representation-choice items for both students in Section II`);
+      }
+      if (!kBridgeLanes.has('post_conversion_use') || !lBridgeLanes.has('post_conversion_use')) {
+        throw new Error(`Closure set ${setNumber} should expose post-conversion-use items for both students in Section II`);
+      }
+    }
+    if (setNumber === 26) {
+      const kBoundary = (data.c_k_bridge || []).some(item => item?.bridgeLane === 'post_conversion_use' && /接近|更接近|更方便|更合理|先化成/.test(stripHtml(item?.q || '') + stripHtml(item?.step || '')));
+      const lBoundary = (data.c_l_bridge || []).some(item => item?.bridgeLane === 'post_conversion_use' && /接近|更接近|更方便|更合理|先化成/.test(stripHtml(item?.q || '') + stripHtml(item?.step || '')));
+      if (!kBoundary || !lBoundary) {
+        throw new Error(`Closure set ${setNumber} should expose higher-order bridge judgement prompts for both students`);
+      }
+    }
+
     const mixLaneEmphasis = data.phaseMeta?.mixLaneEmphasis || {};
     if (setNumber === 1 && mixLaneEmphasis.method !== 'high') {
       throw new Error(`Closure set ${setNumber} should already prioritize method choice in Section III`);

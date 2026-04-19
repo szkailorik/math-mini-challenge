@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.79 Iteration Notes
+
+### Iteration 1
+
+- What I changed: deepened second-stage `Closure` Section II so it now carries explicit representation-conversion, baseline-comparison, representation-choice, and post-conversion-use lanes, with graduation prompts now forcing “更接近 / 更方便 / 先化成” style bridge judgement instead of stopping at raw conversion.
+- Open questions: whether the next pass should now connect Section II and Section III even more tightly with mixed “convert first, then choose a shortcut” prompts, or first observe a few real papers to see whether the new bridge lane is already balanced enough.
+- Risks: the bridge lane is now much more intentional, so if later edits bloat it with too many raw conversion-only prompts, it could drift back toward low-value percentage/fraction drills instead of true representation transfer.
+- Next steps: review several real `Closure` papers, then decide whether the next implementation pass should deepen Section II further or move to Section IV / Section V calibration.
+
 ## Current v23.78 Iteration Notes
 
 ### Iteration 1
