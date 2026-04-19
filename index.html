@@ -131,6 +131,9 @@
                 font-size: 0.52em !important;
                 line-height: 1.06 !important;
             }
+            body.print-sandbox-active #print-root .closure-bilingual .q-body {
+                align-items: flex-start !important;
+            }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
             body.print-sandbox-active #print-root .h-frac { min-height: 42px !important; }
@@ -151,6 +154,9 @@
             body.print-sandbox-active #print-root .h-conv .prompt-en {
                 font-size: 0.48em !important;
                 line-height: 1.04 !important;
+            }
+            body.print-sandbox-active #print-root .h-conv.closure-bilingual .question-copy {
+                gap: 0.05em !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
                 font-size: 14px !important;
@@ -583,6 +589,12 @@
             font-size: 0.82em;
             vertical-align: -0.12em;
         }
+        .closure-bilingual .q-body {
+            align-items: flex-start;
+        }
+        .closure-bilingual .q-num {
+            padding-top: 0.06em;
+        }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
         .item.paper-line-lock .math-text,
@@ -759,6 +771,9 @@
         .h-conv .prompt-en {
             font-size: 0.56em;
             line-height: 1.08;
+        }
+        .h-conv.closure-bilingual .question-copy {
+            gap: 0.06em;
         }
         .h-conv .q-num {
             font-size: 15.8px;
@@ -2168,9 +2183,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.104';
+        const APP_VERSION = 'v23.105';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.104 第二阶段题面接入中英对照：英文更小更轻，不抢中文。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.105 第二阶段中英题块继续稳排：英文辅助行更贴题、更不顶版。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6771,7 +6786,7 @@
                     ${items.map((q,i) => {
                         let questionHtml = heightClass === 'h-conv' ? compactConversionPrompt(q.q) : q.q;
                         let prompt = normalizeQuestionPrompt(questionHtml, heightClass);
-                        const promptEn = q.qEn ? buildClosureQuestionEnglish(questionHtml, q) : '';
+                        const promptEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
                         const densityClass = getItemDensityClass(questionHtml, heightClass);
                         return `<div class="item${lineLockClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}${promptEn ? ' closure-bilingual' : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span>${promptEn ? `<span class="prompt-en">${promptEn}</span>` : ''}</div></div></div>`;
