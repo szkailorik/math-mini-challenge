@@ -42,6 +42,9 @@ if (!html.includes('function normalizeErrorPrompt')) {
 if (!html.includes('function getQualityFamilyForTag')) {
   throw new Error('Quality family helper is missing from runtime script');
 }
+if (!html.includes('function getErrorMechanismKey')) {
+  throw new Error('Error mechanism helper is missing from runtime script');
+}
 if (!html.includes('function getReplayLevel')) {
   throw new Error('Replay level helper is missing from runtime script');
 }
@@ -1454,6 +1457,10 @@ const closureProfile = context.window.StorageDB.getProfile('KAI', 'elementary_cl
 if (!closureProfile || !Array.isArray(closureProfile.history) || !closureProfile.history.some(session => session.set === 103)) {
   throw new Error('Phase-two grading did not create closure history');
 }
+const closureMechanismDetail = closureProfile.history.find(session => session.set === 103)?.details?.find(detail => detail?.tag === 'c2_bridge_pct_frac');
+if (!closureMechanismDetail?.mechanismKey) {
+  throw new Error('Saved session details are missing mechanismKey metadata');
+}
 await context.window.StorageDB.saveSession('KAI', [
   { tag: 'c2_bridge_pct_frac', grade: 'perfect', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[0]?.q, a: closureData.c_k_bridge?.[0]?.a, step: closureData.c_k_bridge?.[0]?.step } },
 ], 99, 'elementary_closure_v1');
@@ -1462,6 +1469,9 @@ if ((closureProfile.lastSeen?.c2_bridge_pct_frac || 0) !== 103) {
 }
 if (!closureProfile.errorBook || Object.keys(closureProfile.errorBook).length < 3) {
   throw new Error('Phase-two grading did not populate the closure error book');
+}
+if (!Object.values(closureProfile.errorBook).every(entry => entry?.mechanismKey)) {
+  throw new Error('Closure error-book entries are missing mechanismKey metadata');
 }
 Object.values(closureProfile.errorBook).forEach(entry => {
   if (String(entry?.tag || '').startsWith('c2_bridge_')) {

@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.85';
-        const APP_RELEASE_LABEL = '错题UID规范化增强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.85 继续收紧错题记录链路，把错题 uid 改成按规范化后的数学题面生成，减少同题仅因 HTML 包装不同而被拆成两条错题档案。';
+        const APP_VERSION = 'v23.86';
+        const APP_RELEASE_LABEL = '错题机制层补齐';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.86 在原题记录之上补了一层错误机制 key，让错题本和后续统计更容易看出孩子反复卡住的机制，而不只是单题列表。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2432,6 +2432,72 @@
             const normalized = normalizeErrorPrompt(q).replace(/\s+/g, '');
             return `${tag}_${hashString(normalized)}`;
         }
+        const ERROR_MECHANISM_LABELS = {
+            bridge_convert: '表示转换',
+            bridge_compare: '基准比较',
+            bridge_choice: '表示选择',
+            bridge_apply: '转换后运用',
+            fraction_addsub: '分数通分加减',
+            fraction_muldiv: '分数乘除与倒数',
+            fraction_mixed: '带分数与混合分数',
+            fraction_general: '分数运算',
+            decimal_division_place: '小数除法-商与小数点',
+            decimal_division_scale: '小数除法-同倍扩大',
+            decimal_division_general: '小数除法',
+            mixed_structure: '复杂混合-结构识别',
+            mixed_method: '复杂混合-方法选择',
+            mixed_execute: '复杂混合-执行稳定',
+            mixed_result: '复杂混合-结果判断',
+            unit_normalization: '单位统一',
+            rate_relation: '率与关系',
+            rate_equation: '关系建模/方程',
+            rate_validation: '量纲与结果检验',
+            equation_inverse: '方程逆运算',
+            equation_relation: '方程关系识别',
+            validation_range: '估算与范围判断'
+        };
+        function getErrorMechanismKey(tag = '', info = {}) {
+            const family = getSetReviewFollowupFamily(tag, info);
+            const source = normalizeErrorPrompt(`${tag} ${info?.q || ''} ${info?.step || ''}`);
+            if (family === 'conversion_bridge') {
+                if (/更方便|先化成|先转成|直接比还是先转/.test(source)) return 'bridge_choice';
+                if (/接近|更接近|比较|更大|更小/.test(source)) return 'bridge_compare';
+                if (/[+\-×÷=]/.test(source) || /计算/.test(source)) return 'bridge_apply';
+                return 'bridge_convert';
+            }
+            if (family === 'fraction_operation') {
+                if (/带分数|mixed/.test(source)) return 'fraction_mixed';
+                if (/约分|倒数|除以|÷/.test(source)) return 'fraction_muldiv';
+                if (/通分|加|减|\+|-/.test(source)) return 'fraction_addsub';
+                return 'fraction_general';
+            }
+            if (family === 'decimal_division') {
+                if (/同乘|同时扩大|除数有小数|变成整数|移位/.test(source)) return 'decimal_division_scale';
+                if (/小数点|商|前导0|小于1|大于1/.test(source)) return 'decimal_division_place';
+                return 'decimal_division_general';
+            }
+            if (family === 'complex_mixed') {
+                if (/接近|范围|更合理|大于1|小于1|结果/.test(source) || /judgement/.test(tag)) return 'mixed_result';
+                if (/更快|更稳|约分|凑整|拆分|运算律|method/.test(source)) return 'mixed_method';
+                if (/括号|\[|\{|\(|structure|paren/.test(source)) return 'mixed_structure';
+                return 'mixed_execute';
+            }
+            if (family === 'unit_rate_speed') {
+                if (/方程|x|未知数/.test(source)) return 'rate_equation';
+                if (/单位|cm|m|km|kg|g|t|时|分|秒|统一单位/.test(source)) return 'unit_normalization';
+                if (/速度|单价|平均|每|折扣|百分率|比率/.test(source)) return 'rate_relation';
+                return 'rate_validation';
+            }
+            if (family === 'equation_method') {
+                if (/减数|除数|逆运算|divisor|sub/.test(source) || /^k_eq_|^c2_eq_/.test(tag)) return 'equation_inverse';
+                return 'equation_relation';
+            }
+            if (family === 'validation_estimation') return 'validation_range';
+            return family || 'generic_followup';
+        }
+        function getErrorMechanismLabel(key = '') {
+            return ERROR_MECHANISM_LABELS[key] || '综合机制';
+        }
 
         // ================= v23.7 GitHub Gist 云同步 =================
         // 用户粘贴 PAT（scope: gist）→ 应用在其 GitHub 账号下创建一个私有 gist
@@ -2718,15 +2784,18 @@
                 if (!a) { merged.errorBook[uid] = b; return; }
                 if (!b) { merged.errorBook[uid] = a; return; }
                 // 两端都有 → 取保守合并
+                const mergedTag = a.tag || b.tag;
+                const mergedInfo = (a.lastSet||0) >= (b.lastSet||0) ? a.info : b.info;
                 merged.errorBook[uid] = {
-                    tag: a.tag || b.tag,
-                    info: (a.lastSet||0) >= (b.lastSet||0) ? a.info : b.info,
+                    tag: mergedTag,
+                    info: mergedInfo,
                     grade: (a.grade === 'wrong' || b.grade === 'wrong') ? 'wrong' : 'careless',
                     count: Math.max(a.count||1, b.count||1, historyErrorCounts.get(uid)||0),
                     firstSet: Math.min(a.firstSet||a.lastSet, b.firstSet||b.lastSet),
                     firstDate: (a.firstSet||0) <= (b.firstSet||0) ? (a.firstDate||b.firstDate) : (b.firstDate||a.firstDate),
                     lastSet: Math.max(a.lastSet||0, b.lastSet||0),
                     lastDate: (a.lastSet||0) >= (b.lastSet||0) ? (a.lastDate||b.lastDate) : (b.lastDate||a.lastDate),
+                    mechanismKey: a.mechanismKey || b.mechanismKey || getErrorMechanismKey(mergedTag, mergedInfo),
                     mastered: !!a.mastered && !!b.mastered, // 双方都标记掌握才算掌握
                     masteredDate: (a.mastered && b.mastered) ? (a.masteredDate || b.masteredDate) : null
                 };
@@ -2861,12 +2930,14 @@
                                 if (detail.grade === 'wrong') profile.errorBook[uid].grade = 'wrong';
                                 profile.errorBook[uid].lastSet = session.set;
                                 profile.errorBook[uid].lastDate = session.date;
+                                profile.errorBook[uid].mechanismKey = profile.errorBook[uid].mechanismKey || getErrorMechanismKey(detail.tag, detail.info);
                             } else {
                                 profile.errorBook[uid] = {
                                     tag: detail.tag, info: detail.info, grade: detail.grade,
                                     count: 1,
                                     firstSet: session.set, firstDate: session.date,
                                     lastSet: session.set, lastDate: session.date,
+                                    mechanismKey: getErrorMechanismKey(detail.tag, detail.info),
                                     mastered: false
                                 };
                             }
@@ -2877,6 +2948,7 @@
                     let entry = profile.errorBook[uid] || {};
                     entry.count = Math.max(1, Number.parseInt(entry.count, 10) || 1);
                     entry.mastered = !!entry.mastered;
+                    entry.mechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                     profile.errorBook[uid] = entry;
                 });
                 return ensureProgramProfileShape(profile, programId);
@@ -3048,13 +3120,15 @@
 
                     if (r.grade !== 'perfect') {
                         let uid = computeErrorUid(r.tag, r.info.q);
-                        sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid });
+                        let mechanismKey = getErrorMechanismKey(r.tag, r.info);
+                        sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid, mechanismKey });
 
                         if (profile.errorBook[uid]) {
                             let eb = profile.errorBook[uid];
                             eb.count += 1;
                             eb.lastSet = setNum;
                             eb.lastDate = today;
+                            eb.mechanismKey = mechanismKey;
                             // 概念错覆盖粗心错（更严重的错误状态优先）
                             if (r.grade === 'wrong') eb.grade = 'wrong';
                             // 再次错了 → 自动取消"已掌握"状态
@@ -3070,6 +3144,7 @@
                                 count: 1,
                                 firstSet: setNum, firstDate: today,
                                 lastSet: setNum, lastDate: today,
+                                mechanismKey,
                                 mastered: false
                             };
                         }
@@ -6676,6 +6751,18 @@
             let activeEntries = allEntries.filter(e => !e.mastered);
             let masteredEntries = allEntries.filter(e => e.mastered);
             let entries = filter === 'mastered' ? masteredEntries : activeEntries;
+            let mechanismSummary = entries.reduce((acc, entry) => {
+                const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                const current = acc[key] || { key, count: 0 };
+                current.count += Math.max(1, entry.count || 1);
+                acc[key] = current;
+                return acc;
+            }, {});
+            let topMechanisms = Object.values(mechanismSummary)
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 3)
+                .map(item => `${getErrorMechanismLabel(item.key)} ${item.count}`)
+                .join(' · ');
 
             let filterTitle = filter === 'mastered'
                 ? `🏆 ${name} 已掌握错题（Mastered Archive）`
@@ -6690,7 +6777,7 @@
                     <div style="display:flex; gap:8px;">
                         <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                         <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
-                    </div></div>
+                    </div>${topMechanisms ? `<div style="margin-top:8px; color:#64748b; font-size:12.5px;">高频机制：${topMechanisms}</div>` : ''}</div>
                     <h2 style="text-align:center; margin-top:50px; color:#4caf50;">${msg}</h2></div>`;
             }
 
@@ -6771,6 +6858,7 @@
                             <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                             <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
                         </div>
+                        ${topMechanisms ? `<div style="margin-top:8px; color:#64748b; font-size:12.5px;">高频机制：${topMechanisms}</div>` : ''}
                     </div>` : '';
 
                 html += `
