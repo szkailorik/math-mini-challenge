@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.84';
-        const APP_RELEASE_LABEL = '错题记录与跟训链路校准';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.84 修正本套错题记录里旧套卷重提时可能回写 lastSeen 的问题，并把本套变式跟训收细到更贴近单道原错题。';
+        const APP_VERSION = 'v23.85';
+        const APP_RELEASE_LABEL = '错题UID规范化增强';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.85 继续收紧错题记录链路，把错题 uid 改成按规范化后的数学题面生成，减少同题仅因 HTML 包装不同而被拆成两条错题档案。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2403,9 +2403,33 @@
             }
             return h.toString(36);
         }
+        function normalizeErrorPrompt(questionHtml = '') {
+            let value = normalizeInlineMathMarkup(String(questionHtml || ''));
+            value = value.replace(
+                /<div class="mixed">\s*([^<]+?)\s*<span class="frac">\s*<span>([\s\S]*?)<\/span>\s*<span class="bottom">([\s\S]*?)<\/span>\s*<\/span>\s*<\/div>/g,
+                '$1($2/$3)'
+            );
+            value = value.replace(
+                /<span class="frac">\s*<span>([\s\S]*?)<\/span>\s*<span class="bottom">([\s\S]*?)<\/span>\s*<\/span>/g,
+                '($1/$2)'
+            );
+            value = value
+                .replace(/<div class="blank"><\/div>|<span class="blank math-inline-blank"><\/span>/g, '___')
+                .replace(/<span class="circle-blank[^"]*"><\/span>/g, '○')
+                .replace(/&times;/gi, '×')
+                .replace(/&divide;/gi, '÷')
+                .replace(/&minus;/gi, '-')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&nbsp;/gi, ' ')
+                .replace(/<i class="var">x<\/i>/gi, 'x')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return value;
+        }
         function computeErrorUid(tag, q) {
-            // 去除空格/HTML实体差异，保证同题稳定命中
-            let normalized = String(q || '').replace(/\s+/g, '').replace(/&[a-z]+;/gi, '#');
+            const normalized = normalizeErrorPrompt(q).replace(/\s+/g, '');
             return `${tag}_${hashString(normalized)}`;
         }
 

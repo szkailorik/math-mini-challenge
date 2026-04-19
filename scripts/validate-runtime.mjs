@@ -36,6 +36,9 @@ if (!html.includes('function beautifyMathHTML')) {
 if (!html.includes('function normalizeQuestionPrompt')) {
   throw new Error('Question prompt normalization helper is missing from runtime script');
 }
+if (!html.includes('function normalizeErrorPrompt')) {
+  throw new Error('Error prompt normalization helper is missing from runtime script');
+}
 if (!html.includes('function getQualityFamilyForTag')) {
   throw new Error('Quality family helper is missing from runtime script');
 }
@@ -1302,6 +1305,11 @@ if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReview
 const sampleFollowupGroups = context.window.buildSetReviewFollowupGroups?.(sampleFollowupItems);
 if (!Array.isArray(sampleFollowupGroups) || !sampleFollowupGroups.length) {
   throw new Error('Set review follow-up grouping helper is not producing grouped practice sections');
+}
+const normalizedUidA = context.window.computeErrorUid?.('l_fmix_sub', '<div class="frac"><span>3</span><span class="bottom">4</span></div> &minus; <div class="frac"><span>1</span><span class="bottom">2</span></div> = <div class="blank"></div>');
+const normalizedUidB = context.window.computeErrorUid?.('l_fmix_sub', '<span class="frac"><span>3</span><span class="bottom">4</span></span> &minus; <span class="frac"><span>1</span><span class="bottom">2</span></span> = <span class="blank math-inline-blank"></span>');
+if (!normalizedUidA || normalizedUidA !== normalizedUidB) {
+  throw new Error('Error UID normalization does not treat equivalent math markup as the same prompt');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案')) {
