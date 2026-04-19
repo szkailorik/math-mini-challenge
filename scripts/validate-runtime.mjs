@@ -60,6 +60,9 @@ if (!html.includes('function buildSetReviewFollowupItems')) {
 if (!html.includes('function buildSetReviewFollowupGroups')) {
   throw new Error('Set Review follow-up grouping helper is missing from runtime script');
 }
+if (!html.includes('function getSetReviewFollowupItemShape')) {
+  throw new Error('Set Review follow-up item-shape helper is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupHTML')) {
   throw new Error('Set Review follow-up renderer is missing from runtime script');
 }
@@ -77,6 +80,9 @@ if (!html.includes('set-review-followup')) {
 }
 if (!html.includes('followup-group')) {
   throw new Error('Set Review follow-up grouped layout is missing from runtime script');
+}
+if (!html.includes('set-review-followup-overview')) {
+  throw new Error('Set Review follow-up overview summary block is missing from runtime script');
 }
 if (!html.includes('const CALCULATION_QUICK_REVIEW_TOPICS = [')) {
   throw new Error('Calculation Quick Review topic registry is missing from runtime script');

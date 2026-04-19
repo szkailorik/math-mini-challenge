@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.71 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a lightweight shape-aware layout pass for the `本套错题变式跟训` block so fraction-heavy and conversion-heavy prompts render with steadier font sizing and spacing in both the report and the printable worksheet.
+- Open questions: whether the next pass should now explicitly optimize line-breaking for the longest mixed-number and fraction prompts, or return to expanding family-specific question generation.
+- Risks: shape detection improves dense math layouts, but it is still heuristic; if future prompt markup changes significantly, some item shapes may fall back to the standard lane until the detector is updated.
+- Next steps: review real follow-up sheets that contain several fraction/conversion mistakes, then decide whether to keep pushing print density or switch back to question-family depth.
+
 ## Current v23.70 Iteration Notes
 
 ### Iteration 1

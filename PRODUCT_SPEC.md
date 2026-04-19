@@ -575,3 +575,9 @@ profile = {
 - The report now frames the follow-up sheet with a clearer summary and compact metrics before the grouped questions.
 - On screen, the grouped sections now read more like a real parent-guided reinforcement page than a flat generated list.
 - In print, the answer reference is moved into a cleaner dedicated sheet so parents can print practice only or practice plus answers with less visual clutter.
+
+- v23.71 improves print density and visual stability for the follow-up worksheet:
+
+- The follow-up renderer now classifies harder shapes such as fraction-heavy or conversion-heavy prompts and gives them slightly different layout treatment.
+- This lets the worksheet stay compact without forcing every generated item into the same font and line-height profile.
+- The result should be a denser but still stable printable reinforcement page, especially when the follow-up set includes more mathematical notation than plain arithmetic text.
