@@ -96,6 +96,9 @@ if (!html.includes("complex_mixed: '复杂混合'")) {
 if (!html.includes('function buildSetReviewComplexMixedVariant')) {
   throw new Error('Set Review follow-up complex mixed builder is missing from runtime script');
 }
+if (!html.includes("/^(c2_mix_|k_oly_|l_bmix_)/")) {
+  throw new Error('Complex mixed quality-family routing no longer covers k_oly_ / l_bmix_ tags');
+}
 if (html.includes('请再做一道同类练习，并特别注意刚才容易错的步骤。')) {
   throw new Error('Set Review follow-up still contains the old non-concrete generic prompt');
 }

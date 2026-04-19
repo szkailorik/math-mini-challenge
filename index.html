@@ -3481,7 +3481,7 @@
             { family: 'decimal_division', test: tag => /^(k_ddiv_|l_div_decimal_)/.test(tag) },
             { family: 'fraction_operation', test: tag => /^(k_fcalc_|l_fmix_)/.test(tag) },
             { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
-            { family: 'complex_mixed', test: tag => /^c2_mix_/.test(tag) },
+            { family: 'complex_mixed', test: tag => /^(c2_mix_|k_oly_|l_bmix_)/.test(tag) },
             { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
             { family: 'equation_method', test: tag => /^(k_eq_|c2_eq_|c2_rate_eq)/.test(tag) },
             { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
@@ -7176,6 +7176,112 @@
                     : buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
                 if (built) {
                     return attachQualityMetadata({
+                        ...built,
+                        qualityFamily: 'complex_mixed',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
+            if (/^k_oly_/.test(entry.tag || '')) {
+                let built = null;
+                switch (entry.tag) {
+                    case 'k_oly_dist': {
+                        const factor = Engine.randChoice([12, 18, 24]);
+                        const left = Engine.randChoice([2.5, 3.2, 4.5]);
+                        const right = Engine.randChoice([7.5, 6.8, 5.5]);
+                        built = {
+                            q: `${left} &times; ${factor} + ${right} &times; ${factor} =`,
+                            a: `${formatDecimal((left + right) * factor)}`,
+                            step: `方法提醒：先看两项都有 ${factor}，可以先提取公因数，再算 (${left} + ${right}) × ${factor}。`
+                        };
+                        break;
+                    }
+                    case 'k_oly_balance': {
+                        const near = Engine.randChoice([99, 101, 999]);
+                        const value = Engine.randChoice([24, 36, 48]);
+                        const ans = near * value;
+                        const helper = near === 99 ? `100 × ${value} − ${value}` : near === 101 ? `100 × ${value} + ${value}` : `1000 × ${value} − ${value}`;
+                        built = {
+                            q: `${near} &times; ${value} =`,
+                            a: `${ans}`,
+                            step: `方法提醒：先凑整，${near} × ${value} 可以先看成 ${helper}。`
+                        };
+                        break;
+                    }
+                    case 'k_oly_reverse': {
+                        const factor = Engine.randChoice([2.4, 3.6, 5.2]);
+                        const a = Engine.randChoice([1.8, 2.5, 4.8]);
+                        const b = Engine.randChoice([3.2, 5.5, 6.4]);
+                        built = {
+                            q: `${a} &times; ${factor} + ${b} &times; ${factor} =`,
+                            a: `${formatDecimal((a + b) * factor)}`,
+                            step: `方法提醒：看到两项都有 ${factor}，先逆向用分配律，把 ${factor} 提到括号外。`
+                        };
+                        break;
+                    }
+                    case 'k_oly_unit_fraction': {
+                        const whole = Engine.randChoice([42, 48, 54, 60]);
+                        const fracValue = new Frac(Engine.randChoice([2, 3, 5]), Engine.randChoice([6, 7, 8, 10]));
+                        const ans = new Frac(whole, 1).mul(fracValue);
+                        built = {
+                            q: `${whole} &times; ${fracValue.toHTML()} =`,
+                            a: ans.toMixedHTML(),
+                            step: `方法提醒：先想总量按分母平均分成若干份，再按分子取对应份数，不要直接拿大数硬乘。`
+                        };
+                        break;
+                    }
+                }
+                if (built) {
+                    return attachQualityMetadata({
+                        tag: entry.tag,
+                        ...built,
+                        qualityFamily: 'complex_mixed',
+                        replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                        isSetReviewFollowup: true,
+                        isReviewItem: true
+                    });
+                }
+            }
+            if (/^l_bmix_/.test(entry.tag || '')) {
+                let built = null;
+                switch (entry.tag) {
+                    case 'l_bmix_125': {
+                        const left = Engine.randChoice([12.5, 125, 2.5]);
+                        const right = left === 125 ? Engine.randChoice([8, 16, 24]) : left === 12.5 ? Engine.randChoice([8, 16, 24]) : Engine.randChoice([4, 8, 12]);
+                        built = {
+                            q: `${left} &times; ${right} =`,
+                            a: `${formatDecimal(left * right)}`,
+                            step: '方法提醒：先找好朋友数：125 找 8，12.5 找 8，25 找 4，先拆再算更快。'
+                        };
+                        break;
+                    }
+                    case 'l_bmix_near100': {
+                        const near = Engine.randChoice([99, 101]);
+                        const value = Engine.randChoice([26, 38, 47]);
+                        built = {
+                            q: `${near} &times; ${value} =`,
+                            a: `${near * value}`,
+                            step: `方法提醒：先凑整，${near} 看成 ${near === 99 ? '100 − 1' : '100 + 1'}，再补减或补加。`
+                        };
+                        break;
+                    }
+                    case 'l_bmix_paren': {
+                        const a = Engine.randChoice([1.5, 2.4, 3.6]);
+                        const b = Engine.randChoice([0.5, 1.2, 2.4]);
+                        const c = Engine.randChoice([4, 5, 8]);
+                        built = {
+                            q: `[${a} + ${b}] &times; ${c} =`,
+                            a: `${formatDecimal((a + b) * c)}`,
+                            step: '方法提醒：先认括号优先，再看能不能利用整数组合让计算更顺。'
+                        };
+                        break;
+                    }
+                }
+                if (built) {
+                    return attachQualityMetadata({
+                        tag: entry.tag,
                         ...built,
                         qualityFamily: 'complex_mixed',
                         replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
