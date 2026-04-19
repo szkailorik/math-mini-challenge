@@ -1558,36 +1558,73 @@
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
         .set-review-followup-wrap { padding: 0 15px 16px; background:#fff; }
-        .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; }
+        .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; display:grid; gap:12px; }
         .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
-        .set-review-followup-head h4 { margin:0; color:#0f172a; font-size:16px; }
+        .set-review-followup-head h4 { margin:0; color:#0f172a; font-size:16px; line-height:1.35; }
+        .set-review-followup-subtitle { margin-top:4px; color:#64748b; font-size:12px; line-height:1.45; }
         .set-review-followup-actions { display:flex; gap:8px; flex-wrap:wrap; }
-        .set-review-followup-summary { margin-top:10px; padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; color:#475569; line-height:1.55; }
+        .set-review-followup-overview {
+            border:1px solid #e2e8f0;
+            border-radius:14px;
+            background:linear-gradient(180deg, #fcfdff, #f8fafc);
+            padding:12px;
+            display:grid;
+            gap:10px;
+        }
+        .set-review-followup-summary { font-size:13px; color:#475569; line-height:1.6; }
+        .set-review-followup-metrics { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:8px; }
+        .followup-metric { border:1px solid #dbe4ee; border-radius:12px; background:#fff; padding:8px 10px; }
+        .followup-metric-label { display:block; margin-bottom:4px; color:#64748b; font-size:10.5px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; }
+        .followup-metric-value { display:block; color:#0f172a; font-size:16px; font-weight:800; line-height:1.2; }
         .set-review-followup-sheet { margin-top:12px; display:grid; gap:8px; }
-        .set-review-followup-groups { display:grid; gap:14px; margin-top:12px; }
-        .followup-group { border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#fff; }
-        .followup-group-head { display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
-        .followup-group-title { margin:0; font-size:14px; color:#0f172a; }
-        .followup-group-note { font-size:12px; color:#64748b; }
-        .followup-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.65; }
+        .set-review-followup-groups { display:grid; gap:14px; }
+        .followup-group { border:1px solid #e2e8f0; border-left:4px solid #cbd5e1; border-radius:14px; padding:12px 12px 10px; background:#fff; }
+        .followup-group[data-grade="wrong"] { border-left-color:#dc2626; }
+        .followup-group[data-grade="careless"] { border-left-color:#b45309; }
+        .followup-group-head { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+        .followup-group-title-wrap { display:grid; gap:4px; }
+        .followup-group-title { margin:0; font-size:14px; color:#0f172a; line-height:1.35; }
+        .followup-group-kicker { display:inline-flex; align-items:center; width:max-content; padding:3px 8px; border-radius:999px; background:#f1f5f9; color:#475569; font-size:10.5px; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; }
+        .followup-group[data-grade="wrong"] .followup-group-kicker { background:#fee2e2; color:#b91c1c; }
+        .followup-group[data-grade="careless"] .followup-group-kicker { background:#ffedd5; color:#9a3412; }
+        .followup-group-note { font-size:12px; color:#64748b; line-height:1.45; max-width:420px; }
+        .followup-group-list { display:grid; gap:8px; }
+        .followup-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.65; padding:7px 0; border-top:1px dashed #e2e8f0; }
+        .followup-group-list .followup-item:first-child { border-top:none; padding-top:0; }
         .followup-num { width:24px; flex:0 0 24px; font-weight:700; color:#0f172a; }
         .followup-q { flex:1; min-width:0; }
-        .followup-family { margin-left:8px; font-size:12px; color:#0f766e; font-weight:700; white-space:nowrap; }
-        .set-review-followup-answer { margin-top:14px; }
-        .set-review-followup-answer h5 { margin:0 0 8px; font-size:14px; color:#334155; }
+        .followup-family { margin-left:8px; font-size:11px; color:#0f766e; font-weight:700; white-space:nowrap; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 7px; border-radius:999px; }
+        .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
+        .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
+        .set-review-followup-answer-note { margin:0 0 10px; color:#64748b; font-size:12px; line-height:1.45; }
         .set-review-followup-empty { margin-top:10px; padding:12px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:13px; }
         .set-review-followup-print-shell { width:190mm; margin:0 auto; color:#0f172a; font-family: "Times New Roman", Georgia, serif; }
-        .set-review-followup-print-shell .sheet-title { margin:10px 0 14px; font-size:22px; letter-spacing:0.02em; }
+        .set-review-followup-print-shell .sheet-title { margin:10px 0 8px; font-size:22px; letter-spacing:0.02em; }
+        .followup-print-lead { margin:0; font-size:11px; line-height:1.55; color:#475569; }
         .followup-print-meta { margin-top:10px; padding:8px 10px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:8px; font-size:12px; color:#475569; }
+        .followup-print-summary-grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; margin-top:10px; }
+        .followup-print-summary-card { border:1px solid #cbd5e1; border-radius:8px; padding:7px 8px; background:#fff; }
+        .followup-print-summary-card strong { display:block; font-size:14px; line-height:1.2; color:#0f172a; }
+        .followup-print-summary-card span { display:block; margin-top:2px; font-size:10px; line-height:1.3; letter-spacing:0.04em; text-transform:uppercase; color:#64748b; }
         .followup-print-sheet { display:grid; gap:10px; margin-top:12px; }
-        .followup-print-group { margin-top:14px; page-break-inside:avoid; }
-        .followup-print-group h3 { margin:0 0 6px; font-size:14px; color:#0f172a; }
+        .followup-print-group { margin-top:12px; page-break-inside:avoid; border-top:1px solid #cbd5e1; padding-top:10px; }
+        .followup-print-group:first-child { border-top:none; padding-top:0; margin-top:0; }
+        .followup-print-group h3 { margin:0 0 4px; font-size:14px; color:#0f172a; }
+        .followup-print-kicker { display:inline-block; margin-bottom:5px; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:#8a3412; font-weight:700; }
         .followup-print-group p { margin:0 0 8px; font-size:11px; color:#64748b; }
+        .followup-print-list { display:grid; gap:6px; }
         .followup-print-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.7; page-break-inside:avoid; }
+        .set-review-followup-answer.print-answer-sheet { page-break-before:always; break-before:page; margin-top:16px; border-color:#cbd5e1; background:#fff; }
         body.print-set-review-followup #print-root,
         body.print-set-review-followup-with-answers #print-root { display:block; }
         body.print-set-review-followup #print-root .set-review-followup-answer { display:none; }
         #print-root { display: none; }
+
+        @media (max-width: 760px) {
+            .set-review-followup-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .followup-item { flex-wrap: wrap; }
+            .followup-family { margin-left: 32px; }
+        }
 
         @media (max-width: 1100px) {
             .export-btn { right: 20px; top: auto; bottom: 20px; }
@@ -1708,9 +1745,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.69';
-        const APP_RELEASE_LABEL = '本套报告变式题质量增强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.69 本套报告变式题质量增强：分数、互化、单位比率和第二阶段变式更贴原错点。';
+        const APP_VERSION = 'v23.70';
+        const APP_RELEASE_LABEL = '本套报告变式跟训版式优化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.70 本套报告变式跟训版式优化：报告摘要更清楚，打印页和答案页更像补练讲义。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6932,23 +6969,27 @@
                 if (forPrint) {
                     return `
                     <section class="followup-print-group">
+                        <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
                         <h3>${label}</h3>
                         <p>${note}</p>
-                        ${rows}
+                        <div class="followup-print-list">${rows}</div>
                     </section>`;
                 }
                 return `
-                <section class="followup-group">
+                <section class="followup-group" data-grade="${group.grade}">
                     <div class="followup-group-head">
-                        <h5 class="followup-group-title">${label}</h5>
+                        <div class="followup-group-title-wrap">
+                            <span class="followup-group-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
+                            <h5 class="followup-group-title">${label}</h5>
+                        </div>
                         <span class="followup-group-note">${note}</span>
                     </div>
-                    ${rows}
+                    <div class="followup-group-list">${rows}</div>
                 </section>`;
             }).join('');
         }
 
-        function buildSetReviewFollowupAnswerHTML(items) {
+        function buildSetReviewFollowupAnswerHTML(items, { forPrint = false } = {}) {
             if (!items.length) return '';
             const rows = items.map((item, idx) => `
                 <tr>
@@ -6958,8 +6999,9 @@
                 </tr>
             `).join('');
             return `
-            <div class="set-review-followup-answer">
+            <div class="set-review-followup-answer ${forPrint ? 'print-answer-sheet' : ''}">
                 <h5>参考答案</h5>
+                <p class="set-review-followup-answer-note">${forPrint ? '这一页给家长核对用。先让孩子独立完成前面的变式跟训，再回来看这里。' : '建议先独立完成上面的变式跟训，再用这里做核对。'}</p>
                 <table class="archive-table">
                     <tr><th>#</th><th>答案</th><th>检查提醒</th></tr>
                     ${rows}
@@ -6985,14 +7027,37 @@
             return `
             <div class="set-review-followup" data-student="${student}">
                 <div class="set-review-followup-head">
-                    <h4>🧩 本套错题变式跟训</h4>
+                    <div>
+                        <h4>🧩 本套错题变式跟训</h4>
+                        <div class="set-review-followup-subtitle">按这套卷里真正错过的知识点继续补一轮，不重做原题，只追打同一个错误机制。</div>
+                    </div>
                     <div class="set-review-followup-actions no-print">
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
                     </div>
                 </div>
-                <div class="set-review-followup-summary">
-                    本次跟训共 ${items.length} 题 · 概念错 ${wrongCount} 题优先 · 粗心保温 ${carelessCount} 题轻量补温 · 主要覆盖：${familySummary}
+                <div class="set-review-followup-overview">
+                    <div class="set-review-followup-summary">
+                        本次跟训共 <strong>${items.length}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
+                    </div>
+                    <div class="set-review-followup-metrics">
+                        <div class="followup-metric">
+                            <span class="followup-metric-label">本次题量</span>
+                            <span class="followup-metric-value">${items.length} 题</span>
+                        </div>
+                        <div class="followup-metric">
+                            <span class="followup-metric-label">概念错优先</span>
+                            <span class="followup-metric-value">${wrongCount} 题</span>
+                        </div>
+                        <div class="followup-metric">
+                            <span class="followup-metric-label">粗心保温</span>
+                            <span class="followup-metric-value">${carelessCount} 题</span>
+                        </div>
+                        <div class="followup-metric">
+                            <span class="followup-metric-label">覆盖家族</span>
+                            <span class="followup-metric-value">${Array.from(new Set(items.map(item => item.followupFamily))).length} 类</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="set-review-followup-groups">${renderSetReviewFollowupGroups(items)}</div>
                 ${buildSetReviewFollowupAnswerHTML(items)}
@@ -7206,7 +7271,7 @@
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
-            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items) : '';
+            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell">
                 <header class="booklet-meta-band">
@@ -7214,7 +7279,14 @@
                     <span>本套错题变式跟训</span>
                 </header>
                 <h2 class="sheet-title">错题变式跟训</h2>
+                <p class="followup-print-lead">按这套卷里真正错过的知识点继续补一轮。先独立完成这一页，再翻到后面的答案参考页核对。</p>
                 <div class="followup-print-meta">共 ${items.length} 题 · 概念错 ${wrongCount} 题优先 · 粗心保温 ${carelessCount} 题 · 覆盖：${families}</div>
+                <div class="followup-print-summary-grid">
+                    <div class="followup-print-summary-card"><strong>${items.length} 题</strong><span>本次题量</span></div>
+                    <div class="followup-print-summary-card"><strong>${wrongCount} 题</strong><span>概念错优先</span></div>
+                    <div class="followup-print-summary-card"><strong>${carelessCount} 题</strong><span>粗心保温</span></div>
+                    <div class="followup-print-summary-card"><strong>${Array.from(new Set(items.map(item => item.followupFamily))).length} 类</strong><span>覆盖家族</span></div>
+                </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
             </section>`;

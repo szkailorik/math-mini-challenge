@@ -569,3 +569,9 @@ profile = {
 - More follow-up families now reuse existing high-value variant builders and boundary-style reinforcement patterns instead of falling back too early to generic prompts.
 - This is especially important for fractions, conversions, unit/rate work, and second-stage closure tags, where “same error mechanism” matters more than surface similarity.
 - The result should feel less like “another extra problem” and more like “a better-shaped second chance at the same idea”.
+
+- v23.70 improves the usability and print-readiness of the set-review follow-up block:
+
+- The report now frames the follow-up sheet with a clearer summary and compact metrics before the grouped questions.
+- On screen, the grouped sections now read more like a real parent-guided reinforcement page than a flat generated list.
+- In print, the answer reference is moved into a cleaner dedicated sheet so parents can print practice only or practice plus answers with less visual clutter.

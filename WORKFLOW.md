@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.70 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the stronger family-aware variant generation from `v23.69`, then redesigned the in-report `本套错题变式跟训` block so it reads more like a compact follow-up worksheet with a clear overview, compact metrics, grouped practice sections, and a cleaner teacher-facing answer reference.
+- Open questions: whether the next pass should now focus on even tighter print density and line-breaking for especially fraction-heavy follow-up sets, or return to adding more family-specific generators.
+- Risks: the sheet is more readable and printable, but very long wrong-set histories in a single session could still produce denser print pages than ideal if too many families fire at once.
+- Next steps: review the live report and print output with real student mistakes, then decide whether the next pass should prioritize print density or another round of question-family depth.
+
 ## Current v23.69 Iteration Notes
 
 ### Iteration 1
