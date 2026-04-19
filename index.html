@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.82';
-        const APP_RELEASE_LABEL = '本套变式跟训近身变式增强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.82 继续加强本套错题变式跟训，让 l_fmix、l_conv 比较题以及第一阶段高价值综合题更贴近原错题的题型结构。';
+        const APP_VERSION = 'v23.83';
+        const APP_RELEASE_LABEL = '本套变式跟训互化题补齐';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.83 继续补齐本套错题变式跟训里的互化题标签，让循环小数、分母 20、分母 10000 这一组也更贴近原错题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7531,6 +7531,34 @@
                             isReviewItem: true
                         });
                     }
+                    case 'k_conv_3': {
+                        const v = Engine.randChoice([1, 2, 4, 5, 7, 8]);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `0.<span class="dot-top">${v}</span> = (   )`,
+                            a: new Frac(v, 9).toHTML(),
+                            step: '规则提醒：一位循环小数直接写成九分之几。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'k_conv_4': {
+                        const non = Engine.randChoice([1, 2, 3, 4, 5]);
+                        let rep = Engine.randChoice([1, 2, 3, 4, 5, 6, 7, 8]);
+                        if (rep === non) rep = rep === 8 ? 7 : rep + 1;
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `0.${non}<span class="dot-top">${rep}</span> = (   )`,
+                            a: new Frac(non * 9 + rep, 90).toHTML(),
+                            step: '规则提醒：混循环小数先用“前不循环×9 + 循环位”作分子，分母写 90。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
                     case 'k_conv_5': {
                         const n = Engine.randChoice([3, 7, 9, 11, 17]);
                         return attachQualityMetadata({
@@ -7558,6 +7586,20 @@
                             isReviewItem: true
                         });
                     }
+                    case 'k_conv_7': {
+                        const numerators = [125, 250, 375, 625, 875];
+                        const v = Engine.randChoice(numerators) / 10000;
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `${String(v).replace(/0$/, '')} = (   )`,
+                            a: new Frac(v, 1).toHTML(),
+                            step: '方法提醒：先写成分母 10000 的分数，再用 125 这一整块快速约分。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
                     case 'k_conv_8':
                     case 'k_conv_9': {
                         const den = entry.tag === 'k_conv_8' ? 40 : 16;
@@ -7567,6 +7609,20 @@
                             q: `<div class="frac"><span>${n}</span><span class="bottom">${den}</span></div> = (   )`,
                             a: formatDecimal(n / den),
                             step: '方法提醒：先想这个分母对应的基准小数，再按倍数推出结果。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'k_conv_10': {
+                        const choices = [0.0625, 0.1875, 0.3125, 0.4375, 0.5625, 0.6875, 0.8125, 0.9375];
+                        const v = Engine.randChoice(choices);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `${v} = (   )`,
+                            a: new Frac(v, 1).toHTML(),
+                            step: '方法提醒：这类四位小数常来自十六分之几，先写成分母 10000 的分数，再约成十六分之一系列。',
                             qualityFamily: 'conversion_bridge',
                             replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
                             isSetReviewFollowup: true,
@@ -7584,6 +7640,19 @@
                             q: `<div class="frac"><span>${n}</span><span class="bottom">8</span></div> = (   )`,
                             a: formatDecimal(n / 8),
                             step: '方法提醒：先记住 1/8 = 0.125，再按倍数推出。',
+                            qualityFamily: 'conversion_bridge',
+                            replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                            isSetReviewFollowup: true,
+                            isReviewItem: true
+                        });
+                    }
+                    case 'l_conv_3': {
+                        const n = Engine.randChoice([1, 3, 7, 9, 11, 13, 17, 19]);
+                        return attachQualityMetadata({
+                            tag: entry.tag,
+                            q: `<div class="frac"><span>${n}</span><span class="bottom">20</span></div> = (   )`,
+                            a: formatDecimal(n / 20),
+                            step: '方法提醒：分母 20 先化成 100，再写成小数。',
                             qualityFamily: 'conversion_bridge',
                             replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
                             isSetReviewFollowup: true,
