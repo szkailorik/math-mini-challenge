@@ -2033,9 +2033,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.91';
+        const APP_VERSION = 'v23.92';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.91 收紧第二大题排版：复杂桥接题自动降列，压住数字重叠和题干错位。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.92 继续收紧第二大题：桥接/互化区默认改 3 列，复杂题再自动降到 2 列。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6623,13 +6623,13 @@
 
                 const closureScore = 8 + 8 + 8 + 8 + 8;
                 let k_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_k_keep, 'h-mixed', 2) +
-                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_k_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_k_bridge, 'h-conv', 3) +
                            buildQSection(`三、 ${phaseMeta.mixTitle}`, `III. Complex Mixed Core`, `(${phaseMeta.mixHint})`, data.c_k_mix, 'h-mixed', 2);
                 let k_p2 = buildQSection(`四、 ${phaseMeta.unitTitle}`, `IV. Unit / Rate / Relation Bridge`, `(${phaseMeta.unitHint})`, data.c_k_unit, 'h-mixed', 2) +
                            buildQSection(`五、 ${kFocusMeta.title}`, `V. Focus Reinforcement`, `(${kFocusMeta.hint || phaseMeta.focusHint})`, data.c_k_focus, 'h-mixed', 2);
 
                 let l_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_l_keep, 'h-mixed', 2) +
-                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_l_bridge, 'h-conv', 4) +
+                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_l_bridge, 'h-conv', 3) +
                            buildQSection(`三、 ${phaseMeta.mixTitle}`, `III. Complex Mixed Core`, `(${phaseMeta.mixHint})`, data.c_l_mix, 'h-mixed', 2);
                 let l_p2 = buildQSection(`四、 ${phaseMeta.unitTitle}`, `IV. Unit / Rate / Relation Bridge`, `(${phaseMeta.unitHint})`, data.c_l_unit, 'h-mixed', 2) +
                            buildQSection(`五、 ${lFocusMeta.title}`, `V. Focus Reinforcement`, `(${lFocusMeta.hint || phaseMeta.focusHint})`, data.c_l_focus, 'h-mixed', 2);
@@ -6711,7 +6711,7 @@
             let k_p1 = buildQSection(`一、 复杂小数与多位数乘法`, `I. Complex Decimal & Multi-Digit Multiplication`, '(每小题2分 / 2 pts each)', data.k_m, 'h-vert', 2) +
                        buildQSection(`二、 复杂小数与多位数除法`, `II. Complex Decimal & Multi-Digit Division`, '(每小题2分 / 2 pts each)', data.k_d, 'h-vert', 2) +
                        buildQSection(`三、 大数跨位退位减法`, `III. Large Number Subtraction with Regrouping`, '(列竖式 / Draft in blank)', data.k_s, 'h-sub', 2);
-            let k_p2 = buildQSection(`四、 分数、小数与百分数互化`, `IV. Fraction, Decimal & Percentage Conversion`, '(每空0.5分 / 0.5 pts each)', data.k_c, 'h-conv', 4) +
+            let k_p2 = buildQSection(`四、 分数、小数与百分数互化`, `IV. Fraction, Decimal & Percentage Conversion`, '(每空0.5分 / 0.5 pts each)', data.k_c, 'h-conv', 3) +
                        buildQSection(`五、 繁分数与方程进阶`, `V. Complex Fractions & Advanced Equations`, '(混合抽题，求x / Solve for x)', data.k_f, 'h-frac', 3) +
                        buildQSection(`六、 奥数级混合运算`, `VI. Olympiad-Level Mixed Operations`, '(2-3分题 / 2-3 pts each)', data.k_o, 'h-mixed', 2);
 
@@ -6725,7 +6725,7 @@
             let l_p1 = buildQSection(`一、 进阶竖式乘法`, `I. Advanced Vertical Multiplication`, '(每题2分 / 2 pts each)', data.l_m, 'h-vert', 2) +
                        buildQSection(`二、 进阶竖式除法`, `II. Advanced Vertical Division`, '(含小数被除数/除数 / Includes decimal dividend & divisor)', data.l_d, 'h-vert', 2) +
                        buildQSection(`三、 大数跨位退位减法`, `III. Large Number Subtraction with Regrouping`, '(列竖式 / Draft in blank)', data.l_s, 'h-sub', 2);
-            let l_p2 = buildQSection(`四、 分数与小数互化及大小比较`, `IV. Fraction & Decimal Conversion and Comparison`, '(每空0.5分 / 0.5 pts each)', data.l_c, 'h-conv', 4) +
+            let l_p2 = buildQSection(`四、 分数与小数互化及大小比较`, `IV. Fraction & Decimal Conversion and Comparison`, '(每空0.5分 / 0.5 pts each)', data.l_c, 'h-conv', 3) +
                        buildQSection(`五、 多步混合分数运算`, `V. Multi-Step Fraction Operations`, '(顺序已洗牌 / Shuffled order)', data.l_f, 'h-frac', 3) +
                        buildQSection(`六、 基础简便运算`, `VI. Basic Shortcut Calculations`, '(2-3分题 / 2-3 pts each)', data.l_o, 'h-mixed', 2);
 
