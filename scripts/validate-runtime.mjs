@@ -1272,6 +1272,25 @@ if (context.document.body.classList.contains('print-questions-only') || context.
 if ((elements.get('print-root')?.innerHTML || '') !== '') {
   throw new Error('Print sandbox did not clear after afterprint');
 }
+context.window.printAnswerSheets();
+await new Promise(resolve => setTimeout(resolve, 260));
+const answerPrintRootHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-answers-only') || !context.document.body.classList.contains('print-sandbox-active') || context.__printCalls !== 2) {
+  throw new Error('Answer-sheet print mode did not activate correctly');
+}
+if ((answerPrintRootHtml.match(/class="sheet ans-sheet/g) || []).length !== 2) {
+  throw new Error('Answer-sheet print sandbox did not stage exactly two printable answer sheets');
+}
+if (answerPrintRootHtml.includes('class="blank math-inline-blank"') || answerPrintRootHtml.includes('<div class="blank"></div>')) {
+  throw new Error('Answer-sheet print sandbox still contains legacy underline blanks');
+}
+emit('afterprint');
+if (context.document.body.classList.contains('print-questions-only') || context.document.body.classList.contains('print-answers-only')) {
+  throw new Error('Answer-sheet print mode did not clear after afterprint');
+}
+if ((elements.get('print-root')?.innerHTML || '') !== '') {
+  throw new Error('Answer-sheet print sandbox did not clear after afterprint');
+}
 if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
   throw new Error('Automatic cloud pull helpers are not available');
 }

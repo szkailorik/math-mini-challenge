@@ -38,6 +38,11 @@ v23.108 further stabilizes Closure bilingual paper layout:
 - Compact parenthetical answer slots are now used more broadly across second-stage prompts instead of leaving long underline blanks inside the question body.
 - This keeps the paper closer to exam-style short answers while reducing overflow and overlap risk in dense bilingual sections.
 
+v23.112 extends the same answer-slot stability rule into printable answer packs:
+
+- The printable answer-key sandbox is now checked with the same legacy-blank audit used for live paper rendering.
+- This reduces the chance that answer-page printing quietly diverges from the on-screen paper style.
+
 v23.111 extends the same answer-slot stability rule across both stages:
 
 - The advanced paper path is now checked with the same rendered-paper blank audit used by Closure.
