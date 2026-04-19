@@ -599,3 +599,9 @@ profile = {
 - The printed sheet now favors a lighter title block, a single compact metadata line, and exam-style grouped section headings instead of report-like summary cards.
 - The design goal is to preserve the learner-facing “worksheet” feeling, keep the page visually close to the main AB papers, and still fit into one page whenever the current mistake set is not too large.
 - The answer key remains separate and teacher-facing so the practice sheet itself stays clean.
+
+- v23.75 makes one-page packing a stronger print-time priority for the follow-up sheet:
+
+- The printable sheet now suppresses more explanatory copy and uses a compact-mode switch when the current follow-up set is especially dense.
+- Compact mode is driven by the generated item mix rather than a blanket global shrink, so only harder follow-up sheets are packed more tightly.
+- The intended effect is to keep the formal-paper look while increasing the chance that a real same-set follow-up can stay on one page.

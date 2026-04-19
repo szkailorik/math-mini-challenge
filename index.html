@@ -1638,9 +1638,15 @@
             color:#0f172a;
             font-family: "Times New Roman", Georgia, serif;
         }
+        .set-review-followup-print-shell[data-pack="compact"] {
+            width: 186mm;
+        }
         .set-review-followup-print-head {
             text-align: center;
             margin: 8px 0 10px;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .set-review-followup-print-head {
+            margin: 6px 0 7px;
         }
         .set-review-followup-print-shell .sheet-title {
             margin: 6px 0 3px;
@@ -1648,12 +1654,20 @@
             letter-spacing: 0.02em;
             font-weight: 700;
         }
+        .set-review-followup-print-shell[data-pack="compact"] .sheet-title {
+            margin: 4px 0 2px;
+            font-size: 19px;
+        }
         .followup-print-subtitle {
             margin: 0;
             font-size: 11px;
             line-height: 1.4;
             color: #475569;
             font-family: 'Georgia', 'Songti SC', serif;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-subtitle {
+            font-size: 10px;
+            line-height: 1.28;
         }
         .followup-print-meta {
             display:flex;
@@ -1669,12 +1683,19 @@
             letter-spacing: 0.05em;
             text-transform: uppercase;
         }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-meta {
+            margin: 0 0 6px;
+            padding: 0 0 4px;
+            font-size: 9.7px;
+            line-height: 1.25;
+        }
         .followup-print-meta strong {
             color:#123b73;
             font-weight:700;
             letter-spacing:0.08em;
         }
         .followup-print-sheet { display:grid; gap:8px; }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:6px; }
         .followup-print-group {
             page-break-inside:avoid;
             break-inside:avoid;
@@ -1689,6 +1710,10 @@
             padding: 0 0 4px;
             border-bottom: 1px solid rgba(18, 59, 115, 0.14);
         }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-group-head {
+            margin: 0 0 3px;
+            padding: 0 0 3px;
+        }
         .followup-print-group h3 {
             margin:0;
             font-size:13.5px;
@@ -1696,6 +1721,10 @@
             line-height:1.3;
             font-family: 'Georgia', 'Songti SC', serif;
             font-weight:700;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-group h3 {
+            font-size: 12.4px;
+            line-height: 1.2;
         }
         .followup-print-kicker {
             display:inline-block;
@@ -1706,13 +1735,11 @@
             font-weight:700;
             white-space:nowrap;
         }
-        .followup-print-note {
-            margin: 0 0 4px;
-            font-size: 10.2px;
-            line-height: 1.35;
-            color: #64748b;
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-kicker {
+            font-size: 9px;
         }
         .followup-print-list { display:grid; gap:4px; }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:3px; }
         .followup-print-item {
             display:grid;
             grid-template-columns: 24px minmax(0, 1fr);
@@ -1735,6 +1762,23 @@
             font-size:13.5px;
             line-height:1.34;
         }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item {
+            font-size: 14.1px;
+            line-height: 1.38;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="dense"] {
+            font-size: 12.9px;
+            line-height: 1.26;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="ultra"] {
+            font-size: 12.2px;
+            line-height: 1.22;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="fraction"],
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="conversion"] {
+            font-size: 12.9px;
+            line-height: 1.24;
+        }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
         .followup-print-item[data-shape="fraction"] .math-row,
@@ -1747,6 +1791,12 @@
         .followup-print-item[data-shape="conversion"] .frac {
             font-size:0.72em;
             margin:0 0.04em 0 0.02em;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="dense"] .frac,
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-density="ultra"] .frac,
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="fraction"] .frac,
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="conversion"] .frac {
+            font-size: 0.68em;
         }
         .set-review-followup-answer.print-answer-sheet {
             page-break-before:always;
@@ -1885,9 +1935,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.74';
-        const APP_RELEASE_LABEL = '本套变式训练打印页试卷化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.74 本套变式训练打印页试卷化：更像正式 AB 卷，尽量压在一页里。';
+        const APP_VERSION = 'v23.75';
+        const APP_RELEASE_LABEL = '本套变式训练打印页一页优先';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.75 本套变式训练打印页一页优先：重说明更轻，复杂题自动进入紧凑纸面模式。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7103,6 +7153,14 @@
             return 'normal';
         }
 
+        function getSetReviewFollowupPrintPack(items = []) {
+            const densities = items.map(item => getSetReviewFollowupItemDensity(item));
+            const ultraCount = densities.filter(level => level === 'ultra').length;
+            const denseCount = densities.filter(level => level === 'dense').length;
+            if (items.length >= 7 || ultraCount >= 2 || (ultraCount >= 1 && denseCount >= 2)) return 'compact';
+            return 'normal';
+        }
+
         function getSetReviewFollowupPrintSectionTitle(index, label) {
             const numerals = ['一', '二', '三', '四', '五', '六', '七', '八'];
             return `${numerals[index] || `${index + 1}`}、 ${label}`;
@@ -7137,7 +7195,6 @@
                             <h3>${getSetReviewFollowupPrintSectionTitle(groupIndex, label)}</h3>
                             <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
                         </div>
-                        <p class="followup-print-note">${note}</p>
                         <div class="followup-print-list">${rows}</div>
                     </section>`;
                 }
@@ -7437,9 +7494,10 @@
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const printPack = getSetReviewFollowupPrintPack(items);
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
-            <section class="set-review-followup-print-shell">
+            <section class="set-review-followup-print-shell" data-pack="${printPack}">
                 <header class="booklet-meta-band">
                     <span>${student} · Set ${setNum}</span>
                     <span>Follow-up Practice</span>

@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.75 Iteration Notes
+
+### Iteration 1
+
+- What I changed: kept the new AB-style printable follow-up sheet, then added a second pass that suppresses more print-only explanation text and switches dense follow-up sets into a tighter layout pack so they are more likely to stay on one page.
+- Open questions: whether the next pass should now optimize the separate answer sheet to match the same visual language, or keep pushing one-page packing on the practice sheet itself.
+- Risks: compact mode improves one-page odds, but a very large mistake set with several ultra-dense fraction items can still spill beyond a page; that is an intentional tradeoff to avoid unreadable compression.
+- Next steps: review real print previews with dense mistake sets and decide whether the next improvement should target answer-sheet styling or one more round of packing heuristics.
+
 ## Current v23.74 Iteration Notes
 
 ### Iteration 1
