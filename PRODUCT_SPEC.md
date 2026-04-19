@@ -27,6 +27,15 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.77 rebuilds the second-stage training logic around high-value closure:
+
+- Phase two no longer treats elementary calculation topics equally.
+- The learner still keeps a small maintenance lane, but most second-stage time now goes to the highest-value axes:
+  - representation transfer across decimals, fractions, percentages, and ratios
+  - complex mixed arithmetic with structure recognition and method choice
+- Complex mixed arithmetic now appears throughout phase two instead of showing up only as a late add-on; its structure load ramps from light mixed work to bracket-heavy graduation checks.
+- Unit/rate/relation work stays important, but now clearly plays a bridge role rather than crowding out the two main battlefields.
+
 v22.4 expands misconception coverage in the generator pools:
 
 - Decimal place value: tiny products, decimal quotients, and estimation checks.

@@ -29,7 +29,14 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.76 Iteration Notes
+## Current v23.77 Iteration Notes
+
+### Iteration 1
+
+- What I changed: rebuilt the second-stage `Closure` paper around a clearer five-part matrix: keep-warm, representation core, complex mixed core, unit/rate bridge, and targeted focus.
+- Open questions: whether the next pass should further enrich Section III with more mixed decimal-fraction and bracket-heavy pools, or first tune the current balance using real learner sessions.
+- Risks: the bridge lane now remains intentionally heavy, so if later edits bloat it further, it could crowd out the complex-mixed lane again.
+- Next steps: observe a few real `Closure` sets, then decide whether the next iteration should deepen complex-mixed question pools or refine focus-lane targeting.
 
 ### Iteration 1
 

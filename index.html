@@ -1937,9 +1937,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.76';
-        const APP_RELEASE_LABEL = '本套变式训练打印页继续压缩';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.76 本套变式训练打印页继续压缩：紧凑模式更轻，更容易落在一页。';
+        const APP_VERSION = 'v23.77';
+        const APP_RELEASE_LABEL = '第二阶段训练矩阵重排';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.77 第二阶段训练矩阵重排：核心保温更轻，表征互通、复杂混合和关系综合成为主体。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4957,57 +4957,127 @@
                 return {
                     key: 'foundation',
                     label: '收口期',
-                    cue: '统一表示先打底',
-                    bridgeTitle: '收口桥接：百分数·分数·比',
-                    bridgeHint: '(统一表示先打底 / Normalize before compute)',
-                    unitTitle: '基础量纲：单位换算链',
-                    unitHint: '(先统一单位 / Unify units first)',
-                    rateTitle: '基础比率：百分率与方程',
-                    rateHint: '(先识别整体与比率 / Whole before rate)',
-                    mixTitle: '估算打底：速度与结果判断',
-                    mixHint: '(先估范围再精算 / Estimate before exact work)',
-                    maintCoreTitle: '旧知保温：关键除法',
-                    maintCoreHint: '(保留第一阶段手感 / Keep core division warm)',
-                    maintMixTitle: '旧知保温：乘减综合',
-                    maintMixHint: '(防止旧成果回落 / Prevent early fade)',
+                    cue: '先接桥，再打通表示与轻量混合',
+                    keepTitle: '核心保温',
+                    keepHint: '(保住第一阶段底盘 / Keep the core warm)',
+                    bridgeTitle: '表征互通主训练',
+                    bridgeHint: '(先统一表示，再判断与计算 / Normalize before compute)',
+                    mixTitle: '复杂四则混合主训练',
+                    mixHint: '(先看结构，再轻量进入混合 / Structure before speed)',
+                    unitTitle: '单位 / 率 / 关系综合',
+                    unitHint: '(统一单位，再看关系 / Unify before model)',
+                    focusTitle: '重点强化',
+                    focusHint: '(先补最值钱的短板 / Attack the highest-value gap)',
+                    trainingEmphasis: {
+                        keepWarm: 'medium',
+                        representation: 'high',
+                        complexMixed: 'light',
+                        unitRate: 'medium',
+                        focus: 'diagnostic'
+                    }
                 };
             }
             if (setNumber <= 22) {
                 return {
                     key: 'integration',
                     label: '收束期',
-                    cue: '综合迁移与方法选择',
-                    bridgeTitle: '收束桥接：百分数·分数·比',
-                    bridgeHint: '(统一表示再计算 / Normalize first)',
-                    unitTitle: '单位链与量纲统一',
-                    unitHint: '(先统一单位 / Unify units first)',
-                    rateTitle: '百分率、折扣与方程',
-                    rateHint: '(整体与比率统一 / Whole-rate model)',
-                    mixTitle: '估算、速度与结果判断',
-                    mixHint: '(先估后判 / Estimate before trust)',
-                    maintCoreTitle: '旧知保温：关键除法',
-                    maintCoreHint: '(保留第一阶段手感 / Keep fluency warm)',
-                    maintMixTitle: '旧知保温：乘减综合',
-                    maintMixHint: '(防止旧成果回落 / Prevent skill fade)',
+                    cue: '主体收束：表示切换、复杂混合、方法选择一起练',
+                    keepTitle: '核心保温',
+                    keepHint: '(少量保温，不让底盘掉线 / Keep gains alive)',
+                    bridgeTitle: '表征互通主训练',
+                    bridgeHint: '(转完还要判断、还要算 / Convert, judge, compute)',
+                    mixTitle: '复杂四则混合主训练',
+                    mixHint: '(结构识别、方法选择、提速并行 / Structure before brute force)',
+                    unitTitle: '单位 / 率 / 关系综合',
+                    unitHint: '(单位、比率、方程一起进 / Model before compute)',
+                    focusTitle: '重点强化',
+                    focusHint: '(把最高价值错点再补透 / Reinforce the top shortboard)',
+                    trainingEmphasis: {
+                        keepWarm: 'light',
+                        representation: 'high',
+                        complexMixed: 'high',
+                        unitRate: 'high',
+                        focus: 'high_value_gap'
+                    }
                 };
             }
             return {
                 key: 'graduation',
                 label: '毕业判定期',
-                cue: '稳态抽检与结果校验',
-                bridgeTitle: '毕业抽检：跨表示桥接',
-                bridgeHint: '(反向表达与边界辨析 / Reverse & verify)',
-                unitTitle: '毕业抽检：单位与量纲迁移',
-                unitHint: '(两步换算与综合判断 / Multi-step transfer)',
-                rateTitle: '毕业抽检：比率与方程综合',
-                rateHint: '(方法选择与结果回检 / Method choice)',
-                mixTitle: '毕业抽检：估算、速度与验算',
-                mixHint: '(稳态抽检与结果校验 / Validate the result)',
-                maintCoreTitle: '稳态抽检：关键除法',
-                maintCoreHint: '(稳定完成，不靠运气 / Stable execution)',
-                maintMixTitle: '稳态抽检：乘减综合',
-                maintMixHint: '(保温 + 抽检 / Maintain and verify)',
+                cue: '毕业判定：看结构、判边界、稳迁移',
+                keepTitle: '核心保温',
+                keepHint: '(只做底盘抽检 / Keep-warm spot check)',
+                bridgeTitle: '表征互通主训练',
+                bridgeHint: '(边界判断与反向表达 / Boundary & reverse check)',
+                mixTitle: '复杂四则混合主训练',
+                mixHint: '(中括号、大括号、完整结构 / Full structured mixed work)',
+                unitTitle: '单位 / 率 / 关系综合',
+                unitHint: '(综合关系与结果可信度 / Judge the structure)',
+                focusTitle: '重点强化',
+                focusHint: '(最后短板再追打一轮 / Final shortboard chase)',
+                trainingEmphasis: {
+                    keepWarm: 'minimal',
+                    representation: 'boundary',
+                    complexMixed: 'full_structure',
+                    unitRate: 'judgement',
+                    focus: 'last_short_board'
+                }
             };
+        }
+
+        const CLOSURE_SECTION_ROLES = {
+            c_k_keep: { role: 'keep_warm', valueTier: 'B/C' },
+            c_k_bridge: { role: 'representation_core', valueTier: 'A' },
+            c_k_mix: { role: 'complex_mixed_core', valueTier: 'A' },
+            c_k_unit: { role: 'unit_rate_bridge', valueTier: 'B' },
+            c_k_focus: { role: 'targeted_focus', valueTier: 'A' },
+            c_l_keep: { role: 'keep_warm', valueTier: 'B/C' },
+            c_l_bridge: { role: 'representation_core', valueTier: 'A' },
+            c_l_mix: { role: 'complex_mixed_core', valueTier: 'A' },
+            c_l_unit: { role: 'unit_rate_bridge', valueTier: 'B' },
+            c_l_focus: { role: 'targeted_focus', valueTier: 'A' },
+        };
+
+        const CLOSURE_FOCUS_PRIORITY_BOOST = {
+            representationGap: 2.5,
+            methodGap: 2.2,
+            stabilityGap: 1.4,
+            speedGap: 1.8,
+            validationGap: 2.1
+        };
+
+        function annotateClosureItem(item, meta = {}) {
+            if (!item) return item;
+            return attachQualityMetadata({
+                ...item,
+                trainingAxis: meta.trainingAxis || item.trainingAxis || '',
+                trainingTier: meta.trainingTier || item.trainingTier || '',
+                sectionRole: meta.sectionRole || item.sectionRole || ''
+            });
+        }
+
+        function annotateClosureItems(items = [], meta = {}) {
+            return (items || []).map(item => annotateClosureItem(item, meta));
+        }
+
+        function flattenPaperSections(data, keys = []) {
+            return keys.flatMap(key => Array.isArray(data?.[key]) ? data[key] : []);
+        }
+
+        function makeMockClosureProfile(overrides = {}) {
+            return {
+                ...createProgramProfile(CLOSURE_PROGRAM_ID),
+                representationGap: 0,
+                methodGap: 0,
+                stabilityGap: 0,
+                speedGap: 0,
+                validationGap: 0,
+                ...overrides
+            };
+        }
+
+        function describeClosureSections() {
+            return { ...CLOSURE_SECTION_ROLES };
         }
 
         const CLOSURE_FOCUS_CONFIG = {
@@ -5111,7 +5181,12 @@
             const phaseBias = getClosureFocusBias(phaseKey);
             const ranked = PROGRAM_SIGNAL_FIELDS.map((field, index) => {
                 const signal = Number(profile[field] || 0);
-                const score = signal * 2.4 + errorCounts[field] * 1.5 + recentCounts[field] * 1.2 + phaseBias[field] - index * 0.01;
+                const score = signal * 2.4
+                    + errorCounts[field] * 1.5
+                    + recentCounts[field] * 1.2
+                    + phaseBias[field]
+                    + (CLOSURE_FOCUS_PRIORITY_BOOST[field] || 0)
+                    - index * 0.01;
                 return { field, score };
             }).sort((a, b) => b.score - a.score);
             const chosen = ranked[0]?.field || 'methodGap';
@@ -5636,6 +5711,22 @@
             return buildCoveredSection(student, phaseGroups[phaseKey] || phaseGroups.integration);
         }
 
+        function buildClosureKeepWarmSection(track = 'kai') {
+            const keepCore = track === 'kai'
+                ? GenKAI.decimalsDiv()
+                : GenLorik.div();
+            const keepMixedPool = track === 'kai'
+                ? [...GenKAI.decimalsMult(), ...GenKAI.bigSub()]
+                : [...GenLorik.mul(), ...GenLorik.sub()];
+            const keepMixed = Engine.shuffle(keepMixedPool).slice(0, 4).map(item => attachQualityMetadata(item));
+            const keepCoreItems = (keepCore || []).slice(0, 4).map(item => attachQualityMetadata(item));
+            return annotateClosureItems([...keepCoreItems, ...keepMixed], {
+                trainingAxis: 'keep_warm',
+                trainingTier: 'B/C',
+                sectionRole: 'keep_warm'
+            });
+        }
+
         function buildClosureFocusSection(student, track = 'kai', phaseKey = 'integration', focusField = 'validationGap') {
             const focusGroupsByField = {
                 representationGap: track === 'kai'
@@ -5863,8 +5954,46 @@
             const phase = getClosurePhaseInfo();
             const kaiFocusMeta = selectClosureFocus('KAI', phase.key);
             const lorikFocusMeta = selectClosureFocus('Lorik', phase.key);
-            const kaiFocusItems = injectClosureFocusReview('KAI', kaiFocusMeta, buildClosureFocusSection('KAI', 'kai', phase.key, kaiFocusMeta.field));
-            const lorikFocusItems = injectClosureFocusReview('Lorik', lorikFocusMeta, buildClosureFocusSection('Lorik', 'lorik', phase.key, lorikFocusMeta.field));
+            const annotateBridgeItems = items => annotateClosureItems(items, {
+                trainingAxis: 'representation_core',
+                trainingTier: 'A',
+                sectionRole: 'representation_core'
+            });
+            const annotateMixItems = items => (items || []).map(item => annotateClosureItem(item, {
+                trainingAxis: item?.tag === 'c2_est_product' ? 'number_sense' : 'complex_mixed',
+                trainingTier: 'A',
+                sectionRole: 'complex_mixed_core'
+            }));
+            const annotateUnitItems = items => (items || []).map(item => annotateClosureItem(item, {
+                trainingAxis: ['c2_unit_length', 'c2_unit_mass'].includes(item?.tag) ? 'unit_rate_bridge' : 'method_choice',
+                trainingTier: ['c2_unit_length', 'c2_unit_mass'].includes(item?.tag) ? 'B' : 'A',
+                sectionRole: 'unit_rate_bridge'
+            }));
+            const annotateFocusItems = items => (items || []).map(item => annotateClosureItem(item, {
+                trainingAxis: item?.qualityFamily === 'conversion_bridge'
+                    ? 'representation_core'
+                    : item?.qualityFamily === 'validation_estimation'
+                        ? 'number_sense'
+                        : item?.qualityFamily === 'unit_rate_speed'
+                            ? 'unit_rate_bridge'
+                            : 'method_choice',
+                trainingTier: 'A',
+                sectionRole: 'targeted_focus'
+            }));
+            const kaiFocusItems = annotateFocusItems(
+                injectClosureFocusReview('KAI', kaiFocusMeta, buildClosureFocusSection('KAI', 'kai', phase.key, kaiFocusMeta.field))
+            );
+            const lorikFocusItems = annotateFocusItems(
+                injectClosureFocusReview('Lorik', lorikFocusMeta, buildClosureFocusSection('Lorik', 'lorik', phase.key, lorikFocusMeta.field))
+            );
+            const kaiUnitItems = annotateUnitItems([
+                ...buildClosureUnitSection('KAI', 'kai', phase.key),
+                ...buildClosureRateEqSection('KAI', 'kai', phase.key)
+            ]);
+            const lorikUnitItems = annotateUnitItems([
+                ...buildClosureUnitSection('Lorik', 'lorik', phase.key),
+                ...buildClosureRateEqSection('Lorik', 'lorik', phase.key)
+            ]);
             return {
                 programId: CLOSURE_PROGRAM_ID,
                 phaseKey: phase.key,
@@ -5872,21 +6001,39 @@
                 phaseCue: phase.cue,
                 phaseMeta: phase,
                 c_k_focusMeta: kaiFocusMeta,
-                c_k_bridge: buildClosureBridgeSection('KAI', 'kai', phase.key),
-                c_k_unit: buildClosureUnitSection('KAI', 'kai', phase.key),
-                c_k_maint_core: GenKAI.decimalsDiv(),
-                c_k_rate: buildClosureRateEqSection('KAI', 'kai', phase.key),
-                c_k_mix: kaiFocusItems,
-                c_k_maint_mix: Engine.shuffle([...GenKAI.decimalsMult(), ...GenKAI.bigSub()]),
+                c_k_keep: buildClosureKeepWarmSection('kai'),
+                c_k_bridge: annotateBridgeItems(buildClosureBridgeSection('KAI', 'kai', phase.key)),
+                c_k_mix: annotateMixItems(buildClosureMixSection('KAI', 'kai', phase.key)),
+                c_k_unit: kaiUnitItems,
+                c_k_focus: kaiFocusItems,
                 c_l_focusMeta: lorikFocusMeta,
-                c_l_bridge: buildClosureBridgeSection('Lorik', 'lorik', phase.key),
-                c_l_unit: buildClosureUnitSection('Lorik', 'lorik', phase.key),
-                c_l_maint_core: GenLorik.div(),
-                c_l_rate: buildClosureRateEqSection('Lorik', 'lorik', phase.key),
-                c_l_mix: lorikFocusItems,
-                c_l_maint_mix: Engine.shuffle([...GenLorik.mul(), ...GenLorik.sub()]),
+                c_l_keep: buildClosureKeepWarmSection('lorik'),
+                c_l_bridge: annotateBridgeItems(buildClosureBridgeSection('Lorik', 'lorik', phase.key)),
+                c_l_mix: annotateMixItems(buildClosureMixSection('Lorik', 'lorik', phase.key)),
+                c_l_unit: lorikUnitItems,
+                c_l_focus: lorikFocusItems,
                 stateLabel: `[Phase: ${phase.label}]`
             };
+        }
+
+        function buildClosureProgramSetForTest(setNumber = window.currentSetNumber, student = 'KAI', profile = null) {
+            const previousProgram = getCurrentProgramId();
+            const previousSet = window.currentSetNumber;
+            const previousProfile = profile ? StorageDB.getProfile(student, CLOSURE_PROGRAM_ID) : null;
+            if (profile) {
+                StorageDB.cache[student].programs[CLOSURE_PROGRAM_ID] = {
+                    ...createProgramProfile(CLOSURE_PROGRAM_ID),
+                    ...profile
+                };
+            }
+            window.currentSetNumber = setNumber;
+            const data = buildClosureProgramSet();
+            if (profile) {
+                StorageDB.cache[student].programs[CLOSURE_PROGRAM_ID] = previousProfile || createProgramProfile(CLOSURE_PROGRAM_ID);
+            }
+            window.currentSetNumber = previousSet;
+            if (previousProgram) window.currentProgramId = previousProgram;
+            return data;
         }
 
         function generateProgramSetData(programId = getCurrentProgramId()) {
@@ -5901,6 +6048,11 @@
                 stateLabel: state.label
             });
         }
+
+        window.describeClosureSections = describeClosureSections;
+        window.flattenPaperSections = flattenPaperSections;
+        window.makeMockClosureProfile = makeMockClosureProfile;
+        window.buildClosureProgramSetForTest = buildClosureProgramSetForTest;
 
         // v22.1 每个 section 独立洗牌：即便题目不变，位置也不会形成固定套路
         function sectionShuffle(arr, sectionSalt) {
@@ -6111,16 +6263,14 @@
                     ...data,
                     c_k_bridge: sectionShuffle(data.c_k_bridge, 401),
                     c_k_unit: sectionShuffle(data.c_k_unit, 402),
-                    c_k_maint_core: sectionShuffle(data.c_k_maint_core, 403),
-                    c_k_rate: sectionShuffle(data.c_k_rate, 404),
-                    c_k_mix: sectionShuffle(data.c_k_mix, 405),
-                    c_k_maint_mix: sectionShuffle(data.c_k_maint_mix, 406),
+                    c_k_keep: sectionShuffle(data.c_k_keep, 403),
+                    c_k_mix: sectionShuffle(data.c_k_mix, 404),
+                    c_k_focus: sectionShuffle(data.c_k_focus, 405),
                     c_l_bridge: sectionShuffle(data.c_l_bridge, 501),
                     c_l_unit: sectionShuffle(data.c_l_unit, 502),
-                    c_l_maint_core: sectionShuffle(data.c_l_maint_core, 503),
-                    c_l_rate: sectionShuffle(data.c_l_rate, 504),
-                    c_l_mix: sectionShuffle(data.c_l_mix, 505),
-                    c_l_maint_mix: sectionShuffle(data.c_l_maint_mix, 506),
+                    c_l_keep: sectionShuffle(data.c_l_keep, 503),
+                    c_l_mix: sectionShuffle(data.c_l_mix, 504),
+                    c_l_focus: sectionShuffle(data.c_l_focus, 505),
                 };
                 let closureKaiProfile = StorageDB.getProfile("KAI", CLOSURE_PROGRAM_ID) || { history: [] };
                 let closureLorikProfile = StorageDB.getProfile("Lorik", CLOSURE_PROGRAM_ID) || { history: [] };
@@ -6130,40 +6280,36 @@
                 const kFocusMeta = data.c_k_focusMeta || getLegacyClosureFocusMeta(phaseMeta);
                 const lFocusMeta = data.c_l_focusMeta || getLegacyClosureFocusMeta(phaseMeta);
 
-                const closureScore = 8 + 8 + 8 + 8 + 8 + 16;
-                let k_p1 = buildQSection(`一、 ${phaseMeta.bridgeTitle}`, `I. Closure Bridge: Percent, Fraction & Ratio`, `(${phaseMeta.bridgeHint})`, data.c_k_bridge, 'h-conv', 4) +
-                           buildQSection(`二、 ${phaseMeta.unitTitle}`, `II. Unit Chains & Dimensional Alignment`, `(${phaseMeta.unitHint})`, data.c_k_unit, 'h-mixed', 2) +
-                           buildQSection(`三、 ${phaseMeta.maintCoreTitle}`, `III. Maintenance: Core Division`, `(${phaseMeta.maintCoreHint})`, data.c_k_maint_core, 'h-vert', 2);
-                let k_p2 = buildQSection(`四、 ${phaseMeta.rateTitle}`, `IV. Rates, Discounts & Equations`, `(${phaseMeta.rateHint})`, data.c_k_rate, 'h-mixed', 2) +
-                           buildQSection(`五、 ${kFocusMeta.title}`, `V. Focus Reinforcement`, `(${kFocusMeta.hint})`, data.c_k_mix, 'h-mixed', 2) +
-                           buildQSection(`六、 ${phaseMeta.maintMixTitle}`, `VI. Maintenance: Multiplication & Subtraction`, `(${phaseMeta.maintMixHint})`, data.c_k_maint_mix, 'h-mixed', 2);
+                const closureScore = 8 + 8 + 8 + 8 + 8;
+                let k_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_k_keep, 'h-mixed', 2) +
+                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_k_bridge, 'h-conv', 4) +
+                           buildQSection(`三、 ${phaseMeta.mixTitle}`, `III. Complex Mixed Core`, `(${phaseMeta.mixHint})`, data.c_k_mix, 'h-mixed', 2);
+                let k_p2 = buildQSection(`四、 ${phaseMeta.unitTitle}`, `IV. Unit / Rate / Relation Bridge`, `(${phaseMeta.unitHint})`, data.c_k_unit, 'h-mixed', 2) +
+                           buildQSection(`五、 ${kFocusMeta.title}`, `V. Focus Reinforcement`, `(${kFocusMeta.hint || phaseMeta.focusHint})`, data.c_k_focus, 'h-mixed', 2);
 
-                let l_p1 = buildQSection(`一、 ${phaseMeta.bridgeTitle}`, `I. Closure Bridge: Percent, Fraction & Ratio`, `(${phaseMeta.bridgeHint})`, data.c_l_bridge, 'h-conv', 4) +
-                           buildQSection(`二、 ${phaseMeta.unitTitle}`, `II. Unit Chains & Dimensional Alignment`, `(${phaseMeta.unitHint})`, data.c_l_unit, 'h-mixed', 2) +
-                           buildQSection(`三、 ${phaseMeta.maintCoreTitle}`, `III. Maintenance: Core Division`, `(${phaseMeta.maintCoreHint})`, data.c_l_maint_core, 'h-vert', 2);
-                let l_p2 = buildQSection(`四、 ${phaseMeta.rateTitle}`, `IV. Rates, Discounts & Equations`, `(${phaseMeta.rateHint})`, data.c_l_rate, 'h-mixed', 2) +
-                           buildQSection(`五、 ${lFocusMeta.title}`, `V. Focus Reinforcement`, `(${lFocusMeta.hint})`, data.c_l_mix, 'h-mixed', 2) +
-                           buildQSection(`六、 ${phaseMeta.maintMixTitle}`, `VI. Maintenance: Multiplication & Subtraction`, `(${phaseMeta.maintMixHint})`, data.c_l_maint_mix, 'h-mixed', 2);
+                let l_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_l_keep, 'h-mixed', 2) +
+                           buildQSection(`二、 ${phaseMeta.bridgeTitle}`, `II. Representation Core`, `(${phaseMeta.bridgeHint})`, data.c_l_bridge, 'h-conv', 4) +
+                           buildQSection(`三、 ${phaseMeta.mixTitle}`, `III. Complex Mixed Core`, `(${phaseMeta.mixHint})`, data.c_l_mix, 'h-mixed', 2);
+                let l_p2 = buildQSection(`四、 ${phaseMeta.unitTitle}`, `IV. Unit / Rate / Relation Bridge`, `(${phaseMeta.unitHint})`, data.c_l_unit, 'h-mixed', 2) +
+                           buildQSection(`五、 ${lFocusMeta.title}`, `V. Focus Reinforcement`, `(${lFocusMeta.hint || phaseMeta.focusHint})`, data.c_l_focus, 'h-mixed', 2);
 
-                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (${phaseMeta.label})</div>${buildAnsGrid(data.c_k_bridge, 'KAI', phaseMeta.label, closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildAnsGrid(data.c_k_unit, 'KAI', '单位链', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildAnsGrid(data.c_k_maint_core, 'KAI', '旧知保温', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildAnsGrid(data.c_k_rate, 'KAI', '比率方程', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">五、${kFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_k_mix, 'KAI', kFocusMeta.answerLabel, closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildAnsGrid(data.c_k_maint_mix, 'KAI', '旧知保温', closureKaiSession)}</div>`;
+                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_k_keep, 'KAI', '核心保温', closureKaiSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_k_bridge, 'KAI', phaseMeta.label, closureKaiSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_k_mix, 'KAI', '复杂混合', closureKaiSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_k_unit, 'KAI', '关系综合', closureKaiSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">五、${kFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_k_focus, 'KAI', kFocusMeta.answerLabel, closureKaiSession)}</div>`;
 
-                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、桥接互化 (${phaseMeta.label})</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', phaseMeta.label, closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">二、单位量纲 (Units)</div>${buildAnsGrid(data.c_l_unit, 'Lorik', '单位链', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">三、旧知保温 · 除法 (Maintenance Division)</div>${buildAnsGrid(data.c_l_maint_core, 'Lorik', '旧知保温', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">四、比率与方程 (Rates & Equations)</div>${buildAnsGrid(data.c_l_rate, 'Lorik', '比率方程', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">五、${lFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_l_mix, 'Lorik', lFocusMeta.answerLabel, closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">六、旧知保温 · 乘减 (Maintenance Core)</div>${buildAnsGrid(data.c_l_maint_mix, 'Lorik', '旧知保温', closureLorikSession)}</div>`;
+                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_l_keep, 'Lorik', '核心保温', closureLorikSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', phaseMeta.label, closureLorikSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_l_mix, 'Lorik', '复杂混合', closureLorikSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_l_unit, 'Lorik', '关系综合', closureLorikSession)}</div>` +
+                            `<div class="ans-section"><div class="ans-section-title">五、${lFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_l_focus, 'Lorik', lFocusMeta.answerLabel, closureLorikSession)}</div>`;
 
                 const closureIntroCard = `
                     <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
                         <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}</h3>
                         <div style="padding:14px 18px; color:#7c2d12; font-size:14px; line-height:1.7; font-family:sans-serif;">
-                            <strong>${phaseMeta.label}</strong> 当前重点是：${phaseMeta.cue}。这一阶段不是单纯拔高，而是从六年级到初中的视角，把整数、小数、分数、百分数、比、比例、单位和策略训练更系统地收束起来。每天仍然保持两页训练，系统也会继续记录、批改和调训。
+                            <strong>${phaseMeta.label}</strong> 当前重点是：${phaseMeta.cue}。这一阶段不是单纯拔高，而是从六年级到初中的视角，把小学计算真正收束成优势项目：少量保温第一阶段底盘，主体时间用来练表征互通、复杂混合运算、单位率关系和重点短板。
                         </div>
                     </div>`;
 
@@ -6172,22 +6318,22 @@
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, closureScore, '', '', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'A1 / KAI' },
-                        { label: 'Focus', value: phaseMeta.bridgeTitle }
+                        { label: 'Focus', value: phaseMeta.mixTitle }
                     ], 'C-A1') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p2, closureScore, '', '', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'A2 / KAI' },
-                        { label: 'Focus', value: kFocusMeta.title }
+                        { label: 'Focus', value: phaseMeta.focusTitle }
                     ], 'C-A2') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p1, closureScore, '', '', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'B1 / Lorik' },
-                        { label: 'Focus', value: phaseMeta.bridgeTitle }
+                        { label: 'Focus', value: phaseMeta.mixTitle }
                     ], 'C-B1') +
                     getSheetHTML(`Mini Challenge Closure (Set ${window.currentSetNumber})`, 'Lorik (Set B)', l_p2, closureScore, '', 'print-last-question', [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'B2 / Lorik' },
-                        { label: 'Focus', value: lFocusMeta.title }
+                        { label: 'Focus', value: phaseMeta.focusTitle }
                     ], 'C-B2') +
                     getClosureAnsSheetHTML('KAI', k_ans, !!closureKaiSession, [
                         { label: 'Programme', value: phaseMeta.label },

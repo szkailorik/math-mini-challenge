@@ -590,32 +590,28 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
   const fallbackName = context.window.FallbackAdvice?.name;
   if (programId === 'elementary_closure_v1') {
     const expectedClosureCounts = {
+      c_k_keep: 8,
       c_k_bridge: 8,
-      c_k_unit: 4,
-      c_k_maint_core: 4,
-      c_k_rate: 4,
       c_k_mix: 4,
-      c_k_maint_mix: 8,
+      c_k_unit: 8,
+      c_k_focus: 4,
+      c_l_keep: 8,
       c_l_bridge: 8,
-      c_l_unit: 4,
-      c_l_maint_core: 4,
-      c_l_rate: 4,
       c_l_mix: 4,
-      c_l_maint_mix: 8,
+      c_l_unit: 8,
+      c_l_focus: 4,
     };
     const closureSections = Object.keys(expectedClosureCounts);
+    const kKeepTags = new Set((data.c_k_keep || []).map(item => item?.tag));
     const kBridgeTags = new Set((data.c_k_bridge || []).map(item => item?.tag));
-    const kUnitTags = new Set((data.c_k_unit || []).map(item => item?.tag));
-    const kMaintCoreTags = new Set((data.c_k_maint_core || []).map(item => item?.tag));
-    const kRateTags = new Set((data.c_k_rate || []).map(item => item?.tag));
     const kMixTags = new Set((data.c_k_mix || []).map(item => item?.tag));
-    const kMaintMixTags = new Set((data.c_k_maint_mix || []).map(item => item?.tag));
+    const kUnitTags = new Set((data.c_k_unit || []).map(item => item?.tag));
+    const kFocusTags = new Set((data.c_k_focus || []).map(item => item?.tag));
+    const lKeepTags = new Set((data.c_l_keep || []).map(item => item?.tag));
     const lBridgeTags = new Set((data.c_l_bridge || []).map(item => item?.tag));
-    const lUnitTags = new Set((data.c_l_unit || []).map(item => item?.tag));
-    const lMaintCoreTags = new Set((data.c_l_maint_core || []).map(item => item?.tag));
-    const lRateTags = new Set((data.c_l_rate || []).map(item => item?.tag));
     const lMixTags = new Set((data.c_l_mix || []).map(item => item?.tag));
-    const lMaintMixTags = new Set((data.c_l_maint_mix || []).map(item => item?.tag));
+    const lUnitTags = new Set((data.c_l_unit || []).map(item => item?.tag));
+    const lFocusTags = new Set((data.c_l_focus || []).map(item => item?.tag));
 
     if (!kBridgeTags.has('c2_bridge_pct_frac') || !kBridgeTags.has('c2_bridge_ratio_frac')) {
       throw new Error(`Closure set ${setNumber} is missing KAI bridge coverage`);
@@ -623,31 +619,71 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (!lBridgeTags.has('c2_bridge_pct_frac') || !lBridgeTags.has('c2_bridge_ratio_frac')) {
       throw new Error(`Closure set ${setNumber} is missing Lorik bridge coverage`);
     }
-    if (!kUnitTags.has('c2_unit_length') || !kUnitTags.has('c2_unit_mass')) {
-      throw new Error(`Closure set ${setNumber} is missing KAI unit-chain coverage`);
+    if (!kMixTags.has('c2_speed_mix') || !kMixTags.has('c2_est_product')) {
+      throw new Error(`Closure set ${setNumber} is missing KAI complex-mixed coverage`);
     }
-    if (!lUnitTags.has('c2_unit_length') || !lUnitTags.has('c2_unit_mass')) {
-      throw new Error(`Closure set ${setNumber} is missing Lorik unit-chain coverage`);
+    if (!lMixTags.has('c2_speed_mix') || !lMixTags.has('c2_est_product')) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik complex-mixed coverage`);
     }
-    if (!kRateTags.has('c2_rate_discount') || !kRateTags.has('c2_eq_percent')) {
-      throw new Error(`Closure set ${setNumber} is missing KAI rate-equation coverage`);
+    if (![...kUnitTags].some(tag => ['c2_unit_length', 'c2_unit_mass'].includes(tag)) || ![...kUnitTags].some(tag => ['c2_rate_discount', 'c2_eq_percent'].includes(tag))) {
+      throw new Error(`Closure set ${setNumber} is missing KAI unit/rate/relation coverage`);
     }
-    if (!lRateTags.has('c2_rate_discount') || !lRateTags.has('c2_eq_percent')) {
-      throw new Error(`Closure set ${setNumber} is missing Lorik rate-equation coverage`);
+    if (![...lUnitTags].some(tag => ['c2_unit_length', 'c2_unit_mass'].includes(tag)) || ![...lUnitTags].some(tag => ['c2_rate_discount', 'c2_eq_percent'].includes(tag))) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik unit/rate/relation coverage`);
     }
-    assertClosureFocusCoverage(kMixTags, data.c_k_focusMeta, 'KAI', setNumber);
-    assertClosureFocusCoverage(lMixTags, data.c_l_focusMeta, 'Lorik', setNumber);
-    if (![...kMaintCoreTags].some(tag => String(tag || '').startsWith('k_ddiv_'))) {
-      throw new Error(`Closure set ${setNumber} is missing KAI division maintenance coverage`);
+    assertClosureFocusCoverage(kFocusTags, data.c_k_focusMeta, 'KAI', setNumber);
+    assertClosureFocusCoverage(lFocusTags, data.c_l_focusMeta, 'Lorik', setNumber);
+    if (![...kKeepTags].some(tag => String(tag || '').startsWith('k_ddiv_')) || ![...kKeepTags].some(tag => String(tag || '').startsWith('k_dmul_')) || ![...kKeepTags].some(tag => String(tag || '').startsWith('k_sub_'))) {
+      throw new Error(`Closure set ${setNumber} is missing KAI keep-warm coverage`);
     }
-    if (![...lMaintCoreTags].some(tag => String(tag || '').startsWith('l_div_'))) {
-      throw new Error(`Closure set ${setNumber} is missing Lorik division maintenance coverage`);
+    if (![...lKeepTags].some(tag => String(tag || '').startsWith('l_div_')) || ![...lKeepTags].some(tag => String(tag || '').startsWith('l_mul_')) || ![...lKeepTags].some(tag => String(tag || '').startsWith('l_sub_'))) {
+      throw new Error(`Closure set ${setNumber} is missing Lorik keep-warm coverage`);
     }
-    if (![...kMaintMixTags].some(tag => String(tag || '').startsWith('k_dmul_')) || ![...kMaintMixTags].some(tag => String(tag || '').startsWith('k_sub_'))) {
-      throw new Error(`Closure set ${setNumber} is missing KAI maintenance of multiplication or subtraction`);
+
+    const described = context.window.describeClosureSections?.(data);
+    if (!described?.c_k_bridge || described.c_k_bridge.role !== 'representation_core') {
+      throw new Error(`Closure set ${setNumber} is missing representation-core section metadata`);
     }
-    if (![...lMaintMixTags].some(tag => String(tag || '').startsWith('l_mul_')) || ![...lMaintMixTags].some(tag => String(tag || '').startsWith('l_sub_'))) {
-      throw new Error(`Closure set ${setNumber} is missing Lorik maintenance of multiplication or subtraction`);
+    if (!described?.c_k_mix || described.c_k_mix.role !== 'complex_mixed_core') {
+      throw new Error(`Closure set ${setNumber} is missing complex-mixed section metadata`);
+    }
+    if (!described?.c_k_unit || described.c_k_unit.role !== 'unit_rate_bridge') {
+      throw new Error(`Closure set ${setNumber} is missing unit-rate section metadata`);
+    }
+    if (!described?.c_k_focus || described.c_k_focus.role !== 'targeted_focus') {
+      throw new Error(`Closure set ${setNumber} is missing focus section metadata`);
+    }
+
+    const kaiAClassItems = context.window.flattenPaperSections?.(data, ['c_k_bridge', 'c_k_mix', 'c_k_focus']) || [];
+    if (!kaiAClassItems.some(item => item?.trainingAxis === 'representation_core')) {
+      throw new Error(`Closure set ${setNumber} is missing daily representation-core training for KAI`);
+    }
+    if (!kaiAClassItems.some(item => item?.trainingAxis === 'complex_mixed')) {
+      throw new Error(`Closure set ${setNumber} is missing daily complex-mixed training for KAI`);
+    }
+    if (!kaiAClassItems.some(item => item?.trainingAxis === 'number_sense')) {
+      throw new Error(`Closure set ${setNumber} is missing daily number-sense training for KAI`);
+    }
+    const lorikAClassItems = context.window.flattenPaperSections?.(data, ['c_l_bridge', 'c_l_mix', 'c_l_focus']) || [];
+    if (!lorikAClassItems.some(item => item?.trainingAxis === 'representation_core')) {
+      throw new Error(`Closure set ${setNumber} is missing daily representation-core training for Lorik`);
+    }
+    if (!lorikAClassItems.some(item => item?.trainingAxis === 'complex_mixed')) {
+      throw new Error(`Closure set ${setNumber} is missing daily complex-mixed training for Lorik`);
+    }
+    if (!lorikAClassItems.some(item => item?.trainingAxis === 'number_sense')) {
+      throw new Error(`Closure set ${setNumber} is missing daily number-sense training for Lorik`);
+    }
+
+    const emphasis = data.phaseMeta?.trainingEmphasis || {};
+    if (setNumber === 1 && emphasis.complexMixed !== 'light') {
+      throw new Error(`Closure set ${setNumber} should keep complex-mixed weight light`);
+    }
+    if (setNumber === 12 && emphasis.complexMixed !== 'high') {
+      throw new Error(`Closure set ${setNumber} should raise complex-mixed weight in integration`);
+    }
+    if (setNumber === 26 && emphasis.complexMixed !== 'full_structure') {
+      throw new Error(`Closure set ${setNumber} should use full-structure complex-mixed weight in graduation`);
     }
 
     for (const [section, expected] of Object.entries(expectedClosureCounts)) {
@@ -1247,7 +1283,7 @@ assertClosurePaper(1);
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('欢迎进入小学计算收束阶段')) {
   throw new Error('Closure intro card did not render after promotion');
 }
-assertClosurePhase(1, '收口期', '统一表示先打底');
+assertClosurePhase(1, '收口期', '先接桥，再打通表示与轻量混合');
 context.window.changeSet(2);
 if (context.window.currentSetNumber !== 3) {
   throw new Error('Closure set counter did not advance independently');
@@ -1266,11 +1302,11 @@ if (context.window.currentSetNumber !== 3) {
 context.window.currentSetNumber = 12;
 context.window.renderPaper();
 assertClosurePaper(12);
-assertClosurePhase(12, '收束期', '综合迁移与方法选择');
+assertClosurePhase(12, '收束期', '主体收束：表示切换、复杂混合、方法选择一起练');
 context.window.currentSetNumber = 26;
 context.window.renderPaper();
 assertClosurePaper(26);
-assertClosurePhase(26, '毕业判定期', '稳态抽检与结果校验');
+assertClosurePhase(26, '毕业判定期', '毕业判定：看结构、判边界、稳迁移');
 context.window.currentSetNumber = 103;
 context.window.renderPaper();
 assertClosurePaper(103);
@@ -1292,9 +1328,9 @@ const advancedBefore = JSON.stringify({
 await context.window.StorageDB.saveSession('KAI', [
   { tag: 'c2_bridge_pct_frac', grade: 'wrong', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[0]?.q, a: closureData.c_k_bridge?.[0]?.a, step: closureData.c_k_bridge?.[0]?.step } },
   { tag: 'c2_bridge_ratio_frac', grade: 'wrong', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[1]?.q, a: closureData.c_k_bridge?.[1]?.a, step: closureData.c_k_bridge?.[1]?.step } },
-  { tag: 'c2_eq_percent', grade: 'wrong', info: { sec: '比率方程', num: 2, q: closureData.c_k_rate?.[0]?.q, a: closureData.c_k_rate?.[0]?.a, step: closureData.c_k_rate?.[0]?.step } },
+  { tag: 'c2_eq_percent', grade: 'wrong', info: { sec: '关系综合', num: 2, q: closureData.c_k_unit?.find(item => item?.tag === 'c2_eq_percent')?.q, a: closureData.c_k_unit?.find(item => item?.tag === 'c2_eq_percent')?.a, step: closureData.c_k_unit?.find(item => item?.tag === 'c2_eq_percent')?.step } },
   { tag: 'c2_speed_mix', grade: 'careless', info: { sec: '结果判断', num: 3, q: closureData.c_k_mix?.[0]?.q, a: closureData.c_k_mix?.[0]?.a, step: closureData.c_k_mix?.[0]?.step } },
-  { tag: closureData.c_k_maint_core?.[0]?.tag, grade: 'wrong', info: { sec: '旧知保温', num: 4, q: closureData.c_k_maint_core?.[0]?.q, a: closureData.c_k_maint_core?.[0]?.a, step: closureData.c_k_maint_core?.[0]?.step } },
+  { tag: closureData.c_k_keep?.[0]?.tag, grade: 'wrong', info: { sec: '核心保温', num: 4, q: closureData.c_k_keep?.[0]?.q, a: closureData.c_k_keep?.[0]?.a, step: closureData.c_k_keep?.[0]?.step } },
 ], 103);
 const advancedAfterProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
 const advancedAfter = JSON.stringify({
@@ -1331,7 +1367,7 @@ const closureAdaptiveData = JSON.parse(store.get(getProgramCacheKey('elementary_
 if (closureAdaptiveData.c_k_focusMeta?.field !== 'representationGap') {
   throw new Error(`Expected KAI adaptive closure focus to target representationGap, got ${closureAdaptiveData.c_k_focusMeta?.field || '(missing)'}`);
 }
-const closureFocusReplay = closureAdaptiveData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+const closureFocusReplay = closureAdaptiveData.c_k_focus?.find(item => item?.isClosureFocusReplay);
 if (!closureFocusReplay) {
   throw new Error('Adaptive closure focus did not inject an explicit closure focus replay item into the KAI focus lane');
 }
@@ -1349,9 +1385,9 @@ if (!String(elements.get('paper-container')?.innerHTML || '').includes('重点�
 }
 const explanationModes = new Set(['rule', 'method', 'validation']);
 const explanationSamples = [
-  ...(closureAdaptiveData.c_k_mix || []),
+  ...(closureAdaptiveData.c_k_focus || []),
   ...(closureAdaptiveData.c_k_bridge || []),
-  ...(closureAdaptiveData.c_l_mix || []),
+  ...(closureAdaptiveData.c_l_focus || []),
   ...(closureAdaptiveData.c_l_bridge || []),
 ].filter(item => ['decimal_division', 'fraction_operation', 'conversion_bridge'].includes(item?.qualityFamily));
 if (explanationSamples.length < 2) {
@@ -1393,7 +1429,7 @@ const closureMethodData = JSON.parse(store.get(getProgramCacheKey('elementary_cl
 if (closureMethodData.c_k_focusMeta?.field !== 'methodGap') {
   throw new Error(`Expected KAI closure focus to retarget methodGap, got ${closureMethodData.c_k_focusMeta?.field || '(missing)'}`);
 }
-const closureMethodReplay = closureMethodData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+const closureMethodReplay = closureMethodData.c_k_focus?.find(item => item?.isClosureFocusReplay);
 if (!closureMethodReplay) {
   throw new Error('Method-gap closure focus did not inject an explicit closure focus replay item');
 }
@@ -1450,7 +1486,7 @@ const closureValidationData = JSON.parse(store.get(getProgramCacheKey('elementar
 if (closureValidationData.c_k_focusMeta?.field !== 'validationGap') {
   throw new Error(`Expected KAI closure focus to retarget validationGap, got ${closureValidationData.c_k_focusMeta?.field || '(missing)'}`);
 }
-const closureValidationReplay = closureValidationData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+const closureValidationReplay = closureValidationData.c_k_focus?.find(item => item?.isClosureFocusReplay);
 if (!closureValidationReplay) {
   throw new Error('Validation-gap closure focus did not inject an explicit closure focus replay item');
 }
@@ -1507,7 +1543,7 @@ const closureSpeedData = JSON.parse(store.get(getProgramCacheKey('elementary_clo
 if (closureSpeedData.c_k_focusMeta?.field !== 'speedGap') {
   throw new Error(`Expected KAI closure focus to retarget speedGap, got ${closureSpeedData.c_k_focusMeta?.field || '(missing)'}`);
 }
-const closureSpeedReplay = closureSpeedData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+const closureSpeedReplay = closureSpeedData.c_k_focus?.find(item => item?.isClosureFocusReplay);
 if (!closureSpeedReplay) {
   throw new Error('Speed-gap closure focus did not inject an explicit closure focus replay item');
 }
@@ -1564,7 +1600,7 @@ const closureStabilityData = JSON.parse(store.get(getProgramCacheKey('elementary
 if (closureStabilityData.c_k_focusMeta?.field !== 'stabilityGap') {
   throw new Error(`Expected KAI closure focus to retarget stabilityGap, got ${closureStabilityData.c_k_focusMeta?.field || '(missing)'}`);
 }
-const closureStabilityReplay = closureStabilityData.c_k_mix?.find(item => item?.isClosureFocusReplay);
+const closureStabilityReplay = closureStabilityData.c_k_focus?.find(item => item?.isClosureFocusReplay);
 if (!closureStabilityReplay) {
   throw new Error('Stability-gap closure focus did not inject an explicit closure focus replay item');
 }
