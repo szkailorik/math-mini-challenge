@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.88';
-        const APP_RELEASE_LABEL = '错题本机制筛选';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.88 让专属错题本里的高频机制变成可点击筛选，能直接按错误机制聚焦当前错题。';
+        const APP_VERSION = 'v23.89';
+        const APP_RELEASE_LABEL = '错题本机制补练';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.89 让错题本里的高频机制不仅能筛选，还能直接打印这一机制的补练题和答案。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6776,6 +6776,62 @@
                 </div>`;
         }
 
+        function getErrorBookMechanismEntries(student, mechanismKey, { includeMastered = false } = {}) {
+            const profile = StorageDB.getProfile(student) || {};
+            const entries = Object.entries(profile.errorBook || {}).map(([uid, value]) => ({ uid, ...value }));
+            return entries
+                .filter(entry => includeMastered || !entry.mastered)
+                .filter(entry => {
+                    const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                    return key === mechanismKey;
+                })
+                .sort((a, b) => (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0));
+        }
+
+        function buildErrorBookMechanismPracticeItems(student, mechanismKey) {
+            const entries = getErrorBookMechanismEntries(student, mechanismKey);
+            if (!entries.length) return [];
+            const picked = entries.slice(0, 6);
+            return picked.map(entry => {
+                const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
+                if (!built) return null;
+                return {
+                    ...built,
+                    followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
+                    followupGrade: entry.grade || 'wrong',
+                    followupMechanismKey: mechanismKey,
+                    isMechanismFollowup: true
+                };
+            }).filter(Boolean);
+        }
+
+        function buildErrorBookMechanismPrintHTML(student, mechanismKey, includeAnswers = false) {
+            const items = buildErrorBookMechanismPracticeItems(student, mechanismKey);
+            if (!items.length) return '';
+            const label = getErrorMechanismLabel(mechanismKey);
+            const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const printPack = getSetReviewFollowupPrintPack(items);
+            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
+            return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+                <header class="booklet-meta-band">
+                    <span>${student} · Error Book</span>
+                    <span>Mechanism Practice</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">错题机制补练</h2>
+                    <p class="followup-print-subtitle">围绕「${label}」机制补练 · 题型贴近当前错题</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
+                    <span>重点机制：${label}</span>
+                </div>
+                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
+                ${answerBlock}
+            </section>`;
+        }
+        window.buildErrorBookMechanismPrintHTML = buildErrorBookMechanismPrintHTML;
+
         function buildStudentErrorSection(name, profile, filter) {
             let eb = (profile && profile.errorBook) ? profile.errorBook : {};
             let allEntries = Object.entries(eb).map(([uid, v]) => ({ uid, ...v }));
@@ -6897,6 +6953,7 @@
                         </div>
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
+                        ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
                     </div>` : '';
 
                 html += `
@@ -6947,6 +7004,33 @@
         window.setEbMechanism = function(mechanismKey) {
             window._ebMechanism = mechanismKey || '';
             renderErrorBookInternal();
+        };
+
+        window.printErrorBookMechanismPractice = function(student, mechanismKey, includeAnswers = false) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const html = buildErrorBookMechanismPrintHTML(student, mechanismKey, includeAnswers);
+            if (!html) {
+                showToast('当前机制下还没有可打印的补练题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
+            showToast(includeAnswers ? '🖨️ 打印提示：将输出当前机制补练和答案参考。' : '🖨️ 打印提示：将只输出当前机制补练页。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
         };
 
         window.masterErrorUI = async function(student, uid) {

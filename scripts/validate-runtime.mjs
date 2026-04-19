@@ -1312,6 +1312,13 @@ if (!mechanismFilteredHtml.includes('当前只看') || !mechanismFilteredHtml.in
 if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
   throw new Error('Error book mechanism filtering still shows entries from other mechanisms');
 }
+if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
+  throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
+}
+const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';
+if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes('0.25')) {
+  throw new Error('Error book mechanism print builder did not produce concrete practice content');
+}
 context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 context.window.StorageDB.cache.KAI.history = [{
