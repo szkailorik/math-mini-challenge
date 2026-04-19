@@ -1267,6 +1267,52 @@ const replayPaper = elements.get('paper-container')?.innerHTML || '';
 if (!stripHtml(replayPaper).includes('2 &times; 3') || !replayPaper.includes('Error Replay')) {
   throw new Error('Active error-book item was not bridged back into generated training');
 }
+context.window.StorageDB.cache.KAI = {
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: {
+    eb1: {
+      tag: 'k_conv_1',
+      grade: 'wrong',
+      count: 3,
+      lastSet: 104,
+      firstSet: 102,
+      firstDate: 'validator',
+      lastDate: 'validator',
+      mastered: false,
+      mechanismKey: 'representation-conversion',
+      info: { q: '0.25 = (   )', a: '1/4', step: '先转成分数。' }
+    },
+    eb2: {
+      tag: 'k_conv_2',
+      grade: 'wrong',
+      count: 2,
+      lastSet: 104,
+      firstSet: 103,
+      firstDate: 'validator',
+      lastDate: 'validator',
+      mastered: false,
+      mechanismKey: 'baseline-comparison',
+      info: { q: '比较 0.49 和 1/2', a: '1/2 大', step: '先想 1/2 = 0.5。' }
+    }
+  },
+};
+context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+context.window.renderErrorBook();
+const errorBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (!errorBookHtml.includes('高频机制') || !errorBookHtml.includes('representation-conversion')) {
+  throw new Error('Error book did not render clickable mechanism summary chips');
+}
+context.window.setEbMechanism('representation-conversion');
+const mechanismFilteredHtml = elements.get('paper-container')?.innerHTML || '';
+if (!mechanismFilteredHtml.includes('当前只看') || !mechanismFilteredHtml.includes('0.25 =')) {
+  throw new Error('Error book mechanism filtering did not preserve the matching entry');
+}
+if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
+  throw new Error('Error book mechanism filtering still shows entries from other mechanisms');
+}
+context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 context.window.StorageDB.cache.KAI.history = [{
   set: 106,

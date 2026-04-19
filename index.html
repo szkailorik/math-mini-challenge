@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.87';
-        const APP_RELEASE_LABEL = '机制层接入跟训';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.87 把错误机制层接进了本套错题变式跟训和 errorBook 信号，补练不再只看同 tag，也会更看重同机制。';
+        const APP_VERSION = 'v23.88';
+        const APP_RELEASE_LABEL = '错题本机制筛选';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.88 让专属错题本里的高频机制变成可点击筛选，能直接按错误机制聚焦当前错题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6727,11 +6727,13 @@
 
         // ================= v22 重写：错题本渲染（独立存储 · 去重计数 · 分组 · 一键掌握） =================
         window._ebFilter = 'active'; // 'active' | 'mastered'
+        window._ebMechanism = '';
 
         window.renderErrorBook = function() {
             document.getElementById('normal-ctrls').style.display = 'none';
             document.getElementById('error-book-ctrls').style.display = 'block';
             window._ebFilter = 'active';
+            window._ebMechanism = '';
             renderErrorBookInternal();
         };
 
@@ -6752,12 +6754,35 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function buildErrorBookMechanismChips(summary = {}, activeMechanism = '') {
+            const items = Object.values(summary)
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 4);
+            if (!items.length) return '';
+            const chips = items.map(item => `
+                <button
+                    class="eb-filter-btn ${activeMechanism === item.key ? 'active' : ''}"
+                    style="padding:6px 10px; border-radius:999px; font-size:12.5px;"
+                    onclick="window.setEbMechanism('${item.key}')"
+                >${getErrorMechanismLabel(item.key)} · ${item.count}</button>
+            `).join('');
+            return `
+                <div style="margin-top:8px;">
+                    <div style="color:#64748b; font-size:12.5px; margin-bottom:8px;">高频机制：</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        ${chips}
+                        ${activeMechanism ? `<button class="eb-filter-btn" style="padding:6px 10px; border-radius:999px; font-size:12.5px;" onclick="window.setEbMechanism('')">查看全部</button>` : ''}
+                    </div>
+                </div>`;
+        }
+
         function buildStudentErrorSection(name, profile, filter) {
             let eb = (profile && profile.errorBook) ? profile.errorBook : {};
             let allEntries = Object.entries(eb).map(([uid, v]) => ({ uid, ...v }));
             let activeEntries = allEntries.filter(e => !e.mastered);
             let masteredEntries = allEntries.filter(e => e.mastered);
             let entries = filter === 'mastered' ? masteredEntries : activeEntries;
+            const activeMechanism = window._ebMechanism || '';
             let mechanismSummary = entries.reduce((acc, entry) => {
                 const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                 const current = acc[key] || { key, count: 0 };
@@ -6765,11 +6790,13 @@
                 acc[key] = current;
                 return acc;
             }, {});
-            let topMechanisms = Object.values(mechanismSummary)
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 3)
-                .map(item => `${getErrorMechanismLabel(item.key)} ${item.count}`)
-                .join(' · ');
+            const mechanismChipHtml = buildErrorBookMechanismChips(mechanismSummary, activeMechanism);
+            if (activeMechanism) {
+                entries = entries.filter(entry => {
+                    const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                    return key === activeMechanism;
+                });
+            }
 
             let filterTitle = filter === 'mastered'
                 ? `🏆 ${name} 已掌握错题（Mastered Archive）`
@@ -6779,12 +6806,15 @@
                 let msg = filter === 'mastered'
                     ? '🎯 还没有已掌握的错题，加油攻克当前错题吧！'
                     : '🎉 太棒了！当前没有活跃错题！(No active errors!)';
+                if (activeMechanism) {
+                    msg = `当前没有「${getErrorMechanismLabel(activeMechanism)}」机制的${filter === 'mastered' ? '已掌握' : '活跃'}错题。`;
+                }
                 return `<div class="sheet"><div class="header"><h1>${filterTitle}</h1></div>
                     <div class="eb-summary"><div class="eb-stat"><span><b>${activeEntries.length}</b> 待攻克</span><span><b>${masteredEntries.length}</b> 已掌握</span></div>
                     <div style="display:flex; gap:8px;">
                         <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                         <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
-                    </div>${topMechanisms ? `<div style="margin-top:8px; color:#64748b; font-size:12.5px;">高频机制：${topMechanisms}</div>` : ''}</div>
+                    </div>${mechanismChipHtml}${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}</div>
                     <h2 style="text-align:center; margin-top:50px; color:#4caf50;">${msg}</h2></div>`;
             }
 
@@ -6865,7 +6895,8 @@
                             <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                             <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
                         </div>
-                        ${topMechanisms ? `<div style="margin-top:8px; color:#64748b; font-size:12.5px;">高频机制：${topMechanisms}</div>` : ''}
+                        ${mechanismChipHtml}
+                        ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
                     </div>` : '';
 
                 html += `
@@ -6910,6 +6941,11 @@
 
         window.setEbFilter = function(f) {
             window._ebFilter = f;
+            renderErrorBookInternal();
+        };
+
+        window.setEbMechanism = function(mechanismKey) {
+            window._ebMechanism = mechanismKey || '';
             renderErrorBookInternal();
         };
 
