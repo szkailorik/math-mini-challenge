@@ -130,20 +130,20 @@
             body.print-sandbox-active #print-root .h-mixed { min-height: 116px !important; }
             body.print-sandbox-active #print-root .h-conv {
                 min-height: 36px !important;
-                font-size: 15.6px !important;
-                line-height: 1.04 !important;
+                font-size: 14.8px !important;
+                line-height: 1.02 !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-body,
             body.print-sandbox-active #print-root .h-conv .math-text,
             body.print-sandbox-active #print-root .h-conv .math-row,
             body.print-sandbox-active #print-root .h-conv .math-group-body {
-                flex-wrap: wrap !important;
-                white-space: normal !important;
+                flex-wrap: nowrap !important;
+                white-space: nowrap !important;
                 gap: 0.05em 0.1em !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
-                font-size: 15.4px !important;
-                line-height: 1.04 !important;
+                font-size: 14.6px !important;
+                line-height: 1.02 !important;
             }
             body.print-sandbox-active #print-root .h-conv .frac {
                 font-size: 0.78em !important;
@@ -658,10 +658,10 @@
         .h-conv {
             min-height: 40px;
             width: 100%;
-            font-size: 17.2px;
-            line-height: 1.06;
+            font-size: 16.4px;
+            line-height: 1.03;
             grid-template-columns: 1.55em minmax(0, 1fr);
-            column-gap: 6px;
+            column-gap: 5px;
         }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -673,17 +673,17 @@
         .h-conv .math-row,
         .h-conv .math-text,
         .h-conv .math-group-body {
-            flex-wrap: wrap;
-            white-space: normal;
+            flex-wrap: nowrap;
+            white-space: nowrap;
         }
         .h-conv .q-num {
-            font-size: 17.2px;
-            line-height: 1.06;
-            min-width: 1.45em;
+            font-size: 16.4px;
+            line-height: 1.03;
+            min-width: 1.38em;
         }
         .h-conv .frac {
-            font-size: 0.79em;
-            margin: 0 0.03em 0 0.02em;
+            font-size: 0.75em;
+            margin: 0 0.02em 0 0.01em;
         }
         .item.h-conv.item-dense {
             font-size: 16.9px;
@@ -2064,9 +2064,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.98';
+        const APP_VERSION = 'v23.99';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.98 第二大题去长横线：桥接题答案位改成紧凑括号，继续压住排版错位。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.99 继续压缩第二大题桥接短句：把“先统一成 / 直接判”收成更短的试卷表达。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6602,7 +6602,7 @@
             const sectionTitle = match ? match[2] : cnTitle;
             const resolvedCols = resolveSectionColumnCount(items, heightClass, cols);
             const gridClass = `grid grid-${resolvedCols}${heightClass === 'h-frac' ? ' grid-frac-tight' : ''}`;
-            const lineLockClass = heightClass === 'h-conv' ? '' : ' paper-line-lock';
+            const lineLockClass = ' paper-line-lock';
             return `
             <div class="section">
                 <div class="section-title">
