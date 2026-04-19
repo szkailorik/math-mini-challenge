@@ -587,3 +587,9 @@ profile = {
 - Because the follow-up block is already grouped by mistake family, repeating the family badge on every single row adds noise without adding much information.
 - The row layout now favors a clean fixed number lane plus a wider prompt lane, which makes fraction-heavy and longer prompts easier to scan.
 - The intended effect is that the sheet reads more like a tutor-prepared practice page and less like a generated report list.
+
+- v23.73 improves the worksheet treatment for the hardest follow-up prompts:
+
+- Not every generated follow-up row has the same visual complexity, so the renderer now distinguishes between normal, dense, and ultra-dense prompt shapes.
+- Mixed numbers, multi-fraction expressions, and longer conversion-style prompts now get their own spacing and font treatment instead of sharing the plain-text baseline.
+- The intended result is better stability for the most notation-heavy rows without shrinking the simpler rows unnecessarily.

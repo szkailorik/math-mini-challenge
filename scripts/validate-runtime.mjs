@@ -63,6 +63,9 @@ if (!html.includes('function buildSetReviewFollowupGroups')) {
 if (!html.includes('function getSetReviewFollowupItemShape')) {
   throw new Error('Set Review follow-up item-shape helper is missing from runtime script');
 }
+if (!html.includes('function getSetReviewFollowupItemDensity')) {
+  throw new Error('Set Review follow-up item-density helper is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupHTML')) {
   throw new Error('Set Review follow-up renderer is missing from runtime script');
 }

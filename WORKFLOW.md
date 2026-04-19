@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.73 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a lightweight density classifier for `本套错题变式跟训` rows so notation-heavy prompts like mixed numbers, multi-fraction expressions, and longer conversion prompts use a steadier layout than simple arithmetic rows.
+- Open questions: whether the next pass should explicitly special-case the longest fraction-comparison prompts, or stop here because the current density ladder already absorbs most of the instability.
+- Risks: density detection is heuristic and tied to current markup patterns; if prompt rendering changes later, some rows may fall back to normal density until the classifier is updated.
+- Next steps: review a few real follow-up pages with multiple fraction-heavy mistakes, then decide whether one final fraction-specific pass is still worth it.
+
 ## Current v23.72 Iteration Notes
 
 ### Iteration 1

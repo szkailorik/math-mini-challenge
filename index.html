@@ -1600,21 +1600,33 @@
             border-top:1px dashed #e2e8f0;
         }
         .followup-group-list .followup-item:first-child { border-top:none; padding-top:0; }
+        .followup-item[data-density="dense"] {
+            font-size:15px;
+            line-height:1.5;
+        }
+        .followup-item[data-density="ultra"] {
+            font-size:14.35px;
+            line-height:1.42;
+        }
         .followup-item[data-shape="fraction"],
         .followup-item[data-shape="conversion"] {
             font-size:15.2px;
             line-height:1.52;
         }
+        .followup-item[data-density="dense"] .math-row,
+        .followup-item[data-density="ultra"] .math-row,
         .followup-item[data-shape="fraction"] .math-row,
         .followup-item[data-shape="conversion"] .math-row {
             gap:0.08em 0.14em;
         }
+        .followup-item[data-density="dense"] .frac,
+        .followup-item[data-density="ultra"] .frac,
         .followup-item[data-shape="fraction"] .frac,
         .followup-item[data-shape="conversion"] .frac {
             font-size:0.8em;
             margin:0 0.05em 0 0.03em;
         }
-        .followup-num { width:24px; font-weight:700; color:#0f172a; }
+        .followup-num { width:24px; font-weight:700; color:#0f172a; line-height:1.35; padding-top:0.04em; }
         .followup-q { min-width:0; }
         .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
@@ -1644,15 +1656,27 @@
             line-height:1.7;
             page-break-inside:avoid;
         }
+        .followup-print-item[data-density="dense"] {
+            font-size:13.7px;
+            line-height:1.44;
+        }
+        .followup-print-item[data-density="ultra"] {
+            font-size:13px;
+            line-height:1.36;
+        }
         .followup-print-item[data-shape="fraction"],
         .followup-print-item[data-shape="conversion"] {
             font-size:14.1px;
             line-height:1.52;
         }
+        .followup-print-item[data-density="dense"] .math-row,
+        .followup-print-item[data-density="ultra"] .math-row,
         .followup-print-item[data-shape="fraction"] .math-row,
         .followup-print-item[data-shape="conversion"] .math-row {
             gap:0.06em 0.12em;
         }
+        .followup-print-item[data-density="dense"] .frac,
+        .followup-print-item[data-density="ultra"] .frac,
         .followup-print-item[data-shape="fraction"] .frac,
         .followup-print-item[data-shape="conversion"] .frac {
             font-size:0.76em;
@@ -1789,9 +1813,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.72';
-        const APP_RELEASE_LABEL = '本套报告变式跟训长题对齐优化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.72 本套报告变式跟训长题对齐优化：去掉重复标签，长题和分数题更顺更整齐。';
+        const APP_VERSION = 'v23.73';
+        const APP_RELEASE_LABEL = '本套报告变式跟训复杂题分级排版';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.73 本套报告变式跟训复杂题分级排版：带分数、长互化题和复杂分数题更稳。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6996,6 +7020,17 @@
             return 'standard';
         }
 
+        function getSetReviewFollowupItemDensity(item = {}) {
+            const source = `${item.q || ''} ${item.a || ''}`;
+            const fracCount = (source.match(/class="frac"/g) || []).length;
+            const hasMixed = /class="mixed"/.test(source);
+            const hasParenGroup = /math-paren-group/.test(source);
+            const plainLength = source.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().length;
+            if (hasMixed || fracCount >= 3 || (hasParenGroup && fracCount >= 2)) return 'ultra';
+            if (fracCount >= 2 || plainLength >= 30) return 'dense';
+            return 'normal';
+        }
+
         function renderSetReviewFollowupGroups(items = [], { forPrint = false } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
@@ -7005,13 +7040,14 @@
                 const rows = group.items.map((item, idx) => {
                     const number = items.indexOf(item) + 1;
                     const shape = getSetReviewFollowupItemShape(item);
+                    const density = getSetReviewFollowupItemDensity(item);
                     return forPrint ? `
-                        <div class="followup-print-item" data-shape="${shape}">
+                        <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <span class="followup-q math-row">${item.q || '-'}</span>
                         </div>
                     ` : `
-                        <div class="followup-item" data-shape="${shape}">
+                        <div class="followup-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <span class="followup-q math-row">${item.q || item.prompt || '-'}</span>
                         </div>
