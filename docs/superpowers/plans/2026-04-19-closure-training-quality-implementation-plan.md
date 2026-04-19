@@ -234,6 +234,25 @@ return buildCoveredSection(student, representationCoreGroups[phaseKey]).map(item
 );
 ```
 
+Do not leave Section II as a loose “conversion block”. Split it into four internal sub-lanes so the bridge lane can prove it is teaching transfer, not only direct conversion:
+
+```js
+const closureBridgeFamilies = {
+  representationConversion: ['c2_bridge_base', 'c2_bridge_convert'],
+  baselineComparison: ['c2_bridge_compare', 'c2_bridge_near_one'],
+  representationChoice: ['c2_bridge_structure_choice', 'c2_bridge_best_form'],
+  postConversionUse: ['c2_bridge_convert_then_compare', 'c2_bridge_convert_then_calc']
+};
+```
+
+Phase emphasis should then behave like:
+
+- foundation -> `representationConversion + baselineComparison`
+- integration -> `baselineComparison + representationChoice + postConversionUse`
+- graduation -> `baselineComparison + representationChoice + postConversionUse`, with more boundary / reverse / reasonableness prompts
+
+The implementation should prefer “what should I convert this into, and why?” before it adds more raw direct-conversion repetition.
+
 - [ ] **Step 3: Make Section III explicitly complex-mixed-first**
 
 Replace the old generic mix emphasis with an explicit phase ramp:
@@ -383,6 +402,22 @@ integration: '主体收束：混合运算、方法选择、综合切换'
 graduation: '毕业判定：括号结构、边界判断、稳定迁移'
 ```
 
+Also expose Section II-specific emphasis so validation can prove the bridge lane is progressing beyond direct conversion:
+
+```js
+bridgeLaneEmphasis: {
+  conversion: 'high',
+  baseline: 'high',
+  choice: 'medium',
+  postUse: 'medium_low'
+}
+```
+
+with the values stepping to:
+
+- integration -> `conversion: medium`, `baseline: high`, `choice: high`, `postUse: high`
+- graduation -> `conversion: medium_low`, `baseline: high`, `choice: high`, `postUse: high`
+
 Also expose Section III-specific emphasis so future validation can prove the intended method-first ramp:
 
 ```js
@@ -435,6 +470,14 @@ const set26 = runtime.buildClosureProgramSetForTest(26);
 assert(set1.phaseMeta.trainingEmphasis.complexMixed === 'light', 'Set 1 should keep complex mixed light');
 assert(set12.phaseMeta.trainingEmphasis.complexMixed === 'high', 'Set 12 should raise complex mixed weight');
 assert(set26.phaseMeta.trainingEmphasis.complexMixed === 'full_structure', 'Set 26 should use full structure mode');
+```
+
+Add companion assertions for the new bridge-lane emphasis:
+
+```js
+assert(set1.phaseMeta.bridgeLaneEmphasis.conversion === 'high', 'Set 1 should still prioritize direct conversion');
+assert(set12.phaseMeta.bridgeLaneEmphasis.choice === 'high', 'Set 12 should raise representation-choice weight');
+assert(set26.phaseMeta.bridgeLaneEmphasis.postUse === 'high', 'Set 26 should keep post-conversion use high');
 ```
 
 Add companion assertions for the new mix-lane emphasis:
@@ -499,6 +542,7 @@ Add bullets covering:
 - `Closure` now uses an explicit five-section training matrix instead of a looser blended-paper composition.
 - Section II and III are the daily A-class core battlefields.
 - Complex mixed arithmetic now appears throughout all phases, but ramps from light to fully structured with bracket upgrades.
+- Section II internally splits into representation conversion, baseline comparison, representation choice, and post-conversion use so the bridge lane can evolve past pure conversion drills.
 - Section III internally splits into structure recognition, method choice, complex execution, and result judgement, with method choice explicitly prioritized before raw complexity.
 ```
 
@@ -509,6 +553,7 @@ Add bullets covering:
 ```md
 - Phase two no longer treats elementary calculation topics equally.
 - The main goal is to create a high-value closure system: preserve first-stage gains, then spend most time on representation transfer, complex mixed arithmetic, number sense, and method choice.
+- Section II is not a “conversion worksheet”; it is the learner’s representation hub, where switching form, choosing form, and using the chosen form all matter.
 - Section III is not “the hardest pile of mixed questions”; it is the learner’s complex-calculation advantage lane, where method choice comes before brute-force execution.
 ```
 
@@ -564,6 +609,7 @@ git commit -m "docs: document closure training quality rollout"
 - Three-phase emphasis curve: covered in Task 4.
 - Complex mixed arithmetic present throughout, but stronger later with bracket upgrades: covered in Tasks 3–4.
 - Section III method-first deepening and stable mixed-arithmetic template families: covered in Tasks 3–5.
+- Section II bridge-lane deepening and stable representation-transfer template families: covered in Tasks 3–5.
 - High-value filtering and non-average topic weighting: covered in Tasks 2–4 and documented in Task 5.
 
 ### Placeholder scan
