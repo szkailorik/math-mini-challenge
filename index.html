@@ -139,7 +139,7 @@
             body.print-sandbox-active #print-root .h-conv .math-group-body {
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
-                gap: 0.04em 0.08em !important;
+                gap: 0.03em 0.06em !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
                 font-size: 14px !important;
@@ -176,12 +176,13 @@
             body.print-sandbox-active #print-root .h-conv .math-op,
             body.print-sandbox-active #print-root .h-conv .math-eq,
             body.print-sandbox-active #print-root .h-conv .math-compare {
-                min-width: 0.72em !important;
-                font-size: 0.96em !important;
+                min-width: 0.66em !important;
+                font-size: 0.93em !important;
             }
             body.print-sandbox-active #print-root .math-compact-paren-answer {
-                min-width: 1.24em !important;
-                margin: 0 0.03em !important;
+                min-width: 1.12em !important;
+                margin: 0 0.02em !important;
+                font-size: 0.94em !important;
                 letter-spacing: -0.03em !important;
             }
             body.print-sandbox-active #print-root .sheet-meta-band {
@@ -702,7 +703,7 @@
         .h-conv .math-row,
         .h-conv .math-text {
             align-items: baseline;
-            gap: 0.04em 0.08em;
+            gap: 0.03em 0.06em;
         }
         .h-conv .q-body,
         .h-conv .math-row,
@@ -723,8 +724,8 @@
         .h-conv .math-op,
         .h-conv .math-eq,
         .h-conv .math-compare {
-            min-width: 0.76em;
-            font-size: 0.98em;
+            min-width: 0.68em;
+            font-size: 0.95em;
         }
         .h-conv .mixed {
             gap: 0.08em;
@@ -837,10 +838,10 @@
             display: inline-flex;
             align-items: baseline;
             justify-content: center;
-            min-width: 1.36em;
-            margin: 0 0.04em;
+            min-width: 1.18em;
+            margin: 0 0.02em;
             font-family: 'Times New Roman', 'Songti SC', serif;
-            font-size: 1em;
+            font-size: 0.96em;
             line-height: 1;
             color: var(--math-ink);
             letter-spacing: -0.02em;
@@ -2119,9 +2120,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.102';
+        const APP_VERSION = 'v23.103';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.102 第二大题题干回到清楚的考试式短句：不再过度简写。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.103 第二大题继续收句式和答案位：短提示句更像实卷，打印也同步更紧。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4442,10 +4443,10 @@
             return raw
                 .replace(/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, '$1 中，最接近 $2 的是<div class="blank"></div>')
                 .replace(/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, '$1 中，最接近 0 的是<div class="blank"></div>')
-                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '算 $1 时，先把 $2 化成<div class="blank"></div>再算')
-                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '比 $1 时，先把 $2 化成<div class="blank"></div>更方便')
-                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '比 $1 时，先统一成<div class="blank"></div>再比')
-                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '比 $1 时，直接判断成<div class="blank"></div>更快')
+                .replace(/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, '算 $1：先把 $2 化成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更(?:顺|快)$/, '比 $1：先把 $2 化成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, '比 $1：先统一成<div class="blank"></div>')
+                .replace(/^比(?:较)? (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, '比 $1：直接判断成<div class="blank"></div>')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，它们的和是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 先化成分数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, '$1 + $2 =<div class="blank"></div>')
                 .replace(/^把 (.+?) 和 (.+?) 先统一表示后，较大的是<div class="blank"><\/div>$/, '$1、$2 中较大的是<div class="blank"></div>')
