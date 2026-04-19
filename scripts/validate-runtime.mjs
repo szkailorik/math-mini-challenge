@@ -1266,7 +1266,10 @@ context.window.StorageDB.cache.KAI.history = [{
   set: 106,
   date: 'validator',
   ts: Date.now(),
-  details: [{ tag: 'k_dmul_basic', grade: 'wrong', uid: 'r1', info: { sec: '复杂乘法', num: 2, q: '2 &times; 3', a: '6', step: '2乘3等于6。' } }],
+  details: [
+    { tag: 'k_dmul_basic', grade: 'wrong', uid: 'r1', info: { sec: '复杂乘法', num: 2, q: '2 &times; 3', a: '6', step: '2乘3等于6。' } },
+    { tag: 'k_dmul_basic', grade: 'wrong', uid: 'r2', info: { sec: '复杂乘法', num: 3, q: '4 &times; 5', a: '20', step: '4乘5等于20。' } },
+  ],
   allGrades: [{ tag: 'k_dmul_basic', grade: 'wrong' }, { tag: 'k_dmul_scale', grade: 'perfect' }],
   weightAdjustments: [],
 }];
@@ -1279,12 +1282,15 @@ if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('�
   throw new Error('Set review report is missing the in-report variant follow-up block');
 }
 const sampleFollowupCandidates = context.window.buildSetReviewFollowupCandidates?.(context.window.StorageDB.cache.KAI.history[0]);
-if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 1) {
+if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 2) {
   throw new Error('Set review follow-up candidates are not being built from current-set details');
 }
 const sampleFollowupTargets = context.window.buildSetReviewFollowupTargets?.(context.window.StorageDB.cache.KAI.history[0]);
 if (!Array.isArray(sampleFollowupTargets) || !sampleFollowupTargets.length) {
   throw new Error('Set review follow-up targets are not grouping current-set mistakes');
+}
+if (sampleFollowupTargets.length < 2) {
+  throw new Error('Set review follow-up targets still collapse different same-tag mistakes into one target');
 }
 const sampleFollowupItems = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
 if (!Array.isArray(sampleFollowupItems) || !sampleFollowupItems.length || sampleFollowupItems.length > 8) {
@@ -1439,6 +1445,12 @@ if (advancedBefore !== advancedAfter) {
 const closureProfile = context.window.StorageDB.getProfile('KAI', 'elementary_closure_v1');
 if (!closureProfile || !Array.isArray(closureProfile.history) || !closureProfile.history.some(session => session.set === 103)) {
   throw new Error('Phase-two grading did not create closure history');
+}
+await context.window.StorageDB.saveSession('KAI', [
+  { tag: 'c2_bridge_pct_frac', grade: 'perfect', info: { sec: '收束桥接', num: 1, q: closureData.c_k_bridge?.[0]?.q, a: closureData.c_k_bridge?.[0]?.a, step: closureData.c_k_bridge?.[0]?.step } },
+], 99, 'elementary_closure_v1');
+if ((closureProfile.lastSeen?.c2_bridge_pct_frac || 0) !== 103) {
+  throw new Error('Resubmitting an older set regressed lastSeen for a closure tag');
 }
 if (!closureProfile.errorBook || Object.keys(closureProfile.errorBook).length < 3) {
   throw new Error('Phase-two grading did not populate the closure error book');

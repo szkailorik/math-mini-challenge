@@ -1992,9 +1992,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.83';
-        const APP_RELEASE_LABEL = '本套变式跟训互化题补齐';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.83 继续补齐本套错题变式跟训里的互化题标签，让循环小数、分母 20、分母 10000 这一组也更贴近原错题。';
+        const APP_VERSION = 'v23.84';
+        const APP_RELEASE_LABEL = '错题记录与跟训链路校准';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.84 修正本套错题记录里旧套卷重提时可能回写 lastSeen 的问题，并把本套变式跟训收细到更贴近单道原错题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2977,7 +2977,9 @@
                 };
 
                 let allTagsInSet = [...new Set(records.map(r => r.tag))];
-                allTagsInSet.forEach(t => profile.lastSeen[t] = setNum);
+                allTagsInSet.forEach(t => {
+                    profile.lastSeen[t] = Math.max(profile.lastSeen[t] || 0, setNum);
+                });
 
                 // 若本 set 已提交过，先回滚其对 errorBook 的贡献与 weights
                 let existingIndex = profile.history.findIndex(h => h.set === setNum);
@@ -7064,7 +7066,7 @@
         function buildSetReviewFollowupTargets(session) {
             const grouped = new Map();
             buildSetReviewFollowupCandidates(session).forEach(candidate => {
-                const key = `${candidate.tag || candidate.family}:${candidate.grade}`;
+                const key = `${candidate.uid || candidate.tag || candidate.family}:${candidate.grade}`;
                 const bucket = grouped.get(key) || {
                     tag: candidate.tag || '',
                     family: candidate.family,
