@@ -133,6 +133,13 @@
                 font-size: 16.2px !important;
                 line-height: 1.08 !important;
             }
+            body.print-sandbox-active #print-root .h-conv .q-body,
+            body.print-sandbox-active #print-root .h-conv .math-text,
+            body.print-sandbox-active #print-root .h-conv .math-row,
+            body.print-sandbox-active #print-root .h-conv .math-group-body {
+                flex-wrap: wrap !important;
+                white-space: normal !important;
+            }
             body.print-sandbox-active #print-root .h-conv .q-num {
                 font-size: 16px !important;
                 line-height: 1.08 !important;
@@ -658,6 +665,13 @@
         .h-conv .math-text {
             align-items: baseline;
             gap: 0.06em 0.12em;
+        }
+        .h-conv .q-body,
+        .h-conv .math-row,
+        .h-conv .math-text,
+        .h-conv .math-group-body {
+            flex-wrap: wrap;
+            white-space: normal;
         }
         .h-conv .q-num {
             font-size: 18px;
@@ -2033,9 +2047,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.93';
+        const APP_VERSION = 'v23.94';
         const APP_RELEASE_LABEL = '第二阶段缓存刷新';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.93 第二大题桥接/互化区统一改成 2 列，优先彻底压住数字重叠。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.94 第二大题不再强制单行：桥接/互化题允许有秩序地换行，优先消除重叠。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6495,6 +6509,7 @@
             const sectionTitle = match ? match[2] : cnTitle;
             const resolvedCols = resolveSectionColumnCount(items, heightClass, cols);
             const gridClass = `grid grid-${resolvedCols}${heightClass === 'h-frac' ? ' grid-frac-tight' : ''}`;
+            const lineLockClass = heightClass === 'h-conv' ? '' : ' paper-line-lock';
             return `
             <div class="section">
                 <div class="section-title">
@@ -6512,7 +6527,7 @@
                         let prompt = normalizeQuestionPrompt(q.q, heightClass);
                         let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
                         const densityClass = getItemDensityClass(q.q, heightClass);
-                        return `<div class="item paper-line-lock ${heightClass}${densityClass ? ` ${densityClass}` : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
+                        return `<div class="item${lineLockClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div>`;
                     }).join('')}
                 </div>
             </div>`;
