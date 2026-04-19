@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.72 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed the per-row family badge from `本套错题变式跟训` and normalized the row layout into a cleaner number lane plus prompt lane so long prompts, fraction prompts, and conversion prompts feel less crowded.
+- Open questions: whether the next pass should now target especially long fraction/mixed-number prompts with an even more explicit dense mode, or stop here and merge this branch.
+- Risks: removing the repeated row badge depends on the section headers staying strong and visible; if those headers are weakened later, family context could become less obvious again.
+- Next steps: review the live report with a few longer follow-up items and decide whether to do one final fraction-specific pass or prepare the branch for merge.
+
 ## Current v23.71 Iteration Notes
 
 ### Iteration 1

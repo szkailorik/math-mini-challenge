@@ -1589,7 +1589,16 @@
         .followup-group[data-grade="careless"] .followup-group-kicker { background:#ffedd5; color:#9a3412; }
         .followup-group-note { font-size:12px; color:#64748b; line-height:1.45; max-width:420px; }
         .followup-group-list { display:grid; gap:8px; }
-        .followup-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.65; padding:7px 0; border-top:1px dashed #e2e8f0; }
+        .followup-item {
+            display:grid;
+            grid-template-columns: 24px minmax(0, 1fr);
+            column-gap:8px;
+            align-items:flex-start;
+            font-size:16px;
+            line-height:1.65;
+            padding:7px 0;
+            border-top:1px dashed #e2e8f0;
+        }
         .followup-group-list .followup-item:first-child { border-top:none; padding-top:0; }
         .followup-item[data-shape="fraction"],
         .followup-item[data-shape="conversion"] {
@@ -1605,9 +1614,8 @@
             font-size:0.8em;
             margin:0 0.05em 0 0.03em;
         }
-        .followup-num { width:24px; flex:0 0 24px; font-weight:700; color:#0f172a; }
-        .followup-q { flex:1; min-width:0; }
-        .followup-family { margin-left:8px; font-size:11px; color:#0f766e; font-weight:700; white-space:nowrap; background:#f0fdfa; border:1px solid #99f6e4; padding:2px 7px; border-radius:999px; }
+        .followup-num { width:24px; font-weight:700; color:#0f172a; }
+        .followup-q { min-width:0; }
         .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
         .set-review-followup-answer-note { margin:0 0 10px; color:#64748b; font-size:12px; line-height:1.45; }
@@ -1627,7 +1635,15 @@
         .followup-print-kicker { display:inline-block; margin-bottom:5px; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:#8a3412; font-weight:700; }
         .followup-print-group p { margin:0 0 8px; font-size:11px; color:#64748b; }
         .followup-print-list { display:grid; gap:6px; }
-        .followup-print-item { display:flex; align-items:flex-start; gap:8px; font-size:16px; line-height:1.7; page-break-inside:avoid; }
+        .followup-print-item {
+            display:grid;
+            grid-template-columns: 24px minmax(0, 1fr);
+            column-gap:8px;
+            align-items:flex-start;
+            font-size:16px;
+            line-height:1.7;
+            page-break-inside:avoid;
+        }
         .followup-print-item[data-shape="fraction"],
         .followup-print-item[data-shape="conversion"] {
             font-size:14.1px;
@@ -1773,9 +1789,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.71';
-        const APP_RELEASE_LABEL = '本套报告变式跟训打印密度增强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.71 本套报告变式跟训打印密度增强：分数题和互化题排版更稳，纸面更紧凑。';
+        const APP_VERSION = 'v23.72';
+        const APP_RELEASE_LABEL = '本套报告变式跟训长题对齐优化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.72 本套报告变式跟训长题对齐优化：去掉重复标签，长题和分数题更顺更整齐。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6998,7 +7014,6 @@
                         <div class="followup-item" data-shape="${shape}">
                             <span class="followup-num">${number}.</span>
                             <span class="followup-q math-row">${item.q || item.prompt || '-'}</span>
-                            <span class="followup-family">${label}</span>
                         </div>
                     `;
                 }).join('');

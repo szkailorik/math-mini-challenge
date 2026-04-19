@@ -581,3 +581,9 @@ profile = {
 - The follow-up renderer now classifies harder shapes such as fraction-heavy or conversion-heavy prompts and gives them slightly different layout treatment.
 - This lets the worksheet stay compact without forcing every generated item into the same font and line-height profile.
 - The result should be a denser but still stable printable reinforcement page, especially when the follow-up set includes more mathematical notation than plain arithmetic text.
+
+- v23.72 improves alignment and visual calm for longer follow-up prompts:
+
+- Because the follow-up block is already grouped by mistake family, repeating the family badge on every single row adds noise without adding much information.
+- The row layout now favors a clean fixed number lane plus a wider prompt lane, which makes fraction-heavy and longer prompts easier to scan.
+- The intended effect is that the sheet reads more like a tutor-prepared practice page and less like a generated report list.
