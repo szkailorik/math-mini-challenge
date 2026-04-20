@@ -109,6 +109,7 @@
             body.print-sandbox-active #print-root .paren-l,
             body.print-sandbox-active #print-root .paren-r {
                 font-size: 1.66em !important;
+                transform: translateY(0.02em) !important;
             }
             body.print-sandbox-active #print-root .math-write-gap {
                 width: 1.05em !important;
@@ -219,6 +220,7 @@
                 margin: 0 0.02em !important;
                 font-size: 0.94em !important;
                 letter-spacing: -0.03em !important;
+                transform: translateY(0.02em) !important;
             }
             body.print-sandbox-active #print-root .sheet-meta-band {
                 gap: 6px !important;
@@ -777,32 +779,39 @@
             margin-top: 0.05em;
             padding-top: 0.05em;
         }
-        .mixed { display: inline-flex; align-items: baseline; gap: 0.14em; font-size: 1em; line-height: 1; }
+        .mixed {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.12em;
+            font-size: 1em;
+            line-height: 1;
+            transform: translateY(0.015em);
+        }
         i.var { font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; margin: 0 4px; }
 
         .math-paren-group {
             display: inline-flex;
-            align-items: baseline;
+            align-items: center;
             flex: 0 0 auto;
             gap: 0.02em;
         }
         .math-group-body {
             display: inline-flex;
-            align-items: baseline;
+            align-items: center;
             flex-wrap: nowrap;
             gap: 0.1em 0.16em;
         }
         .paren-l, .paren-r {
             display: inline-flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: center;
             font-size: 1.58em;
             font-family: 'Times New Roman', serif;
             font-weight: 300;
             color: currentColor;
-            line-height: 0.92;
+            line-height: 0.9;
             margin: 0 -0.01em;
-            transform: none;
+            transform: translateY(0.02em);
             flex: 0 0 auto;
         }
         .paren-l::before { content: '('; }
@@ -1005,13 +1014,14 @@
         .math-inline-blank { transform: translateY(-0.01em); }
         .math-compact-paren-answer {
             display: inline-flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: center;
             min-width: 1.18em;
             margin: 0 0.02em;
             font-family: 'Times New Roman', 'Songti SC', serif;
             font-size: 0.96em;
-            line-height: 1;
+            line-height: 0.98;
+            transform: translateY(0.02em);
             color: var(--math-ink);
             letter-spacing: -0.02em;
             white-space: nowrap;
@@ -2297,9 +2307,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.122';
-        const APP_RELEASE_LABEL = '算式中线继续校准';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.122 继续校准加减乘除等符号和分数块的视觉中线，让屏幕和打印里的算式更居中、更整齐。';
+        const APP_VERSION = 'v23.123';
+        const APP_RELEASE_LABEL = '括号与带分数继续校中线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.123 继续校准括号答案位、括号组和带分数的视觉中线，让整段数学表达更像落在同一条中线上。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
