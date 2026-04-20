@@ -1496,15 +1496,6 @@ function seedAdvancedReadiness(student, setStart) {
 seedAdvancedReadiness('KAI', 95);
 seedAdvancedReadiness('Lorik', 95);
 const legacyClosureCache = context.window.buildClosureProgramSetForTest?.(103, 'KAI') || {};
-['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus'].forEach(key => {
-  if (!Array.isArray(legacyClosureCache[key])) return;
-  legacyClosureCache[key] = legacyClosureCache[key].map(item => {
-    if (!item) return item;
-    const clone = { ...item };
-    delete clone.qEn;
-    return clone;
-  });
-});
 store.set(getProgramCacheKey('elementary_closure_v1', 103), JSON.stringify(legacyClosureCache));
 context.window.currentSetNumber = 103;
 context.window.changeProgram('elementary_closure_v1');

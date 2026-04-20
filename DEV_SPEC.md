@@ -64,8 +64,6 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
 - `generateProgramSetData`: isolates advanced and closure generation behind one runtime entry point.
 - `buildClosureProgramSet`: now assembles the second-stage paper around a fixed five-part matrix: `keep_warm`, `representation_core`, `complex_mixed_core`, `unit_rate_bridge`, and `targeted_focus`, while still shifting emphasis by phase across the monthly arc and by learner-specific focus lane in section V.
-- `buildClosureQuestionEnglish`: now recognizes more bridge, unit/rate, percent-equation, and mixed-result prompt shapes so Closure bilingual helper lines stay exam-like and do not frequently fall back to generic `Solve:` wording.
-- `renderPromptEnglish`: now normalizes remaining inline blanks and list connectors in the bilingual helper line itself, so Closure support copy stays fully English and keeps the same compact answer-slot geometry as the worksheet.
 - `normalizeQuestionPrompt`: now applies compact parenthetical answer slots across worksheet question-body blanks globally, so the paper no longer depends on long underline blanks that destabilize dense layouts.
 - `buildAnsRow`: now renders the answer-booklet `[原题 Question]` prompt through the same normalized prompt pipeline as the live worksheet, preventing legacy underline blanks from resurfacing only on the answer side.
 - `scripts/validate-runtime.mjs`: now audits both `advanced_fluency_v1` and `elementary_closure_v1` rendered papers for legacy underline blanks, so answer-slot regressions are caught even if they only reappear in one stage.
