@@ -749,13 +749,6 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
       data,
       ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
     ) || [];
-    if (!closureItems.every(item => typeof item?.qEn === 'string' && item.qEn.trim())) {
-      throw new Error(`Closure set ${setNumber} is missing bilingual question copy`);
-    }
-    if (!closureItems.every(item => !/[\u4e00-\u9fff]/.test(String(item?.qEn || '')))) {
-      throw new Error(`Closure set ${setNumber} still contains Chinese text inside English helper copy`);
-    }
-
     const mixLaneEmphasis = data.phaseMeta?.mixLaneEmphasis || {};
     if (setNumber === 1 && mixLaneEmphasis.method !== 'high') {
       throw new Error(`Closure set ${setNumber} should already prioritize method choice in Section III`);
@@ -835,16 +828,15 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (closurePaperHtml.includes('class="blank math-inline-blank"') || closurePaperHtml.includes('<div class="blank"></div>')) {
       throw new Error(`Closure set ${setNumber} paper still contains legacy underline blanks in question rendering`);
     }
-    const renderedPromptEnCount = (closurePaperHtml.match(/class="prompt-en"/g) || []).length;
-    if (renderedPromptEnCount !== closureItems.length) {
-      throw new Error(`Closure set ${setNumber} rendered ${renderedPromptEnCount} English helper lines for ${closureItems.length} questions`);
+    if (
+      closurePaperHtml.includes('class="prompt-en"') ||
+      closurePaperHtml.includes('class="ans-prompt-en"') ||
+      closurePaperHtml.includes('class="ans-help-en"')
+    ) {
+      throw new Error(`Closure set ${setNumber} still renders English helper lines`);
     }
-    const renderedAnswerPromptEnCount = (closurePaperHtml.match(/class="ans-prompt-en"/g) || []).length;
-    if (renderedAnswerPromptEnCount !== closureItems.length) {
-      throw new Error(`Closure set ${setNumber} rendered ${renderedAnswerPromptEnCount} answer-sheet English helper lines for ${closureItems.length} questions`);
-    }
-    if (!closurePaperHtml.includes('WELCOME TO THE ELEMENTARY CLOSURE STAGE')) {
-      throw new Error(`Closure set ${setNumber} is missing the bilingual welcome card helper copy`);
+    if (closurePaperHtml.includes('WELCOME TO THE ELEMENTARY CLOSURE STAGE')) {
+      throw new Error(`Closure set ${setNumber} still renders the old bilingual welcome heading`);
     }
     if (closurePaperHtml.includes('class="review-flag"')) {
       throw new Error(`Closure set ${setNumber} still renders the old overlay review badge`);
@@ -1537,13 +1529,12 @@ context.window.currentSetNumber = 103;
 const hydratedClosureData = context.window.generateOrLoadSetData();
 context.window.renderPaper();
 const hydratedClosurePaperHtml = elements.get('paper-container')?.innerHTML || '';
-const hydratedClosureItems = context.window.flattenPaperSections?.(
-  hydratedClosureData,
-  ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
-) || [];
-const hydratedPromptEnCount = (hydratedClosurePaperHtml.match(/class="prompt-en"/g) || []).length;
-if (hydratedPromptEnCount !== hydratedClosureItems.length) {
-  throw new Error(`Hydrated closure cache rendered ${hydratedPromptEnCount} English helper lines for ${hydratedClosureItems.length} questions`);
+if (
+  hydratedClosurePaperHtml.includes('class="prompt-en"') ||
+  hydratedClosurePaperHtml.includes('class="ans-prompt-en"') ||
+  hydratedClosurePaperHtml.includes('class="ans-help-en"')
+) {
+  throw new Error('Hydrated closure cache still rendered English helper lines');
 }
 if (hydratedClosurePaperHtml.includes('class="review-flag"')) {
   throw new Error('Hydrated closure cache still rendered the old overlay review badge');
@@ -1552,14 +1543,6 @@ context.window.currentSetNumber = 1;
 context.window.renderPaper();
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('欢迎进入小学计算收束阶段')) {
   throw new Error('Closure intro card did not render after promotion');
-}
-const rehydratedClosureRaw = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 103)) || '{}');
-const rehydratedClosureItems = context.window.flattenPaperSections?.(
-  rehydratedClosureRaw,
-  ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
-) || [];
-if (!rehydratedClosureItems.every(item => typeof item?.qEn === 'string' && item.qEn.trim())) {
-  throw new Error('Closure cache hydration did not persist English helper copy back into cached set data');
 }
 assertClosurePhase(1, '收口期', '先接桥，再打通表示与轻量混合');
 context.window.changeSet(2);

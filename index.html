@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.127 (iPad 自适应与打印稳定性补强)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.128 (移除题面英文辅助行)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2378,7 +2378,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.127</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.128</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2454,9 +2454,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.127';
-        const APP_RELEASE_LABEL = 'iPad 自适应与打印稳定性补强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.127 为 iPad / iPad Safari 补了平板断点、纸面可视宽度保护，以及打印 AB 四页前的稳定等待和轻量密度收紧。';
+        const APP_VERSION = 'v23.128';
+        const APP_RELEASE_LABEL = '移除题面英文辅助行';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.128 把题面、答案页和第二阶段说明里的小英文辅助行整条链路移除了，恢复纯中文卷面，排版更干净稳定。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7116,11 +7116,8 @@
             let kb = getKnowledgeTip(q.tag);
             const normalizedQuestion = normalizeQuestionPrompt(q.q, q.heightClass || '');
             let renderedQuestion = `${normalizedQuestion.bodyHtml}${normalizedQuestion.suffixHtml ? ` ${normalizedQuestion.suffixHtml}` : ''}`;
-            let renderedQuestionEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
             let renderedAnswer = beautifyMathHTML(q.a);
             let renderedStep = q.step ? beautifyMathHTML(q.step) : '';
-            let renderedStepEn = q.qEn ? renderPromptEnglish(buildClosureStepEnglish(q)) : '';
-            let renderedTipEn = q.qEn ? renderPromptEnglish(buildKnowledgeTipEnglish(q.tag, kb)) : '';
 
             let reasonBadge = '';
             if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
@@ -7153,9 +7150,9 @@
             return `
             <div class="ans-row${reviewAnswerClass}" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
                 <div class="ans-content">
-                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span>${renderedQuestionEn ? `<span class="ans-prompt-en">${renderedQuestionEn}</span>` : ''}</span> ${levelBadge} ${reasonBadge}</div>
-                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong>${renderedStepEn ? `<span class="ans-help-en">${renderedStepEn}</span>` : ''}</div>
-                    <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}${renderedTipEn ? `<span class="ans-help-en">${renderedTipEn}</span>` : ''}</div>
+                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span></span> ${levelBadge} ${reasonBadge}</div>
+                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
+                    <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
                 </div>
                 <div class="grade-area no-print">
                     <button class="grade-btn perfect ${pAct}" title="完美掌握 Perfect" onclick="window.markAnswer(this, 'perfect')">✓</button>
@@ -7193,10 +7190,9 @@
                     ${items.map((q,i) => {
                         let questionHtml = heightClass === 'h-conv' ? compactConversionPrompt(q.q) : q.q;
                         let prompt = normalizeQuestionPrompt(questionHtml, heightClass);
-                        const promptEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
                         const reviewClass = q.isReviewItem ? ' review-item' : '';
                         const densityClass = getItemDensityClass(questionHtml, heightClass);
-                        return `<div class="item${lineLockClass}${reviewClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}${promptEn ? ' closure-bilingual' : ''}"><span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span>${promptEn ? `<span class="prompt-en">${promptEn}</span>` : ''}</div></div></div>`;
+                        return `<div class="item${lineLockClass}${reviewClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}"><span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span></div></div></div>`;
                     }).join('')}
                 </div>
             </div>`;
@@ -7275,7 +7271,6 @@
                     ${buildSheetMetaBand(meta)}
                     <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
-                        <div class="ans-help-en" style="margin-top:8px; color:#0f766e;">Closure grading is now active. Check whether consolidation and keep-warm goals are both met. Results write back only to the Closure profile.</div>
                     </div>
                     ${content}
                     <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `✅ 重新提交 ${name} 的第二阶段批改 (Resubmit Closure)` : `📝 提交 ${name} 的第二阶段批改`}</button>
@@ -7331,10 +7326,9 @@
 
                 const closureIntroCard = `
                     <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
-                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}<br><span style="display:block; font-size:12px; font-weight:600; letter-spacing:0.06em; opacity:0.92;">WELCOME TO THE ELEMENTARY CLOSURE STAGE · ${phaseMeta.label.toUpperCase()}</span></h3>
+                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}</h3>
                         <div style="padding:14px 18px; color:#7c2d12; font-size:14px; line-height:1.7; font-family:sans-serif;">
                             <strong>${phaseMeta.label}</strong> 当前重点是：${phaseMeta.cue}。这一阶段不是单纯拔高，而是从六年级到初中的视角，把小学计算真正收束成优势项目：少量保温第一阶段底盘，主体时间用来练表征互通、复杂混合运算、单位率关系和重点短板。
-                            <div class="ans-help-en" style="margin-top:8px; color:#9a3412;">Current focus: ${phaseMeta.cue.replace(/。$/, '')}. This stage keeps a small warm-up lane from Phase One while using most of the time for bridge fluency, complex mixed arithmetic, unit-rate relations, and targeted weaknesses.</div>
                         </div>
                     </div>`;
 
