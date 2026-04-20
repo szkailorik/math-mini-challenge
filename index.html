@@ -2213,9 +2213,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.113';
-        const APP_RELEASE_LABEL = '补练打印链路继续加固';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.113 继续把本套报告和错题本的补练打印也纳入答案位稳定性校验，防止旧下划线答案位只在补练卷里回流。';
+        const APP_VERSION = 'v23.115';
+        const APP_RELEASE_LABEL = '第二阶段英文兜底收紧';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.115 继续修正第二阶段双语题面：旧缓存会自动回填英文，未命中模板的题也会改用纯英文辅助句，不再出现英文行里夹中文。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2725,7 +2725,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v37';
+        const SET_CACHE_PREFIX = 'MathSetData_v38';
 
         function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
             return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
@@ -4653,7 +4653,14 @@
             if (!/[\u4e00-\u9fff]/.test(raw)) {
                 return renderPromptEnglish(`Work out: ${raw}`);
             }
-            return renderPromptEnglish(`Solve: ${raw}`);
+            const fallbackByRole = {
+                representation_core: 'Change to a helpful form, then work out the answer in ( ).',
+                complex_mixed_core: 'Choose a good method, then work out the answer in ( ).',
+                unit_rate_bridge: 'Unify the units or relation first, then work out the answer in ( ).',
+                keep_warm: 'Work out the answer in ( ).',
+                targeted_focus: 'Use the key idea, then work out the answer in ( ).'
+            };
+            return renderPromptEnglish(fallbackByRole[item?.sectionRole] || 'Work out the answer in ( ).');
         }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
@@ -5631,6 +5638,33 @@
 
         function flattenPaperSections(data, keys = []) {
             return keys.flatMap(key => Array.isArray(data?.[key]) ? data[key] : []);
+        }
+
+        function hydrateProgramSetData(data = {}, programId = getCurrentProgramId()) {
+            if (!data || typeof data !== 'object') return { data, changed: false };
+            if (programId !== CLOSURE_PROGRAM_ID) return { data, changed: false };
+            const hydrated = { ...data };
+            let changed = false;
+            Object.keys(CLOSURE_SECTION_ROLES).forEach(sectionKey => {
+                if (!Array.isArray(data[sectionKey])) return;
+                const roleMeta = CLOSURE_SECTION_ROLES[sectionKey] || {};
+                hydrated[sectionKey] = data[sectionKey].map(item => {
+                    if (!item) return item;
+                    const nextItem = annotateClosureItem(item, {
+                        sectionRole: item.sectionRole || roleMeta.role || '',
+                        trainingTier: item.trainingTier || roleMeta.valueTier || ''
+                    });
+                    if (
+                        nextItem?.qEn !== item?.qEn ||
+                        nextItem?.sectionRole !== item?.sectionRole ||
+                        nextItem?.trainingTier !== item?.trainingTier
+                    ) {
+                        changed = true;
+                    }
+                    return nextItem;
+                });
+            });
+            return { data: hydrated, changed };
         }
 
         function makeMockClosureProfile(overrides = {}) {
@@ -6781,7 +6815,14 @@
                 cached = localStorage.getItem(getLegacyAdvancedCacheKey(window.currentSetNumber));
             }
             if (cached) {
-                try { return JSON.parse(cached); } catch(e) {}
+                try {
+                    const parsed = JSON.parse(cached);
+                    const hydrated = hydrateProgramSetData(parsed, programId);
+                    if (hydrated.changed) {
+                        safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
+                    }
+                    return hydrated.data;
+                } catch(e) {}
             }
 
             // v22.1：装载最近出过的题面作为去重黑名单，并为本张卷子开一个"本卷已用"集合
@@ -6789,8 +6830,9 @@
             window._paperQuestions = new Set();
 
             let data = generateProgramSetData(programId);
-            safeLocalSetItem(cacheKey, JSON.stringify(data));
-            return data;
+            const hydrated = hydrateProgramSetData(data, programId);
+            safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
+            return hydrated.data;
         }
 
         function flattenQuestionData(data) {

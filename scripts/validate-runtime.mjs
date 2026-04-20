@@ -835,6 +835,10 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (closurePaperHtml.includes('class="blank math-inline-blank"') || closurePaperHtml.includes('<div class="blank"></div>')) {
       throw new Error(`Closure set ${setNumber} paper still contains legacy underline blanks in question rendering`);
     }
+    const renderedPromptEnCount = (closurePaperHtml.match(/class="prompt-en"/g) || []).length;
+    if (renderedPromptEnCount !== closureItems.length) {
+      throw new Error(`Closure set ${setNumber} rendered ${renderedPromptEnCount} English helper lines for ${closureItems.length} questions`);
+    }
     return;
   }
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));
@@ -1481,6 +1485,17 @@ function seedAdvancedReadiness(student, setStart) {
 
 seedAdvancedReadiness('KAI', 95);
 seedAdvancedReadiness('Lorik', 95);
+const legacyClosureCache = context.window.buildClosureProgramSetForTest?.(103, 'KAI') || {};
+['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus'].forEach(key => {
+  if (!Array.isArray(legacyClosureCache[key])) return;
+  legacyClosureCache[key] = legacyClosureCache[key].map(item => {
+    if (!item) return item;
+    const clone = { ...item };
+    delete clone.qEn;
+    return clone;
+  });
+});
+store.set(getProgramCacheKey('elementary_closure_v1', 103), JSON.stringify(legacyClosureCache));
 context.window.currentSetNumber = 103;
 context.window.changeProgram('elementary_closure_v1');
 if (programSelector.value !== 'elementary_closure_v1' || context.window.getCurrentProgramId?.() !== 'elementary_closure_v1') {
@@ -1500,8 +1515,30 @@ if (context.window.currentSetNumber !== 1) {
 }
 context.window.renderPaper();
 assertClosurePaper(1);
+context.window.currentSetNumber = 103;
+const hydratedClosureData = context.window.generateOrLoadSetData();
+context.window.renderPaper();
+const hydratedClosurePaperHtml = elements.get('paper-container')?.innerHTML || '';
+const hydratedClosureItems = context.window.flattenPaperSections?.(
+  hydratedClosureData,
+  ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
+) || [];
+const hydratedPromptEnCount = (hydratedClosurePaperHtml.match(/class="prompt-en"/g) || []).length;
+if (hydratedPromptEnCount !== hydratedClosureItems.length) {
+  throw new Error(`Hydrated closure cache rendered ${hydratedPromptEnCount} English helper lines for ${hydratedClosureItems.length} questions`);
+}
+context.window.currentSetNumber = 1;
+context.window.renderPaper();
 if (!String(elements.get('paper-container')?.innerHTML || '').includes('欢迎进入小学计算收束阶段')) {
   throw new Error('Closure intro card did not render after promotion');
+}
+const rehydratedClosureRaw = JSON.parse(store.get(getProgramCacheKey('elementary_closure_v1', 103)) || '{}');
+const rehydratedClosureItems = context.window.flattenPaperSections?.(
+  rehydratedClosureRaw,
+  ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus', 'c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']
+) || [];
+if (!rehydratedClosureItems.every(item => typeof item?.qEn === 'string' && item.qEn.trim())) {
+  throw new Error('Closure cache hydration did not persist English helper copy back into cached set data');
 }
 assertClosurePhase(1, '收口期', '先接桥，再打通表示与轻量混合');
 context.window.changeSet(2);
