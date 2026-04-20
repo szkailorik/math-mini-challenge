@@ -608,10 +608,12 @@
             color: currentColor;
             min-width: 0.7em;
             font-size: 0.96em;
+            transform: translateY(0.035em);
         }
         .prompt-en .frac {
             font-size: 0.82em;
-            vertical-align: -0.12em;
+            vertical-align: -0.18em;
+            transform: translateY(0.015em);
         }
         .closure-bilingual .q-body {
             align-items: flex-start;
@@ -646,10 +648,12 @@
             color: currentColor;
             min-width: 0.7em;
             font-size: 0.96em;
+            transform: translateY(0.035em);
         }
         .ans-prompt-en .frac {
             font-size: 0.82em;
-            vertical-align: -0.12em;
+            vertical-align: -0.18em;
+            transform: translateY(0.015em);
         }
         .ans-help-en {
             display: block;
@@ -667,10 +671,12 @@
             color: currentColor;
             min-width: 0.68em;
             font-size: 0.95em;
+            transform: translateY(0.03em);
         }
         .ans-help-en .frac {
             font-size: 0.8em;
-            vertical-align: -0.12em;
+            vertical-align: -0.18em;
+            transform: translateY(0.015em);
         }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
@@ -851,6 +857,11 @@
             font-size: 0.8em;
             margin: 0 0.04em 0 0.03em;
         }
+        .item.item-dense .math-op,
+        .item.item-dense .math-eq,
+        .item.item-dense .math-compare {
+            transform: translateY(0.04em);
+        }
         .item.item-ultra-dense {
             font-size: 16.8px;
             line-height: 1.08;
@@ -862,6 +873,11 @@
         .item.item-ultra-dense .frac {
             font-size: 0.76em;
             margin: 0 0.03em 0 0.02em;
+        }
+        .item.item-ultra-dense .math-op,
+        .item.item-ultra-dense .math-eq,
+        .item.item-ultra-dense .math-compare {
+            transform: translateY(0.04em);
         }
         .h-conv {
             min-height: 38px;
@@ -2322,9 +2338,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.124';
-        const APP_RELEASE_LABEL = '空位符号继续校中线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.124 继续校准圆圈空位和写答案留白的视觉中线，让算式里的符号、分数和空位更像落在同一条中线上。';
+        const APP_VERSION = 'v23.125';
+        const APP_RELEASE_LABEL = '小字分数和 dense 题块继续校中线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.125 继续校准英文辅助行、答案页小字分数，以及 dense 题块里的符号中线，让整张卷子前后一致。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
