@@ -843,6 +843,12 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (renderedAnswerPromptEnCount !== closureItems.length) {
       throw new Error(`Closure set ${setNumber} rendered ${renderedAnswerPromptEnCount} answer-sheet English helper lines for ${closureItems.length} questions`);
     }
+    if (!closurePaperHtml.includes('WELCOME TO THE ELEMENTARY CLOSURE STAGE')) {
+      throw new Error(`Closure set ${setNumber} is missing the bilingual welcome card helper copy`);
+    }
+    if (closurePaperHtml.includes('>复习题<')) {
+      throw new Error(`Closure set ${setNumber} still contains a Chinese-only review flag`);
+    }
     return;
   }
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));

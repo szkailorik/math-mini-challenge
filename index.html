@@ -2255,9 +2255,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.116';
-        const APP_RELEASE_LABEL = '第二阶段答案页也双语';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.116 继续完善第二阶段双语题面：题卷之外，答案页里的原题行也会显示英文辅助句，屏幕和打印都一起对齐。';
+        const APP_VERSION = 'v23.117';
+        const APP_RELEASE_LABEL = '第二阶段可见提示继续双语';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.117 继续完善第二阶段整页双语：复习题角标、欢迎卡、答案页说明框也补上英文辅助句，让题面与复盘提示更一致。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6994,7 +6994,7 @@
                         let questionHtml = heightClass === 'h-conv' ? compactConversionPrompt(q.q) : q.q;
                         let prompt = normalizeQuestionPrompt(questionHtml, heightClass);
                         const promptEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
-                        let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题</span>` : '';
+                        let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题 / Review</span>` : '';
                         const densityClass = getItemDensityClass(questionHtml, heightClass);
                         return `<div class="item${lineLockClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}${promptEn ? ' closure-bilingual' : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span>${promptEn ? `<span class="prompt-en">${promptEn}</span>` : ''}</div></div></div>`;
                     }).join('')}
@@ -7075,6 +7075,7 @@
                     ${buildSheetMetaBand(meta)}
                     <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
+                        <div class="ans-help-en" style="margin-top:8px; color:#0f766e;">Closure grading is now active. Check whether consolidation and keep-warm goals are both met. Results write back only to the Closure profile.</div>
                     </div>
                     ${content}
                     <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `✅ 重新提交 ${name} 的第二阶段批改 (Resubmit Closure)` : `📝 提交 ${name} 的第二阶段批改`}</button>
@@ -7130,9 +7131,10 @@
 
                 const closureIntroCard = `
                     <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
-                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}</h3>
+                        <h3 style="background:#b45309;">欢迎进入小学计算收束阶段 · ${phaseMeta.label}<br><span style="display:block; font-size:12px; font-weight:600; letter-spacing:0.06em; opacity:0.92;">WELCOME TO THE ELEMENTARY CLOSURE STAGE · ${phaseMeta.label.toUpperCase()}</span></h3>
                         <div style="padding:14px 18px; color:#7c2d12; font-size:14px; line-height:1.7; font-family:sans-serif;">
                             <strong>${phaseMeta.label}</strong> 当前重点是：${phaseMeta.cue}。这一阶段不是单纯拔高，而是从六年级到初中的视角，把小学计算真正收束成优势项目：少量保温第一阶段底盘，主体时间用来练表征互通、复杂混合运算、单位率关系和重点短板。
+                            <div class="ans-help-en" style="margin-top:8px; color:#9a3412;">Current focus: ${phaseMeta.cue.replace(/。$/, '')}. This stage keeps a small warm-up lane from Phase One while using most of the time for bridge fluency, complex mixed arithmetic, unit-rate relations, and targeted weaknesses.</div>
                         </div>
                     </div>`;
 
