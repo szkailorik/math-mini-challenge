@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.128 (移除题面英文辅助行)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.129 (清理英文辅助死代码)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -149,27 +149,6 @@
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
             }
-            body.print-sandbox-active #print-root .question-copy {
-                gap: 0.08em !important;
-            }
-            body.print-sandbox-active #print-root .prompt-en {
-                font-size: 0.52em !important;
-                line-height: 1.06 !important;
-            }
-            body.print-sandbox-active #print-root .closure-bilingual .q-body {
-                align-items: flex-start !important;
-            }
-            body.print-sandbox-active #print-root .closure-bilingual .question-copy {
-                gap: 0.06em !important;
-            }
-            body.print-sandbox-active #print-root .closure-bilingual.item-dense .prompt-en {
-                font-size: 0.48em !important;
-                line-height: 1.04 !important;
-            }
-            body.print-sandbox-active #print-root .closure-bilingual.item-ultra-dense .prompt-en {
-                font-size: 0.45em !important;
-                line-height: 1.02 !important;
-            }
             body.print-sandbox-active #print-root .h-vert { min-height: 122px !important; }
             body.print-sandbox-active #print-root .h-sub { min-height: 62px !important; }
             body.print-sandbox-active #print-root .h-frac { min-height: 42px !important; }
@@ -186,17 +165,6 @@
                 flex-wrap: nowrap !important;
                 white-space: nowrap !important;
                 gap: 0.03em 0.06em !important;
-            }
-            body.print-sandbox-active #print-root .h-conv .prompt-en {
-                font-size: 0.48em !important;
-                line-height: 1.04 !important;
-            }
-            body.print-sandbox-active #print-root .h-conv.closure-bilingual .question-copy {
-                gap: 0.05em !important;
-            }
-            body.print-sandbox-active #print-root .h-mixed .prompt-en {
-                font-size: 0.5em !important;
-                line-height: 1.04 !important;
             }
             body.print-sandbox-active #print-root .h-conv .q-num {
                 font-size: 14px !important;
@@ -615,99 +583,6 @@
             min-width: 0;
             width: 100%;
         }
-        .prompt-en {
-            display: block;
-            max-width: 100%;
-            color: #64748b;
-            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
-            font-size: 0.62em;
-            font-weight: 600;
-            line-height: 1.14;
-            letter-spacing: 0.01em;
-            white-space: normal;
-        }
-        .prompt-en .math-op,
-        .prompt-en .math-eq,
-        .prompt-en .math-compare {
-            color: currentColor;
-            min-width: 0.7em;
-            font-size: 0.96em;
-            transform: translateY(0.035em);
-            align-self: center;
-        }
-        .prompt-en .frac {
-            font-size: 0.82em;
-            vertical-align: -0.18em;
-            transform: translateY(0.015em);
-            align-self: center;
-        }
-        .closure-bilingual .q-body {
-            align-items: flex-start;
-        }
-        .closure-bilingual .q-num {
-            padding-top: 0.06em;
-        }
-        .closure-bilingual .question-copy {
-            gap: 0.1em;
-        }
-        .closure-bilingual.item-dense .prompt-en {
-            font-size: 0.56em;
-            line-height: 1.1;
-        }
-        .closure-bilingual.item-ultra-dense .prompt-en {
-            font-size: 0.5em;
-            line-height: 1.06;
-        }
-        .ans-prompt-en {
-            display: block;
-            margin-top: 3px;
-            color: #64748b;
-            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
-            font-size: 11.5px;
-            font-weight: 600;
-            line-height: 1.16;
-            letter-spacing: 0.01em;
-        }
-        .ans-prompt-en .math-op,
-        .ans-prompt-en .math-eq,
-        .ans-prompt-en .math-compare {
-            color: currentColor;
-            min-width: 0.7em;
-            font-size: 0.96em;
-            transform: translateY(0.035em);
-            align-self: center;
-        }
-        .ans-prompt-en .frac {
-            font-size: 0.82em;
-            vertical-align: -0.18em;
-            transform: translateY(0.015em);
-            align-self: center;
-        }
-        .ans-help-en {
-            display: block;
-            margin-top: 2px;
-            color: #64748b;
-            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
-            font-size: 11px;
-            font-weight: 600;
-            line-height: 1.14;
-            letter-spacing: 0.01em;
-        }
-        .ans-help-en .math-op,
-        .ans-help-en .math-eq,
-        .ans-help-en .math-compare {
-            color: currentColor;
-            min-width: 0.68em;
-            font-size: 0.95em;
-            transform: translateY(0.03em);
-            align-self: center;
-        }
-        .ans-help-en .frac {
-            font-size: 0.8em;
-            vertical-align: -0.18em;
-            transform: translateY(0.015em);
-            align-self: center;
-        }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
         .item.paper-line-lock .math-text,
@@ -764,26 +639,18 @@
         .math-eq { color: var(--math-ink); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
         .item.review-item .q-num,
-        .item.review-item .math-text,
-        .item.review-item .question-copy > .prompt-en {
+        .item.review-item .math-text {
             color: #b91c1c;
         }
         .item.review-item .q-num {
             font-weight: 800;
         }
-        .item.review-item .question-copy > .prompt-en {
-            opacity: 0.88;
-        }
         .ans-row.review-answer .ans-num,
-        .ans-row.review-answer .review-question,
-        .ans-row.review-answer .review-question .ans-prompt-en {
+        .ans-row.review-answer .review-question {
             color: #b91c1c;
         }
         .ans-row.review-answer .review-question {
             font-weight: 700;
-        }
-        .ans-row.review-answer .review-question .ans-prompt-en {
-            opacity: 0.88;
         }
         .set-review-followup-answer.review-answer-pack h5,
         .set-review-followup-answer.review-answer-pack .set-review-followup-answer-note {
@@ -871,10 +738,6 @@
             gap: 0.08em 0.12em;
             line-height: 1.18;
         }
-        .h-mixed .prompt-en {
-            font-size: 0.58em;
-            line-height: 1.08;
-        }
         .item.item-dense {
             font-size: 17.6px;
             line-height: 1.12;
@@ -944,13 +807,6 @@
         }
         .h-conv .question-copy {
             gap: 0.08em;
-        }
-        .h-conv .prompt-en {
-            font-size: 0.56em;
-            line-height: 1.08;
-        }
-        .h-conv.closure-bilingual .question-copy {
-            gap: 0.06em;
         }
         .h-conv .q-num {
             font-size: 15.8px;
@@ -2378,7 +2234,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.128</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.129</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2454,9 +2310,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.128';
-        const APP_RELEASE_LABEL = '移除题面英文辅助行';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.128 把题面、答案页和第二阶段说明里的小英文辅助行整条链路移除了，恢复纯中文卷面，排版更干净稳定。';
+        const APP_VERSION = 'v23.129';
+        const APP_RELEASE_LABEL = '清理英文辅助死代码';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.129 继续清掉题面英文辅助行的剩余样式、生成函数和缓存补写逻辑，彻底回到纯中文卷面链路。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4792,151 +4648,9 @@
                 .replace(/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, '$1、$2、$3 中，最接近 $4 的是<div class="blank"></div>')
                 .replace(/^算 (.+?) 时，先化成同一种表示更方便，结果是<div class="blank"><\/div>$/, '先统一表示后，$1 =<div class="blank"></div>');
         }
-        function polishEnglishHelperText(html = '') {
-            return String(html || '')
-                .replace(/、/g, ', ')
-                .replace(/\s和\s/g, ' and ');
-        }
-        function renderPromptEnglish(html = '') {
-            const normalized = normalizeInlineMathMarkup(polishEnglishHelperText(String(html || '').trim()))
-                .replace(
-                    /<div class="blank"><\/div>|<span class="blank math-inline-blank"><\/span>/g,
-                    '<span class="math-compact-paren-answer">( )</span>'
-                );
-            return beautifyMathHTML(normalized);
-        }
-        function translateDiscountLabel(label = '') {
-            const raw = String(label || '').trim();
-            const digitMap = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
-            if (/%/.test(raw)) return raw;
-            const m = raw.match(/^([一二三四五六七八九])([一二三四五六七八九])?折$/);
-            if (!m) return raw;
-            const tens = digitMap[m[1]];
-            const tenths = m[2] ? digitMap[m[2]] : 0;
-            const payRate = (tens + tenths / 10) / 10;
-            const offRate = Math.round((1 - payRate) * 1000) / 10;
-            return `${offRate}% off`;
-        }
-        function buildClosureQuestionEnglish(questionHtml = '', item = {}) {
-            const raw = String(questionHtml || '').replace(/\s+/g, ' ').trim();
-            if (!raw) return '';
-            const matched = [
-                [/^在 (.+?) 里，最接近 (.+?) 的是<div class="blank"><\/div>$/, (_, set, target) => `Among ${set}, the one closest to ${target} is<div class="blank"></div>`],
-                [/^在 (.+?) 里，最接近 0 的是<div class="blank"><\/div>$/, (_, set) => `Among ${set}, the one closest to 0 is<div class="blank"></div>`],
-                [/^算 (.+?)：先把 (.+?) 化成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
-                [/^算 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更方便$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
-                [/^比 (.+?)：先把 (.+?) 化成<div class="blank"><\/div>$/, (_, expr, target) => `For ${expr}, first change ${target} into<div class="blank"></div>`],
-                [/^比 (.+?) 和 (.+?) 的大小时，先把 (.+?) 化成<div class="blank"><\/div>更顺$/, (_, a, b, target) => `To compare ${a} and ${b}, first change ${target} into<div class="blank"></div>`],
-                [/^比 (.+?) 的大小时，先把 (.+?) 化成<div class="blank"><\/div>更顺$/, (_, expr, target) => `To compare ${expr}, first change ${target} into<div class="blank"></div>`],
-                [/^比 (.+?)：先统一成<div class="blank"><\/div>$/, (_, expr) => `For ${expr}, first write them as<div class="blank"></div>`],
-                [/^比 (.+?)：直接判断成<div class="blank"><\/div>$/, (_, expr) => `For ${expr}, directly judge it as<div class="blank"></div>`],
-                [/^比较 (.+?) 和 (.+?) 时，先统一成<div class="blank"><\/div>更顺$/, (_, a, b) => `For ${a} and ${b}, first write them as<div class="blank"></div>`],
-                [/^比较 (.+?) 和 (.+?) 时，直接判断成<div class="blank"><\/div>更快$/, (_, a, b) => `For ${a} and ${b}, directly judge them as<div class="blank"></div>`],
-                [/^比较 (.+?) 和 (.+?) 时，直接看成<div class="blank"><\/div>最省力$/, (_, a, b) => `For ${a} and ${b}, directly see them as<div class="blank"></div>`],
-                [/^比较 (.+?) 和 (.+?) 时，先把 (.+?) 化成<div class="blank"><\/div>更快$/, (_, a, b, target) => `To compare ${a} and ${b}, first change ${target} into<div class="blank"></div>`],
-                [/^比 (.+?) 时，先统一成<div class="blank"><\/div>最省力$/, (_, expr) => `For ${expr}, first write them as<div class="blank"></div>`],
-                [/^比 (.+?) 时，直接看成<div class="blank"><\/div>最省力$/, (_, expr) => `For ${expr}, directly see it as<div class="blank"></div>`],
-                [/^(.+?)、(.+?) 中较大的是<div class="blank"><\/div>$/, (_, a, b) => `Between ${a} and ${b}, the greater one is<div class="blank"></div>`],
-                [/^(.+?)、(.+?)、(.+?) 中，最接近 (.+?) 的是<div class="blank"><\/div>$/, (_, a, b, c, t) => `Among ${a}, ${b}, and ${c}, the one closest to ${t} is<div class="blank"></div>`],
-                [/^(.+?) ([A-Za-z%]+) =<div class="blank"><\/div> ([A-Za-z%]+)$/, (_, value, fromUnit, toUnit) => `${value} ${fromUnit} =<div class="blank"></div> ${toUnit}`],
-                [/^(.+?) 元打(.+?折) =<div class="blank"><\/div> 元$/, (_, price, discount) => `${price} yuan after ${translateDiscountLabel(discount)} =<div class="blank"></div> yuan`],
-                [/^(.+?) 是 (.+?) 的<div class="blank"><\/div>%$/, (_, part, whole) => `${part} is<div class="blank"></div>% of ${whole}`],
-                [/^(.+?) \+ (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} + ${b} =<div class="blank"></div>`],
-                [/^(.+?) \- (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} - ${b} =<div class="blank"></div>`],
-                [/^(.+?) \&times; (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} &times; ${b} =<div class="blank"></div>`],
-                [/^(.+?) \&divide; (.+?) =<div class="blank"><\/div>$/, (_, a, b) => `${a} &divide; ${b} =<div class="blank"></div>`],
-                [/^(.+?) \+ (.+?) 更接近<div class="blank"><\/div>$/, (_, a, b) => `${a} + ${b} is closer to<div class="blank"></div>`],
-                [/^(.+?) 的结果比 1<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is<div class="blank"></div> than 1`],
-                [/^先统一表示后，(.+?) =<div class="blank"><\/div>$/, (_, expr) => `After writing them in the same form, ${expr} =<div class="blank"></div>`],
-                [/^把 (.+?) 和 (.+?) 先统一表示后，它们的和是<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, their sum is<div class="blank"></div>`],
-                [/^把 (.+?) 和 (.+?) 先统一表示后，相差<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, the difference is<div class="blank"></div>`],
-                [/^把 (.+?) 先化成分数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a fraction, then add ${b}. The result is<div class="blank"></div>`],
-                [/^把 (.+?) 先化成分数后，再和 (.+?) 比较，结果是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a fraction, then compare it with ${b}. The result is<div class="blank"></div>`],
-                [/^把 (.+?) 和 (.+?) 先统一表示后，较大的是<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, the greater one is<div class="blank"></div>`],
-                [/^把 (.+?) 先化成小数后，再和 (.+?) 相加，结果是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a decimal, then add ${b}. The result is<div class="blank"></div>`],
-                [/^把 (.+?) 先化成小数后，再和 (.+?) 相减，结果是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a decimal, then subtract ${b}. The result is<div class="blank"></div>`],
-                [/^把 (.+?) 先化成小数后，再和 (.+?) 比较，较大的是<div class="blank"><\/div>$/, (_, a, b) => `First change ${a} into a decimal, then compare it with ${b}. The greater one is<div class="blank"></div>`],
-                [/^把 (.+?)、(.+?) 和 (.+?) 先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, (_, a, b, c, target) => `After writing ${a}, ${b}, and ${c} in the same form, the one closest to ${target} is<div class="blank"></div>`],
-                [/^比较 (.+?)、(.+?) 和 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, (_, a, b, c, target) => `After changing ${a}, ${b}, and ${c} into decimals, the one closest to ${target} is<div class="blank"></div>`],
-                [/^比较 (.+?) 时，先化成小数后，哪一个更接近 (.+?)？<div class="blank"><\/div>$/, (_, expr, target) => `After changing ${expr} into decimals, the one closest to ${target} is<div class="blank"></div>`],
-                [/^比较 (.+?) 时，先化成同一种表示后，哪个更接近 (.+?)？<div class="blank"><\/div>$/, (_, expr, target) => `After writing ${expr} in the same form, the one closest to ${target} is<div class="blank"></div>`],
-                [/^把 (.+?) 和 (.+?) 先统一表示后，再相加，结果更接近<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, their sum is closer to<div class="blank"></div>`],
-                [/^把 (.+?) 和 (.+?) 先统一表示后，它们的差是<div class="blank"><\/div>$/, (_, a, b) => `After writing ${a} and ${b} in the same form, their difference is<div class="blank"></div>`],
-                [/^一件商品打(.+)折后卖 (.+?) 元，原价是<div class="blank"><\/div>元$/, (_, discount, price) => `An item sells for ${price} yuan after ${translateDiscountLabel(discount)}. The original price is<div class="blank"></div> yuan`],
-                [/^原价 (.+?) 元的商品打(.+)折后是<div class="blank"><\/div>元$/, (_, price, discount) => `An item costs ${price} yuan before ${translateDiscountLabel(discount)}. The sale price is<div class="blank"></div> yuan`],
-                [/^原价 (.+?) 元，现价 (.+?) 元，打了<div class="blank"><\/div>折$/, (_, original, sale) => `The original price is ${original} yuan and the sale price is ${sale} yuan. The discount is<div class="blank"></div> off`],
-                [/^.+?现价 (.+?) 元，是原价的 (.+?)，原价是<div class="blank"><\/div>元$/, (_, sale, rate) => `The sale price is ${sale} yuan, which is ${rate} of the original price. The original price is<div class="blank"></div> yuan`],
-                [/^某班女生占 (.+?)，男生有 (.+?) 人，全班有<div class="blank"><\/div>人$/, (_, rate, boys) => `Girls make up ${rate} of a class. There are ${boys} boys, so the class has<div class="blank"></div> students`],
-                [/^合格率是 (.+?)，已合格 (.+?) 人，总人数是<div class="blank"><\/div>$/, (_, rate, passed) => `The pass rate is ${rate}. If ${passed} students passed, the total is<div class="blank"></div>`],
-                [/^某数的 (.+?) 是 (.+?)，这个数是<div class="blank"><\/div>$/, (_, rate, value) => `${rate} of a number is ${value}. The number is<div class="blank"></div>`],
-                [/^x 的 (.+?) 是 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, value) => `${rate} of x is ${value}, so x =<div class="blank"></div>`],
-                [/^x 的 (.+?) 比 (.+?) 多 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, base, diff) => `${rate} of x is ${diff} more than ${base}, so x =<div class="blank"></div>`],
-                [/^x 的 (.+?) 比 (.+?) 少 (.+?)，x =<div class="blank"><\/div>$/, (_, rate, base, diff) => `${rate} of x is ${diff} less than ${base}, so x =<div class="blank"></div>`],
-                [/^(.+?) 的 (.+?) 比 (.+?) 少 (.+?)，(.+?) =<div class="blank"><\/div>$/, (_, subject, rate, base, diff, variable) => `${rate} of ${subject} is ${diff} less than ${base}, so ${variable} =<div class="blank"></div>`],
-                [/^一(?:辆车|艘船|列火车|架飞机) (.+?) 时行 (.+?) 千米，平均每时行<div class="blank"><\/div>千米$/, (_, time, distance) => `It travels ${distance} km in ${time} h, so it travels<div class="blank"></div> km each hour`],
-                [/^(.+?) 的结果更接近<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is closer to<div class="blank"></div>`],
-                [/^(.+?) 的结果是<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} is<div class="blank"></div>`],
-                [/^(.+?) 的结果应是<div class="blank"><\/div>$/, (_, expr) => `The result of ${expr} should be<div class="blank"></div>`],
-                [/^(.+?) 更适合先把 (.+?) 看成<div class="blank"><\/div>(.*)$/, (_, expr, target, tail) => `For ${expr}, it is better to first see ${target} as<div class="blank"></div>${tail || ''}`],
-                [/^(.+?) 可以先把 (.+?) 看成<div class="blank"><\/div>(.*)$/, (_, expr, target, tail) => `For ${expr}, first see ${target} as<div class="blank"></div>${tail || ''}`],
-                [/^(.+?) 更适合先看成<div class="blank"><\/div>(.*)$/, (_, expr, tail) => `For ${expr}, it is better to first see it as<div class="blank"></div>${tail || ''}`],
-                [/^(.+?) 可以先看成<div class="blank"><\/div>$/, (_, expr) => `${expr} can first be seen as<div class="blank"></div>`],
-                [/^(.+?) 更适合先算 (.+?) 再<div class="blank"><\/div>$/, (_, expr, first) => `For ${expr}, first do ${first}, then<div class="blank"></div>`],
-                [/^(.+?) 可以先算 (.+?) 再<div class="blank"><\/div>$/, (_, expr, first) => `For ${expr}, first do ${first}, then<div class="blank"></div>`],
-                [/^(.+?) 可以先算 (.+?) 再乘 (.+?)$/, (_, expr, first, factor) => `For ${expr}, first do ${first}, then multiply by ${factor}`],
-                [/^(.+?) =<div class="blank"><\/div>%$/, (_, expr) => `${expr} =<div class="blank"></div>%`],
-                [/^(.+?) =<div class="blank"><\/div>$/, (_, expr) => `${expr} =<div class="blank"></div>`]
-            ].find(([pattern]) => pattern.test(raw));
-            if (matched) {
-                const [pattern, builder] = matched;
-                return renderPromptEnglish(raw.replace(pattern, builder));
-            }
-            if (!/[\u4e00-\u9fff]/.test(raw)) {
-                return renderPromptEnglish(`Work out: ${raw}`);
-            }
-            const fallbackByRole = {
-                representation_core: 'Change to a helpful form, then work out the answer in ( ).',
-                complex_mixed_core: 'Choose a good method, then work out the answer in ( ).',
-                unit_rate_bridge: 'Unify the units or relation first, then work out the answer in ( ).',
-                keep_warm: 'Work out the answer in ( ).',
-                targeted_focus: 'Use the key idea, then work out the answer in ( ).'
-            };
-            return renderPromptEnglish(fallbackByRole[item?.sectionRole] || 'Work out the answer in ( ).');
-        }
-        function buildClosureStepEnglish(item = {}) {
-            const mode = item?.explanationMode || '';
-            const role = item?.sectionRole || '';
-            const qualityFamily = item?.qualityFamily || '';
-            const mapByMode = {
-                rule: 'Rule: change to a helpful form first, then compute carefully.',
-                method: 'Method: choose the quicker path before calculating.',
-                validation: 'Check: estimate first and see whether the result makes sense.'
-            };
-            if (mapByMode[mode]) return mapByMode[mode];
-            if (role === 'representation_core') return 'Bridge: change the form first, then compare, use, or calculate.';
-            if (role === 'complex_mixed_core') return 'Method: spot the structure first, then choose the more efficient calculation path.';
-            if (role === 'unit_rate_bridge') return 'Model: unify the unit or relation first, then calculate and check the result.';
-            if (role === 'targeted_focus') return 'Focus: use the key idea of this weak point, then solve it step by step.';
-            if (qualityFamily === 'conversion_bridge') return 'Bridge: write the number in the most helpful form before you continue.';
-            if (qualityFamily === 'complex_mixed') return 'Method: look for a shortcut or a better structure before calculating.';
-            if (qualityFamily === 'unit_rate_speed') return 'Model: identify the quantity relation first, then decide the operation.';
-            if (qualityFamily === 'validation_estimation') return 'Check: think about the range first, then confirm the final answer.';
-            return 'Work steadily: use the key idea first, then check whether the answer is reasonable.';
-        }
-        function buildKnowledgeTipEnglish(tag = '', tip = {}) {
-            const tagText = String(tag || '');
-            if (tagText.startsWith('c2_bridge_')) return 'Focus on switching forms smoothly and using the new form right away.';
-            if (tagText.startsWith('c2_mix_')) return 'Focus on spotting structure, choosing a method, and checking the final result.';
-            if (tagText.startsWith('c2_unit_')) return 'Focus on unifying units first so the relation stays correct.';
-            if (tagText.startsWith('c2_rate_')) return 'Focus on the whole-part-rate relation before writing the calculation.';
-            if (tagText.startsWith('c2_eq_')) return 'Focus on turning the relation into an equation before solving.';
-            if (tagText.startsWith('c2_est_') || tagText.startsWith('c2_speed_')) return 'Focus on range, rate, and whether the result should be bigger or smaller.';
-            return 'Focus on the key pattern of this question and avoid repeating the same mistake.';
-        }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
         window.compactConversionPrompt = compactConversionPrompt;
-        window.buildClosureQuestionEnglish = buildClosureQuestionEnglish;
         function estimateQuestionComplexity(questionHtml = '') {
             const raw = String(questionHtml || '');
             const plain = raw
@@ -5898,8 +5612,7 @@
                 trainingTier: meta.trainingTier || item.trainingTier || '',
                 sectionRole: meta.sectionRole || item.sectionRole || '',
                 bridgeLane: meta.bridgeLane || item.bridgeLane || '',
-                mixLane: meta.mixLane || item.mixLane || '',
-                qEn: item.qEn || buildClosureQuestionEnglish(item.q, item)
+                mixLane: meta.mixLane || item.mixLane || ''
             });
         }
 
@@ -5926,7 +5639,6 @@
                         trainingTier: item.trainingTier || roleMeta.valueTier || ''
                     });
                     if (
-                        nextItem?.qEn !== item?.qEn ||
                         nextItem?.sectionRole !== item?.sectionRole ||
                         nextItem?.trainingTier !== item?.trainingTier
                     ) {
