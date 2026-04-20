@@ -839,6 +839,10 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (renderedPromptEnCount !== closureItems.length) {
       throw new Error(`Closure set ${setNumber} rendered ${renderedPromptEnCount} English helper lines for ${closureItems.length} questions`);
     }
+    const renderedAnswerPromptEnCount = (closurePaperHtml.match(/class="ans-prompt-en"/g) || []).length;
+    if (renderedAnswerPromptEnCount !== closureItems.length) {
+      throw new Error(`Closure set ${setNumber} rendered ${renderedAnswerPromptEnCount} answer-sheet English helper lines for ${closureItems.length} questions`);
+    }
     return;
   }
   const kaiMulTags = new Set((data.k_m || []).map(item => item?.tag));

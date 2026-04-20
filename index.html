@@ -621,6 +621,27 @@
             font-size: 0.5em;
             line-height: 1.06;
         }
+        .ans-prompt-en {
+            display: block;
+            margin-top: 3px;
+            color: #64748b;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            font-size: 11.5px;
+            font-weight: 600;
+            line-height: 1.16;
+            letter-spacing: 0.01em;
+        }
+        .ans-prompt-en .math-op,
+        .ans-prompt-en .math-eq,
+        .ans-prompt-en .math-compare {
+            color: currentColor;
+            min-width: 0.7em;
+            font-size: 0.96em;
+        }
+        .ans-prompt-en .frac {
+            font-size: 0.82em;
+            vertical-align: -0.12em;
+        }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
         .item.paper-line-lock .math-text,
@@ -2213,9 +2234,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.115';
-        const APP_RELEASE_LABEL = '第二阶段英文兜底收紧';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.115 继续修正第二阶段双语题面：旧缓存会自动回填英文，未命中模板的题也会改用纯英文辅助句，不再出现英文行里夹中文。';
+        const APP_VERSION = 'v23.116';
+        const APP_RELEASE_LABEL = '第二阶段答案页也双语';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.116 继续完善第二阶段双语题面：题卷之外，答案页里的原题行也会显示英文辅助句，屏幕和打印都一起对齐。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6845,6 +6866,7 @@
             let kb = getKnowledgeTip(q.tag);
             const normalizedQuestion = normalizeQuestionPrompt(q.q, q.heightClass || '');
             let renderedQuestion = `${normalizedQuestion.bodyHtml}${normalizedQuestion.suffixHtml ? ` ${normalizedQuestion.suffixHtml}` : ''}`;
+            let renderedQuestionEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
             let renderedAnswer = beautifyMathHTML(q.a);
             let renderedStep = q.step ? beautifyMathHTML(q.step) : '';
 
@@ -6878,7 +6900,7 @@
             return `
             <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
                 <div class="ans-content">
-                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span></span> ${levelBadge} ${reasonBadge}</div>
+                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span>${renderedQuestionEn ? `<span class="ans-prompt-en">${renderedQuestionEn}</span>` : ''}</span> ${levelBadge} ${reasonBadge}</div>
                     <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
                     <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
                 </div>
