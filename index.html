@@ -642,6 +642,27 @@
             font-size: 0.82em;
             vertical-align: -0.12em;
         }
+        .ans-help-en {
+            display: block;
+            margin-top: 2px;
+            color: #64748b;
+            font-family: 'Arial Narrow', 'Helvetica Neue', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 1.14;
+            letter-spacing: 0.01em;
+        }
+        .ans-help-en .math-op,
+        .ans-help-en .math-eq,
+        .ans-help-en .math-compare {
+            color: currentColor;
+            min-width: 0.68em;
+            font-size: 0.95em;
+        }
+        .ans-help-en .frac {
+            font-size: 0.8em;
+            vertical-align: -0.12em;
+        }
         .item.paper-line-lock .q-body,
         .item.paper-line-lock .math-row,
         .item.paper-line-lock .math-text,
@@ -4683,6 +4704,36 @@
             };
             return renderPromptEnglish(fallbackByRole[item?.sectionRole] || 'Work out the answer in ( ).');
         }
+        function buildClosureStepEnglish(item = {}) {
+            const mode = item?.explanationMode || '';
+            const role = item?.sectionRole || '';
+            const qualityFamily = item?.qualityFamily || '';
+            const mapByMode = {
+                rule: 'Rule: change to a helpful form first, then compute carefully.',
+                method: 'Method: choose the quicker path before calculating.',
+                validation: 'Check: estimate first and see whether the result makes sense.'
+            };
+            if (mapByMode[mode]) return mapByMode[mode];
+            if (role === 'representation_core') return 'Bridge: change the form first, then compare, use, or calculate.';
+            if (role === 'complex_mixed_core') return 'Method: spot the structure first, then choose the more efficient calculation path.';
+            if (role === 'unit_rate_bridge') return 'Model: unify the unit or relation first, then calculate and check the result.';
+            if (role === 'targeted_focus') return 'Focus: use the key idea of this weak point, then solve it step by step.';
+            if (qualityFamily === 'conversion_bridge') return 'Bridge: write the number in the most helpful form before you continue.';
+            if (qualityFamily === 'complex_mixed') return 'Method: look for a shortcut or a better structure before calculating.';
+            if (qualityFamily === 'unit_rate_speed') return 'Model: identify the quantity relation first, then decide the operation.';
+            if (qualityFamily === 'validation_estimation') return 'Check: think about the range first, then confirm the final answer.';
+            return 'Work steadily: use the key idea first, then check whether the answer is reasonable.';
+        }
+        function buildKnowledgeTipEnglish(tag = '', tip = {}) {
+            const tagText = String(tag || '');
+            if (tagText.startsWith('c2_bridge_')) return 'Focus on switching forms smoothly and using the new form right away.';
+            if (tagText.startsWith('c2_mix_')) return 'Focus on spotting structure, choosing a method, and checking the final result.';
+            if (tagText.startsWith('c2_unit_')) return 'Focus on unifying units first so the relation stays correct.';
+            if (tagText.startsWith('c2_rate_')) return 'Focus on the whole-part-rate relation before writing the calculation.';
+            if (tagText.startsWith('c2_eq_')) return 'Focus on turning the relation into an equation before solving.';
+            if (tagText.startsWith('c2_est_') || tagText.startsWith('c2_speed_')) return 'Focus on range, rate, and whether the result should be bigger or smaller.';
+            return 'Focus on the key pattern of this question and avoid repeating the same mistake.';
+        }
         window.beautifyMathHTML = beautifyMathHTML;
         window.normalizeQuestionPrompt = normalizeQuestionPrompt;
         window.compactConversionPrompt = compactConversionPrompt;
@@ -6869,6 +6920,8 @@
             let renderedQuestionEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
             let renderedAnswer = beautifyMathHTML(q.a);
             let renderedStep = q.step ? beautifyMathHTML(q.step) : '';
+            let renderedStepEn = q.qEn ? renderPromptEnglish(buildClosureStepEnglish(q)) : '';
+            let renderedTipEn = q.qEn ? renderPromptEnglish(buildKnowledgeTipEnglish(q.tag, kb)) : '';
 
             let reasonBadge = '';
             if (q.reason === 'weak') reasonBadge = `<span class="reason-badge reason-weak">🎯 靶向弱点 / Target Weakness</span>`;
@@ -6901,8 +6954,8 @@
             <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
                 <div class="ans-content">
                     <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span>${renderedQuestionEn ? `<span class="ans-prompt-en">${renderedQuestionEn}</span>` : ''}</span> ${levelBadge} ${reasonBadge}</div>
-                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
-                    <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
+                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong>${renderedStepEn ? `<span class="ans-help-en">${renderedStepEn}</span>` : ''}</div>
+                    <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}${renderedTipEn ? `<span class="ans-help-en">${renderedTipEn}</span>` : ''}</div>
                 </div>
                 <div class="grade-area no-print">
                     <button class="grade-btn perfect ${pAct}" title="完美掌握 Perfect" onclick="window.markAnswer(this, 'perfect')">✓</button>
