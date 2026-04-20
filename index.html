@@ -115,6 +115,7 @@
                 width: 1.05em !important;
                 min-width: 1.05em !important;
                 margin-right: 0.1em !important;
+                transform: translateY(0.01em) !important;
             }
             body.print-sandbox-active #print-root .item.h-frac {
                 font-size: 15.6px !important;
@@ -220,6 +221,9 @@
                 margin: 0 0.02em !important;
                 font-size: 0.94em !important;
                 letter-spacing: -0.03em !important;
+                transform: translateY(0.02em) !important;
+            }
+            body.print-sandbox-active #print-root .circle-blank {
                 transform: translateY(0.02em) !important;
             }
             body.print-sandbox-active #print-root .sheet-meta-band {
@@ -1007,10 +1011,21 @@
             height: 0.92em;
             margin: 0 0.08em 0.05em 0.04em;
             vertical-align: baseline;
+            transform: translateY(0.01em);
         }
         .dot-top { position: relative; }
         .dot-top::after { content: '•'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 14px; }
-        .circle-blank { display: inline-block; width: 1.18em; height: 1.18em; border-radius: 50%; border: 1.7px solid var(--math-line); margin: 0 0.22em; align-self: center; flex: 0 0 auto; }
+        .circle-blank {
+            display: inline-block;
+            width: 1.18em;
+            height: 1.18em;
+            border-radius: 50%;
+            border: 1.7px solid var(--math-line);
+            margin: 0 0.22em;
+            align-self: center;
+            flex: 0 0 auto;
+            transform: translateY(0.02em);
+        }
         .math-inline-blank { transform: translateY(-0.01em); }
         .math-compact-paren-answer {
             display: inline-flex;
@@ -2307,9 +2322,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.123';
-        const APP_RELEASE_LABEL = '括号与带分数继续校中线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.123 继续校准括号答案位、括号组和带分数的视觉中线，让整段数学表达更像落在同一条中线上。';
+        const APP_VERSION = 'v23.124';
+        const APP_RELEASE_LABEL = '空位符号继续校中线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.124 继续校准圆圈空位和写答案留白的视觉中线，让算式里的符号、分数和空位更像落在同一条中线上。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
