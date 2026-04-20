@@ -846,8 +846,16 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     if (!closurePaperHtml.includes('WELCOME TO THE ELEMENTARY CLOSURE STAGE')) {
       throw new Error(`Closure set ${setNumber} is missing the bilingual welcome card helper copy`);
     }
+    if (closurePaperHtml.includes('class="review-flag"')) {
+      throw new Error(`Closure set ${setNumber} still renders the old overlay review badge`);
+    }
     if (closurePaperHtml.includes('>复习题<')) {
-      throw new Error(`Closure set ${setNumber} still contains a Chinese-only review flag`);
+      throw new Error(`Closure set ${setNumber} still contains a Chinese-only review label`);
+    }
+    const reviewItemCount = closureItems.filter(item => item?.isReviewItem).length;
+    const renderedReviewItemCount = (closurePaperHtml.match(/class="item[^"]*review-item/g) || []).length;
+    if (renderedReviewItemCount !== reviewItemCount) {
+      throw new Error(`Closure set ${setNumber} rendered ${renderedReviewItemCount} review-item rows for ${reviewItemCount} review questions`);
     }
     return;
   }
@@ -1536,6 +1544,9 @@ const hydratedClosureItems = context.window.flattenPaperSections?.(
 const hydratedPromptEnCount = (hydratedClosurePaperHtml.match(/class="prompt-en"/g) || []).length;
 if (hydratedPromptEnCount !== hydratedClosureItems.length) {
   throw new Error(`Hydrated closure cache rendered ${hydratedPromptEnCount} English helper lines for ${hydratedClosureItems.length} questions`);
+}
+if (hydratedClosurePaperHtml.includes('class="review-flag"')) {
+  throw new Error('Hydrated closure cache still rendered the old overlay review badge');
 }
 context.window.currentSetNumber = 1;
 context.window.renderPaper();
