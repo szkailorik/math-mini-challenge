@@ -1907,6 +1907,10 @@
             flex-wrap:wrap;
             gap:0.1em 0.16em;
         }
+        .followup-item .followup-num,
+        .followup-item .followup-q {
+            color:#b91c1c;
+        }
         .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
         .set-review-followup-answer-note { margin:0 0 10px; color:#64748b; font-size:12px; line-height:1.45; }
@@ -2059,6 +2063,10 @@
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item[data-shape="conversion"] {
             font-size: 12.45px;
             line-height: 1.18;
+        }
+        .followup-print-item .followup-num,
+        .followup-print-item .followup-q {
+            color:#b91c1c;
         }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
@@ -2265,9 +2273,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.119';
-        const APP_RELEASE_LABEL = '复习题红色提醒全链路统一';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.119 继续把复习题红色提醒补到答案页和补练答案页，让题面、答案和打印保持同一套视觉规则。';
+        const APP_VERSION = 'v23.121';
+        const APP_RELEASE_LABEL = '补练题页也统一红色复习题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.121 把本套报告和错题本补练题页也统一成红色复习题提醒，让题页、答案页和打印页走同一套视觉规则。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
