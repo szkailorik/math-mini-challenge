@@ -704,21 +704,16 @@
         .math-op { color: var(--math-blue); font-size: 1.02em; }
         .math-eq { color: var(--math-ink); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
-        .review-flag {
-            position: absolute;
-            top: -2px;
-            right: 2px;
-            font-size: 9px;
-            line-height: 1;
-            padding: 2px 5px;
-            border-radius: 999px;
-            border: 1px solid #fdba74;
-            background: rgba(255, 247, 237, 0.95);
-            color: #9a3412;
-            font-family: sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-            pointer-events: none;
+        .item.review-item .q-num,
+        .item.review-item .math-text,
+        .item.review-item .question-copy > .prompt-en {
+            color: #b91c1c;
+        }
+        .item.review-item .q-num {
+            font-weight: 800;
+        }
+        .item.review-item .question-copy > .prompt-en {
+            opacity: 0.88;
         }
 
         /* ================= V21 终极修正：纯排版级分数与完美大括号 ================= */
@@ -2255,9 +2250,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.117';
-        const APP_RELEASE_LABEL = '第二阶段可见提示继续双语';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.117 继续完善第二阶段整页双语：复习题角标、欢迎卡、答案页说明框也补上英文辅助句，让题面与复盘提示更一致。';
+        const APP_VERSION = 'v23.118';
+        const APP_RELEASE_LABEL = '复习题改成红色提醒';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.118 去掉会挡题号的复习题角标，改成红色题目提醒，让屏幕和打印排版更稳。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6994,9 +6989,9 @@
                         let questionHtml = heightClass === 'h-conv' ? compactConversionPrompt(q.q) : q.q;
                         let prompt = normalizeQuestionPrompt(questionHtml, heightClass);
                         const promptEn = q.qEn ? renderPromptEnglish(q.qEn) : '';
-                        let reviewFlag = q.isReviewItem ? `<span class="review-flag">复习题 / Review</span>` : '';
+                        const reviewClass = q.isReviewItem ? ' review-item' : '';
                         const densityClass = getItemDensityClass(questionHtml, heightClass);
-                        return `<div class="item${lineLockClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}${promptEn ? ' closure-bilingual' : ''}">${reviewFlag}<span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span>${promptEn ? `<span class="prompt-en">${promptEn}</span>` : ''}</div></div></div>`;
+                        return `<div class="item${lineLockClass}${reviewClass} ${heightClass}${densityClass ? ` ${densityClass}` : ''}${promptEn ? ' closure-bilingual' : ''}"><span class="q-num">${i+1}.</span><div class="q-body"><div class="question-copy"><span class="math-text">${prompt.bodyHtml}${prompt.suffixHtml || ''}</span>${promptEn ? `<span class="prompt-en">${promptEn}</span>` : ''}</div></div></div>`;
                     }).join('')}
                 </div>
             </div>`;
