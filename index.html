@@ -715,6 +715,21 @@
         .item.review-item .question-copy > .prompt-en {
             opacity: 0.88;
         }
+        .ans-row.review-answer .ans-num,
+        .ans-row.review-answer .review-question,
+        .ans-row.review-answer .review-question .ans-prompt-en {
+            color: #b91c1c;
+        }
+        .ans-row.review-answer .review-question {
+            font-weight: 700;
+        }
+        .ans-row.review-answer .review-question .ans-prompt-en {
+            opacity: 0.88;
+        }
+        .set-review-followup-answer.review-answer-pack h5,
+        .set-review-followup-answer.review-answer-pack .set-review-followup-answer-note {
+            color: #b91c1c;
+        }
 
         /* ================= V21 终极修正：纯排版级分数与完美大括号 ================= */
         .frac {
@@ -2250,9 +2265,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.118';
-        const APP_RELEASE_LABEL = '复习题改成红色提醒';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.118 去掉会挡题号的复习题角标，改成红色题目提醒，让屏幕和打印排版更稳。';
+        const APP_VERSION = 'v23.119';
+        const APP_RELEASE_LABEL = '复习题红色提醒全链路统一';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.119 继续把复习题红色提醒补到答案页和补练答案页，让题面、答案和打印保持同一套视觉规则。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6945,10 +6960,11 @@
             else if (q.reason === 'replay') qColor = 'color: #c2410c; font-weight:bold;';
             else if (q.reason === 'variant') qColor = 'color: #854d0e; font-weight:bold;';
 
+            const reviewAnswerClass = q.isReviewItem ? ' review-answer' : '';
             return `
-            <div class="ans-row" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
+            <div class="ans-row${reviewAnswerClass}" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
                 <div class="ans-content">
-                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span>${renderedQuestionEn ? `<span class="ans-prompt-en">${renderedQuestionEn}</span>` : ''}</span> ${levelBadge} ${reasonBadge}</div>
+                    <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span>${renderedQuestionEn ? `<span class="ans-prompt-en">${renderedQuestionEn}</span>` : ''}</span> ${levelBadge} ${reasonBadge}</div>
                     <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong>${renderedStepEn ? `<span class="ans-help-en">${renderedStepEn}</span>` : ''}</div>
                     <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}${renderedTipEn ? `<span class="ans-help-en">${renderedTipEn}</span>` : ''}</div>
                 </div>
@@ -8738,7 +8754,7 @@
                 </tr>
             `).join('');
             return `
-            <div class="set-review-followup-answer ${forPrint ? 'print-answer-sheet' : ''}">
+            <div class="set-review-followup-answer review-answer-pack ${forPrint ? 'print-answer-sheet' : ''}">
                 <h5>参考答案</h5>
                 <p class="set-review-followup-answer-note">${forPrint ? '这一页给家长核对用。先让孩子独立完成前面的变式跟训，再回来看这里。' : '建议先独立完成上面的变式跟训，再用这里做核对。'}</p>
                 <table class="archive-table">
