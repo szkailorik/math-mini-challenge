@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.59 (计算知识总览页页头压缩)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.127 (iPad 自适应与打印稳定性补强)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
         :root {
             --print-sheet-height: 296.4mm;
             --math-ink: #0f172a;
@@ -59,6 +63,9 @@
                 page-break-after: auto !important;
                 break-after: auto !important;
             }
+            body.ipad-shell.print-sandbox-active #print-root .sheet.question-sheet {
+                padding: 10.4mm 13.2mm 15.2mm !important;
+            }
             body.print-sandbox-active #print-root .sheet.ans-sheet {
                 min-height: var(--print-sheet-height) !important;
                 height: auto !important;
@@ -67,6 +74,9 @@
                 padding-bottom: 20mm !important;
             }
             body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
+            body.ipad-shell.print-sandbox-active #print-root .section {
+                margin-bottom: 9px !important;
+            }
             body.print-sandbox-active #print-root .section-title {
                 margin-bottom: 8px !important;
                 padding-bottom: 5px !important;
@@ -78,15 +88,26 @@
                 font-size: 10px !important;
             }
             body.print-sandbox-active #print-root .grid { gap: 14px 11px !important; }
+            body.ipad-shell.print-sandbox-active #print-root .grid {
+                gap: 12px 10px !important;
+            }
             body.print-sandbox-active #print-root .item {
                 font-size: 17.5px !important;
                 line-height: 1.28 !important;
                 padding-right: 0 !important;
             }
+            body.ipad-shell.print-sandbox-active #print-root .item {
+                font-size: 17px !important;
+                line-height: 1.24 !important;
+            }
             body.print-sandbox-active #print-root .q-num {
                 font-size: 17px !important;
                 margin-right: 0 !important;
                 line-height: 1.28 !important;
+            }
+            body.ipad-shell.print-sandbox-active #print-root .q-num {
+                font-size: 16.6px !important;
+                line-height: 1.24 !important;
             }
             body.print-sandbox-active #print-root .q-body {
                 gap: 0.1em 0.18em !important;
@@ -428,6 +449,9 @@
                 linear-gradient(180deg, #e7edf4 0%, #d9e1ea 100%);
             font-family: 'Georgia', 'Baskerville', 'Songti SC', 'STSong', 'SimSun', serif;
             color: #222;
+        }
+        #paper-container {
+            width: 100%;
         }
 
         .sheet {
@@ -2240,6 +2264,80 @@
         @media (max-width: 1100px) {
             .export-btn { right: 20px; top: auto; bottom: 20px; }
         }
+        @media screen and (max-width: 1180px) {
+            body {
+                padding: 14px;
+            }
+            .control-panel {
+                top: 14px;
+                right: 14px;
+                width: 304px;
+                max-height: calc(100vh - 20px);
+                padding: 11px 12px;
+            }
+            .mini-panel-btn {
+                top: 14px;
+                right: 14px;
+            }
+            .export-btn {
+                top: 14px;
+                right: 332px;
+                padding: 10px 14px;
+            }
+            #paper-container {
+                width: min(100%, calc(100vw - 350px));
+                max-width: calc(100vw - 350px);
+                padding-right: 0;
+            }
+            .sheet {
+                width: min(210mm, calc(100vw - 368px)) !important;
+                padding: 10.5mm 13mm 16mm;
+                margin-bottom: 20px;
+            }
+            .header h1 {
+                font-size: 23px;
+            }
+        }
+        @media screen and (min-width: 641px) and (max-width: 900px) {
+            body {
+                padding: 12px;
+            }
+            .control-panel {
+                width: calc(100vw - 24px);
+                right: 12px;
+                top: 12px;
+                max-height: 34vh;
+                border-radius: 16px;
+            }
+            .mini-panel-btn {
+                top: 12px;
+                right: 12px;
+            }
+            .export-btn {
+                right: 12px;
+                top: auto;
+                bottom: 12px;
+            }
+            #paper-container {
+                width: 100%;
+                max-width: none;
+                padding-top: min(37vh, 320px);
+            }
+            .sheet {
+                width: min(210mm, calc(100vw - 24px)) !important;
+                padding: 10mm 11.5mm 15.5mm;
+                margin-bottom: 18px;
+            }
+            .grid {
+                gap: 16px 12px;
+            }
+            .sheet-meta-band {
+                gap: 6px;
+            }
+            .sheet-meta-cell {
+                padding: 5px 7px 6px;
+            }
+        }
         @media (max-width: 640px) {
             body { padding: 10px; }
             .control-panel { width: calc(100vw - 24px); right: 12px; top: 12px; }
@@ -2280,7 +2378,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.66</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.127</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2356,9 +2454,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.126';
-        const APP_RELEASE_LABEL = '小元素对齐责任继续收紧';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.126 继续把小字分数、括号答案位、圆圈空位和 dense 题块的小元素统一交给中线对齐规则，减少不同浏览器里的上下漂移。';
+        const APP_VERSION = 'v23.127';
+        const APP_RELEASE_LABEL = 'iPad 自适应与打印稳定性补强';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.127 为 iPad / iPad Safari 补了平板断点、纸面可视宽度保护，以及打印 AB 四页前的稳定等待和轻量密度收紧。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9009,6 +9107,16 @@
             return document.getElementById(PRINT_ROOT_ID);
         }
 
+        function isIpadShell() {
+            if (typeof navigator === 'undefined') return false;
+            const ua = navigator.userAgent || '';
+            const platform = navigator.platform || '';
+            const touchPoints = Number(navigator.maxTouchPoints || 0);
+            return /iPad/i.test(ua)
+                || (/Macintosh/i.test(ua) && touchPoints > 1)
+                || (platform === 'MacIntel' && touchPoints > 1);
+        }
+
         function buildPrintSandbox(mode) {
             const root = getPrintRoot();
             if (!root) return 0;
@@ -9067,14 +9175,15 @@
                 mode === 'print-questions-only' ? PRINT_HINT_HTML : '🧾 打印答案提示：建议关闭页眉页脚，并确认只打印答案页。',
                 { background: '#0f766e', duration: 2600 }
             );
+            const printDelay = document.body.classList.contains('ipad-shell') ? 420 : 220;
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
             };
             if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, printDelay)));
             } else {
-                setTimeout(triggerPrint, 220);
+                setTimeout(triggerPrint, printDelay);
             }
         }
 
@@ -9250,6 +9359,10 @@
         // Initialize directly using an async function since module scripts execute after DOM has parsed
         async function startEngine() {
             document.title = `Mini Challenge - 专家私教引擎 ${APP_VERSION} (${APP_RELEASE_LABEL})`;
+            if (document.body && document.body.classList) {
+                if (isIpadShell()) document.body.classList.add('ipad-shell');
+                else if (typeof document.body.classList.remove === 'function') document.body.classList.remove('ipad-shell');
+            }
             const versionLabel = document.getElementById('app-version-label');
             if (versionLabel) versionLabel.textContent = `🧠 专家私教引擎 ${APP_VERSION}`;
             const releaseLabel = document.getElementById('release-note-label');
