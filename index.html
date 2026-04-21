@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.132 (本套报告批改单强化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.133 (本套报告分题组显示)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1793,6 +1793,15 @@
         .archive-table { width: 100%; border-collapse: collapse; text-align: center; font-family: sans-serif; font-size: 14px; margin-bottom: 15px;}
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
+        .set-review-group-row td {
+            padding: 9px 12px;
+            background: linear-gradient(90deg, #eff6ff 0%, #f8fafc 100%);
+            color: #123b73;
+            font-weight: 800;
+            text-align: left;
+            letter-spacing: 0.02em;
+            border: 1px solid #cbd5e1;
+        }
         .set-review-location-cell { text-align: left; min-width: 164px; background: linear-gradient(180deg, #f8fafc 0%, #fdfefe 100%); }
         .set-review-major { font-weight: 800; color: #0f172a; font-size: 14px; line-height: 1.2; letter-spacing: 0.01em; }
         .set-review-minor { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.15; }
@@ -2318,9 +2327,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.132';
-        const APP_RELEASE_LABEL = '本套报告批改单强化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.132 继续把本套报告收成更像批改单的样子：定位信息更醒目，错误类型和答案更紧凑，复盘提醒更像老师批注。';
+        const APP_VERSION = 'v23.133';
+        const APP_RELEASE_LABEL = '本套报告分题组显示';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.133 继续优化本套报告错题表：按“大题”分组显示，让你先看到第四大题、第五大题，再往下看每一道小题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8762,6 +8771,7 @@
             const isClosureSession = session.programId === CLOSURE_PROGRAM_ID;
             const followupHTML = buildSetReviewFollowupHTML(student, session);
 
+            let currentMajorLabel = '';
             const rows = details.length ? details.map((detail) => {
                 const info = detail.info || {};
                 const tip = getKnowledgeTip(detail.tag);
@@ -8771,7 +8781,12 @@
                 const sectionMatch = rawSection.match(/^([一二三四五六七八九十\d]+)[、.．]\s*(.*)$/);
                 const majorLabel = sectionMatch ? `第 ${sectionMatch[1]} 大题` : (rawSection || '分区缺失');
                 const minorLabel = info.num ? `第 ${info.num} 小题` : '小题号缺失';
+                const groupRow = majorLabel !== currentMajorLabel
+                    ? `<tr class="set-review-group-row"><td colspan="4">${majorLabel}</td></tr>`
+                    : '';
+                currentMajorLabel = majorLabel;
                 return `
+                    ${groupRow}
                     <tr>
                         <td class="set-review-location-cell">
                             <div class="set-review-major">${majorLabel}</div>
