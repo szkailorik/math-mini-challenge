@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.137 (本套报告错因分布)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.138 (本套报告热点排序)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1857,6 +1857,22 @@
             font-size: 11px;
             font-weight: 700;
         }
+        .set-review-distribution-pill.is-priority {
+            background: linear-gradient(180deg, #dbeafe 0%, #eff6ff 100%);
+            border-color: #60a5fa;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.14);
+        }
+        .set-review-distribution-pill .set-review-priority-flag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 999px;
+            background: #1d4ed8;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+        }
         .set-review-followup-wrap { padding: 0 15px 16px; background:#fff; }
         .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; display:grid; gap:12px; }
         .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
@@ -2374,9 +2390,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.137';
-        const APP_RELEASE_LABEL = '本套报告错因分布';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.137 继续优化本套报告：顶部分布条不只看总题数，还会分开显示“概念错 / 粗心错”，更容易先抓重灾区。';
+        const APP_VERSION = 'v23.138';
+        const APP_RELEASE_LABEL = '本套报告热点排序';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.138 继续优化本套报告：顶部分布导航现在按严重程度排序，并把最该先看的大题标成“优先先看”。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8830,13 +8846,20 @@
                 if (detail.grade === 'careless') current.careless += 1;
                 sectionCounts.set(majorLabel, current);
             });
+            const sectionDistribution = Array.from(sectionCounts.entries())
+                .map(([label, counts]) => ({
+                    label,
+                    counts,
+                    severity: counts.wrong * 2 + counts.careless
+                }))
+                .sort((a, b) => b.severity - a.severity || b.counts.total - a.counts.total || a.label.localeCompare(b.label, 'zh-Hans-CN'));
             const distributionHTML = sectionCounts.size ? `
                 <div class="set-review-distribution">
                     <div class="set-review-distribution-title">错题分布 / SECTION HOTSPOTS</div>
                     <div class="set-review-distribution-strip">
-                        ${Array.from(sectionCounts.entries()).map(([label, counts]) => {
+                        ${sectionDistribution.map(({ label, counts }, idx) => {
                             const anchorId = `${reviewNavBase}-${label}`.replace(/[^a-zA-Z0-9_-]/g, '-');
-                            return `<button type="button" class="set-review-distribution-pill" onclick="document.getElementById('${anchorId}')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })">${label}<b>${counts.total} 题</b><small>概念 ${counts.wrong} / 粗心 ${counts.careless}</small></button>`;
+                            return `<button type="button" class="set-review-distribution-pill${idx === 0 ? ' is-priority' : ''}" onclick="document.getElementById('${anchorId}')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })">${idx === 0 ? `<span class="set-review-priority-flag">优先先看</span>` : ''}${label}<b>${counts.total} 题</b><small>概念 ${counts.wrong} / 粗心 ${counts.careless}</small></button>`;
                         }).join('')}
                     </div>
                 </div>
