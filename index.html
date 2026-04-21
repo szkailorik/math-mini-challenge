@@ -2436,9 +2436,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.142';
-        const APP_RELEASE_LABEL = '补交按钮提示';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.142 继续优化答案补交：提交按钮现在会直接显示本次要补交几题，没选新题时会明确提示先批改未提交题。';
+        const APP_VERSION = 'v23.143';
+        const APP_RELEASE_LABEL = '补交后留在答案页';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.143 继续优化答案补交：补交成功后会直接留在当前学生的答案页，方便继续补做剩下的题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8002,6 +8002,14 @@
         }
         window.refreshAllSubmitButtons = refreshAllSubmitButtons;
 
+        function focusAnswerSheet(student) {
+            const sheetId = String(student || '').toLowerCase() === 'kai' ? 'kai-ans-sheet' : 'lorik-ans-sheet';
+            const sheet = document.getElementById(sheetId);
+            if (!sheet) return;
+            sheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.focusAnswerSheet = focusAnswerSheet;
+
         const SET_REVIEW_FOLLOWUP_LABELS = {
             decimal_division: '小数除法',
             fraction_operation: '分数运算',
@@ -9375,7 +9383,11 @@
                 showToast(toastMsg, { background: '#4caf50', duration: 3000 });
 
                 window.renderPaper();
-                window.showSetReview(window.currentSetNumber, student);
+                if (typeof window.requestAnimationFrame === 'function') {
+                    window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.focusAnswerSheet(student)));
+                } else {
+                    setTimeout(() => window.focusAnswerSheet(student), 120);
+                }
             } else {
                 const msg = existingSession
                     ? `${student} 这套目前没有新的未提交答案。`
