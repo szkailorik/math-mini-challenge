@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.133 (本套报告分题组显示)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.134 (本套报告定位去重)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1802,7 +1802,7 @@
             letter-spacing: 0.02em;
             border: 1px solid #cbd5e1;
         }
-        .set-review-location-cell { text-align: left; min-width: 164px; background: linear-gradient(180deg, #f8fafc 0%, #fdfefe 100%); }
+        .set-review-location-cell { text-align: left; min-width: 132px; background: linear-gradient(180deg, #f8fafc 0%, #fdfefe 100%); }
         .set-review-major { font-weight: 800; color: #0f172a; font-size: 14px; line-height: 1.2; letter-spacing: 0.01em; }
         .set-review-minor { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.15; }
         .set-review-answer { text-align: center; font-size: 15px; white-space: nowrap; }
@@ -2327,9 +2327,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.133';
-        const APP_RELEASE_LABEL = '本套报告分题组显示';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.133 继续优化本套报告错题表：按“大题”分组显示，让你先看到第四大题、第五大题，再往下看每一道小题。';
+        const APP_VERSION = 'v23.134';
+        const APP_RELEASE_LABEL = '本套报告定位去重';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.134 继续优化本套报告错题表：既然已经按大题分组，行内就只保留“第几小题”，减少重复信息，让定位更干净。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8789,8 +8789,7 @@
                     ${groupRow}
                     <tr>
                         <td class="set-review-location-cell">
-                            <div class="set-review-major">${majorLabel}</div>
-                            <div class="set-review-minor">${minorLabel}</div>
+                            <div class="set-review-major">${minorLabel}</div>
                         </td>
                         <td class="set-review-type"><span style="color:${gradeColor}; font-weight:bold;">${gradeText}</span></td>
                         <td class="set-review-answer"><div class="math-row"><strong class="highlight">${info.a || '-'}</strong></div></td>
