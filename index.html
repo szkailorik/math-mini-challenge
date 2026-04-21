@@ -1054,6 +1054,9 @@
         .ans-sheet.pending-only-mode .ans-row[data-submitted="true"] {
             display: none;
         }
+        .ans-sheet.pending-only-mode .ans-section.all-submitted {
+            display: none;
+        }
         .submit-grades-btn { display: block; width: 100%; padding: 12px; background: #002D72; color: #fff; font-size: 16px; font-weight: bold; text-align: center; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
         .submit-grades-btn:hover { filter: brightness(1.1); }
         .submit-grades-btn[disabled] { opacity: 0.58; cursor: not-allowed; box-shadow: none; filter: none !important; }
@@ -7038,6 +7041,22 @@
 
         window.answerPendingOnlyState = window.answerPendingOnlyState || { KAI: false, Lorik: false };
 
+        function refreshAnswerPendingSections(sheet) {
+            if (!sheet) return;
+            sheet.querySelectorAll('.ans-section').forEach(section => {
+                const hasPending = !!section.querySelector('.ans-row[data-submitted="false"]');
+                if (section.classList?.toggle) {
+                    section.classList.toggle('all-submitted', !hasPending);
+                } else {
+                    const classNames = new Set(String(section.className || '').split(/\s+/).filter(Boolean));
+                    if (!hasPending) classNames.add('all-submitted');
+                    else classNames.delete('all-submitted');
+                    section.className = Array.from(classNames).join(' ');
+                }
+            });
+        }
+        window.refreshAnswerPendingSections = refreshAnswerPendingSections;
+
         function setAnswerPendingOnly(student, pendingOnly) {
             const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
             const sheet = document.getElementById(`${normalized.toLowerCase()}-ans-sheet`);
@@ -7053,6 +7072,7 @@
                 else classNames.delete('pending-only-mode');
                 sheet.className = Array.from(classNames).join(' ');
             }
+            refreshAnswerPendingSections(sheet);
         }
         window.setAnswerPendingOnly = setAnswerPendingOnly;
 

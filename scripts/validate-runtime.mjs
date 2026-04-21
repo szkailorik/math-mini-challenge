@@ -1542,6 +1542,28 @@ if (filterRows.length >= 2) {
   });
   context.window.setAnswerPendingOnly?.('KAI', false);
 }
+const filterSections = Array.from(filterSheet?.querySelectorAll('.ans-section') || []).slice(0, 2);
+if (filterSections.length >= 2) {
+  const sectionRows = filterSections.map(section => Array.from(section.querySelectorAll('.ans-row')));
+  const originalSectionState = sectionRows.map(rows => rows.map(row => row.getAttribute('data-submitted')));
+  sectionRows[0].forEach(row => row.setAttribute('data-submitted', 'true'));
+  sectionRows[1].forEach((row, index) => row.setAttribute('data-submitted', index === 0 ? 'false' : 'true'));
+  context.window.setAnswerPendingOnly?.('KAI', true);
+  if (!filterSections[0].className.includes('all-submitted')) {
+    throw new Error('Pending-only mode did not collapse fully submitted answer sections');
+  }
+  if (filterSections[1].className.includes('all-submitted')) {
+    throw new Error('Pending-only mode collapsed a section that still contains pending answers');
+  }
+  sectionRows.forEach((rows, sectionIndex) => {
+    rows.forEach((row, rowIndex) => {
+      const state = originalSectionState[sectionIndex][rowIndex];
+      if (state === null) row.removeAttribute('data-submitted');
+      else row.setAttribute('data-submitted', state);
+    });
+  });
+  context.window.setAnswerPendingOnly?.('KAI', false);
+}
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
