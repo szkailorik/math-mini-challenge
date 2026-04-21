@@ -2405,9 +2405,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.139';
-        const APP_RELEASE_LABEL = '答案增量补交';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.139 优化答案提交：同一套卷提交后，未提交过的题现在可以继续补交；已提交题会锁定，不再被未做题默认判成正确。';
+        const APP_VERSION = 'v23.140';
+        const APP_RELEASE_LABEL = '答案补交进度';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.140 继续优化答案补交：答案页现在会直接显示已提交几题、还剩几题待补交，回来继续做时更清楚。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -6972,6 +6972,37 @@
             return `<div class="ans-grid-block">` + questions.map((q, i) => buildAnsRow(q, i, student, secName, sessionData)).join('') + `</div>`;
         };
 
+        function getAnswerSubmissionProgress(questions = [], sessionData = null) {
+            const total = (questions || []).length;
+            let submitted = 0;
+            (questions || []).forEach(q => {
+                const info = { q: q?.q, a: q?.a, step: q?.step || '' };
+                if (findSessionGradeEntry(sessionData, q?.tag, info)) submitted += 1;
+            });
+            return {
+                total,
+                submitted,
+                pending: Math.max(0, total - submitted)
+            };
+        }
+
+        function buildAnswerSubmissionSummary(progress, isClosure = false) {
+            if (!progress || !progress.total) return '';
+            const tone = progress.pending > 0 ? '#b45309' : '#0f766e';
+            const bg = progress.pending > 0 ? '#fff7ed' : '#ecfdf5';
+            const border = progress.pending > 0 ? '#fdba74' : '#6ee7b7';
+            const lead = progress.pending > 0
+                ? `当前还剩 ${progress.pending} 题未提交`
+                : `这套题的答案已经全部提交`;
+            const follow = isClosure
+                ? `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并写入第二阶段画像。`
+                : `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并记入本套报告与错题本。`;
+            return `
+                <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid ${border}; background:${bg}; color:${tone}; font-size:13.5px; line-height:1.6; border-radius:10px;">
+                    <strong>${lead}</strong><br>${follow}
+                </div>`;
+        }
+
         // 双语标题处理
         const buildQSection = (cnTitle, enTitle, pointsStr, items, heightClass, cols) => {
             const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
@@ -7043,7 +7074,7 @@
                     ${buildSheetFooter(paperCode, 'Question Paper')}
                 </div>`;
 
-            const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK') => {
+            const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK', progressHtml = '') => {
                 let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
                 let btnText = isCompleted ? `➕ 继续补交 ${name} 未提交的答案 (Submit Remaining)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
                 let btnStyle = isCompleted ? `background: #4caf50;` : ``;
@@ -7058,13 +7089,14 @@
                         <h1>【详细解析 Detailed Solutions】 - ${name} (Set ${window.currentSetNumber})</h1>
                     </div>
                     ${buildSheetMetaBand(meta)}
+                    ${progressHtml}
                     ${content}
                     <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
                     ${buildSheetFooter(paperCode, 'Answer Key')}
                 </div>`;
             };
 
-            const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK') => `
+            const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK', progressHtml = '') => `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 第二阶段已批改<br><span style="font-size:12px;">Closure Graded</span></div>` : ''}
                     <div class="header">
@@ -7078,6 +7110,7 @@
                     <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
                     </div>
+                    ${progressHtml}
                     ${content}
                     <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `➕ 继续补交 ${name} 未提交的第二阶段答案` : `📝 提交 ${name} 的第二阶段批改`}</button>
                     ${buildSheetFooter(paperCode, 'Closure Answer Key')}
@@ -7104,6 +7137,10 @@
                 const phaseMeta = data.phaseMeta || getClosurePhaseInfo(window.currentSetNumber);
                 const kFocusMeta = data.c_k_focusMeta || getLegacyClosureFocusMeta(phaseMeta);
                 const lFocusMeta = data.c_l_focusMeta || getLegacyClosureFocusMeta(phaseMeta);
+                const closureKaiQuestions = flattenPaperSections(data, ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus']);
+                const closureLorikQuestions = flattenPaperSections(data, ['c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']);
+                const closureKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureKaiQuestions, closureKaiSession), true);
+                const closureLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureLorikQuestions, closureLorikSession), true);
 
                 const closureScore = 8 + 8 + 8 + 8 + 8;
                 let k_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_k_keep, 'h-mixed', 2) +
@@ -7164,12 +7201,12 @@
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'Answer / KAI' },
                         { label: 'Focus', value: 'Solutions & Review' }
-                    ], 'C-AK') +
+                    ], 'C-AK', closureKaiProgressHtml) +
                     getClosureAnsSheetHTML('Lorik', l_ans, !!closureLorikSession, [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'Answer / Lorik' },
                         { label: 'Focus', value: 'Solutions & Review' }
-                    ], 'C-BK');
+                    ], 'C-BK', closureLorikProgressHtml);
                 return;
             }
 
@@ -7189,6 +7226,10 @@
             let lorikProfile = StorageDB.getProfile("Lorik") || {history:[]};
             let kaiSession = kaiProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
             let lorikSession = lorikProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
+            const advancedKaiQuestions = flattenPaperSections(data, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']);
+            const advancedLorikQuestions = flattenPaperSections(data, ['l_m', 'l_d', 'l_s', 'l_c', 'l_f', 'l_o']);
+            const advancedKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedKaiQuestions, kaiSession), false);
+            const advancedLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedLorikQuestions, lorikSession), false);
             let stampKAI = kaiSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
             let stampLorik = lorikSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
 
@@ -7245,11 +7286,11 @@
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'Answer / KAI' },
                     { label: 'Focus', value: 'Solutions & Review' }
-                ], 'A-AK') + getAnsSheetHTML('Lorik', l_ans, !!lorikSession, [
+                ], 'A-AK', advancedKaiProgressHtml) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession, [
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'Answer / Lorik' },
                     { label: 'Focus', value: 'Solutions & Review' }
-                ], 'A-BK');
+                ], 'A-BK', advancedLorikProgressHtml);
         }
 
         // ================= v22 重写：错题本渲染（独立存储 · 去重计数 · 分组 · 一键掌握） =================
