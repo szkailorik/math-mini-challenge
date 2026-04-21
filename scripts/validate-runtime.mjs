@@ -1496,6 +1496,18 @@ if (!partialSession.allGrades.some(entry => entry.grade === 'wrong') || !partial
 if (context.window.findSessionGradeEntry?.(partialSession, 'k_conv_1', thirdInfo)) {
   throw new Error('A still-unsubmitted answer row was incorrectly auto-marked after incremental submission');
 }
+const progressHtml = context.window.buildAnswerSubmissionSummary?.(
+  context.window.getAnswerSubmissionProgress?.([
+    { tag: 'k_dmul_basic', q: firstInfo.q, a: firstInfo.a, step: firstInfo.step },
+    { tag: 'k_dmul_scale', q: secondInfo.q, a: secondInfo.a, step: secondInfo.step },
+    { tag: 'k_conv_1', q: thirdInfo.q, a: thirdInfo.a, step: thirdInfo.step },
+  ], partialSession),
+  false,
+  'KAI'
+);
+if (!progressHtml || !progressHtml.includes('定位到第一道待补交题')) {
+  throw new Error('Answer submission progress note did not expose the pending-answer jump action');
+}
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;
