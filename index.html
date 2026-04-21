@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.131 (本套报告定位卡优化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.132 (本套报告批改单强化)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1793,11 +1793,14 @@
         .archive-table { width: 100%; border-collapse: collapse; text-align: center; font-family: sans-serif; font-size: 14px; margin-bottom: 15px;}
         .archive-table th { background: #f1f5f9; padding: 10px; border: 1px solid #cbd5e1; color: #334155; }
         .archive-table td { padding: 10px; border: 1px solid #cbd5e1; color: #0f172a; }
-        .set-review-location-cell { text-align: left; min-width: 148px; background: #f8fafc; }
-        .set-review-major { font-weight: 800; color: #0f172a; font-size: 14px; line-height: 1.2; }
+        .set-review-location-cell { text-align: left; min-width: 164px; background: linear-gradient(180deg, #f8fafc 0%, #fdfefe 100%); }
+        .set-review-major { font-weight: 800; color: #0f172a; font-size: 14px; line-height: 1.2; letter-spacing: 0.01em; }
         .set-review-minor { font-size: 12px; color: #64748b; margin-top: 3px; line-height: 1.15; }
-        .set-review-answer { text-align: center; font-size: 15px; }
+        .set-review-answer { text-align: center; font-size: 15px; white-space: nowrap; }
         .set-review-answer .highlight { display: inline-block; min-width: 2.4em; }
+        .set-review-type { white-space: nowrap; font-size: 13px; }
+        .set-review-tip-cell { text-align: left; min-width: 230px; line-height: 1.45; }
+        .set-review-tip-title { font-weight: 700; color: #7c2d12; display: inline-block; margin-bottom: 4px; }
         .set-review-followup-wrap { padding: 0 15px 16px; background:#fff; }
         .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; display:grid; gap:12px; }
         .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
@@ -2315,9 +2318,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.131';
-        const APP_RELEASE_LABEL = '本套报告定位卡优化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.131 继续把本套报告收成“批改定位单”，去掉左侧顺序号，让第几大题 / 第几小题成为最醒目的定位信息。';
+        const APP_VERSION = 'v23.132';
+        const APP_RELEASE_LABEL = '本套报告批改单强化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.132 继续把本套报告收成更像批改单的样子：定位信息更醒目，错误类型和答案更紧凑，复盘提醒更像老师批注。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8774,9 +8777,9 @@
                             <div class="set-review-major">${majorLabel}</div>
                             <div class="set-review-minor">${minorLabel}</div>
                         </td>
-                        <td><span style="color:${gradeColor}; font-weight:bold;">${gradeText}</span></td>
+                        <td class="set-review-type"><span style="color:${gradeColor}; font-weight:bold;">${gradeText}</span></td>
                         <td class="set-review-answer"><div class="math-row"><strong class="highlight">${info.a || '-'}</strong></div></td>
-                        <td>${tip.name}<br><span style="color:#9a3412; font-size:12px;">${info.step || tip.advice}</span></td>
+                        <td class="set-review-tip-cell"><span class="set-review-tip-title">${tip.name}</span><br><span style="color:#9a3412; font-size:12px;">${info.step || tip.advice}</span></td>
                     </tr>`;
                 }).join('') : `<tr><td colspan="4" style="color:#10b981; font-weight:bold;">本套没有错题。可以进入下一套，或做少量口算保持手感。</td></tr>`;
 
