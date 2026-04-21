@@ -18,3 +18,4 @@
 - [2026-04-19-calculation-quick-review-implementation-plan.md](./superpowers/plans/2026-04-19-calculation-quick-review-implementation-plan.md) · “计算知识总览页”实施计划，覆盖内容注册、页面入口、视觉层级、打印与校验
 - [2026-04-19-set-review-variant-followup-implementation-plan.md](./superpowers/plans/2026-04-19-set-review-variant-followup-implementation-plan.md) · “本套报告错题变式跟训”实施计划，覆盖报告内变式生成、答案区和打印入口
 - [2026-04-19-closure-training-quality-implementation-plan.md](./superpowers/plans/2026-04-19-closure-training-quality-implementation-plan.md) · 第二阶段 `Closure` 高价值收束训练实施计划，覆盖两条主轴、五段矩阵、三阶段权重和验证约束
+- [2026-04-22-stage-three-mastery-implementation-plan.md](./superpowers/plans/2026-04-22-stage-three-mastery-implementation-plan.md) · 第三阶段 `Mastery` 实施计划，覆盖第三程序壳、五段矩阵、复杂混合主战场、关系型方程专题与校验约束
