@@ -1441,6 +1441,61 @@ if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPr
 if (sampleFollowupPrintHtml.includes('class="blank math-inline-blank"') || sampleFollowupPrintHtml.includes('<div class="blank"></div>')) {
   throw new Error('Set review follow-up print HTML still contains legacy underline blanks');
 }
+context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
+context.window.currentProgramId = 'advanced_fluency_v1';
+context.window.currentSetNumber = 109;
+const makeFakeRow = ({ tag, info, grade = '', submitted = 'false' }) => ({
+  getAttribute(name) {
+    if (name === 'data-tag') return tag;
+    if (name === 'data-info') return encodeURIComponent(JSON.stringify(info));
+    if (name === 'data-grade') return grade;
+    if (name === 'data-submitted') return submitted;
+    return '';
+  }
+});
+const firstInfo = { sec: '复杂乘法', num: 1, q: '12 × 3', a: '36', step: '12乘3等于36。' };
+const secondInfo = { sec: '复杂乘法', num: 2, q: '1.2 × 3', a: '3.6', step: '先按整数乘，再点小数点。' };
+const thirdInfo = { sec: '互化结果', num: 3, q: '0.25 = （ ）', a: '25%', step: '0.25乘100。' };
+const firstPayload = context.window.buildSubmissionPayloadFromRows?.([
+  makeFakeRow({ tag: 'k_dmul_basic', info: firstInfo, grade: 'wrong' }),
+  makeFakeRow({ tag: 'k_dmul_scale', info: secondInfo }),
+  makeFakeRow({ tag: 'k_conv_1', info: thirdInfo }),
+], null);
+if (!firstPayload || firstPayload.newRecords.length !== 1 || firstPayload.records.length !== 1) {
+  throw new Error('Initial partial-submission payload did not keep only newly graded answers');
+}
+await context.window.StorageDB.saveSession('KAI', firstPayload.records, 109, 'advanced_fluency_v1');
+let partialProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+let partialSession = partialProfile.history.find(session => session.set === 109);
+if (!partialSession || partialSession.allGrades.length !== 1 || partialSession.details.length !== 1) {
+  throw new Error('Initial partial submission did not persist exactly one graded answer');
+}
+if (context.window.findSessionGradeEntry?.(partialSession, 'k_dmul_basic', firstInfo)?.grade !== 'wrong') {
+  throw new Error('Submitted answer lookup did not preserve the first graded answer');
+}
+if (context.window.findSessionGradeEntry?.(partialSession, 'k_dmul_scale', secondInfo)) {
+  throw new Error('Unsubmitted answer was incorrectly treated as already submitted');
+}
+const secondPayload = context.window.buildSubmissionPayloadFromRows?.([
+  makeFakeRow({ tag: 'k_dmul_basic', info: firstInfo, grade: 'wrong', submitted: 'true' }),
+  makeFakeRow({ tag: 'k_dmul_scale', info: secondInfo, grade: 'careless' }),
+  makeFakeRow({ tag: 'k_conv_1', info: thirdInfo }),
+], partialSession);
+if (!secondPayload || secondPayload.newRecords.length !== 1 || secondPayload.records.length !== 2) {
+  throw new Error('Incremental payload builder did not merge previous answers with one new answer');
+}
+await context.window.StorageDB.saveSession('KAI', secondPayload.records, 109, 'advanced_fluency_v1');
+partialProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+partialSession = partialProfile.history.find(session => session.set === 109);
+if (!partialSession || partialSession.allGrades.length !== 2) {
+  throw new Error('Incremental resubmission did not merge newly graded rows into the same set session');
+}
+if (!partialSession.allGrades.some(entry => entry.grade === 'wrong') || !partialSession.allGrades.some(entry => entry.grade === 'careless')) {
+  throw new Error('Incremental resubmission did not preserve prior grades while adding the new one');
+}
+if (context.window.findSessionGradeEntry?.(partialSession, 'k_conv_1', thirdInfo)) {
+  throw new Error('A still-unsubmitted answer row was incorrectly auto-marked after incremental submission');
+}
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;

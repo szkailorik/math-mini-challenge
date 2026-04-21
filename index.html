@@ -1017,6 +1017,21 @@
         .grade-btn.perfect:hover, .grade-btn.perfect.active { background: #4caf50; color: white; border-color: #4caf50; }
         .grade-btn.careless:hover, .grade-btn.careless.active { background: #ff9800; color: white; border-color: #ff9800; }
         .grade-btn.wrong:hover, .grade-btn.wrong.active { background: #f44336; color: white; border-color: #f44336; }
+        .grade-btn[disabled] { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none !important; }
+        .ans-row.submitted-answer { border-left-color: #0f766e; }
+        .ans-row.submitted-answer .ans-q-line::after {
+            content: '已提交';
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+            padding: 1px 8px;
+            border-radius: 999px;
+            background: #ecfdf5;
+            color: #0f766e;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
         .submit-grades-btn { display: block; width: 100%; padding: 12px; background: #002D72; color: #fff; font-size: 16px; font-weight: bold; text-align: center; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
         .submit-grades-btn:hover { filter: brightness(1.1); }
 
@@ -2390,9 +2405,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.138';
-        const APP_RELEASE_LABEL = '本套报告热点排序';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.138 继续优化本套报告：顶部分布导航现在按严重程度排序，并把最该先看的大题标成“优先先看”。';
+        const APP_VERSION = 'v23.139';
+        const APP_RELEASE_LABEL = '答案增量补交';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.139 优化答案提交：同一套卷提交后，未提交过的题现在可以继续补交；已提交题会锁定，不再被未做题默认判成正确。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3504,7 +3519,8 @@
                     let before = profile.weights[r.tag] || 0;
                     applyWeightDelta(r.tag, gradeDelta(r.grade));
                     let appliedDelta = (profile.weights[r.tag] || 0) - before;
-                    sessionRecord.allGrades.push({ tag: r.tag, grade: r.grade });
+                    const uid = getQuestionUid(r.tag, r.info);
+                    sessionRecord.allGrades.push({ tag: r.tag, grade: r.grade, uid, info: r.info });
                     if (appliedDelta !== 0) sessionRecord.weightAdjustments.push({ tag: r.tag, delta: appliedDelta });
                     const signalAdj = getProgramSignalDelta(programId, r.tag, r.grade);
                     if (signalAdj) {
@@ -3517,7 +3533,7 @@
                     }
 
                     if (r.grade !== 'perfect') {
-                        let uid = computeErrorUid(r.tag, r.info.q);
+                        let uid = getQuestionUid(r.tag, r.info);
                         let mechanismKey = getErrorMechanismKey(r.tag, r.info);
                         sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid, mechanismKey });
 
@@ -6920,11 +6936,9 @@
             else if (q.reason === 'focus') reasonBadge = `<span class="reason-badge reason-focus">⚡ 高价值聚焦 / High-Value Focus</span>`;
             let levelBadge = q.levelName ? `<span class="level-badge">${q.levelName}</span>` : '';
 
-            let gradeType = '';
-            if (sessionData) {
-                let detail = sessionData.details.find(d => d.tag === q.tag && (!d.uid || d.uid === computeErrorUid(q.tag, q.q)));
-                gradeType = detail ? detail.grade : 'perfect';
-            }
+            const matchedSubmission = findSessionGradeEntry(sessionData, q.tag, infoObj);
+            let gradeType = matchedSubmission?.grade || '';
+            const isSubmitted = !!matchedSubmission;
 
             let bgStyle = '', pAct = '', cAct = '', wAct = '';
             if (gradeType === 'perfect') { bgStyle = 'background-color: #f1f8e9;'; pAct = 'active'; }
@@ -6940,16 +6954,16 @@
 
             const reviewAnswerClass = q.isReviewItem ? ' review-answer' : '';
             return `
-            <div class="ans-row${reviewAnswerClass}" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}">
+            <div class="ans-row${reviewAnswerClass}${isSubmitted ? ' submitted-answer' : ''}" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}" data-submitted="${isSubmitted ? 'true' : 'false'}">
                 <div class="ans-content">
                     <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif; ${qColor}">[原题 Question] <span class="math-row">${renderedQuestion}</span></span> ${levelBadge} ${reasonBadge}</div>
                     <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[解析 Steps] ${renderedStep ? `<span class="math-row">${renderedStep}</span> &rarr; ` : ''}<strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
                     <div class="ans-tip">[易错点 Tip] ${kb.name}：${kb.advice}</div>
                 </div>
                 <div class="grade-area no-print">
-                    <button class="grade-btn perfect ${pAct}" title="完美掌握 Perfect" onclick="window.markAnswer(this, 'perfect')">✓</button>
-                    <button class="grade-btn careless ${cAct}" title="粗心失误 Careless" onclick="window.markAnswer(this, 'careless')">⚠️</button>
-                    <button class="grade-btn wrong ${wAct}" title="概念错误 Wrong" onclick="window.markAnswer(this, 'wrong')">✗</button>
+                    <button class="grade-btn perfect ${pAct}" title="${isSubmitted ? '这道题已经提交过' : '完美掌握 Perfect'}" onclick="window.markAnswer(this, 'perfect')" ${isSubmitted ? 'disabled' : ''}>✓</button>
+                    <button class="grade-btn careless ${cAct}" title="${isSubmitted ? '这道题已经提交过' : '粗心失误 Careless'}" onclick="window.markAnswer(this, 'careless')" ${isSubmitted ? 'disabled' : ''}>⚠️</button>
+                    <button class="grade-btn wrong ${wAct}" title="${isSubmitted ? '这道题已经提交过' : '概念错误 Wrong'}" onclick="window.markAnswer(this, 'wrong')" ${isSubmitted ? 'disabled' : ''}>✗</button>
                 </div>
             </div>`;
         };
@@ -7031,7 +7045,7 @@
 
             const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK') => {
                 let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
-                let btnText = isCompleted ? `✅ 重新提交 ${name} 的批改并覆盖记录 (Resubmit & Overwrite)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
+                let btnText = isCompleted ? `➕ 继续补交 ${name} 未提交的答案 (Submit Remaining)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
                 let btnStyle = isCompleted ? `background: #4caf50;` : ``;
                 return `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
@@ -7065,7 +7079,7 @@
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
                     </div>
                     ${content}
-                    <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `✅ 重新提交 ${name} 的第二阶段批改 (Resubmit Closure)` : `📝 提交 ${name} 的第二阶段批改`}</button>
+                    <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `➕ 继续补交 ${name} 未提交的第二阶段答案` : `📝 提交 ${name} 的第二阶段批改`}</button>
                     ${buildSheetFooter(paperCode, 'Closure Answer Key')}
                 </div>`;
 
@@ -7775,6 +7789,77 @@
         function findSetSession(profile, setNum) {
             return (profile?.history || []).slice().reverse().find(session => session.set === setNum) || null;
         }
+
+        function getQuestionUid(tag, info = {}) {
+            return computeErrorUid(tag, info?.q || '');
+        }
+
+        function findSessionGradeEntry(sessionData, tag, info = {}) {
+            if (!sessionData || !tag) return null;
+            const uid = getQuestionUid(tag, info);
+            const allGrades = Array.isArray(sessionData.allGrades) ? sessionData.allGrades : [];
+            let matched = allGrades.find(entry => {
+                if (!entry) return false;
+                if (entry.uid && entry.uid === uid) return true;
+                if (entry.info?.q && getQuestionUid(entry.tag, entry.info) === uid) return true;
+                return false;
+            });
+            if (!matched) {
+                const sameTag = allGrades.filter(entry => entry?.tag === tag);
+                if (sameTag.length === 1) matched = sameTag[0];
+            }
+            if (matched?.grade) {
+                return { grade: matched.grade, uid: matched.uid || uid };
+            }
+            const detail = (sessionData.details || []).find(entry => {
+                if (!entry) return false;
+                if (entry.uid && entry.uid === uid) return true;
+                return entry.tag === tag && (!entry.uid || entry.uid === uid);
+            });
+            return detail?.grade ? { grade: detail.grade, uid: detail.uid || uid } : null;
+        }
+        window.findSessionGradeEntry = findSessionGradeEntry;
+
+        function parseAnswerRowRecord(row) {
+            if (!row || typeof row.getAttribute !== 'function') return null;
+            const tag = row.getAttribute('data-tag');
+            const infoStr = row.getAttribute('data-info');
+            if (!tag || !infoStr) return null;
+            try {
+                const info = JSON.parse(decodeURIComponent(infoStr));
+                return { tag, info, grade: row.getAttribute('data-grade') || '' };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function buildSubmissionPayloadFromRows(rows = [], existingSession = null) {
+            const mergedRecords = new Map();
+            (rows || []).forEach(row => {
+                const record = parseAnswerRowRecord(row);
+                if (!record) return;
+                const existingGrade = findSessionGradeEntry(existingSession, record.tag, record.info);
+                if (!existingGrade) return;
+                mergedRecords.set(getQuestionUid(record.tag, record.info), {
+                    tag: record.tag,
+                    grade: existingGrade.grade,
+                    info: record.info
+                });
+            });
+            const newRecords = [];
+            (rows || []).forEach(row => {
+                if (!row || row.getAttribute?.('data-submitted') === 'true') return;
+                const record = parseAnswerRowRecord(row);
+                if (!record || !record.grade) return;
+                mergedRecords.set(getQuestionUid(record.tag, record.info), record);
+                newRecords.push(record);
+            });
+            return {
+                records: Array.from(mergedRecords.values()),
+                newRecords
+            };
+        }
+        window.buildSubmissionPayloadFromRows = buildSubmissionPayloadFromRows;
 
         const SET_REVIEW_FOLLOWUP_LABELS = {
             decimal_division: '小数除法',
@@ -9119,6 +9204,7 @@
 
         window.markAnswer = function(btn, type) {
             let container = btn.closest('.grade-area');
+            if (!container || btn.disabled) return;
             let btns = container.querySelectorAll('.grade-btn');
             btns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -9133,32 +9219,25 @@
         window.submitGrades = async function(student) {
             const programId = getCurrentProgramId();
             let sheetId = student === 'KAI' ? 'kai-ans-sheet' : 'lorik-ans-sheet';
-            let rows = document.querySelectorAll(`#${sheetId} .ans-row`);
-            let records = [];
-
-            rows.forEach(row => {
-                let tag = row.getAttribute('data-tag');
-                let finalGrade = row.getAttribute('data-grade');
-                if (!finalGrade) finalGrade = 'perfect';
-                let infoStr = row.getAttribute('data-info');
-
-                if (tag && infoStr) {
-                    records.push({ tag: tag, grade: finalGrade, info: JSON.parse(decodeURIComponent(infoStr)) });
-                }
-            });
-
-            if (records.length > 0) {
+            let rows = Array.from(document.querySelectorAll(`#${sheetId} .ans-row`));
+            const profile = StorageDB.getProfile(student, programId) || createProgramProfile(programId);
+            const existingSession = findSetSession(profile, window.currentSetNumber);
+            const { records, newRecords } = buildSubmissionPayloadFromRows(rows, existingSession);
+            if (newRecords.length > 0) {
                 await StorageDB.saveSession(student, records, window.currentSetNumber, programId);
-                let errCount = records.filter(r => r.grade !== 'perfect').length;
+                let errCount = newRecords.filter(r => r.grade !== 'perfect').length;
                 const toastMsg = programId === CLOSURE_PROGRAM_ID
-                    ? `✅ ${student} 的第二阶段已归档！新增/更新 ${errCount} 道错题，并更新第二阶段画像。`
-                    : `✅ ${student} 已归档！新增/更新 ${errCount} 道错题到永久错题本。`;
+                    ? `✅ ${student} 的第二阶段已归档！本次补交 ${newRecords.length} 题，新增/更新 ${errCount} 道错题，并更新第二阶段画像。`
+                    : `✅ ${student} 已归档！本次补交 ${newRecords.length} 题，新增/更新 ${errCount} 道错题到永久错题本。`;
                 showToast(toastMsg, { background: '#4caf50', duration: 3000 });
 
                 window.renderPaper();
                 window.showSetReview(window.currentSetNumber, student);
             } else {
-                alert(`请为 ${student} 批改哦！ (Please grade first!)`);
+                const msg = existingSession
+                    ? `${student} 这套目前没有新的未提交答案。`
+                    : `请先为 ${student} 至少批改一道题！`;
+                showToast(msg, { background: '#b45309', duration: 2600 });
             }
         };
 
