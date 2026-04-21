@@ -7023,6 +7023,18 @@
             };
         }
 
+        function getAnswerSectionPendingSummary(sectionGroups = [], sessionData = null) {
+            return (sectionGroups || []).map((section, index) => {
+                const progress = getAnswerSubmissionProgress(section?.questions || [], sessionData);
+                return {
+                    index: index + 1,
+                    title: section?.title || `第${index + 1}大题`,
+                    pending: progress.pending,
+                    total: progress.total
+                };
+            }).filter(section => section.total > 0 && section.pending > 0);
+        }
+
         function scrollToFirstPendingAnswer(student, options = {}) {
             const silent = !!options.silent;
             const sheet = document.getElementById(`${String(student || '').toLowerCase()}-ans-sheet`);
@@ -7038,6 +7050,15 @@
             setTimeout(() => pending.classList.remove('pending-focus'), 2200);
         }
         window.scrollToFirstPendingAnswer = scrollToFirstPendingAnswer;
+
+        function scrollToAnswerSection(student, sectionIndex) {
+            const sheet = document.getElementById(`${String(student || '').toLowerCase()}-ans-sheet`);
+            if (!sheet) return;
+            const target = sheet.querySelector(`.ans-section[data-sec-index="${sectionIndex}"]`);
+            if (!target) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        window.scrollToAnswerSection = scrollToAnswerSection;
 
         window.answerPendingOnlyState = window.answerPendingOnlyState || { KAI: false, Lorik: false };
 
@@ -7082,13 +7103,18 @@
         }
         window.toggleAnswerPendingOnly = toggleAnswerPendingOnly;
 
-        function buildAnswerSubmissionSummary(progress, isClosure = false, student = '') {
+        function buildAnswerSubmissionSummary(progress, isClosure = false, student = '', sectionPendingSummary = []) {
             if (!progress || !progress.total) return '';
             const tone = progress.pending > 0 ? '#b45309' : '#0f766e';
             const bg = progress.pending > 0 ? '#fff7ed' : '#ecfdf5';
             const border = progress.pending > 0 ? '#fdba74' : '#6ee7b7';
             const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
             const pendingOnly = !!window.answerPendingOnlyState?.[normalized];
+            const sectionNav = sectionPendingSummary.length > 0
+                ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                    ${sectionPendingSummary.map(section => `<button type="button" class="review-jump-btn" onclick="window.scrollToAnswerSection('${student}', ${section.index})">第${section.index}大题 还剩 ${section.pending} 题</button>`).join('')}
+                   </div>`
+                : '';
             const lead = progress.pending > 0
                 ? `当前还剩 ${progress.pending} 题未提交`
                 : `这套题的答案已经全部提交`;
@@ -7104,6 +7130,7 @@
             return `
                 <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid ${border}; background:${bg}; color:${tone}; font-size:13.5px; line-height:1.6; border-radius:10px;">
                     <strong>${lead}</strong><br>${follow}
+                    ${sectionNav}
                     ${actions}
                 </div>`;
         }
@@ -7244,8 +7271,22 @@
                 const lFocusMeta = data.c_l_focusMeta || getLegacyClosureFocusMeta(phaseMeta);
                 const closureKaiQuestions = flattenPaperSections(data, ['c_k_keep', 'c_k_bridge', 'c_k_mix', 'c_k_unit', 'c_k_focus']);
                 const closureLorikQuestions = flattenPaperSections(data, ['c_l_keep', 'c_l_bridge', 'c_l_mix', 'c_l_unit', 'c_l_focus']);
-                const closureKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureKaiQuestions, closureKaiSession), true, 'KAI');
-                const closureLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureLorikQuestions, closureLorikSession), true, 'Lorik');
+                const closureKaiSections = [
+                    { title: '一、核心保温', questions: data.c_k_keep },
+                    { title: '二、表征互通主训练', questions: data.c_k_bridge },
+                    { title: '三、复杂四则混合主训练', questions: data.c_k_mix },
+                    { title: '四、单位 / 率 / 关系综合', questions: data.c_k_unit },
+                    { title: `五、${kFocusMeta.answerTitle}`, questions: data.c_k_focus }
+                ];
+                const closureLorikSections = [
+                    { title: '一、核心保温', questions: data.c_l_keep },
+                    { title: '二、表征互通主训练', questions: data.c_l_bridge },
+                    { title: '三、复杂四则混合主训练', questions: data.c_l_mix },
+                    { title: '四、单位 / 率 / 关系综合', questions: data.c_l_unit },
+                    { title: `五、${lFocusMeta.answerTitle}`, questions: data.c_l_focus }
+                ];
+                const closureKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureKaiQuestions, closureKaiSession), true, 'KAI', getAnswerSectionPendingSummary(closureKaiSections, closureKaiSession));
+                const closureLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureLorikQuestions, closureLorikSession), true, 'Lorik', getAnswerSectionPendingSummary(closureLorikSections, closureLorikSession));
 
                 const closureScore = 8 + 8 + 8 + 8 + 8;
                 let k_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_k_keep, 'h-mixed', 2) +
@@ -7260,17 +7301,17 @@
                 let l_p2 = buildQSection(`四、 ${phaseMeta.unitTitle}`, `IV. Unit / Rate / Relation Bridge`, `(${phaseMeta.unitHint})`, data.c_l_unit, 'h-mixed', 2) +
                            buildQSection(`五、 ${lFocusMeta.title}`, `V. Focus Reinforcement`, `(${lFocusMeta.hint || phaseMeta.focusHint})`, data.c_l_focus, 'h-mixed', 2);
 
-                let k_ans = `<div class="ans-section"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_k_keep, 'KAI', '核心保温', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_k_bridge, 'KAI', phaseMeta.label, closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_k_mix, 'KAI', '复杂混合', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_k_unit, 'KAI', '关系综合', closureKaiSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">五、${kFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_k_focus, 'KAI', kFocusMeta.answerLabel, closureKaiSession)}</div>`;
+                let k_ans = `<div class="ans-section" data-sec-index="1"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_k_keep, 'KAI', '核心保温', closureKaiSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="2"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_k_bridge, 'KAI', phaseMeta.label, closureKaiSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="3"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_k_mix, 'KAI', '复杂混合', closureKaiSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="4"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_k_unit, 'KAI', '关系综合', closureKaiSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="5"><div class="ans-section-title">五、${kFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_k_focus, 'KAI', kFocusMeta.answerLabel, closureKaiSession)}</div>`;
 
-                let l_ans = `<div class="ans-section"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_l_keep, 'Lorik', '核心保温', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', phaseMeta.label, closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_l_mix, 'Lorik', '复杂混合', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_l_unit, 'Lorik', '关系综合', closureLorikSession)}</div>` +
-                            `<div class="ans-section"><div class="ans-section-title">五、${lFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_l_focus, 'Lorik', lFocusMeta.answerLabel, closureLorikSession)}</div>`;
+                let l_ans = `<div class="ans-section" data-sec-index="1"><div class="ans-section-title">一、核心保温 (Keep Warm)</div>${buildAnsGrid(data.c_l_keep, 'Lorik', '核心保温', closureLorikSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="2"><div class="ans-section-title">二、表征互通主训练 (${phaseMeta.label})</div>${buildAnsGrid(data.c_l_bridge, 'Lorik', phaseMeta.label, closureLorikSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="3"><div class="ans-section-title">三、复杂四则混合主训练 (Complex Mixed)</div>${buildAnsGrid(data.c_l_mix, 'Lorik', '复杂混合', closureLorikSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="4"><div class="ans-section-title">四、单位 / 率 / 关系综合</div>${buildAnsGrid(data.c_l_unit, 'Lorik', '关系综合', closureLorikSession)}</div>` +
+                            `<div class="ans-section" data-sec-index="5"><div class="ans-section-title">五、${lFocusMeta.answerTitle}</div>${buildAnsGrid(data.c_l_focus, 'Lorik', lFocusMeta.answerLabel, closureLorikSession)}</div>`;
 
                 const closureIntroCard = `
                     <div class="report-section no-print" style="width:210mm; margin:0 auto 18px; background:#fffdf7; border:1px solid #fcd34d; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
@@ -7334,8 +7375,24 @@
             let lorikSession = lorikProfile.history.slice().reverse().find(h => h.set === window.currentSetNumber);
             const advancedKaiQuestions = flattenPaperSections(data, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']);
             const advancedLorikQuestions = flattenPaperSections(data, ['l_m', 'l_d', 'l_s', 'l_c', 'l_f', 'l_o']);
-            const advancedKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedKaiQuestions, kaiSession), false, 'KAI');
-            const advancedLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedLorikQuestions, lorikSession), false, 'Lorik');
+            const advancedKaiSections = [
+                { title: '一、复杂乘法', questions: data.k_m },
+                { title: '二、复杂除法', questions: data.k_d },
+                { title: '三、大数减法', questions: data.k_s },
+                { title: '四、互化结果', questions: data.k_c },
+                { title: '五、繁分数与方程', questions: data.k_f },
+                { title: '六、简便运算', questions: data.k_o }
+            ];
+            const advancedLorikSections = [
+                { title: '一、进阶乘法', questions: data.l_m },
+                { title: '二、进阶除法', questions: data.l_d },
+                { title: '三、大数减法', questions: data.l_s },
+                { title: '四、互化与比较', questions: data.l_c },
+                { title: '五、分数四则运算', questions: data.l_f },
+                { title: '六、基础简便运算', questions: data.l_o }
+            ];
+            const advancedKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedKaiQuestions, kaiSession), false, 'KAI', getAnswerSectionPendingSummary(advancedKaiSections, kaiSession));
+            const advancedLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedLorikQuestions, lorikSession), false, 'Lorik', getAnswerSectionPendingSummary(advancedLorikSections, lorikSession));
             let stampKAI = kaiSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
             let stampLorik = lorikSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
 
@@ -7346,12 +7403,12 @@
                        buildQSection(`五、 繁分数与方程进阶`, `V. Complex Fractions & Advanced Equations`, '(混合抽题，求x / Solve for x)', data.k_f, 'h-frac', 3) +
                        buildQSection(`六、 奥数级混合运算`, `VI. Olympiad-Level Mixed Operations`, '(2-3分题 / 2-3 pts each)', data.k_o, 'h-mixed', 2);
 
-            let k_ans = `<div class="ans-section"><div class="ans-section-title">一、复杂乘法 (Multiplication)</div>${buildAnsGrid(data.k_m, 'KAI', '复杂乘法', kaiSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">二、复杂除法 (Division)</div>${buildAnsGrid(data.k_d, 'KAI', '复杂除法', kaiSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.k_s, 'KAI', '大数减法', kaiSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">四、互化结果 (Conversions)</div>${buildAnsGrid(data.k_c, 'KAI', '互化结果', kaiSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">五、繁分数与方程 (Fractions & Eqs)</div>${buildAnsGrid(data.k_f, 'KAI', '繁分数与方程', kaiSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">六、简便运算 (Shortcut Math)</div>${buildAnsGrid(data.k_o, 'KAI', '奥数混合运算', kaiSession)}</div>`;
+            let k_ans = `<div class="ans-section" data-sec-index="1"><div class="ans-section-title">一、复杂乘法 (Multiplication)</div>${buildAnsGrid(data.k_m, 'KAI', '复杂乘法', kaiSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="2"><div class="ans-section-title">二、复杂除法 (Division)</div>${buildAnsGrid(data.k_d, 'KAI', '复杂除法', kaiSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="3"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.k_s, 'KAI', '大数减法', kaiSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="4"><div class="ans-section-title">四、互化结果 (Conversions)</div>${buildAnsGrid(data.k_c, 'KAI', '互化结果', kaiSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="5"><div class="ans-section-title">五、繁分数与方程 (Fractions & Eqs)</div>${buildAnsGrid(data.k_f, 'KAI', '繁分数与方程', kaiSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="6"><div class="ans-section-title">六、简便运算 (Shortcut Math)</div>${buildAnsGrid(data.k_o, 'KAI', '奥数混合运算', kaiSession)}</div>`;
 
             let l_p1 = buildQSection(`一、 进阶竖式乘法`, `I. Advanced Vertical Multiplication`, '(每题2分 / 2 pts each)', data.l_m, 'h-vert', 2) +
                        buildQSection(`二、 进阶竖式除法`, `II. Advanced Vertical Division`, '(含小数被除数/除数 / Includes decimal dividend & divisor)', data.l_d, 'h-vert', 2) +
@@ -7360,12 +7417,12 @@
                        buildQSection(`五、 多步混合分数运算`, `V. Multi-Step Fraction Operations`, '(顺序已洗牌 / Shuffled order)', data.l_f, 'h-frac', 3) +
                        buildQSection(`六、 基础简便运算`, `VI. Basic Shortcut Calculations`, '(2-3分题 / 2-3 pts each)', data.l_o, 'h-mixed', 2);
 
-            let l_ans = `<div class="ans-section"><div class="ans-section-title">一、进阶乘法 (Multiplication)</div>${buildAnsGrid(data.l_m, 'Lorik', '进阶乘法', lorikSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">二、进阶除法 (Division)</div>${buildAnsGrid(data.l_d, 'Lorik', '进阶除法', lorikSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.l_s, 'Lorik', '大数减法', lorikSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">四、互化与比较 (Conversions)</div>${buildAnsGrid(data.l_c, 'Lorik', '互化与比较', lorikSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">五、分数四则运算 (Fraction Ops)</div>${buildAnsGrid(data.l_f, 'Lorik', '分数四则运算', lorikSession)}</div>` +
-                        `<div class="ans-section"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
+            let l_ans = `<div class="ans-section" data-sec-index="1"><div class="ans-section-title">一、进阶乘法 (Multiplication)</div>${buildAnsGrid(data.l_m, 'Lorik', '进阶乘法', lorikSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="2"><div class="ans-section-title">二、进阶除法 (Division)</div>${buildAnsGrid(data.l_d, 'Lorik', '进阶除法', lorikSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="3"><div class="ans-section-title">三、大数减法 (Subtraction)</div>${buildAnsGrid(data.l_s, 'Lorik', '大数减法', lorikSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="4"><div class="ans-section-title">四、互化与比较 (Conversions)</div>${buildAnsGrid(data.l_c, 'Lorik', '互化与比较', lorikSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="5"><div class="ans-section-title">五、分数四则运算 (Fraction Ops)</div>${buildAnsGrid(data.l_f, 'Lorik', '分数四则运算', lorikSession)}</div>` +
+                        `<div class="ans-section" data-sec-index="6"><div class="ans-section-title">六、基础简便运算 (Shortcut Math)</div>${buildAnsGrid(data.l_o, 'Lorik', '基础简便运算', lorikSession)}</div>`;
 
             document.getElementById('paper-container').innerHTML =
                 getSheetHTML(`Mini Challenge Advanced (Set ${window.currentSetNumber})`, 'KAI (Set A)', k_p1, totalScore, stampKAI, '', [

@@ -1511,6 +1511,18 @@ if (!progressHtml || !progressHtml.includes('定位到第一道待补交题')) {
 if (!progressHtml.includes('只看待补交题')) {
   throw new Error('Answer submission progress note did not expose the pending-only filter action');
 }
+const progressHtmlWithSections = context.window.buildAnswerSubmissionSummary?.(
+  { total: 3, submitted: 1, pending: 2 },
+  false,
+  'KAI',
+  [
+    { index: 4, title: '第四大题', pending: 2, total: 3 },
+    { index: 6, title: '第六大题', pending: 1, total: 2 }
+  ]
+);
+if (!progressHtmlWithSections || !progressHtmlWithSections.includes('第4大题 还剩 2 题') || !progressHtmlWithSections.includes('第6大题 还剩 1 题')) {
+  throw new Error('Answer submission summary did not expose the pending section navigation');
+}
 context.window.currentSetNumber = 73;
 context.window.renderPaper();
 const activePresentation = context.window.getSubmitButtonPresentation?.('KAI', 1, 2, 'advanced_fluency_v1');
