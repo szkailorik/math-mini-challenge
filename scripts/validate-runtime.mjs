@@ -1508,6 +1508,9 @@ const progressHtml = context.window.buildAnswerSubmissionSummary?.(
 if (!progressHtml || !progressHtml.includes('定位到第一道待补交题')) {
   throw new Error('Answer submission progress note did not expose the pending-answer jump action');
 }
+if (!progressHtml.includes('只看待补交题')) {
+  throw new Error('Answer submission progress note did not expose the pending-only filter action');
+}
 context.window.currentSetNumber = 73;
 context.window.renderPaper();
 const activePresentation = context.window.getSubmitButtonPresentation?.('KAI', 1, 2, 'advanced_fluency_v1');
@@ -1521,6 +1524,23 @@ if (!pendingPresentation || !pendingPresentation.disabled || !pendingPresentatio
 const completePresentation = context.window.getSubmitButtonPresentation?.('KAI', 0, 0, 'advanced_fluency_v1');
 if (!completePresentation || !completePresentation.disabled || !completePresentation.text.includes('这套答案已全部提交')) {
   throw new Error('Submit button did not report the fully submitted state');
+}
+const filterSheet = context.window.document.getElementById('kai-ans-sheet');
+const filterRows = Array.from(filterSheet?.querySelectorAll('.ans-row') || []).slice(0, 2);
+if (filterRows.length >= 2) {
+  const originalFilterState = filterRows.map(row => row.getAttribute('data-submitted'));
+  filterRows[0].setAttribute('data-submitted', 'true');
+  filterRows[1].setAttribute('data-submitted', 'false');
+  context.window.setAnswerPendingOnly?.('KAI', true);
+  if (!filterSheet.classList.contains('pending-only-mode')) {
+    throw new Error('Pending-only answer mode did not activate on the answer sheet');
+  }
+  filterRows.forEach((row, index) => {
+    const state = originalFilterState[index];
+    if (state === null) row.removeAttribute('data-submitted');
+    else row.setAttribute('data-submitted', state);
+  });
+  context.window.setAnswerPendingOnly?.('KAI', false);
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {

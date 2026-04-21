@@ -1051,6 +1051,9 @@
             border-left-color: #ea580c;
             background: #fffaf0 !important;
         }
+        .ans-sheet.pending-only-mode .ans-row[data-submitted="true"] {
+            display: none;
+        }
         .submit-grades-btn { display: block; width: 100%; padding: 12px; background: #002D72; color: #fff; font-size: 16px; font-weight: bold; text-align: center; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
         .submit-grades-btn:hover { filter: brightness(1.1); }
         .submit-grades-btn[disabled] { opacity: 0.58; cursor: not-allowed; box-shadow: none; filter: none !important; }
@@ -2436,9 +2439,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.145';
-        const APP_RELEASE_LABEL = '补交前自动带到待补交题';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.145 继续优化答案补交：如果这次还没新批改任何待补交题，系统会直接带你到第一道待补交题。';
+        const APP_VERSION = 'v23.146';
+        const APP_RELEASE_LABEL = '待补交题过滤';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.146 继续优化答案补交：答案页现在可以一键切到“只看待补交题”，回来继续补做会更清楚。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7033,11 +7036,39 @@
         }
         window.scrollToFirstPendingAnswer = scrollToFirstPendingAnswer;
 
+        window.answerPendingOnlyState = window.answerPendingOnlyState || { KAI: false, Lorik: false };
+
+        function setAnswerPendingOnly(student, pendingOnly) {
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const sheet = document.getElementById(`${normalized.toLowerCase()}-ans-sheet`);
+            if (!sheet) return;
+            const hasPending = !!sheet.querySelector('.ans-row[data-submitted="false"]');
+            const nextState = !!pendingOnly && hasPending;
+            window.answerPendingOnlyState[normalized] = nextState;
+            if (sheet.classList?.toggle) {
+                sheet.classList.toggle('pending-only-mode', nextState);
+            } else {
+                const classNames = new Set(String(sheet.className || '').split(/\s+/).filter(Boolean));
+                if (nextState) classNames.add('pending-only-mode');
+                else classNames.delete('pending-only-mode');
+                sheet.className = Array.from(classNames).join(' ');
+            }
+        }
+        window.setAnswerPendingOnly = setAnswerPendingOnly;
+
+        function toggleAnswerPendingOnly(student) {
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            setAnswerPendingOnly(normalized, !window.answerPendingOnlyState[normalized]);
+        }
+        window.toggleAnswerPendingOnly = toggleAnswerPendingOnly;
+
         function buildAnswerSubmissionSummary(progress, isClosure = false, student = '') {
             if (!progress || !progress.total) return '';
             const tone = progress.pending > 0 ? '#b45309' : '#0f766e';
             const bg = progress.pending > 0 ? '#fff7ed' : '#ecfdf5';
             const border = progress.pending > 0 ? '#fdba74' : '#6ee7b7';
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const pendingOnly = !!window.answerPendingOnlyState?.[normalized];
             const lead = progress.pending > 0
                 ? `当前还剩 ${progress.pending} 题未提交`
                 : `这套题的答案已经全部提交`;
@@ -7045,7 +7076,10 @@
                 ? `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并写入第二阶段画像。`
                 : `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并记入本套报告与错题本。`;
             const actions = progress.pending > 0
-                ? `<div style="margin-top:8px;"><button type="button" class="review-jump-btn" onclick="window.scrollToFirstPendingAnswer('${student}')">定位到第一道待补交题</button></div>`
+                ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="review-jump-btn" onclick="window.scrollToFirstPendingAnswer('${student}')">定位到第一道待补交题</button>
+                        <button type="button" class="review-jump-btn" onclick="window.toggleAnswerPendingOnly('${student}')">${pendingOnly ? '显示全部答案' : '只看待补交题'}</button>
+                   </div>`
                 : '';
             return `
                 <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid ${border}; background:${bg}; color:${tone}; font-size:13.5px; line-height:1.6; border-radius:10px;">
@@ -8014,6 +8048,8 @@
         function refreshAllSubmitButtons() {
             refreshSubmitButtonState('KAI');
             refreshSubmitButtonState('Lorik');
+            setAnswerPendingOnly('KAI', !!window.answerPendingOnlyState?.KAI);
+            setAnswerPendingOnly('Lorik', !!window.answerPendingOnlyState?.Lorik);
         }
         window.refreshAllSubmitButtons = refreshAllSubmitButtons;
 
@@ -9398,6 +9434,9 @@
                     : `✅ ${student} 已归档！本次补交 ${newRecords.length} 题，新增/更新 ${errCount} 道错题到永久错题本。`;
                 showToast(toastMsg, { background: '#4caf50', duration: 3000 });
 
+                if (remainingPending.length - newRecords.length > 0) {
+                    window.answerPendingOnlyState[student] = true;
+                }
                 window.renderPaper();
                 const focusAfterRender = () => {
                     window.focusAnswerSheet(student);
