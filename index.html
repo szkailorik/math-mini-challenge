@@ -2436,9 +2436,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.143';
-        const APP_RELEASE_LABEL = '补交后留在答案页';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.143 继续优化答案补交：补交成功后会直接留在当前学生的答案页，方便继续补做剩下的题。';
+        const APP_VERSION = 'v23.144';
+        const APP_RELEASE_LABEL = '补交后自动跳下一题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.144 继续优化答案补交：补交成功后会回到当前学生的答案页，并自动定位到下一道待补交题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7017,12 +7017,13 @@
             };
         }
 
-        function scrollToFirstPendingAnswer(student) {
+        function scrollToFirstPendingAnswer(student, options = {}) {
+            const silent = !!options.silent;
             const sheet = document.getElementById(`${String(student || '').toLowerCase()}-ans-sheet`);
             if (!sheet) return;
             const pending = sheet.querySelector('.ans-row[data-submitted="false"]');
             if (!pending) {
-                toast('这套题已经没有待补交的答案了。');
+                if (!silent) toast('这套题已经没有待补交的答案了。');
                 return;
             }
             sheet.querySelectorAll('.ans-row.pending-focus').forEach(node => node.classList.remove('pending-focus'));
@@ -9383,10 +9384,14 @@
                 showToast(toastMsg, { background: '#4caf50', duration: 3000 });
 
                 window.renderPaper();
+                const focusAfterRender = () => {
+                    window.focusAnswerSheet(student);
+                    setTimeout(() => window.scrollToFirstPendingAnswer(student, { silent: true }), 160);
+                };
                 if (typeof window.requestAnimationFrame === 'function') {
-                    window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.focusAnswerSheet(student)));
+                    window.requestAnimationFrame(() => window.requestAnimationFrame(focusAfterRender));
                 } else {
-                    setTimeout(() => window.focusAnswerSheet(student), 120);
+                    setTimeout(focusAfterRender, 120);
                 }
             } else {
                 const msg = existingSession
