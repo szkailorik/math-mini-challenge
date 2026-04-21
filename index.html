@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.134 (本套报告定位去重)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.135 (本套报告错题分布)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1810,6 +1810,41 @@
         .set-review-type { white-space: nowrap; font-size: 13px; }
         .set-review-tip-cell { text-align: left; min-width: 230px; line-height: 1.45; }
         .set-review-tip-title { font-weight: 700; color: #7c2d12; display: inline-block; margin-bottom: 4px; }
+        .set-review-distribution {
+            margin: 0 15px 12px;
+            padding: 10px 12px;
+            border: 1px solid #dbeafe;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+        }
+        .set-review-distribution-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #1d4ed8;
+            letter-spacing: 0.04em;
+            margin-bottom: 8px;
+        }
+        .set-review-distribution-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .set-review-distribution-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #0f172a;
+            border: 1px solid #bfdbfe;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .set-review-distribution-pill b {
+            color: #1d4ed8;
+            font-size: 13px;
+        }
         .set-review-followup-wrap { padding: 0 15px 16px; background:#fff; }
         .set-review-followup { border-top: 1px solid #e2e8f0; padding-top: 16px; display:grid; gap:12px; }
         .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
@@ -2327,9 +2362,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.134';
-        const APP_RELEASE_LABEL = '本套报告定位去重';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.134 继续优化本套报告错题表：既然已经按大题分组，行内就只保留“第几小题”，减少重复信息，让定位更干净。';
+        const APP_VERSION = 'v23.135';
+        const APP_RELEASE_LABEL = '本套报告错题分布';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.135 继续优化本套报告：在表格上方新增“按大题统计的错题分布”，先看错题集中在哪几大题，再往下看每一道小题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8770,6 +8805,22 @@
             const perfectCount = Math.max(0, allGrades.length - details.length);
             const isClosureSession = session.programId === CLOSURE_PROGRAM_ID;
             const followupHTML = buildSetReviewFollowupHTML(student, session);
+            const sectionCounts = new Map();
+
+            details.forEach(detail => {
+                const rawSection = String(detail?.info?.sec || '').trim();
+                const sectionMatch = rawSection.match(/^([一二三四五六七八九十\d]+)[、.．]\s*(.*)$/);
+                const majorLabel = sectionMatch ? `第 ${sectionMatch[1]} 大题` : (rawSection || '分区缺失');
+                sectionCounts.set(majorLabel, (sectionCounts.get(majorLabel) || 0) + 1);
+            });
+            const distributionHTML = sectionCounts.size ? `
+                <div class="set-review-distribution">
+                    <div class="set-review-distribution-title">错题分布 / SECTION HOTSPOTS</div>
+                    <div class="set-review-distribution-strip">
+                        ${Array.from(sectionCounts.entries()).map(([label, count]) => `<span class="set-review-distribution-pill">${label}<b>${count} 题</b></span>`).join('')}
+                    </div>
+                </div>
+            ` : '';
 
             let currentMajorLabel = '';
             const rows = details.length ? details.map((detail) => {
@@ -8804,6 +8855,7 @@
                     ✅ 正确 ${perfectCount} 题 · ⚠️ 粗心 ${carelessCount} 题 · ❌ 概念 ${wrongCount} 题 · 📓 错题已进入错题本和后续训练
                     ${isClosureSession ? `<div style="margin-top:8px;" class="knowledge-tags">${buildClosureSignalSummary(session)}</div>` : ''}
                 </div>
+                ${distributionHTML}
                 <div style="padding:15px; max-height:360px; overflow:auto;">
                     <table class="archive-table">
                         <tr><th>定位</th><th>类型</th><th>正确答案</th><th>复盘提醒</th></tr>
