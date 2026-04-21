@@ -1508,6 +1508,20 @@ const progressHtml = context.window.buildAnswerSubmissionSummary?.(
 if (!progressHtml || !progressHtml.includes('定位到第一道待补交题')) {
   throw new Error('Answer submission progress note did not expose the pending-answer jump action');
 }
+context.window.currentSetNumber = 73;
+context.window.renderPaper();
+const activePresentation = context.window.getSubmitButtonPresentation?.('KAI', 1, 2, 'advanced_fluency_v1');
+if (!activePresentation || activePresentation.disabled || !activePresentation.text.includes('本次已批改的 1 题')) {
+  throw new Error('Submit button did not announce the current incremental submission count');
+}
+const pendingPresentation = context.window.getSubmitButtonPresentation?.('KAI', 0, 2, 'advanced_fluency_v1');
+if (!pendingPresentation || !pendingPresentation.disabled || !pendingPresentation.text.includes('请先批改')) {
+  throw new Error('Submit button did not guide the user back to pending-but-ungraded answers');
+}
+const completePresentation = context.window.getSubmitButtonPresentation?.('KAI', 0, 0, 'advanced_fluency_v1');
+if (!completePresentation || !completePresentation.disabled || !completePresentation.text.includes('这套答案已全部提交')) {
+  throw new Error('Submit button did not report the fully submitted state');
+}
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
 for (let setNumber = 73; setNumber <= 102; setNumber += 1) {
   context.window.currentSetNumber = setNumber;

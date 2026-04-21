@@ -2436,9 +2436,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.144';
-        const APP_RELEASE_LABEL = '补交后自动跳下一题';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.144 继续优化答案补交：补交成功后会回到当前学生的答案页，并自动定位到下一道待补交题。';
+        const APP_VERSION = 'v23.145';
+        const APP_RELEASE_LABEL = '补交前自动带到待补交题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.145 继续优化答案补交：如果这次还没新批改任何待补交题，系统会直接带你到第一道待补交题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7962,6 +7962,39 @@
         }
         window.getPendingSubmissionSelectionCount = getPendingSubmissionSelectionCount;
 
+        function getSubmitButtonPresentation(student, pendingCount, totalPending, programId = getCurrentProgramId()) {
+            const normalized = String(student || '');
+            const isClosure = programId === CLOSURE_PROGRAM_ID;
+            const baseColor = isClosure ? '#0f766e' : '#002D72';
+            const activeColor = isClosure ? '#0f766e' : '#4caf50';
+            if (pendingCount > 0) {
+                return {
+                    disabled: false,
+                    background: activeColor,
+                    text: isClosure
+                        ? `➕ 补交 ${normalized} 本次已批改的 ${pendingCount} 题（第二阶段）`
+                        : `➕ 补交 ${normalized} 本次已批改的 ${pendingCount} 题`
+                };
+            }
+            if (totalPending > 0) {
+                return {
+                    disabled: true,
+                    background: baseColor,
+                    text: isClosure
+                        ? `⏳ 请先批改 ${normalized} 还未提交的第二阶段题`
+                        : `⏳ 请先批改 ${normalized} 还未提交的题`
+                };
+            }
+            return {
+                disabled: true,
+                background: baseColor,
+                text: isClosure
+                    ? `✅ ${normalized} 这套第二阶段答案已全部提交`
+                    : `✅ ${normalized} 这套答案已全部提交`
+            };
+        }
+        window.getSubmitButtonPresentation = getSubmitButtonPresentation;
+
         function refreshSubmitButtonState(student) {
             const normalized = String(student || '');
             const sheetId = normalized.toLowerCase() === 'kai' ? 'kai-ans-sheet' : 'lorik-ans-sheet';
@@ -7971,29 +8004,10 @@
             if (!btn) return;
             const pendingCount = getPendingSubmissionSelectionCount(normalized);
             const totalPending = sheet.querySelectorAll('.ans-row[data-submitted="false"]').length;
-            const programId = getCurrentProgramId();
-            const isClosure = programId === CLOSURE_PROGRAM_ID;
-            const baseColor = isClosure ? '#0f766e' : '#002D72';
-            const activeColor = isClosure ? '#0f766e' : '#4caf50';
-            if (pendingCount > 0) {
-                btn.disabled = false;
-                btn.style.background = activeColor;
-                btn.textContent = isClosure
-                    ? `➕ 补交 ${normalized} 本次已批改的 ${pendingCount} 题（第二阶段）`
-                    : `➕ 补交 ${normalized} 本次已批改的 ${pendingCount} 题`;
-                return;
-            }
-            btn.disabled = true;
-            btn.style.background = baseColor;
-            if (totalPending > 0) {
-                btn.textContent = isClosure
-                    ? `⏳ 请先批改 ${normalized} 还未提交的第二阶段题`
-                    : `⏳ 请先批改 ${normalized} 还未提交的题`;
-            } else {
-                btn.textContent = isClosure
-                    ? `✅ ${normalized} 这套第二阶段答案已全部提交`
-                    : `✅ ${normalized} 这套答案已全部提交`;
-            }
+            const presentation = getSubmitButtonPresentation(normalized, pendingCount, totalPending);
+            btn.disabled = presentation.disabled;
+            btn.style.background = presentation.background;
+            btn.textContent = presentation.text;
         }
         window.refreshSubmitButtonState = refreshSubmitButtonState;
 
@@ -9375,6 +9389,7 @@
             const profile = StorageDB.getProfile(student, programId) || createProgramProfile(programId);
             const existingSession = findSetSession(profile, window.currentSetNumber);
             const { records, newRecords } = buildSubmissionPayloadFromRows(rows, existingSession);
+            const remainingPending = rows.filter(row => row?.getAttribute?.('data-submitted') !== 'true');
             if (newRecords.length > 0) {
                 await StorageDB.saveSession(student, records, window.currentSetNumber, programId);
                 let errCount = newRecords.filter(r => r.grade !== 'perfect').length;
@@ -9395,9 +9410,22 @@
                 }
             } else {
                 const msg = existingSession
-                    ? `${student} 这套目前没有新的未提交答案。`
+                    ? (remainingPending.length > 0
+                        ? `${student} 这套还有 ${remainingPending.length} 题待补交，请先批改后再提交。`
+                        : `${student} 这套答案已全部提交。`)
                     : `请先为 ${student} 至少批改一道题！`;
                 showToast(msg, { background: '#b45309', duration: 2600 });
+                if (existingSession && remainingPending.length > 0) {
+                    const focusPending = () => {
+                        window.focusAnswerSheet(student);
+                        setTimeout(() => window.scrollToFirstPendingAnswer(student, { silent: true }), 160);
+                    };
+                    if (typeof window.requestAnimationFrame === 'function') {
+                        window.requestAnimationFrame(() => window.requestAnimationFrame(focusPending));
+                    } else {
+                        setTimeout(focusPending, 120);
+                    }
+                }
             }
         };
 
