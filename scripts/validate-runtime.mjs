@@ -1395,8 +1395,8 @@ context.window.StorageDB.cache.KAI.history = [{
 }];
 context.window.showSetReview(106, 'KAI');
 const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
-if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('第 2 题') || !reviewHtml.includes('2 &times; 3') || !reviewHtml.includes('6')) {
-  throw new Error('Set review report is missing set number, paper number, question, or answer');
+if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !reviewHtml.includes('第 2 小题') || !reviewHtml.includes('6')) {
+  throw new Error('Set review report is missing set number, location, or answer');
 }
 if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练')) {
   throw new Error('Set review report is missing the in-report variant follow-up block');

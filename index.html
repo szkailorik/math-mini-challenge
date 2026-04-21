@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.129 (清理英文辅助死代码)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.130 (本套报告定位优先)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2310,9 +2310,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.129';
-        const APP_RELEASE_LABEL = '清理英文辅助死代码';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.129 继续清掉题面英文辅助行的剩余样式、生成函数和缓存补写逻辑，彻底回到纯中文卷面链路。';
+        const APP_VERSION = 'v23.130';
+        const APP_RELEASE_LABEL = '本套报告定位优先';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.130 把本套报告里的错题表收成“第几大题 / 第几小题”优先显示，去掉主表里冗长的原题中文，让定位更一目了然。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8759,17 +8759,22 @@
                 const tip = getKnowledgeTip(detail.tag);
                 const gradeText = detail.grade === 'wrong' ? '概念错误' : '粗心失误';
                 const gradeColor = detail.grade === 'wrong' ? '#dc2626' : '#b45309';
+                const rawSection = String(info.sec || '').trim();
+                const sectionMatch = rawSection.match(/^([一二三四五六七八九十\d]+)[、.．]\s*(.*)$/);
+                const majorLabel = sectionMatch ? `第 ${sectionMatch[1]} 大题` : (rawSection || '分区缺失');
+                const minorLabel = info.num ? `第 ${info.num} 小题` : '小题号缺失';
                 return `
                     <tr>
                         <td>${idx + 1}</td>
-                        <td>${info.sec || '-'}</td>
-                        <td>${info.num ? `第 ${info.num} 题` : '-'}</td>
+                        <td>
+                            <div style="font-weight:700; color:#0f172a;">${majorLabel}</div>
+                            <div style="font-size:12px; color:#64748b; margin-top:2px;">${minorLabel}</div>
+                        </td>
                         <td><span style="color:${gradeColor}; font-weight:bold;">${gradeText}</span></td>
-                        <td><div class="math-row">${info.q || '-'}</div></td>
                         <td><div class="math-row"><strong class="highlight">${info.a || '-'}</strong></div></td>
                         <td>${tip.name}<br><span style="color:#9a3412; font-size:12px;">${info.step || tip.advice}</span></td>
                     </tr>`;
-                }).join('') : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">本套没有错题。可以进入下一套，或做少量口算保持手感。</td></tr>`;
+                }).join('') : `<tr><td colspan="5" style="color:#10b981; font-weight:bold;">本套没有错题。可以进入下一套，或做少量口算保持手感。</td></tr>`;
 
             return `
             <div class="report-section" style="${isHighlight ? 'border-color:#dc2626;' : ''}">
@@ -8780,7 +8785,7 @@
                 </div>
                 <div style="padding:15px; max-height:360px; overflow:auto;">
                     <table class="archive-table">
-                        <tr><th>#</th><th>分区</th><th>纸面题号</th><th>类型</th><th>原题</th><th>正确答案</th><th>复盘提醒</th></tr>
+                        <tr><th>#</th><th>定位</th><th>类型</th><th>正确答案</th><th>复盘提醒</th></tr>
                         ${rows}
                     </table>
                 </div>
