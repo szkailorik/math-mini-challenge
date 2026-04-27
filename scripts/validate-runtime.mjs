@@ -1181,11 +1181,11 @@ if (!Array.isArray(sampleSummary) || !sampleSummary.some(item => item.domain.id 
   throw new Error('Domain signal summary is not reporting fraction weakness');
 }
 const sampleErrorSignal = context.window.getErrorBookSignal?.(
-  { errorBook: { e3: { tag: 'k_dmul_basic', count: 4, mastered: false, info: { q: '2 &times; 3', a: '6' } } } },
+  { errorBook: { e3: { tag: 'k_dmul_basic', count: 4, rewrongCount: 2, lastPracticeGrade: 'wrong', practiceCount: 2, mastered: false, info: { q: '2 &times; 3', a: '6' } } } },
   'k_dmul_basic'
 );
-if (!sampleErrorSignal || sampleErrorSignal.exactCount < 4 || sampleErrorSignal.score <= 0) {
-  throw new Error('Error-book signal scoring is not reporting exact active errors');
+if (!sampleErrorSignal || sampleErrorSignal.exactCount <= 4 || sampleErrorSignal.rewrongCount < 2 || sampleErrorSignal.score <= 0) {
+  throw new Error('Error-book signal scoring is not prioritizing exact active re-wrong errors');
 }
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {
@@ -1538,6 +1538,11 @@ const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', 
 const practicedProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
 if (!practiceLog?.results?.length || practicedProfile.errorBook.eb1.lastPracticeGrade !== 'wrong' || !practicedProfile.errorBook.eb1.rewrongCount) {
   throw new Error('Error-book targeted practice did not record wrong-again status');
+}
+context.window.renderErrorBook();
+const rewrongErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (!rewrongErrorBookHtml.includes('复错优先') || !rewrongErrorBookHtml.includes('专项又错')) {
+  throw new Error('Error book is not surfacing wrong-again priority markers');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
 if (!practiceResultHtml.includes('专项批改结果') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
