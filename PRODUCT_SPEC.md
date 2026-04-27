@@ -144,6 +144,7 @@ v23.0 integrates the durable error book into regular training:
 - Error-book practice now supports a dedicated printable targeted sheet with answers and an "mastered / wrong again" record line for paper-based follow-up.
 - v23.154 closes the loop after printing: the tutor can enter targeted-sheet grading back into the app, marking items as mastered or wrong again so the durable error book stays aligned with paper practice.
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.
+- v23.156 makes recent targeted-practice reports reopenable and printable, supporting parent record-keeping alongside the paper worksheet.
 
 v23.1 improves the daily print workflow:
 
