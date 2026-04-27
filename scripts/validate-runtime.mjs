@@ -150,7 +150,7 @@ if (!html.includes('print-quick-review') || !html.includes('quick-review-print-s
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v39';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v40';
 
 function getProgramCacheKey(programId, setNumber) {
   return `${cachePrefix}_${programId}_${setNumber}`;
@@ -1239,6 +1239,28 @@ if (sampleKaiVariant?.explanationMode !== 'rule') {
 }
 if (typeof context.window.generateProgramSetData !== 'function') {
   throw new Error('Program set generator is not exposed for runtime validation');
+}
+if (typeof context.window.generateOrLoadSetData !== 'function') {
+  throw new Error('Cached set loader is not exposed for runtime validation');
+}
+context.window.currentProgramId = 'advanced_fluency_v1';
+context.window.currentSetNumber = 120;
+const duplicateCachedSet = {
+  programId: 'advanced_fluency_v1',
+  stateLabel: 'validator duplicate cache',
+  k_m: [
+    { tag: 'k_dmul_basic', q: '7 &times; 8', a: '56' },
+    { tag: 'k_dmul_basic', q: '7 &times; 8', a: '56' },
+    { tag: 'k_dmul_basic', q: '9 &times; 8', a: '72' },
+    { tag: 'k_dmul_basic', q: '6 &times; 8', a: '48' },
+  ],
+};
+store.set(getProgramCacheKey('advanced_fluency_v1', 120), JSON.stringify(duplicateCachedSet));
+const regeneratedFromDuplicateCache = context.window.generateOrLoadSetData();
+assertNoQuestionFingerprintDuplicates(regeneratedFromDuplicateCache, 'regenerated duplicate-cache set');
+const regeneratedCacheRaw = store.get(getProgramCacheKey('advanced_fluency_v1', 120)) || '';
+if (regeneratedCacheRaw.includes('validator duplicate cache')) {
+  throw new Error('Duplicate cached set was returned instead of being regenerated');
 }
 context.window.StorageDB.cache.KAI = {
   weights: {},

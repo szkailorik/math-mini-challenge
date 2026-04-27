@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.148 (错题插槽去重加固)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.149 (缓存去重防回流)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2366,7 +2366,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.148</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.149</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2442,9 +2442,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.148';
-        const APP_RELEASE_LABEL = '错题插槽去重加固';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.148 继续优化出题：高价值错题插槽也纳入全卷指纹检查，避免补强题绕过同日去重。';
+        const APP_VERSION = 'v23.149';
+        const APP_RELEASE_LABEL = '缓存去重防回流';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.149 继续优化出题：读取旧缓存卷时也会先检查重复题，发现重复会自动重生成。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2906,6 +2906,23 @@
             });
             return fingerprints;
         }
+        function findSetQuestionDuplicate(data) {
+            const seen = new Map();
+            for (const [sectionKey, sectionItems] of Object.entries(data || {})) {
+                if (!Array.isArray(sectionItems)) continue;
+                for (let index = 0; index < sectionItems.length; index += 1) {
+                    const item = sectionItems[index];
+                    const fingerprint = computeQuestionFingerprint(item?.q);
+                    if (!fingerprint) continue;
+                    const location = `${sectionKey}[${index}]`;
+                    if (seen.has(fingerprint)) {
+                        return { fingerprint, first: seen.get(fingerprint), second: location };
+                    }
+                    seen.set(fingerprint, location);
+                }
+            }
+            return null;
+        }
         const ERROR_MECHANISM_LABELS = {
             bridge_convert: '表示转换',
             bridge_compare: '基准比较',
@@ -2978,7 +2995,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v39';
+        const SET_CACHE_PREFIX = 'MathSetData_v40';
 
         function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
             return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
@@ -5675,6 +5692,7 @@
                     ...(programId === 'advanced_fluency_v1'
                         ? [getLegacyAdvancedCacheKey(window.currentSetNumber - i)]
                         : []),
+                    `MathSetData_v39_${window.currentSetNumber - i}`,
                     `MathSetData_v38_${window.currentSetNumber - i}`,
                     `MathSetData_v32_${window.currentSetNumber - i}`,
                     `MathSetData_v31_${window.currentSetNumber - i}`,
@@ -7015,18 +7033,25 @@
         function generateOrLoadSetData() {
             const programId = getCurrentProgramId();
             let cacheKey = getSetCacheKey(window.currentSetNumber, programId);
+            let cachedKey = cacheKey;
             let cached = localStorage.getItem(cacheKey);
             if (!cached && programId === 'advanced_fluency_v1') {
-                cached = localStorage.getItem(getLegacyAdvancedCacheKey(window.currentSetNumber));
+                cachedKey = getLegacyAdvancedCacheKey(window.currentSetNumber);
+                cached = localStorage.getItem(cachedKey);
             }
             if (cached) {
                 try {
                     const parsed = JSON.parse(cached);
                     const hydrated = hydrateProgramSetData(parsed, programId);
-                    if (hydrated.changed) {
-                        safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
+                    const duplicate = findSetQuestionDuplicate(hydrated.data);
+                    if (duplicate) {
+                        localStorage.removeItem(cachedKey);
+                    } else {
+                        if (hydrated.changed) {
+                            safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
+                        }
+                        return hydrated.data;
                     }
-                    return hydrated.data;
                 } catch(e) {}
             }
 
