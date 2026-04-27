@@ -8299,7 +8299,7 @@
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
                         ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false)">🖨️ 打印${activeMechanism ? '当前机制' : '全部'}错题专项卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">🧾 打印专项卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">📝 批改专项卷</button></div>` : ''}
-                        ${filter === 'active' && priorityPracticeCount > 0 ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px; background:#991b1b; border-color:#991b1b;" onclick="window.printErrorBookPractice('${name}', false, true)">🔥 打印复错优先卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', true)">📝 批改复错优先卷</button></div>` : ''}
+                        ${filter === 'active' && priorityPracticeCount > 0 ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px; background:#991b1b; border-color:#991b1b;" onclick="window.printErrorBookPractice('${name}', false, true)">🔥 打印复错优先卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, true)">🧾 打印复错优先卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', true)">📝 批改复错优先卷</button></div>` : ''}
                         ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
                         ${practiceLogHtml}
                     </div>` : '';
@@ -8397,7 +8397,7 @@
             }
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
-            showToast(includeAnswers ? '🖨️ 打印提示：将输出错题专项卷和答案参考。' : (priorityOnly ? '🖨️ 打印提示：将只输出复错优先卷。' : '🖨️ 打印提示：将只输出错题专项卷。'), { background: '#0f766e', duration: 2600 });
+            showToast(includeAnswers ? (priorityOnly ? '🖨️ 打印提示：将输出复错优先卷和答案参考。' : '🖨️ 打印提示：将输出错题专项卷和答案参考。') : (priorityOnly ? '🖨️ 打印提示：将只输出复错优先卷。' : '🖨️ 打印提示：将只输出错题专项卷。'), { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
