@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.147 (同日去重增强)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.148 (错题插槽去重加固)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2366,7 +2366,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.147</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.148</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2442,9 +2442,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.147';
-        const APP_RELEASE_LABEL = '同日去重增强';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.147 继续优化出题：同一天同一套卷优先保证不重复，近期题仍尽量避开，错题回炉保持训练价值。';
+        const APP_VERSION = 'v23.148';
+        const APP_RELEASE_LABEL = '错题插槽去重加固';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.148 继续优化出题：高价值错题插槽也纳入全卷指纹检查，避免补强题绕过同日去重。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2893,6 +2893,18 @@
         function rememberQuestion(item, usedQuestions) {
             const fingerprint = computeQuestionFingerprint(item?.q);
             if (fingerprint) usedQuestions.add(fingerprint);
+        }
+        function collectSetQuestionFingerprints(data, omitSectionKey = '', omitIndex = -1) {
+            const fingerprints = new Set();
+            Object.entries(data || {}).forEach(([sectionKey, sectionItems]) => {
+                if (!Array.isArray(sectionItems)) return;
+                sectionItems.forEach((item, index) => {
+                    if (sectionKey === omitSectionKey && index === omitIndex) return;
+                    const fingerprint = computeQuestionFingerprint(item?.q);
+                    if (fingerprint) fingerprints.add(fingerprint);
+                });
+            });
+            return fingerprints;
         }
         const ERROR_MECHANISM_LABELS = {
             bridge_convert: '表示转换',
@@ -4196,6 +4208,30 @@
             if (!replacement) return data;
             const replaceIndex = Math.max(0, section.length - 1);
             const baseline = section[replaceIndex] || {};
+            const usedInSet = collectSetQuestionFingerprints(data, sectionKey, replaceIndex);
+            const replacementFingerprint = computeQuestionFingerprint(replacement.q);
+            if (replacementFingerprint && usedInSet.has(replacementFingerprint)) {
+                let claimed = false;
+                const nextData = { ...data };
+                Object.entries(nextData).forEach(([candidateSectionKey, candidateItems]) => {
+                    if (claimed || !Array.isArray(candidateItems)) return;
+                    const matchIndex = candidateItems.findIndex(item => computeQuestionFingerprint(item?.q) === replacementFingerprint);
+                    if (matchIndex < 0) return;
+                    const replayLevel = getReplayLevel(chosen);
+                    nextData[candidateSectionKey] = candidateItems.map((item, index) => index === matchIndex
+                        ? attachQualityMetadata({
+                            ...item,
+                            isAdvancedHighValueReplay: true,
+                            replayLevel,
+                            qualityFamily: item.qualityFamily || chosen.qualityFamily,
+                            reason: item.reason || (item.isErrorReplay ? 'replay' : 'variant')
+                        })
+                        : item
+                    );
+                    claimed = true;
+                });
+                return claimed ? nextData : data;
+            }
             const level = replacement.level || baseline.level || inferDifficulty(replacement.tag);
             section[replaceIndex] = {
                 ...replacement,
@@ -4203,6 +4239,9 @@
                 levelName: replacement.levelName || baseline.levelName || TRAINING_LEVELS[level]?.name || `L${level}`,
                 reason: replacement.reason || (replacement.isErrorReplay ? 'replay' : 'variant')
             };
+            const usedThisPaper = window._paperQuestions || new Set();
+            rememberQuestion(section[replaceIndex], usedThisPaper);
+            window._paperQuestions = usedThisPaper;
             return { ...data, [sectionKey]: section };
         }
         function injectAdvancedHighValueReplay(data) {

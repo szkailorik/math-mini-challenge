@@ -541,6 +541,22 @@ function getQuestionFingerprint(value) {
   return stripHtml(value).replace(/\s+/g, '').toLowerCase();
 }
 
+function assertNoQuestionFingerprintDuplicates(data, label) {
+  const seen = new Map();
+  Object.entries(data || {}).forEach(([section, items]) => {
+    if (!Array.isArray(items)) return;
+    items.forEach((item, index) => {
+      const signature = getQuestionFingerprint(item?.q);
+      if (!signature) return;
+      const location = `${label} ${section}[${index}]`;
+      if (seen.has(signature)) {
+        throw new Error(`${location} duplicates ${seen.get(signature)} with ${stripHtml(item.q)}`);
+      }
+      seen.set(signature, location);
+    });
+  });
+}
+
 function extractDivisionParts(question) {
   const parts = String(question || '').split('&divide;');
   return {
@@ -1243,6 +1259,7 @@ context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [],
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 107;
 const advancedQualityData = context.window.generateProgramSetData('advanced_fluency_v1');
+assertNoQuestionFingerprintDuplicates(advancedQualityData, 'advanced high-value replay set');
 const advancedReplayItems = [...advancedQualityData.k_d, ...advancedQualityData.k_f, ...advancedQualityData.k_c].filter(item => item?.isAdvancedHighValueReplay);
 if (!advancedReplayItems.some(item => item.qualityFamily === 'decimal_division' && item.replayLevel === 'L2')) {
   throw new Error('Advanced high-value replay slot is not injecting a decimal_division L2 review item');
@@ -1264,6 +1281,7 @@ context.window.StorageDB.cache.KAI = {
 };
 context.window.currentSetNumber = 108;
 const advancedFractionData = context.window.generateProgramSetData('advanced_fluency_v1');
+assertNoQuestionFingerprintDuplicates(advancedFractionData, 'advanced high-value fraction replay set');
 const advancedFractionReplayItems = [...advancedFractionData.k_d, ...advancedFractionData.k_f, ...advancedFractionData.k_c].filter(item => item?.isAdvancedHighValueReplay);
 if (!advancedFractionReplayItems.some(item => item.qualityFamily === 'fraction_operation' && item.replayLevel === 'L2')) {
   throw new Error('Advanced high-value replay slot is not injecting a fraction_operation L2 review item');
