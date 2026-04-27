@@ -1262,6 +1262,17 @@ const regeneratedCacheRaw = store.get(getProgramCacheKey('advanced_fluency_v1', 
 if (regeneratedCacheRaw.includes('validator duplicate cache')) {
   throw new Error('Duplicate cached set was returned instead of being regenerated');
 }
+const cacheRepairRecord = JSON.parse(store.get('MathEngine_LastCacheRepair') || 'null');
+if (
+  !cacheRepairRecord ||
+  cacheRepairRecord.set !== 120 ||
+  cacheRepairRecord.programId !== 'advanced_fluency_v1' ||
+  !String(cacheRepairRecord.cacheKey || '').includes('advanced_fluency_v1_120') ||
+  !cacheRepairRecord.first ||
+  !cacheRepairRecord.second
+) {
+  throw new Error('Duplicate cached set repair was not recorded with set, program, cache key, and duplicate locations');
+}
 context.window.StorageDB.cache.KAI = {
   weights: {},
   lastSeen: {},

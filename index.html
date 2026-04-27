@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.149 (缓存去重防回流)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.150 (缓存修复可见化)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2366,7 +2366,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.149</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.150</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2442,9 +2442,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.149';
-        const APP_RELEASE_LABEL = '缓存去重防回流';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.149 继续优化出题：读取旧缓存卷时也会先检查重复题，发现重复会自动重生成。';
+        const APP_VERSION = 'v23.150';
+        const APP_RELEASE_LABEL = '缓存修复可见化';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.150 继续优化出题：旧缓存卷被自动修复时会留下本地记录，并给出轻量提示。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7035,6 +7035,7 @@
             let cacheKey = getSetCacheKey(window.currentSetNumber, programId);
             let cachedKey = cacheKey;
             let cached = localStorage.getItem(cacheKey);
+            let cacheRepairInfo = null;
             if (!cached && programId === 'advanced_fluency_v1') {
                 cachedKey = getLegacyAdvancedCacheKey(window.currentSetNumber);
                 cached = localStorage.getItem(cachedKey);
@@ -7046,6 +7047,15 @@
                     const duplicate = findSetQuestionDuplicate(hydrated.data);
                     if (duplicate) {
                         localStorage.removeItem(cachedKey);
+                        cacheRepairInfo = {
+                            at: Date.now(),
+                            version: APP_VERSION,
+                            programId,
+                            set: window.currentSetNumber,
+                            cacheKey: cachedKey,
+                            first: duplicate.first,
+                            second: duplicate.second
+                        };
                     } else {
                         if (hydrated.changed) {
                             safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
@@ -7062,6 +7072,13 @@
             let data = generateProgramSetData(programId);
             const hydrated = hydrateProgramSetData(data, programId);
             safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
+            if (cacheRepairInfo) {
+                safeLocalSetItem('MathEngine_LastCacheRepair', JSON.stringify(cacheRepairInfo));
+                window.lastCacheRepair = cacheRepairInfo;
+                if (!window.__suppressCacheRepairToast && typeof showToast === 'function') {
+                    showToast(`已自动修复 Set ${window.currentSetNumber} 的重复题缓存，并重新生成干净卷。`, { background: '#0f766e', duration: 3000 });
+                }
+            }
             return hydrated.data;
         }
 
