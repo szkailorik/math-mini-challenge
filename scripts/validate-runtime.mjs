@@ -150,7 +150,7 @@ if (!html.includes('print-quick-review') || !html.includes('quick-review-print-s
 if (html.includes('<span>...</span><span class="bottom">...</span>')) {
   throw new Error('Pedagogical placeholder fraction step should not remain in HTML');
 }
-const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v36';
+const cachePrefix = html.match(/const SET_CACHE_PREFIX = '([^']+)'/)?.[1] || 'MathSetData_v39';
 
 function getProgramCacheKey(programId, setNumber) {
   return `${cachePrefix}_${programId}_${setNumber}`;
@@ -534,6 +534,13 @@ function stripHtml(value) {
   return String(value || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function getQuestionFingerprint(value) {
+  if (typeof context.window.computeQuestionFingerprint === 'function') {
+    return context.window.computeQuestionFingerprint(value);
+  }
+  return stripHtml(value).replace(/\s+/g, '').toLowerCase();
+}
+
 function extractDivisionParts(question) {
   const parts = String(question || '').split('&divide;');
   return {
@@ -602,7 +609,7 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
     k_m: 4, k_d: 4, k_s: 4, k_c: 8, k_f: 12, k_o: 4,
     l_m: 4, l_d: 4, l_s: 4, l_c: 8, l_f: 12, l_o: 4,
   };
-  const seen = new Set();
+  const seen = new Map();
   const getKnowledgeTip = context.window.getKnowledgeTip;
   const getKnowledgeDomain = context.window.getKnowledgeDomain;
   const fallbackName = context.window.FallbackAdvice?.name;
@@ -816,9 +823,9 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
         if (/undefined|NaN|Infinity/.test(combined)) {
           throw new Error(`${location} contains invalid output: ${combined}`);
         }
-        const signature = `${item.tag}:${stripHtml(item.q)}`;
-        if (seen.has(signature)) throw new Error(`${location} duplicates ${signature}`);
-        seen.add(signature);
+        const signature = getQuestionFingerprint(item.q);
+        if (seen.has(signature)) throw new Error(`${location} duplicates ${seen.get(signature)} with ${stripHtml(item.q)}`);
+        seen.set(signature, location);
       });
     });
     context.window.currentProgramId = 'elementary_closure_v1';
@@ -1093,9 +1100,9 @@ function assertSetData(setNumber, programId = 'advanced_fluency_v1') {
       if (/undefined|NaN|Infinity/.test(combined)) {
         throw new Error(`${location} contains invalid output: ${combined}`);
       }
-      const signature = `${item.tag}:${stripHtml(item.q)}`;
-      if (seen.has(signature)) throw new Error(`${location} duplicates ${signature}`);
-      seen.add(signature);
+      const signature = getQuestionFingerprint(item.q);
+      if (seen.has(signature)) throw new Error(`${location} duplicates ${seen.get(signature)} with ${stripHtml(item.q)}`);
+      seen.set(signature, location);
     });
   }
   context.window.currentProgramId = 'advanced_fluency_v1';

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.138 (本套报告热点排序)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.130 (同日去重增强)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2366,7 +2366,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.129</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.130</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2882,6 +2882,18 @@
             const normalized = normalizeErrorPrompt(q).replace(/\s+/g, '');
             return `${tag}_${hashString(normalized)}`;
         }
+        function computeQuestionFingerprint(q) {
+            return normalizeErrorPrompt(q).replace(/\s+/g, '').toLowerCase();
+        }
+        function hasQuestionConflict(item, recentQuestions, usedQuestions, includeRecent = true) {
+            const fingerprint = computeQuestionFingerprint(item?.q);
+            if (!fingerprint) return false;
+            return usedQuestions.has(fingerprint) || (includeRecent && recentQuestions.has(fingerprint));
+        }
+        function rememberQuestion(item, usedQuestions) {
+            const fingerprint = computeQuestionFingerprint(item?.q);
+            if (fingerprint) usedQuestions.add(fingerprint);
+        }
         const ERROR_MECHANISM_LABELS = {
             bridge_convert: '表示转换',
             bridge_compare: '基准比较',
@@ -2954,7 +2966,7 @@
         // 作为唯一云端存储。多设备用同一 token → 同一 gist → 数据同步。
         const GIST_DESC = 'math-mini-challenge-sync-v1';
         const GIST_SENTINEL_FILE = 'MATH_SYNC.json';
-        const SET_CACHE_PREFIX = 'MathSetData_v38';
+        const SET_CACHE_PREFIX = 'MathSetData_v39';
 
         function getSetCacheKey(setNumber = window.currentSetNumber, programId = getCurrentProgramId()) {
             return `${SET_CACHE_PREFIX}_${programId}_${setNumber}`;
@@ -3932,6 +3944,26 @@
                 let cycle = Engine.getCycleState();
                 let recent = window._recentQuestions || new Set();
                 let usedThisPaper = window._paperQuestions || new Set();
+                const tryUniqueCandidate = (generator, strictAttempts = 18, paperOnlyAttempts = 18) => {
+                    let lastCandidate = null;
+                    for (let t = 0; t < strictAttempts; t++) {
+                        const candidate = generator();
+                        if (!candidate || !candidate.q) continue;
+                        lastCandidate = candidate;
+                        if (!hasQuestionConflict(candidate, recent, usedThisPaper)) {
+                            return { candidate, mode: 'strict' };
+                        }
+                    }
+                    for (let t = 0; t < paperOnlyAttempts; t++) {
+                        const candidate = generator();
+                        if (!candidate || !candidate.q) continue;
+                        lastCandidate = candidate;
+                        if (!hasQuestionConflict(candidate, recent, usedThisPaper, false)) {
+                            return { candidate, mode: 'paper-only' };
+                        }
+                    }
+                    return { candidate: lastCandidate, mode: 'failed' };
+                };
 
                 let scoredPool = pool.map(item => {
                     let level = item.level || inferDifficulty(item.tag);
@@ -3986,36 +4018,49 @@
                     for (let p of scoredPool) { if (selected.length >= count) break; if (!selected.includes(p)) selected.push(p); }
                 }
 
-                // 生成阶段：每道题最多重试 15 次避免撞已出过的题面
+                // 生成阶段：优先避开同日重复；若本题型连续撞题，则跨池换题兜底
                 let result = selected.map(x => {
                     let genItem = null;
+                    let lastFallback = null;
                     if (x.selectReason === 'replay' && x.errorSignal?.exactEntries?.length) {
                         const entry = pickErrorReplayEntry(x.errorSignal.exactEntries);
-                        if (entry && !usedThisPaper.has(entry.info.q)) genItem = buildErrorReplayItem(entry);
+                        const replayItem = entry ? buildErrorReplayItem(entry) : null;
+                        if (replayItem && !hasQuestionConflict(replayItem, recent, usedThisPaper, false)) genItem = replayItem;
                     }
                     if (!genItem && x.selectReason === 'variant' && x.errorSignal?.exactEntries?.length) {
                         const entry = pickErrorReplayEntry(x.errorSignal.exactEntries);
                         if (entry) {
                             genItem = buildErrorVariantItem(entry, () => x.item.gen());
-                            if (genItem?.q && recent.has(genItem.q)) genItem = null;
+                            if (genItem && hasQuestionConflict(genItem, recent, usedThisPaper, false)) genItem = null;
                         }
                     }
                     if (!genItem) {
-                        for (let t = 0; t < 15; t++) {
-                            let candidate = x.item.gen();
-                            if (!candidate || !candidate.q) continue;
-                            if (!recent.has(candidate.q) && !usedThisPaper.has(candidate.q)) {
-                                genItem = candidate; break;
-                            }
-                            // 兜底：就算仍有冲突，至少保留最后一次结果
-                            genItem = candidate;
+                        const primaryPick = tryUniqueCandidate(() => x.item.gen(), 18, 18);
+                        if (primaryPick.mode !== 'failed' && primaryPick.candidate) {
+                            genItem = primaryPick.candidate;
+                        } else {
+                            lastFallback = primaryPick.candidate;
                         }
                     }
+                    if (!genItem) {
+                        const fallbackPool = Engine.shuffle(scoredPool.filter(p => p.item.tag !== x.item.tag));
+                        for (const fallback of fallbackPool) {
+                            const fallbackPick = tryUniqueCandidate(() => fallback.item.gen(), 6, 12);
+                            const candidate = fallbackPick.candidate;
+                            if (!candidate || !candidate.q) continue;
+                            lastFallback = candidate;
+                            if (fallbackPick.mode !== 'failed') {
+                                genItem = candidate;
+                                break;
+                            }
+                        }
+                    }
+                    if (!genItem) genItem = lastFallback || x.item.gen();
                     genItem.reason = genItem.isErrorReplay ? 'replay' : (genItem.isErrorVariant ? 'variant' : x.selectReason);
                     genItem.level = x.level;
                     genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
                     genItem = attachQualityMetadata(genItem);
-                    usedThisPaper.add(genItem.q);
+                    rememberQuestion(genItem, usedThisPaper);
                     return genItem;
                 });
                 return Engine.shuffle(result);
@@ -5570,15 +5615,19 @@
         function collectRecentQuestions(lookbackSets = 8) {
             const recent = new Set();
             const programId = getCurrentProgramId();
+            const addQuestion = (questionHtml) => {
+                const fingerprint = computeQuestionFingerprint(questionHtml);
+                if (fingerprint) recent.add(fingerprint);
+            };
             // 1) 从历史 session 收集
             ['KAI', 'Lorik'].forEach(student => {
                 let prof = StorageDB.getProfile(student);
                 if (!prof) return;
                 (prof.history || []).slice(-lookbackSets).forEach(h => {
-                    (h.details || []).forEach(d => { if (d.info && d.info.q) recent.add(d.info.q); });
+                    (h.details || []).forEach(d => { if (d.info && d.info.q) addQuestion(d.info.q); });
                 });
                 // 错题本里的题也要避免重复
-                Object.values(prof.errorBook || {}).forEach(e => { if (e.info && e.info.q) recent.add(e.info.q); });
+                Object.values(prof.errorBook || {}).forEach(e => { if (e.info && e.info.q) addQuestion(e.info.q); });
             });
             // 2) 从最近几套的缓存快照收集（即使还未提交也会被算作"近期出过"）
             for (let i = 1; i <= lookbackSets; i++) {
@@ -5587,6 +5636,7 @@
                     ...(programId === 'advanced_fluency_v1'
                         ? [getLegacyAdvancedCacheKey(window.currentSetNumber - i)]
                         : []),
+                    `MathSetData_v38_${window.currentSetNumber - i}`,
                     `MathSetData_v32_${window.currentSetNumber - i}`,
                     `MathSetData_v31_${window.currentSetNumber - i}`,
                     `MathSetData_v30_${window.currentSetNumber - i}`,
@@ -5599,7 +5649,7 @@
                     try {
                         let d = JSON.parse(raw);
                         Object.values(d).forEach(arr => {
-                            if (Array.isArray(arr)) arr.forEach(q => { if (q && q.q) recent.add(q.q); });
+                            if (Array.isArray(arr)) arr.forEach(q => { if (q && q.q) addQuestion(q.q); });
                         });
                     } catch (e) {}
                 });
@@ -6088,18 +6138,18 @@
             if (!entry?.tag) return null;
             const replayLevel = getReplayLevel(entry);
             const exactAllowed = !!entry?.info?.q
-                && !usedThisPaper.has(entry.info.q)
-                && (replayLevel === 'L1' || !recent.has(entry.info.q));
+                && !hasQuestionConflict({ q: entry.info.q }, recent, usedThisPaper, false)
+                && (replayLevel === 'L1' || !hasQuestionConflict({ q: entry.info.q }, recent, usedThisPaper));
             const exactItem = exactAllowed ? buildErrorReplayItem(entry) : null;
             let variantItem = buildErrorVariantItem(entry, () => buildClosureC2Variant(entry, '[重点强化 Focus Variant] '));
-            if (variantItem && (usedThisPaper.has(variantItem.q) || recent.has(variantItem.q))) {
+            if (variantItem && hasQuestionConflict(variantItem, recent, usedThisPaper, false)) {
                 variantItem = null;
             }
             let boundaryItem = buildClosureBoundaryReplayItem(entry);
             if (boundaryItem) {
                 boundaryItem = attachQualityMetadata(boundaryItem);
             }
-            if (boundaryItem && (usedThisPaper.has(boundaryItem.q) || recent.has(boundaryItem.q))) {
+            if (boundaryItem && hasQuestionConflict(boundaryItem, recent, usedThisPaper, false)) {
                 boundaryItem = null;
             }
 
@@ -6138,7 +6188,7 @@
             const focusReplayItem = buildClosureFocusReplayItem(chosen, usedThisPaper, recent);
             if (focusReplayItem) {
                 nextItems[replaceAt] = focusReplayItem;
-                usedThisPaper.add(focusReplayItem.q);
+                rememberQuestion(focusReplayItem, usedThisPaper);
                 return Engine.shuffle(nextItems);
             }
             return focusItems;
