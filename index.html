@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.152 (手动查重修复)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.153 (错题专项卷与黑白复习标记)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -638,6 +638,11 @@
         .math-op { color: var(--math-blue); font-size: 1.02em; }
         .math-eq { color: var(--math-ink); min-width: 1em; font-size: 1.02em; }
         .math-compare { color: var(--math-violet); min-width: 0.95em; font-size: 1.05em; }
+        .item.review-item {
+            grid-template-columns: 2.7em minmax(0, 1fr);
+            border-left: 2px solid #111827;
+            padding-left: 4px;
+        }
         .item.review-item .q-num,
         .item.review-item .math-text {
             color: #b91c1c;
@@ -645,9 +650,51 @@
         .item.review-item .q-num {
             font-weight: 800;
         }
+        .item.review-item .q-num::after {
+            content: '复';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.15em;
+            height: 1.15em;
+            margin-left: 3px;
+            border: 1px solid currentColor;
+            border-radius: 3px;
+            font-family: 'KaiTi', 'Songti SC', serif;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .item.review-item .q-body {
+            border-bottom: 1px dotted currentColor;
+            padding-bottom: 1px;
+        }
+        .item.review-item .math-text {
+            font-weight: 700;
+        }
+        .ans-row.review-answer {
+            border-left: 5px double #111827;
+        }
         .ans-row.review-answer .ans-num,
         .ans-row.review-answer .review-question {
             color: #b91c1c;
+        }
+        .ans-row.review-answer .ans-num::after {
+            content: '复';
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.15em;
+            height: 1.15em;
+            margin-left: 3px;
+            border: 1px solid currentColor;
+            border-radius: 3px;
+            font-family: 'KaiTi', 'Songti SC', serif;
+            font-size: 9px;
+            font-weight: 800;
+            line-height: 1;
+            vertical-align: middle;
         }
         .ans-row.review-answer .review-question {
             font-weight: 700;
@@ -2172,9 +2219,37 @@
             font-size: 12.45px;
             line-height: 1.18;
         }
+        .followup-print-body {
+            display:grid;
+            gap:2px;
+            min-width:0;
+        }
+        .followup-review-log {
+            font-family:'Songti SC', serif;
+            font-size:10.2px;
+            color:#334155;
+            letter-spacing:0.02em;
+            line-height:1.2;
+        }
         .followup-print-item .followup-num,
         .followup-print-item .followup-q {
             color:#b91c1c;
+        }
+        .followup-print-item .followup-num::after {
+            content:'复';
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:1.12em;
+            height:1.12em;
+            margin-left:2px;
+            border:1px solid currentColor;
+            border-radius:3px;
+            font-family:'KaiTi','Songti SC',serif;
+            font-size:8px;
+            font-weight:800;
+            line-height:1;
+            vertical-align:middle;
         }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
@@ -2379,7 +2454,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.152</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.153</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2457,9 +2532,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.152';
-        const APP_RELEASE_LABEL = '手动查重修复';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.152 继续优化出题：打印前可一键检查当前 set 是否有重复题，发现问题会自动重生成。';
+        const APP_VERSION = 'v23.153';
+        const APP_RELEASE_LABEL = '错题专项卷与黑白复习标记';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.153 继续优化错题训练：复习题黑白打印也能识别，错题回炉比例更克制，错题本可直接打印专项卷和答案。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3990,10 +4065,28 @@
             return TRAINING_FOCUS_PLAN[cycleCode] || TRAINING_FOCUS_PLAN[1];
         }
 
+        function getErrorBookPracticePolicy(cycleCode, count = 1) {
+            const table = {
+                1: { exactReplayRatio: 0.12, errorLinkedRatio: 0.28, weakRatio: 0.40, lightReplayChance: 0.16, repeatReplayChance: 0.28, priorityReplayChance: 0.46, forgettingReplayChance: 0.54, variantChance: 0.54, label: '新知日少量提取' },
+                2: { exactReplayRatio: 0.18, errorLinkedRatio: 0.36, weakRatio: 0.44, lightReplayChance: 0.22, repeatReplayChance: 0.42, priorityReplayChance: 0.58, forgettingReplayChance: 0.64, variantChance: 0.64, label: '陷阱日提高变式' },
+                3: { exactReplayRatio: 0.22, errorLinkedRatio: 0.38, weakRatio: 0.46, lightReplayChance: 0.24, repeatReplayChance: 0.50, priorityReplayChance: 0.66, forgettingReplayChance: 0.76, variantChance: 0.68, label: '遗忘日加强唤醒' },
+                4: { exactReplayRatio: 0.14, errorLinkedRatio: 0.30, weakRatio: 0.42, lightReplayChance: 0.14, repeatReplayChance: 0.30, priorityReplayChance: 0.50, forgettingReplayChance: 0.56, variantChance: 0.56, label: '挑战日保持迁移' }
+            };
+            const policy = table[cycleCode] || table[1];
+            const size = Math.max(1, Number(count) || 1);
+            return {
+                ...policy,
+                exactReplayQuota: Math.max(1, Math.floor(size * policy.exactReplayRatio)),
+                errorLinkedQuota: Math.max(1, Math.ceil(size * policy.errorLinkedRatio)),
+                weakQuota: Math.max(1, Math.ceil(size * policy.weakRatio))
+            };
+        }
+
         window.TRAINING_LEVELS = TRAINING_LEVELS;
         window.TRAINING_FOCUS_PLAN = TRAINING_FOCUS_PLAN;
         window.inferDifficulty = inferDifficulty;
         window.getTrainingFocus = getTrainingFocus;
+        window.getErrorBookPracticePolicy = getErrorBookPracticePolicy;
 
         const Engine = {
             randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
@@ -4024,6 +4117,7 @@
                 let profile = StorageDB.getProfile(student);
                 let currentSet = window.currentSetNumber;
                 let cycle = Engine.getCycleState();
+                let errorPolicy = getErrorBookPracticePolicy(cycle.code, count);
                 let recent = window._recentQuestions || new Set();
                 let usedThisPaper = window._paperQuestions || new Set();
                 const tryUniqueCandidate = (generator, strictAttempts = 18, paperOnlyAttempts = 18) => {
@@ -4064,13 +4158,14 @@
                     let score = random() * 1.2 + (weight * 0.5) + forgettingBonus * 0.7 + errorBookBonus + domainBonus + highValueBonus + phaseLevelBonus(cycle.code, level);
                     let selectReason = 'random';
                     const shouldReplay = errorSignal.exactEntries.length > 0 && (
-                        errorSignal.exactCount >= 2 ||
-                        cycle.code === 3 ||
-                        (highValueSignal.priority && random() < 0.7) ||
-                        random() < 0.45
+                        errorSignal.exactCount >= 3 ||
+                        (cycle.code === 3 && random() < errorPolicy.forgettingReplayChance) ||
+                        (highValueSignal.priority && random() < errorPolicy.priorityReplayChance) ||
+                        ((errorSignal.exactCount >= 2) && random() < errorPolicy.repeatReplayChance) ||
+                        random() < errorPolicy.lightReplayChance
                     );
                     if (shouldReplay) selectReason = 'replay';
-                    else if (errorSignal.exactEntries.length > 0 && (highValueSignal.priority || random() < 0.6)) selectReason = 'variant';
+                    else if (errorSignal.exactEntries.length > 0 && (highValueSignal.priority || random() < errorPolicy.variantChance)) selectReason = 'variant';
                     else if (highValueSignal.priority && (weight > 0 || domainBonus >= 0.2 || forgettingBonus > 0.75)) selectReason = 'focus';
                     else if (weight > 0 && (weight * 0.5) >= Math.max(forgettingBonus * 0.7, domainBonus)) selectReason = 'weak';
                     else if (domainBonus >= 0.35) selectReason = 'domain';
@@ -4080,8 +4175,9 @@
                 scoredPool.sort((a, b) => b.score - a.score);
 
                 let selected = [];
-                let maxWeak = Math.ceil(count * 0.45); let weakCount = 0;
-                let maxReplay = Math.max(1, Math.floor(count * 0.25)); let replayCount = 0;
+                let maxWeak = errorPolicy.weakQuota; let weakCount = 0;
+                let maxReplay = errorPolicy.exactReplayQuota; let replayCount = 0;
+                let maxErrorLinked = errorPolicy.errorLinkedQuota; let errorLinkedCount = 0;
                 let maxChallenge = cycle.code === 4 ? Math.ceil(count * 0.5) : Math.max(1, Math.floor(count * 0.25));
                 let challengeCount = 0;
                 for (let p of scoredPool) {
@@ -4089,10 +4185,13 @@
                     if (p.selectReason === 'replay' && replayCount >= maxReplay) p.selectReason = 'variant';
                     const isWeak = p.weight > 0;
                     const isChallenge = p.level >= 4;
+                    const isErrorLinked = ['replay', 'variant'].includes(p.selectReason);
+                    if (isErrorLinked && errorLinkedCount >= maxErrorLinked && !p.highValueSignal?.priority) continue;
                     if (isWeak && weakCount >= maxWeak) continue;
                     if (isChallenge && challengeCount >= maxChallenge && p.weight < 3) continue;
                     selected.push(p);
                     if (p.selectReason === 'replay') replayCount++;
+                    if (isErrorLinked) errorLinkedCount++;
                     if (isWeak) weakCount++;
                     if (isChallenge) challengeCount++;
                 }
@@ -7729,32 +7828,52 @@
         }
 
         function getErrorBookMechanismEntries(student, mechanismKey, { includeMastered = false } = {}) {
+            return getErrorBookPracticeEntries(student, { mechanismKey, includeMastered });
+        }
+
+        function getErrorBookPracticeEntries(student, { mechanismKey = '', includeMastered = false } = {}) {
             const profile = StorageDB.getProfile(student) || {};
             const entries = Object.entries(profile.errorBook || {}).map(([uid, value]) => ({ uid, ...value }));
             return entries
                 .filter(entry => includeMastered || !entry.mastered)
                 .filter(entry => {
                     const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
-                    return key === mechanismKey;
+                    return !mechanismKey || key === mechanismKey;
                 })
-                .sort((a, b) => (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0));
+                .sort((a, b) => {
+                    const severityA = a.grade === 'wrong' ? 2 : 1;
+                    const severityB = b.grade === 'wrong' ? 2 : 1;
+                    return severityB - severityA || (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0);
+                });
         }
 
-        function buildErrorBookMechanismPracticeItems(student, mechanismKey) {
-            const entries = getErrorBookMechanismEntries(student, mechanismKey);
+        function buildErrorBookPracticeItems(student, { mechanismKey = '', includeMastered = false } = {}) {
+            const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered });
             if (!entries.length) return [];
-            const picked = entries.slice(0, 6);
-            return picked.map(entry => {
+            const used = new Set();
+            return entries.map(entry => {
                 const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
                 if (!built) return null;
+                const fingerprint = computeQuestionFingerprint(built);
+                if (used.has(fingerprint)) return null;
+                used.add(fingerprint);
+                const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                 return {
                     ...built,
                     followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
                     followupGrade: entry.grade || 'wrong',
-                    followupMechanismKey: mechanismKey,
-                    isMechanismFollowup: true
+                    followupMechanismKey: resolvedMechanismKey,
+                    sourceErrorUid: entry.uid,
+                    sourceErrorCount: Math.max(1, entry.count || 1),
+                    sourceLastSet: entry.lastSet || '',
+                    isErrorBookPractice: true,
+                    isReviewItem: true
                 };
             }).filter(Boolean);
+        }
+
+        function buildErrorBookMechanismPracticeItems(student, mechanismKey) {
+            return buildErrorBookPracticeItems(student, { mechanismKey }).slice(0, 6).map(item => ({ ...item, isMechanismFollowup: true }));
         }
 
         function buildErrorBookMechanismPrintHTML(student, mechanismKey, includeAnswers = false) {
@@ -7783,6 +7902,34 @@
             </section>`;
         }
         window.buildErrorBookMechanismPrintHTML = buildErrorBookMechanismPrintHTML;
+
+        function buildErrorBookPracticePrintHTML(student, includeAnswers = false, { mechanismKey = '' } = {}) {
+            const items = buildErrorBookPracticeItems(student, { mechanismKey });
+            if (!items.length) return '';
+            const title = mechanismKey ? `错题专项卷：${getErrorMechanismLabel(mechanismKey)}` : '错题专项卷';
+            const label = mechanismKey ? getErrorMechanismLabel(mechanismKey) : '全部活跃错题';
+            const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const printPack = getSetReviewFollowupPrintPack(items);
+            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
+            return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+                <header class="booklet-meta-band">
+                    <span>${student} · Error Book</span>
+                    <span>Targeted Practice</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">${title}</h2>
+                    <p class="followup-print-subtitle">先独立完成，再在每题下方标记“已会 / 又错”，便于回错题本继续处理。</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
+                    <span>范围：${label}</span>
+                </div>
+                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
+                ${answerBlock}
+            </section>`;
+        }
+        window.buildErrorBookPracticePrintHTML = buildErrorBookPracticePrintHTML;
 
         function buildStudentErrorSection(name, profile, filter) {
             let eb = (profile && profile.errorBook) ? profile.errorBook : {};
@@ -7905,6 +8052,7 @@
                         </div>
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
+                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false)">🖨️ 打印${activeMechanism ? '当前机制' : '全部'}错题专项卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">🧾 打印专项卷+答案</button></div>` : ''}
                         ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
                     </div>` : '';
 
@@ -7974,6 +8122,34 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出当前机制补练和答案参考。' : '🖨️ 打印提示：将只输出当前机制补练页。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        window.printErrorBookPractice = function(student, includeAnswers = false) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const mechanismKey = window._ebMechanism || '';
+            const html = buildErrorBookPracticePrintHTML(student, includeAnswers, { mechanismKey });
+            if (!html) {
+                showToast('当前错题本还没有可打印的专项训练题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
+            showToast(includeAnswers ? '🖨️ 打印提示：将输出错题专项卷和答案参考。' : '🖨️ 打印提示：将只输出错题专项卷。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
@@ -8151,11 +8327,18 @@
                     </tr>`;
                 }).join('')
                 : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
+            const currentPolicy = getErrorBookPracticePolicy(Engine.getCycleState().code, 24);
+            const policyHtml = `
+                <div style="margin:0 0 10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#334155; font-size:13px; line-height:1.55;">
+                    今日错题混入策略：<strong>${currentPolicy.label}</strong>。原题回炉约控制在 <strong>${Math.round(currentPolicy.exactReplayRatio * 100)}%</strong> 内，
+                    错题相关训练（原题+变式）约控制在 <strong>${Math.round(currentPolicy.errorLinkedRatio * 100)}%</strong> 内，剩余题量继续做新提取和交错训练，避免整套卷变成“死刷错题”。
+                </div>`;
 
             const html = `
                 <div class="report-section">
                     <h3>🔥 错题联合训练计划 / Error-Book Bridge</h3>
                     <div style="padding:15px; max-height:260px; overflow:auto;">
+                        ${policyHtml}
                         <table class="archive-table">
                             <tr><th>学生</th><th>Tag</th><th>领域</th><th>错次</th><th>最近</th><th>进入训练方式</th><th>优先级</th></tr>
                             ${bridgeHtml}
@@ -9263,10 +9446,14 @@
                     const number = items.indexOf(item) + 1;
                     const shape = getSetReviewFollowupItemShape(item);
                     const density = getSetReviewFollowupItemDensity(item);
+                    const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
                     return forPrint ? `
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
-                            <div class="followup-q math-row">${item.q || '-'}</div>
+                            <div class="followup-print-body">
+                                <div class="followup-q math-row">${item.q || '-'}</div>
+                                ${reviewLog}
+                            </div>
                         </div>
                     ` : `
                         <div class="followup-item" data-shape="${shape}" data-density="${density}">
@@ -9303,19 +9490,21 @@
 
         function buildSetReviewFollowupAnswerHTML(items, { forPrint = false } = {}) {
             if (!items.length) return '';
+            const hasPracticeLog = items.some(item => item.isErrorBookPractice);
             const rows = items.map((item, idx) => `
                 <tr>
                     <td>${idx + 1}</td>
                     <td><div class="math-row">${item.a || item.answer || '-'}</div></td>
                     <td>${item.step || ''}</td>
+                    ${hasPracticeLog ? `<td>□ 已会　□ 又错</td>` : ''}
                 </tr>
             `).join('');
             return `
             <div class="set-review-followup-answer review-answer-pack ${forPrint ? 'print-answer-sheet' : ''}">
                 <h5>参考答案</h5>
-                <p class="set-review-followup-answer-note">${forPrint ? '这一页给家长核对用。先让孩子独立完成前面的变式跟训，再回来看这里。' : '建议先独立完成上面的变式跟训，再用这里做核对。'}</p>
+                <p class="set-review-followup-answer-note">${hasPracticeLog ? '这一页给家长核对用。若专项卷里再次做错，先在纸上勾“又错”，回错题本保留；稳定做对后再点 ✓ 标记已掌握。' : (forPrint ? '这一页给家长核对用。先让孩子独立完成前面的变式跟训，再回来看这里。' : '建议先独立完成上面的变式跟训，再用这里做核对。')}</p>
                 <table class="archive-table">
-                    <tr><th>#</th><th>答案</th><th>检查提醒</th></tr>
+                    <tr><th>#</th><th>答案</th><th>检查提醒</th>${hasPracticeLog ? '<th>复练标记</th>' : ''}</tr>
                     ${rows}
                 </table>
             </div>`;

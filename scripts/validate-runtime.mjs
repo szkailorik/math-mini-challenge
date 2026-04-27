@@ -33,6 +33,18 @@ if (!html.includes('window.checkCurrentSetDuplicates')) {
 if (!html.includes('检查重复题')) {
   throw new Error('Manual duplicate-question checker is missing from control panel');
 }
+if (!html.includes('function getErrorBookPracticePolicy')) {
+  throw new Error('Phase-aware error-book practice policy is missing from runtime script');
+}
+if (!html.includes('window.printErrorBookPractice')) {
+  throw new Error('Full error-book targeted practice printer is missing from runtime script');
+}
+if (!html.includes('buildErrorBookPracticePrintHTML')) {
+  throw new Error('Error-book targeted practice print builder is missing from runtime script');
+}
+if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
+  throw new Error('Black-and-white review markers are missing from review/print styles');
+}
 if (!html.includes('MathEngine_SetCounters')) {
   throw new Error('Program-aware set counter storage key is missing from runtime script');
 }
@@ -1473,12 +1485,30 @@ if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
 if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
   throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
 }
+if (!mechanismFilteredHtml.includes('打印当前机制错题专项卷') || !mechanismFilteredHtml.includes('打印专项卷+答案')) {
+  throw new Error('Error book is missing full targeted practice print entry points');
+}
 const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';
 if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes('0.25')) {
   throw new Error('Error book mechanism print builder did not produce concrete practice content');
 }
 if (mechanismPrintHtml.includes('class="blank math-inline-blank"') || mechanismPrintHtml.includes('<div class="blank"></div>')) {
   throw new Error('Error book mechanism print HTML still contains legacy underline blanks');
+}
+const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, {}) || '';
+if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
+  throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
+}
+if (!fullErrorBookPracticeHtml.includes('参考答案') || !fullErrorBookPracticeHtml.includes('复练标记')) {
+  throw new Error('Full error-book targeted practice answer sheet is missing answer/reference tracking columns');
+}
+if (fullErrorBookPracticeHtml.includes('class="blank math-inline-blank"') || fullErrorBookPracticeHtml.includes('<div class="blank"></div>')) {
+  throw new Error('Full error-book targeted practice print HTML still contains legacy underline blanks');
+}
+const phaseOnePolicy = context.window.getErrorBookPracticePolicy?.(1, 24);
+const phaseThreePolicy = context.window.getErrorBookPracticePolicy?.(3, 24);
+if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= phaseThreePolicy.exactReplayQuota || phaseThreePolicy.errorLinkedQuota > 10) {
+  throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
 }
 context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };

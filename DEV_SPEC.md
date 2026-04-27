@@ -58,7 +58,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `attachExplanationMetadata`: normalizes rollout-family items so their `step` text is wrapped in structured reminder language before answer-sheet rendering.
 - `QUALITY_FAMILY_RULES`: now also maps `k_fcalc_*` into `fraction_operation` and `c2_eq_*` into `equation_method`, so both stages feed more consistently into replay and explanation logic.
 - `buildClosureBoundaryReplayItem`: supplies dedicated `L3` boundary-style reinforcement questions for closure method, validation, speed, and stability families instead of reusing only the generic same-family variant path.
-- `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, and spacing bonus.
+- `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, spacing bonus, and the phase-aware error-book practice policy so exact replay does not crowd out new retrieval.
+- `getErrorBookPracticePolicy`: caps exact replay and total error-linked practice by training cycle, keeping regular papers mixed while still spacing wrong-book items back into practice.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
@@ -68,7 +69,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildAnsRow`: now renders the answer-booklet `[原题 Question]` prompt through the same normalized prompt pipeline as the live worksheet, preventing legacy underline blanks from resurfacing only on the answer side.
 - `scripts/validate-runtime.mjs`: now audits both `advanced_fluency_v1` and `elementary_closure_v1` rendered papers for legacy underline blanks, so answer-slot regressions are caught even if they only reappear in one stage.
 - `printAnswerSheets` / print sandbox validation: now also audits the staged printable answer sheets for legacy underline blanks, so print-only regressions are caught instead of slipping past the live-paper checks.
-- `buildSetReviewFollowupPrintHTML` / `buildErrorBookMechanismPrintHTML`: their generated HTML is now also checked for legacy underline blanks, so follow-up worksheets and mechanism practice packs stay on the same compact answer-slot system as the main paper.
+- `buildSetReviewFollowupPrintHTML` / `buildErrorBookMechanismPrintHTML` / `buildErrorBookPracticePrintHTML`: their generated HTML is now also checked for legacy underline blanks, so follow-up worksheets, mechanism practice packs, and full error-book targeted sheets stay on the same compact answer-slot system as the main paper.
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
