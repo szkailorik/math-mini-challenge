@@ -27,6 +27,12 @@ if (!html.includes('id="stage-status-card"')) {
 if (!html.includes('id="cache-repair-status"')) {
   throw new Error('Cache repair status is missing from control panel');
 }
+if (!html.includes('window.checkCurrentSetDuplicates')) {
+  throw new Error('Manual duplicate-question checker is missing from runtime script');
+}
+if (!html.includes('检查重复题')) {
+  throw new Error('Manual duplicate-question checker is missing from control panel');
+}
 if (!html.includes('MathEngine_SetCounters')) {
   throw new Error('Program-aware set counter storage key is missing from runtime script');
 }
@@ -1284,6 +1290,30 @@ if (
   !String(cacheRepairStatus.title || '').includes('k_m')
 ) {
   throw new Error('Duplicate cached set repair did not render a visible control-panel status');
+}
+context.window.currentSetNumber = 121;
+store.set(getProgramCacheKey('advanced_fluency_v1', 121), JSON.stringify({
+  programId: 'advanced_fluency_v1',
+  stateLabel: 'validator manual duplicate cache',
+  k_m: [
+    { tag: 'k_dmul_basic', q: '11 &times; 11', a: '121' },
+    { tag: 'k_dmul_basic', q: '11 &times; 11', a: '121' },
+    { tag: 'k_dmul_basic', q: '12 &times; 11', a: '132' },
+    { tag: 'k_dmul_basic', q: '13 &times; 11', a: '143' },
+  ],
+}));
+const manualRepairResult = context.window.checkCurrentSetDuplicates?.();
+if (manualRepairResult !== true) {
+  throw new Error('Manual duplicate-question checker did not report a repair');
+}
+const manualRepairRaw = store.get(getProgramCacheKey('advanced_fluency_v1', 121)) || '';
+if (manualRepairRaw.includes('validator manual duplicate cache')) {
+  throw new Error('Manual duplicate-question checker did not replace the duplicate cached set');
+}
+assertNoQuestionFingerprintDuplicates(JSON.parse(manualRepairRaw), 'manual duplicate-cache repair set');
+const manualRepairRecord = JSON.parse(store.get('MathEngine_LastCacheRepair') || 'null');
+if (!manualRepairRecord?.manual || manualRepairRecord.set !== 121 || !String(cacheRepairStatus.textContent || '').includes('Set 121')) {
+  throw new Error('Manual duplicate-question checker did not update repair record and visible status');
 }
 context.window.StorageDB.cache.KAI = {
   weights: {},

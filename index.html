@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.151 (缓存修复状态)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.152 (手动查重修复)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2379,7 +2379,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.151</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.152</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2424,6 +2424,7 @@
                 <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printAnswerSheets()">🧾 打印答案</button>
             </div>
             <div class="ctrl-grid">
+                <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.checkCurrentSetDuplicates()">🔎 检查重复题</button>
                 <button class="ctrl-btn" style="background:#059669; color:white;" onclick="window.showDataModal()">💾 数据备份</button>
                 <button class="ctrl-btn" style="background:#dc2626; color:white;" onclick="window.showSetReview()">📋 本套报告</button>
                 <button class="ctrl-btn" style="background:#0284c7; color:white;" onclick="window.showCloudArchive()">🗄️ 学习档案</button>
@@ -2456,9 +2457,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.151';
-        const APP_RELEASE_LABEL = '缓存修复状态';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.151 继续优化出题：控制面板会显示最近一次自动修复缓存的 set，方便打印前确认。';
+        const APP_VERSION = 'v23.152';
+        const APP_RELEASE_LABEL = '手动查重修复';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.152 继续优化出题：打印前可一键检查当前 set 是否有重复题，发现问题会自动重生成。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -2769,6 +2770,16 @@
             el.style.display = 'block';
             el.textContent = `最近自动修复：Set ${repair.set} · ${formatCacheRepairTime(repair.at)}`;
             el.title = `重复位置：${repair.first || '-'} / ${repair.second || '-'}`;
+        }
+
+        function recordCacheRepair(cacheRepairInfo, { toast = true } = {}) {
+            if (!cacheRepairInfo) return;
+            safeLocalSetItem(CACHE_REPAIR_STORAGE_KEY, JSON.stringify(cacheRepairInfo));
+            window.lastCacheRepair = cacheRepairInfo;
+            renderCacheRepairStatus();
+            if (toast && typeof showToast === 'function') {
+                showToast(`已自动修复 Set ${cacheRepairInfo.set} 的重复题缓存，并重新生成干净卷。`, { background: '#0f766e', duration: 3000 });
+            }
         }
 
         window.changeProgram = function(programId) {
@@ -7114,16 +7125,51 @@
             let data = generateProgramSetData(programId);
             const hydrated = hydrateProgramSetData(data, programId);
             safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
-            if (cacheRepairInfo) {
-                safeLocalSetItem(CACHE_REPAIR_STORAGE_KEY, JSON.stringify(cacheRepairInfo));
-                window.lastCacheRepair = cacheRepairInfo;
-                renderCacheRepairStatus();
-                if (!window.__suppressCacheRepairToast && typeof showToast === 'function') {
-                    showToast(`已自动修复 Set ${window.currentSetNumber} 的重复题缓存，并重新生成干净卷。`, { background: '#0f766e', duration: 3000 });
-                }
-            }
+            if (cacheRepairInfo) recordCacheRepair(cacheRepairInfo, { toast: !window.__suppressCacheRepairToast });
             return hydrated.data;
         }
+
+        window.checkCurrentSetDuplicates = function() {
+            const programId = getCurrentProgramId();
+            const cacheKey = getSetCacheKey(window.currentSetNumber, programId);
+            const legacyKey = programId === ADVANCED_PROGRAM_ID ? getLegacyAdvancedCacheKey(window.currentSetNumber) : '';
+            let activeKey = cacheKey;
+            let raw = localStorage.getItem(cacheKey);
+            if (!raw && legacyKey) {
+                activeKey = legacyKey;
+                raw = localStorage.getItem(legacyKey);
+            }
+            let data = null;
+            try {
+                data = raw ? hydrateProgramSetData(JSON.parse(raw), programId).data : generateOrLoadSetData();
+            } catch (e) {
+                localStorage.removeItem(activeKey);
+            }
+            const duplicate = findSetQuestionDuplicate(data);
+            if (!duplicate) {
+                showToast(`Set ${window.currentSetNumber} 未发现重复题，可以打印。`, { background: '#16a34a', duration: 2400 });
+                return false;
+            }
+            localStorage.removeItem(activeKey);
+            if (legacyKey) localStorage.removeItem(legacyKey);
+            window._recentQuestions = collectRecentQuestions(8);
+            window._paperQuestions = new Set();
+            const regenerated = hydrateProgramSetData(generateProgramSetData(programId), programId).data;
+            safeLocalSetItem(cacheKey, JSON.stringify(regenerated));
+            recordCacheRepair({
+                at: Date.now(),
+                version: APP_VERSION,
+                programId,
+                set: window.currentSetNumber,
+                cacheKey: activeKey,
+                first: duplicate.first,
+                second: duplicate.second,
+                manual: true
+            }, { toast: false });
+            window.renderPaper();
+            showToast(`已检查并修复 Set ${window.currentSetNumber} 的重复题，卷面已刷新。`, { background: '#0f766e', duration: 3000 });
+            return true;
+        };
 
         function flattenQuestionData(data) {
             return Object.values(data || {}).filter(Array.isArray).flat();
