@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.150 (缓存修复可见化)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.151 (缓存修复状态)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1827,6 +1827,19 @@
             padding: 5px 10px;
             line-height: 1.2;
         }
+        #cache-repair-status {
+            display: none;
+            margin-top: 6px;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(15, 118, 110, 0.22);
+            background: rgba(240, 253, 250, 0.88);
+            color: #0f766e;
+            font-size: 10.5px;
+            line-height: 1.25;
+            font-weight: 700;
+            text-align: center;
+        }
 
         .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(247, 241, 227, 0.96); color: var(--desk-ink); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(16,35,63,0.12); box-shadow: 0 8px 18px rgba(15,23,42,0.14); z-index: 9999; cursor: pointer; font-family: 'Georgia', serif; font-weight: 700; font-size: 14px; backdrop-filter: blur(8px); display: none; }
         .export-btn { position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
@@ -2366,10 +2379,11 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.150</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.151</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
+        <div id="cache-repair-status" title=""></div>
         <button id="cloud-connect-shortcut" class="ctrl-btn" style="display:none; background:#0ea5e9; color:white; width:100%;" onclick="window.showDataModal()">☁️ 连接云同步 / Connect Sync</button>
         <div class="program-shell-card" id="program-shell-card">
             <div class="program-shell-head">
@@ -2442,14 +2456,15 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.150';
-        const APP_RELEASE_LABEL = '缓存修复可见化';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.150 继续优化出题：旧缓存卷被自动修复时会留下本地记录，并给出轻量提示。';
+        const APP_VERSION = 'v23.151';
+        const APP_RELEASE_LABEL = '缓存修复状态';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.151 继续优化出题：控制面板会显示最近一次自动修复缓存的 set，方便打印前确认。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
         const SET_COUNTERS_STORAGE_KEY = 'MathEngine_SetCounters';
         const PROMOTION_STATE_STORAGE_KEY = 'MathEngine_PromotionState';
+        const CACHE_REPAIR_STORAGE_KEY = 'MathEngine_LastCacheRepair';
         const ADVANCED_PROGRAM_ID = 'advanced_fluency_v1';
         const CLOSURE_PROGRAM_ID = 'elementary_closure_v1';
         const PROGRAM_SIGNAL_FIELDS = ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap'];
@@ -2727,6 +2742,33 @@
             if (stageInsights) {
                 stageInsights.innerHTML = (snapshot.insights || []).map(item => `<span class="stage-insight">${item}</span>`).join('');
             }
+            renderCacheRepairStatus();
+        }
+
+        function formatCacheRepairTime(ts) {
+            if (!ts) return '刚刚';
+            const date = new Date(ts);
+            if (!Number.isFinite(date.getTime())) return '刚刚';
+            return `${date.getMonth() + 1}/${date.getDate()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function getLastCacheRepair() {
+            return window.lastCacheRepair || readStoredJSON(CACHE_REPAIR_STORAGE_KEY, null);
+        }
+
+        function renderCacheRepairStatus() {
+            const el = document.getElementById('cache-repair-status');
+            if (!el) return;
+            const repair = getLastCacheRepair();
+            if (!repair || !repair.set) {
+                el.style.display = 'none';
+                el.textContent = '';
+                el.title = '';
+                return;
+            }
+            el.style.display = 'block';
+            el.textContent = `最近自动修复：Set ${repair.set} · ${formatCacheRepairTime(repair.at)}`;
+            el.title = `重复位置：${repair.first || '-'} / ${repair.second || '-'}`;
         }
 
         window.changeProgram = function(programId) {
@@ -7073,8 +7115,9 @@
             const hydrated = hydrateProgramSetData(data, programId);
             safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
             if (cacheRepairInfo) {
-                safeLocalSetItem('MathEngine_LastCacheRepair', JSON.stringify(cacheRepairInfo));
+                safeLocalSetItem(CACHE_REPAIR_STORAGE_KEY, JSON.stringify(cacheRepairInfo));
                 window.lastCacheRepair = cacheRepairInfo;
+                renderCacheRepairStatus();
                 if (!window.__suppressCacheRepairToast && typeof showToast === 'function') {
                     showToast(`已自动修复 Set ${window.currentSetNumber} 的重复题缓存，并重新生成干净卷。`, { background: '#0f766e', duration: 3000 });
                 }

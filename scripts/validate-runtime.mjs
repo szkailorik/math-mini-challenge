@@ -24,6 +24,9 @@ if (!html.includes('id="program-selector"')) {
 if (!html.includes('id="stage-status-card"')) {
   throw new Error('Stage status card is missing from control panel');
 }
+if (!html.includes('id="cache-repair-status"')) {
+  throw new Error('Cache repair status is missing from control panel');
+}
 if (!html.includes('MathEngine_SetCounters')) {
   throw new Error('Program-aware set counter storage key is missing from runtime script');
 }
@@ -1272,6 +1275,15 @@ if (
   !cacheRepairRecord.second
 ) {
   throw new Error('Duplicate cached set repair was not recorded with set, program, cache key, and duplicate locations');
+}
+const cacheRepairStatus = elements.get('cache-repair-status');
+if (
+  !cacheRepairStatus ||
+  cacheRepairStatus.style.display !== 'block' ||
+  !String(cacheRepairStatus.textContent || '').includes('Set 120') ||
+  !String(cacheRepairStatus.title || '').includes('k_m')
+) {
+  throw new Error('Duplicate cached set repair did not render a visible control-panel status');
 }
 context.window.StorageDB.cache.KAI = {
   weights: {},
