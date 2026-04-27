@@ -45,6 +45,9 @@ if (!html.includes('buildErrorBookPracticePrintHTML')) {
 if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
   throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
 }
+if (!html.includes('buildErrorBookPracticeResultHTML') || !html.includes('buildErrorBookPracticeLogHTML')) {
+  throw new Error('Error-book targeted practice reports are missing from runtime script');
+}
 if (!html.includes('saveErrorBookPractice')) {
   throw new Error('Error-book targeted practice persistence is missing from storage layer');
 }
@@ -1532,6 +1535,14 @@ const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', 
 const practicedProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
 if (!practiceLog?.results?.length || practicedProfile.errorBook.eb1.lastPracticeGrade !== 'wrong' || !practicedProfile.errorBook.eb1.rewrongCount) {
   throw new Error('Error-book targeted practice did not record wrong-again status');
+}
+const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
+if (!practiceResultHtml.includes('专项批改结果') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
+  throw new Error('Error-book targeted practice result report is missing summary or answer details');
+}
+const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
+if (!practiceLogHtml.includes('最近专项批改') || !practiceLogHtml.includes('又错 1')) {
+  throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts');
 }
 await context.window.StorageDB.saveErrorBookPractice('KAI', [
   {

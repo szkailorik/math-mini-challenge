@@ -73,6 +73,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
+- `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.154 (错题专项批改闭环)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.155 (专项批改报告)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1016,6 +1016,16 @@
         .badge-practice { background: #f1f5f9; color: #334155; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; font-family: sans-serif; border: 1px solid #cbd5e1; }
         .badge-practice.wrong { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
         .badge-practice.perfect { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .eb-practice-log { margin-top: 10px; padding: 10px 12px; border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; width: 100%; box-sizing: border-box; }
+        .eb-practice-log-title { font-size: 12px; color: #475569; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.04em; }
+        .eb-practice-log-list { display: grid; gap: 6px; }
+        .eb-practice-log-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12.5px; color: #334155; background: #f8fafc; }
+        .eb-practice-log-row strong { color: #0f172a; }
+        .eb-practice-log-row b { color: #991b1b; }
+        .eb-practice-report-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
+        .eb-practice-report-card { border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; padding: 10px 12px; }
+        .eb-practice-report-card span { display: block; color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.04em; }
+        .eb-practice-report-card b { display: block; color: #0f172a; font-size: 22px; line-height: 1.1; }
         .master-btn { position: absolute; top: 8px; right: 8px; background: #10b981; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
         .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
         .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
@@ -2457,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.154</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.155</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2535,9 +2545,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.154';
-        const APP_RELEASE_LABEL = '错题专项批改闭环';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.154 继续优化错题本：打印专项卷后可回到系统批改“已会/又错”，结果会写回错题本。';
+        const APP_VERSION = 'v23.155';
+        const APP_RELEASE_LABEL = '专项批改报告';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.155 继续优化错题本：专项批改后会生成本次结果报告，错题本顶部也会保留最近复练摘要。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8069,6 +8079,72 @@
         }
         window.buildErrorBookPracticeReviewHTML = buildErrorBookPracticeReviewHTML;
 
+        function summarizeErrorBookPracticeLog(log = {}) {
+            const results = Array.isArray(log.results) ? log.results : [];
+            const mastered = results.filter(item => item.grade === 'perfect').length;
+            const wrongAgain = results.filter(item => item.grade && item.grade !== 'perfect').length;
+            return { total: results.length, mastered, wrongAgain };
+        }
+
+        function buildErrorBookPracticeLogHTML(student, profile = {}) {
+            const logs = (profile.errorBookPracticeLog || []).slice(-3).reverse();
+            if (!logs.length) return '';
+            const rows = logs.map(log => {
+                const summary = summarizeErrorBookPracticeLog(log);
+                const label = log.mechanismKey ? getErrorMechanismLabel(log.mechanismKey) : '全部错题';
+                return `
+                <div class="eb-practice-log-row">
+                    <span><strong>${log.date || '最近'}</strong> · ${label} · ${summary.total} 题</span>
+                    <span>已会 ${summary.mastered} · <b>又错 ${summary.wrongAgain}</b></span>
+                </div>`;
+            }).join('');
+            return `
+            <div class="eb-practice-log">
+                <div class="eb-practice-log-title">${student} 最近专项批改</div>
+                <div class="eb-practice-log-list">${rows}</div>
+            </div>`;
+        }
+
+        function buildErrorBookPracticeResultHTML(student, log = {}) {
+            const summary = summarizeErrorBookPracticeLog(log);
+            const label = log.mechanismKey ? getErrorMechanismLabel(log.mechanismKey) : '全部错题';
+            const rows = (log.results || []).map((item, idx) => {
+                const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '粗心又错' : '又错');
+                const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
+                return `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><div class="math-row">${item.info?.q || '-'}</div></td>
+                    <td><span style="color:${gradeColor}; font-weight:800;">${gradeLabel}</span></td>
+                    <td><div class="math-row">${item.info?.a || '-'}</div></td>
+                </tr>`;
+            }).join('');
+            return `
+            <div class="sheet ans-sheet eb-practice-result-sheet">
+                <div class="header">
+                    <h1>${student} 专项批改结果</h1>
+                    <div class="info-row" style="font-weight:normal; font-size:14px;">
+                        <span>${log.date || ''}</span>
+                        <span>范围：${label}</span>
+                    </div>
+                </div>
+                <div class="eb-practice-report-summary">
+                    <div class="eb-practice-report-card"><span>本次批改</span><b>${summary.total}</b></div>
+                    <div class="eb-practice-report-card"><span>已会</span><b>${summary.mastered}</b></div>
+                    <div class="eb-practice-report-card"><span>又错/粗心</span><b>${summary.wrongAgain}</b></div>
+                </div>
+                <table class="archive-table">
+                    <tr><th>#</th><th>专项题</th><th>结果</th><th>正确答案</th></tr>
+                    ${rows}
+                </table>
+                <div class="answer-progress-note no-print" style="margin:10px 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    已会题会进入已掌握；又错或粗心题会继续留在错题本，并参与后续间隔复练。
+                </div>
+                <button class="review-jump-btn no-print" onclick="window.renderErrorBook()">返回错题本</button>
+            </div>`;
+        }
+        window.buildErrorBookPracticeResultHTML = buildErrorBookPracticeResultHTML;
+
         function buildStudentErrorSection(name, profile, filter) {
             let eb = (profile && profile.errorBook) ? profile.errorBook : {};
             let allEntries = Object.entries(eb).map(([uid, v]) => ({ uid, ...v }));
@@ -8094,6 +8170,7 @@
             let filterTitle = filter === 'mastered'
                 ? `🏆 ${name} 已掌握错题（Mastered Archive）`
                 : `📓 ${name} 专属错题本（Active Error Book）`;
+            const practiceLogHtml = buildErrorBookPracticeLogHTML(name, profile);
 
             if (entries.length === 0) {
                 let msg = filter === 'mastered'
@@ -8107,7 +8184,7 @@
                     <div style="display:flex; gap:8px;">
                         <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                         <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
-                    </div>${mechanismChipHtml}${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}</div>
+                    </div>${mechanismChipHtml}${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}${practiceLogHtml}</div>
                     <h2 style="text-align:center; margin-top:50px; color:#4caf50;">${msg}</h2></div>`;
             }
 
@@ -8195,6 +8272,7 @@
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
                         ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false)">🖨️ 打印${activeMechanism ? '当前机制' : '全部'}错题专项卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">🧾 打印专项卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">📝 批改专项卷</button></div>` : ''}
                         ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
+                        ${practiceLogHtml}
                     </div>` : '';
 
                 html += `
@@ -8337,7 +8415,8 @@
             }
             const wrongAgain = records.filter(item => item.grade !== 'perfect').length;
             showToast(`✅ 专项批改已保存：${records.length} 题，${wrongAgain} 题继续留在错题本。`, { background: '#0f766e', duration: 2800 });
-            renderErrorBookInternal();
+            document.getElementById('paper-container').innerHTML = buildErrorBookPracticeResultHTML(student, log);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         window.masterErrorUI = async function(student, uid) {
