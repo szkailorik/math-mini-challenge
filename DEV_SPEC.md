@@ -76,6 +76,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.
 - `getErrorEntryPracticePressure`: converts targeted-practice wrong-again counts into priority weight for error-book sorting, targeted-sheet ordering, and regular error-book selection signals.
+- `priorityOnly` error-book practice mode: filters targeted print/review sheets to wrong-again items and stores the scope in the practice log.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.

@@ -51,6 +51,9 @@ if (!html.includes('buildErrorBookPracticeResultHTML') || !html.includes('buildE
 if (!html.includes('window.openErrorBookPracticeLog') || !html.includes('window.printCurrentErrorBookPracticeResult')) {
   throw new Error('Error-book targeted practice report reopen/print actions are missing from runtime script');
 }
+if (!html.includes('复错优先卷') || !html.includes('priorityOnly')) {
+  throw new Error('Wrong-again priority practice sheet workflow is missing from runtime script');
+}
 if (!html.includes('saveErrorBookPractice')) {
   throw new Error('Error-book targeted practice persistence is missing from storage layer');
 }
@@ -1541,8 +1544,16 @@ if (!practiceLog?.results?.length || practicedProfile.errorBook.eb1.lastPractice
 }
 context.window.renderErrorBook();
 const rewrongErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
-if (!rewrongErrorBookHtml.includes('复错优先') || !rewrongErrorBookHtml.includes('专项又错')) {
+if (!rewrongErrorBookHtml.includes('复错优先') || !rewrongErrorBookHtml.includes('专项又错') || !rewrongErrorBookHtml.includes('打印复错优先卷')) {
   throw new Error('Error book is not surfacing wrong-again priority markers');
+}
+const priorityPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { priorityOnly: true }) || '';
+if (!priorityPracticeHtml.includes('复错优先专项卷') || !priorityPracticeHtml.includes('0.25')) {
+  throw new Error('Wrong-again priority practice print sheet is missing prioritized content');
+}
+const priorityReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { priorityOnly: true }) || '';
+if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml.includes('data-priority-only="true"')) {
+  throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
 if (!practiceResultHtml.includes('专项批改结果') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {

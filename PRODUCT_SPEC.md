@@ -146,6 +146,7 @@ v23.0 integrates the durable error book into regular training:
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.
 - v23.156 makes recent targeted-practice reports reopenable and printable, supporting parent record-keeping alongside the paper worksheet.
 - v23.157 makes wrong-again targeted-practice items higher priority in the error book, targeted sheets, and regular review signals so repeated retrieval failures receive earlier follow-up.
+- v23.158 adds a wrong-again-only targeted sheet and grading flow, giving tutors a short intervention path for repeated retrieval failures.
 
 v23.1 improves the daily print workflow:
 
