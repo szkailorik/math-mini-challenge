@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.153 (错题专项卷与黑白复习标记)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.154 (错题专项批改闭环)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1013,6 +1013,9 @@
         .badge-careless { background: #fef3c7; color: #d97706; }
         .badge-wrong { background: #fee2e2; color: #ef4444; }
         .badge-count { background: #fecaca; color: #b91c1c; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 12px; font-family: sans-serif; border: 1px solid #f87171; }
+        .badge-practice { background: #f1f5f9; color: #334155; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; font-family: sans-serif; border: 1px solid #cbd5e1; }
+        .badge-practice.wrong { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        .badge-practice.perfect { background: #dcfce7; color: #166534; border-color: #86efac; }
         .master-btn { position: absolute; top: 8px; right: 8px; background: #10b981; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
         .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
         .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
@@ -2454,7 +2457,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.153</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.154</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2532,9 +2535,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.153';
-        const APP_RELEASE_LABEL = '错题专项卷与黑白复习标记';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.153 继续优化错题训练：复习题黑白打印也能识别，错题回炉比例更克制，错题本可直接打印专项卷和答案。';
+        const APP_VERSION = 'v23.154';
+        const APP_RELEASE_LABEL = '错题专项批改闭环';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.154 继续优化错题本：打印专项卷后可回到系统批改“已会/又错”，结果会写回错题本。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3134,7 +3137,7 @@
         }
 
         function createProgramProfile(programId = ADVANCED_PROGRAM_ID) {
-            const profile = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+            const profile = { weights: {}, lastSeen: {}, history: [], errorBook: {}, errorBookPracticeLog: [] };
             if (programId === CLOSURE_PROGRAM_ID) {
                 PROGRAM_SIGNAL_FIELDS.forEach(field => { profile[field] = 0; });
             }
@@ -3156,6 +3159,7 @@
             if (!next.lastSeen || typeof next.lastSeen !== 'object') next.lastSeen = {};
             if (!Array.isArray(next.history)) next.history = [];
             if (!next.errorBook || typeof next.errorBook !== 'object') next.errorBook = {};
+            if (!Array.isArray(next.errorBookPracticeLog)) next.errorBookPracticeLog = [];
             return ensureSignalFields(next, programId);
         }
 
@@ -3384,6 +3388,15 @@
             merged.history = Array.from(hMap.values()).sort((a,b) => (a.ts||0) - (b.ts||0));
             if (merged.history.length > 60) merged.history = merged.history.slice(-60);
 
+            let practiceMap = new Map();
+            (local.errorBookPracticeLog || []).forEach(log => { if (log?.id) practiceMap.set(log.id, log); });
+            (cloud.errorBookPracticeLog || []).forEach(log => {
+                if (!log?.id) return;
+                const existing = practiceMap.get(log.id);
+                if (!existing || (log.ts || 0) > (existing.ts || 0)) practiceMap.set(log.id, log);
+            });
+            merged.errorBookPracticeLog = Array.from(practiceMap.values()).sort((a, b) => (a.ts || 0) - (b.ts || 0)).slice(-40);
+
             const historyErrorCounts = new Map();
             merged.history.forEach(h => {
                 (h.details || []).forEach(d => {
@@ -3410,10 +3423,14 @@
                     info: mergedInfo,
                     grade: (a.grade === 'wrong' || b.grade === 'wrong') ? 'wrong' : 'careless',
                     count: Math.max(a.count||1, b.count||1, historyErrorCounts.get(uid)||0),
+                    practiceCount: Math.max(a.practiceCount || 0, b.practiceCount || 0),
+                    rewrongCount: Math.max(a.rewrongCount || 0, b.rewrongCount || 0),
                     firstSet: Math.min(a.firstSet||a.lastSet, b.firstSet||b.lastSet),
                     firstDate: (a.firstSet||0) <= (b.firstSet||0) ? (a.firstDate||b.firstDate) : (b.firstDate||a.firstDate),
                     lastSet: Math.max(a.lastSet||0, b.lastSet||0),
                     lastDate: (a.lastSet||0) >= (b.lastSet||0) ? (a.lastDate||b.lastDate) : (b.lastDate||a.lastDate),
+                    lastPracticeDate: (a.lastPracticeDate || b.lastPracticeDate || null),
+                    lastPracticeGrade: (a.lastPracticeGrade === 'wrong' || b.lastPracticeGrade === 'wrong') ? 'wrong' : (a.lastPracticeGrade || b.lastPracticeGrade || ''),
                     mechanismKey: a.mechanismKey || b.mechanismKey || getErrorMechanismKey(mergedTag, mergedInfo),
                     mastered: !!a.mastered && !!b.mastered, // 双方都标记掌握才算掌握
                     masteredDate: (a.mastered && b.mastered) ? (a.masteredDate || b.masteredDate) : null
@@ -3527,7 +3544,8 @@
                     weights: data?.weights || {},
                     lastSeen: data?.lastSeen || {},
                     history: data?.history || [],
-                    errorBook: data?.errorBook || {}
+                    errorBook: data?.errorBook || {},
+                    errorBookPracticeLog: data?.errorBookPracticeLog || []
                 }, programId);
                 profile.history = profile.history.map(session => ({
                     ...session,
@@ -3566,10 +3584,15 @@
                 Object.keys(profile.errorBook).forEach(uid => {
                     let entry = profile.errorBook[uid] || {};
                     entry.count = Math.max(1, Number.parseInt(entry.count, 10) || 1);
+                    entry.practiceCount = Math.max(0, Number.parseInt(entry.practiceCount, 10) || 0);
+                    entry.rewrongCount = Math.max(0, Number.parseInt(entry.rewrongCount, 10) || 0);
                     entry.mastered = !!entry.mastered;
                     entry.mechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                     profile.errorBook[uid] = entry;
                 });
+                profile.errorBookPracticeLog = (profile.errorBookPracticeLog || [])
+                    .filter(item => item && item.id)
+                    .slice(-40);
                 return ensureProgramProfileShape(profile, programId);
             },
             migrateProfile: function(data) {
@@ -3782,6 +3805,77 @@
                     this.cache[student].programs[programId] = profile;
                 }
                 await this.forceSave(student);
+            },
+
+            saveErrorBookPractice: async function(student, records, programId = getCurrentProgramId(), meta = {}) {
+                let profile = ensureProgramProfileShape(this.getProfile(student, programId), programId);
+                let today = new Date().toLocaleDateString();
+                let nowTs = Date.now();
+                let log = {
+                    id: `ebp_${programId}_${nowTs}`,
+                    date: today,
+                    ts: nowTs,
+                    programId,
+                    set: window.currentSetNumber,
+                    mechanismKey: meta.mechanismKey || '',
+                    results: []
+                };
+                (records || []).forEach(record => {
+                    if (!record?.tag || !record?.info || !record?.grade) return;
+                    const sourceUid = record.sourceErrorUid || getQuestionUid(record.tag, record.info);
+                    const sourceEntry = profile.errorBook[sourceUid];
+                    const practiceUid = getQuestionUid(record.tag, record.info);
+                    let entry = sourceEntry || profile.errorBook[practiceUid];
+                    if (!entry && record.grade !== 'perfect') {
+                        entry = {
+                            tag: record.tag,
+                            info: record.info,
+                            grade: record.grade,
+                            count: 0,
+                            firstSet: window.currentSetNumber,
+                            firstDate: today,
+                            lastSet: window.currentSetNumber,
+                            lastDate: today,
+                            mechanismKey: record.mechanismKey || getErrorMechanismKey(record.tag, record.info),
+                            mastered: false
+                        };
+                        profile.errorBook[sourceUid] = entry;
+                    }
+                    if (!entry) return;
+                    entry.practiceCount = Math.max(0, Number(entry.practiceCount || 0)) + 1;
+                    entry.lastPracticeDate = today;
+                    entry.lastPracticeGrade = record.grade;
+                    entry.mechanismKey = entry.mechanismKey || record.mechanismKey || getErrorMechanismKey(entry.tag || record.tag, entry.info || record.info);
+                    if (record.grade === 'perfect') {
+                        entry.mastered = true;
+                        entry.masteredDate = today;
+                    } else {
+                        entry.mastered = false;
+                        entry.masteredDate = null;
+                        entry.grade = record.grade === 'wrong' ? 'wrong' : (entry.grade || record.grade);
+                        entry.count = Math.max(1, Number(entry.count || 0) + 1);
+                        entry.rewrongCount = Math.max(0, Number(entry.rewrongCount || 0)) + 1;
+                        entry.lastSet = window.currentSetNumber;
+                        entry.lastDate = today;
+                    }
+                    log.results.push({
+                        sourceErrorUid: sourceUid,
+                        tag: record.tag,
+                        grade: record.grade,
+                        info: record.info
+                    });
+                });
+                if (!log.results.length) return null;
+                profile.errorBookPracticeLog.push(log);
+                profile.errorBookPracticeLog = profile.errorBookPracticeLog.slice(-40);
+                this.cache[student] = ensureStudentRecordShape(this.cache[student]);
+                if (programId === ADVANCED_PROGRAM_ID) {
+                    Object.assign(this.cache[student], profile);
+                } else {
+                    this.cache[student].programs[programId] = profile;
+                }
+                await this.forceSave(student);
+                return log;
             },
 
             // v22：标记已掌握（不删除、保留归档）
@@ -7931,6 +8025,50 @@
         }
         window.buildErrorBookPracticePrintHTML = buildErrorBookPracticePrintHTML;
 
+        function buildErrorBookPracticeReviewHTML(student, { mechanismKey = '' } = {}) {
+            const items = buildErrorBookPracticeItems(student, { mechanismKey });
+            if (!items.length) return '';
+            const label = mechanismKey ? getErrorMechanismLabel(mechanismKey) : '全部活跃错题';
+            const rows = items.map((item, idx) => {
+                const infoObj = { sec: '错题专项卷', num: idx + 1, q: item.q, a: item.a, step: item.step || '' };
+                const encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
+                const renderedQuestion = beautifyMathHTML(item.q || '-');
+                const renderedAnswer = beautifyMathHTML(item.a || '-');
+                const renderedStep = item.step ? beautifyMathHTML(item.step) : '';
+                const sourceUid = item.sourceErrorUid || '';
+                return `
+                <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${sourceUid}" data-mechanism-key="${item.followupMechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
+                    <div class="ans-content">
+                        <div class="ans-q-line"><span class="ans-num">${idx + 1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif;">[专项题] <span class="math-row">${renderedQuestion}</span></span></div>
+                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong>${renderedStep ? ` · <span class="math-row">${renderedStep}</span>` : ''}</div>
+                        <div class="ans-tip">纸上勾了“已会”就点 ✓；纸上勾了“又错”就点 ✗。提交后会更新错题本。</div>
+                    </div>
+                    <div class="grade-area no-print">
+                        <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
+                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
+                    </div>
+                </div>`;
+            }).join('');
+            return `
+            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}">
+                <div class="header">
+                    <h1>${student} 错题专项卷批改</h1>
+                    <div class="info-row" style="font-weight:normal; font-size:14px;">
+                        <span>范围：${label}</span>
+                        <span>${items.length} 题</span>
+                    </div>
+                </div>
+                <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    批改纸质专项卷：✓ 代表这道错题已会，会移入已掌握；✗ 或 ⚠️ 会保留在错题本，并记录为专项复错。
+                </div>
+                <div class="ans-grid-block">${rows}</div>
+                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交专项批改，更新错题本</button>
+                <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.renderErrorBook()">返回错题本</button>
+            </div>`;
+        }
+        window.buildErrorBookPracticeReviewHTML = buildErrorBookPracticeReviewHTML;
+
         function buildStudentErrorSection(name, profile, filter) {
             let eb = (profile && profile.errorBook) ? profile.errorBook : {};
             let allEntries = Object.entries(eb).map(([uid, v]) => ({ uid, ...v }));
@@ -8024,6 +8162,9 @@
                             ? `<button class="master-btn" style="background:#94a3b8;" title="移回错题本 Re-activate" onclick="window.unmasterErrorUI('${name}','${err.uid}')">↩</button>`
                             : `<button class="master-btn" title="标记已掌握 Mark as Mastered" onclick="window.masterErrorUI('${name}','${err.uid}')">✓</button>`;
                         let countBadge = err.count > 1 ? `<span class="badge-count">错 ${err.count} 次</span>` : '';
+                        let practiceBadge = err.lastPracticeGrade
+                            ? `<span class="badge-practice ${err.lastPracticeGrade === 'perfect' ? 'perfect' : 'wrong'}">${err.lastPracticeGrade === 'perfect' ? '专项已会' : '专项又错'}${err.rewrongCount ? ` ${err.rewrongCount} 次` : ''}</span>`
+                            : '';
                         let dateRange = err.firstSet === err.lastSet
                             ? `Set ${err.lastSet} · ${err.lastDate}`
                             : `Set ${err.firstSet}→${err.lastSet} · ${err.lastDate}`;
@@ -8032,7 +8173,7 @@
                             ${masterBtn}
                             <div class="error-meta">
                                 <span>[${dateRange}]</span>
-                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge}</span>
+                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge} ${practiceBadge}</span>
                             </div>
                             <div class="error-q math-row">${err.info.q}${suffix}</div>
                         </div>`;
@@ -8052,7 +8193,7 @@
                         </div>
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
-                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false)">🖨️ 打印${activeMechanism ? '当前机制' : '全部'}错题专项卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">🧾 打印专项卷+答案</button></div>` : ''}
+                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false)">🖨️ 打印${activeMechanism ? '当前机制' : '全部'}错题专项卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">🧾 打印专项卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">📝 批改专项卷</button></div>` : ''}
                         ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
                     </div>` : '';
 
@@ -8159,6 +8300,44 @@
             } else {
                 setTimeout(triggerPrint, 220);
             }
+        };
+
+        window.openErrorBookPracticeReview = function(student) {
+            const mechanismKey = window._ebMechanism || '';
+            const html = buildErrorBookPracticeReviewHTML(student, { mechanismKey });
+            if (!html) {
+                showToast('当前错题本还没有可批改的专项训练题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            document.getElementById('paper-container').innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        function parseErrorBookPracticeRow(row) {
+            const base = parseAnswerRowRecord(row);
+            if (!base || !base.grade) return null;
+            return {
+                ...base,
+                sourceErrorUid: row.getAttribute('data-source-uid') || '',
+                mechanismKey: row.getAttribute('data-mechanism-key') || ''
+            };
+        }
+
+        window.submitErrorBookPractice = async function(student) {
+            const rows = Array.from(document.querySelectorAll(`.eb-practice-grade-row[data-student="${student}"]`));
+            const records = rows.map(parseErrorBookPracticeRow).filter(Boolean);
+            if (!records.length) {
+                showToast('请至少批改一道专项题后再提交。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { mechanismKey: window._ebMechanism || '' });
+            if (!log) {
+                showToast('这次专项批改没有可保存的记录。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const wrongAgain = records.filter(item => item.grade !== 'perfect').length;
+            showToast(`✅ 专项批改已保存：${records.length} 题，${wrongAgain} 题继续留在错题本。`, { background: '#0f766e', duration: 2800 });
+            renderErrorBookInternal();
         };
 
         window.masterErrorUI = async function(student, uid) {

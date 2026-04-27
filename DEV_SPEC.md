@@ -72,6 +72,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSetReviewFollowupPrintHTML` / `buildErrorBookMechanismPrintHTML` / `buildErrorBookPracticePrintHTML`: their generated HTML is now also checked for legacy underline blanks, so follow-up worksheets, mechanism practice packs, and full error-book targeted sheets stay on the same compact answer-slot system as the main paper.
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
+- `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.

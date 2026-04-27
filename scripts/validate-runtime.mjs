@@ -42,6 +42,12 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
+if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
+  throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
+}
+if (!html.includes('saveErrorBookPractice')) {
+  throw new Error('Error-book targeted practice persistence is missing from storage layer');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1485,7 +1491,7 @@ if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
 if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
   throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
 }
-if (!mechanismFilteredHtml.includes('打印当前机制错题专项卷') || !mechanismFilteredHtml.includes('打印专项卷+答案')) {
+if (!mechanismFilteredHtml.includes('打印当前机制错题专项卷') || !mechanismFilteredHtml.includes('打印专项卷+答案') || !mechanismFilteredHtml.includes('批改专项卷')) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
 const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';
@@ -1509,6 +1515,35 @@ const phaseOnePolicy = context.window.getErrorBookPracticePolicy?.(1, 24);
 const phaseThreePolicy = context.window.getErrorBookPracticePolicy?.(3, 24);
 if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= phaseThreePolicy.exactReplayQuota || phaseThreePolicy.errorLinkedQuota > 10) {
   throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
+}
+const reviewHtmlForPractice = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { mechanismKey: 'representation-conversion' }) || '';
+if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"')) {
+  throw new Error('Error-book targeted practice grading sheet is missing review rows or submit action');
+}
+const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_1',
+    grade: 'wrong',
+    sourceErrorUid: 'eb1',
+    mechanismKey: 'representation-conversion',
+    info: { sec: '错题专项卷', num: 1, q: '0.25 = (   )', a: '1/4', step: '先转成分数。' }
+  }
+], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion' });
+const practicedProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+if (!practiceLog?.results?.length || practicedProfile.errorBook.eb1.lastPracticeGrade !== 'wrong' || !practicedProfile.errorBook.eb1.rewrongCount) {
+  throw new Error('Error-book targeted practice did not record wrong-again status');
+}
+await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_1',
+    grade: 'perfect',
+    sourceErrorUid: 'eb1',
+    mechanismKey: 'representation-conversion',
+    info: { sec: '错题专项卷', num: 1, q: '0.25 = (   )', a: '1/4', step: '先转成分数。' }
+  }
+], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion' });
+if (!context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.eb1.mastered) {
+  throw new Error('Error-book targeted practice did not mark mastered items after a perfect review');
 }
 context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
