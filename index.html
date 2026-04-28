@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.160 (错题记录自检)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.161 (错题体检面板)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.160</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.161</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2516,6 +2516,7 @@
                 <button class="ctrl-btn" style="background:#059669; color:white;" onclick="window.showDataModal()">💾 数据备份</button>
                 <button class="ctrl-btn" style="background:#dc2626; color:white;" onclick="window.showSetReview()">📋 本套报告</button>
                 <button class="ctrl-btn" style="background:#0284c7; color:white;" onclick="window.showCloudArchive()">🗄️ 学习档案</button>
+                <button class="ctrl-btn" style="background:#b45309; color:white;" onclick="window.showSetReportIntegrityAudit()">🧪 错题体检</button>
                 <button class="ctrl-btn" style="background:#7c3aed; color:white;" onclick="window.showKnowledgeMap()">🧭 知识点地图</button>
                 <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.showCalculationQuickReview()">📘 计算总览</button>
                 <button class="ctrl-btn" style="background:#f59e0b; color:white;" onclick="window.renderErrorBook()">📓 专属错题本</button>
@@ -2545,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.160';
-        const APP_RELEASE_LABEL = '错题记录自检';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.160 加固本套报告：打开本地或云端数据时会自动核对批改记录、错题详情和错题本，能补回的漏题会自动补齐。';
+        const APP_VERSION = 'v23.161';
+        const APP_RELEASE_LABEL = '错题体检面板';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.161 新增“错题体检”：可以集中查看本套报告、历史批改记录和错题本是否一致，并一键重新修复。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10064,6 +10065,104 @@
         }
         window.getSetReviewIntegrity = getSetReviewIntegrity;
         window.buildSetReviewIntegrityHTML = buildSetReviewIntegrityHTML;
+
+        function getSetReportIntegrityAudit(profile = {}) {
+            const sessions = Array.isArray(profile.history) ? profile.history : [];
+            let graded = 0;
+            let mistakes = 0;
+            let details = 0;
+            let missing = 0;
+            const issueRows = [];
+            sessions.forEach(session => {
+                const item = getSetReviewIntegrity(session);
+                graded += item.graded;
+                mistakes += item.mistakes;
+                details += item.details;
+                missing += item.missing;
+                if (item.missing > 0 || item.details < item.mistakes) {
+                    issueRows.push({ session, integrity: item });
+                }
+            });
+            const activeErrorBook = Object.values(profile.errorBook || {}).filter(entry => entry && !entry.mastered).length;
+            const masteredErrorBook = Object.values(profile.errorBook || {}).filter(entry => entry && entry.mastered).length;
+            return { sessions: sessions.length, graded, mistakes, details, missing, issueRows, activeErrorBook, masteredErrorBook };
+        }
+        window.getSetReportIntegrityAudit = getSetReportIntegrityAudit;
+
+        function buildSetReportIntegrityAuditCard(student, profile = {}) {
+            const audit = getSetReportIntegrityAudit(profile);
+            const ok = audit.missing === 0 && audit.details >= audit.mistakes;
+            const issueHtml = audit.issueRows.length ? `
+                <table class="archive-table" style="margin-top:10px;">
+                    <tr><th>卷号</th><th>已批改</th><th>错题/粗心</th><th>报告列出</th><th>待补</th></tr>
+                    ${audit.issueRows.slice(-12).reverse().map(({ session, integrity }) => `
+                        <tr>
+                            <td><button class="eb-filter-btn" style="padding:4px 8px;" onclick="window.showSetReview(${Number(session.set || 0)}, '${student}')">Set ${session.set || '-'}</button></td>
+                            <td>${integrity.graded}</td>
+                            <td>${integrity.mistakes}</td>
+                            <td>${integrity.details}</td>
+                            <td style="color:#b45309; font-weight:bold;">${integrity.missing}</td>
+                        </tr>`).join('')}
+                </table>` : `<div style="margin-top:10px; color:#047857; font-weight:800;">没有发现漏题风险。历史报告和错题本覆盖正常。</div>`;
+            return `
+                <div class="report-section">
+                    <h3>${ok ? '✅' : '⚠️'} ${student} 错题记录体检</h3>
+                    <div style="padding:15px;">
+                        <div class="eb-practice-report-summary">
+                            <div class="eb-practice-report-card"><span>历史套卷</span><b>${audit.sessions}</b></div>
+                            <div class="eb-practice-report-card"><span>已批改</span><b>${audit.graded}</b></div>
+                            <div class="eb-practice-report-card"><span>错题/粗心</span><b>${audit.mistakes}</b></div>
+                        </div>
+                        <div class="eb-practice-report-summary">
+                            <div class="eb-practice-report-card"><span>报告列出</span><b>${audit.details}</b></div>
+                            <div class="eb-practice-report-card"><span>待补风险</span><b style="color:${audit.missing ? '#b45309' : '#047857'};">${audit.missing}</b></div>
+                            <div class="eb-practice-report-card"><span>活跃错题</span><b>${audit.activeErrorBook}</b></div>
+                        </div>
+                        <div style="padding:10px 12px; border-radius:8px; background:${ok ? '#ecfdf5' : '#fff7ed'}; color:${ok ? '#047857' : '#b45309'}; font-weight:800;">
+                            ${ok ? '记录一致：本套报告、历史批改和错题本已完成核对。' : '发现风险：建议点击“一键重新修复”，再回到对应套卷复核。'}
+                        </div>
+                        ${issueHtml}
+                    </div>
+                </div>`;
+        }
+
+        function buildSetReportIntegrityAuditHTML() {
+            const program = getProgramConfig(getCurrentProgramId());
+            return `
+                <div style="padding:0 0 12px; color:#475569; font-size:13.5px;">
+                    当前训练阶段：<strong>${program.name}</strong>。体检只检查当前阶段的数据；切换阶段后可分别体检。
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                    <button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.repairSetReportIntegrityNow()">🔧 一键重新修复</button>
+                    <button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.showCloudArchive()">🗄️ 打开学习档案</button>
+                </div>
+                ${buildSetReportIntegrityAuditCard('KAI', StorageDB.getProfile('KAI') || {})}
+                ${buildSetReportIntegrityAuditCard('Lorik', StorageDB.getProfile('Lorik') || {})}`;
+        }
+        window.buildSetReportIntegrityAuditHTML = buildSetReportIntegrityAuditHTML;
+
+        window.showSetReportIntegrityAudit = function() {
+            document.getElementById('modal-title').innerText = '🧪 错题记录体检 / Integrity Check';
+            document.getElementById('report-content-area').innerHTML = buildSetReportIntegrityAuditHTML();
+            document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.repairSetReportIntegrityNow = async function() {
+            const students = ['KAI', 'Lorik'];
+            let repaired = 0;
+            for (const student of students) {
+                const profile = StorageDB.getProfile(student) || {};
+                (profile.history || []).forEach(session => {
+                    const result = normalizeSessionMistakeDetails(session);
+                    repaired += (result.added || 0) + (result.upgraded || 0);
+                });
+                const ebResult = reconcileErrorBookFromHistory(profile);
+                repaired += (ebResult.added || 0) + (ebResult.raised || 0);
+                await StorageDB.forceSave(student);
+            }
+            showToast(`✅ 错题记录体检完成：修复/补强 ${repaired} 处。`, { background: '#0f766e', duration: 3000 });
+            window.showSetReportIntegrityAudit();
+        };
 
         function buildSetReviewSection(student, setNum, highlightStudent) {
             const profile = StorageDB.getProfile(student) || {};

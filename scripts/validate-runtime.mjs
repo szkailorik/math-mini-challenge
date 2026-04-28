@@ -60,6 +60,9 @@ if (!html.includes('saveErrorBookPractice')) {
 if (!html.includes('normalizeSessionMistakeDetails') || !html.includes('buildSetReviewIntegrityHTML')) {
   throw new Error('Set-report mistake integrity repair/check workflow is missing from runtime script');
 }
+if (!html.includes('showSetReportIntegrityAudit') || !html.includes('错题体检')) {
+  throw new Error('Set-report integrity audit panel is missing from runtime script or control panel');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1730,6 +1733,14 @@ if (duplicateErrorEntries.length !== 1 || duplicateErrorEntries[0].count !== 2) 
 const duplicateIntegrityHtml = context.window.buildSetReviewIntegrityHTML?.(duplicateSession) || '';
 if (!duplicateIntegrityHtml.includes('错题记录完整性已核对') || !duplicateIntegrityHtml.includes('报告列出 2 条')) {
   throw new Error('Set review integrity banner did not confirm the duplicate-row report coverage');
+}
+const duplicateAudit = context.window.getSetReportIntegrityAudit?.(duplicateProfile);
+if (!duplicateAudit || duplicateAudit.missing !== 0 || duplicateAudit.details !== 2 || duplicateAudit.mistakes !== 2) {
+  throw new Error('Set-report integrity audit did not summarize duplicate-row coverage correctly');
+}
+const duplicateAuditHtml = context.window.buildSetReportIntegrityAuditHTML?.() || '';
+if (!duplicateAuditHtml.includes('错题记录体检') || !duplicateAuditHtml.includes('一键重新修复')) {
+  throw new Error('Set-report integrity audit panel did not render the repair controls');
 }
 const legacyMigratedProfile = context.window.StorageDB.migrateProgramProfile?.({
   weights: {},

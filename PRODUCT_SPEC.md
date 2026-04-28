@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.161 exposes the integrity model to the tutor:
+
+- A `错题体检` panel summarizes whether submitted grades, set-report mistake rows, and active error-book coverage agree for each learner.
+- Tutors can manually rerun the repair pass after switching devices or restoring old data, then revisit any risky set directly from the audit table.
+- This turns silent data uncertainty into a visible maintenance workflow without changing the learner-facing practice flow.
+
 v23.160 adds a grading integrity safety net:
 
 - When local or cloud data is loaded, non-perfect `allGrades` entries are used to repair missing set-report `details` whenever the original row position can be recovered.
