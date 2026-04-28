@@ -69,7 +69,7 @@ if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交�
 if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
   throw new Error('Post-submit automatic report navigation is missing from runtime script');
 }
-if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告')) {
+if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
@@ -1628,6 +1628,13 @@ emit('afterprint');
 if ((elements.get('print-root')?.innerHTML || '') !== '') {
   throw new Error('Set review report print sandbox did not clear after afterprint');
 }
+context.window.printCurrentSetReviewReport('KAI');
+await new Promise(resolve => setTimeout(resolve, 260));
+const singleSetReviewPrintHtml = elements.get('print-root')?.innerHTML || '';
+if (!singleSetReviewPrintHtml.includes('KAI 单人报告') || !singleSetReviewPrintHtml.includes('KAI · Set 106') || singleSetReviewPrintHtml.includes('Lorik · Set 106')) {
+  throw new Error('Single-student set review print sandbox did not filter to the requested student report');
+}
+emit('afterprint');
 const sampleFollowupCandidates = context.window.buildSetReviewFollowupCandidates?.(context.window.StorageDB.cache.KAI.history[0]);
 if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 2) {
   throw new Error('Set review follow-up candidates are not being built from current-set details');

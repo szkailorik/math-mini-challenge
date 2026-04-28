@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.165 refines report archiving:
+
+- Set review reports can be printed as the full two-learner report or filtered to one learner.
+- When a report opens from a learner-specific submission, the modal exposes a one-click single-learner print action.
+- This supports separate paper folders for KAI and Lorik while preserving the combined report option.
+
 v23.164 adds printable set reports:
 
 - The set review modal can stage only the current report into the print sandbox, avoiding accidental printing of the long worksheet page.
