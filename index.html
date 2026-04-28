@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.158 (复错优先卷)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.159 (本套报告防漏题)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.158</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.159</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2545,9 +2545,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.158';
-        const APP_RELEASE_LABEL = '复错优先卷';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.158 继续优化错题本：可单独打印和批改“复错优先卷”，专门处理专项里又错过的题。';
+        const APP_VERSION = 'v23.159';
+        const APP_RELEASE_LABEL = '本套报告防漏题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.159 修复本套报告漏题：同一道题即使在卷内重复出现，也会按题号位置逐条记录，同时错题本继续按题目合并复练。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3759,7 +3759,8 @@
                     applyWeightDelta(r.tag, gradeDelta(r.grade));
                     let appliedDelta = (profile.weights[r.tag] || 0) - before;
                     const uid = getQuestionUid(r.tag, r.info);
-                    sessionRecord.allGrades.push({ tag: r.tag, grade: r.grade, uid, info: r.info });
+                    const rowKey = r.rowKey || getAnswerRowKey(r.tag, r.info);
+                    sessionRecord.allGrades.push({ tag: r.tag, grade: r.grade, uid, rowKey, info: r.info });
                     if (appliedDelta !== 0) sessionRecord.weightAdjustments.push({ tag: r.tag, delta: appliedDelta });
                     const signalAdj = getProgramSignalDelta(programId, r.tag, r.grade);
                     if (signalAdj) {
@@ -3774,7 +3775,8 @@
                     if (r.grade !== 'perfect') {
                         let uid = getQuestionUid(r.tag, r.info);
                         let mechanismKey = getErrorMechanismKey(r.tag, r.info);
-                        sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid, mechanismKey });
+                        const rowKey = r.rowKey || getAnswerRowKey(r.tag, r.info);
+                        sessionRecord.details.push({ tag: r.tag, grade: r.grade, info: r.info, uid, rowKey, mechanismKey });
 
                         if (profile.errorBook[uid]) {
                             let eb = profile.errorBook[uid];
@@ -7444,11 +7446,19 @@
             return `<div class="ans-grid-block">` + questions.map((q, i) => buildAnsRow(q, i, student, secName, sessionData)).join('') + `</div>`;
         };
 
-        function getAnswerSubmissionProgress(questions = [], sessionData = null) {
+        function getAnswerSubmissionProgress(questions = [], sessionData = null, secName = '') {
             const total = (questions || []).length;
+            const submittedRows = Array.isArray(sessionData?.allGrades) ? sessionData.allGrades.filter(entry => entry?.grade) : [];
+            if (!secName && submittedRows.some(entry => !!entry?.rowKey)) {
+                return {
+                    total,
+                    submitted: Math.min(total, submittedRows.length),
+                    pending: Math.max(0, total - submittedRows.length)
+                };
+            }
             let submitted = 0;
-            (questions || []).forEach(q => {
-                const info = { q: q?.q, a: q?.a, step: q?.step || '' };
+            (questions || []).forEach((q, index) => {
+                const info = { sec: secName, num: index + 1, q: q?.q, a: q?.a, step: q?.step || '' };
                 if (findSessionGradeEntry(sessionData, q?.tag, info)) submitted += 1;
             });
             return {
@@ -7460,10 +7470,11 @@
 
         function getAnswerSectionPendingSummary(sectionGroups = [], sessionData = null) {
             return (sectionGroups || []).map((section, index) => {
-                const progress = getAnswerSubmissionProgress(section?.questions || [], sessionData);
+                const sectionTitle = section?.title || `第${index + 1}大题`;
+                const progress = getAnswerSubmissionProgress(section?.questions || [], sessionData, sectionTitle);
                 return {
                     index: index + 1,
-                    title: section?.title || `第${index + 1}大题`,
+                    title: sectionTitle,
                     pending: progress.pending,
                     total: progress.total
                 };
@@ -8725,29 +8736,44 @@
             return computeErrorUid(tag, info?.q || '');
         }
 
+        function getAnswerRowKey(tag, info = {}) {
+            const sec = String(info?.sec || '').trim();
+            const num = String(info?.num || '').trim();
+            if (!tag || !sec || !num) return '';
+            return `${tag}::${sec}::${num}`;
+        }
+        window.getAnswerRowKey = getAnswerRowKey;
+
         function findSessionGradeEntry(sessionData, tag, info = {}) {
             if (!sessionData || !tag) return null;
             const uid = getQuestionUid(tag, info);
+            const rowKey = getAnswerRowKey(tag, info);
             const allGrades = Array.isArray(sessionData.allGrades) ? sessionData.allGrades : [];
-            let matched = allGrades.find(entry => {
-                if (!entry) return false;
-                if (entry.uid && entry.uid === uid) return true;
-                if (entry.info?.q && getQuestionUid(entry.tag, entry.info) === uid) return true;
-                return false;
-            });
+            let matched = rowKey ? allGrades.find(entry => entry?.rowKey === rowKey) : null;
+            const hasPositionKeys = allGrades.some(entry => !!entry?.rowKey);
+            if (!matched && rowKey && hasPositionKeys) return null;
+            if (!matched) {
+                matched = allGrades.find(entry => {
+                    if (!entry) return false;
+                    if (entry.uid && entry.uid === uid) return true;
+                    if (entry.info?.q && getQuestionUid(entry.tag, entry.info) === uid) return true;
+                    return false;
+                });
+            }
             if (!matched) {
                 const sameTag = allGrades.filter(entry => entry?.tag === tag);
                 if (sameTag.length === 1) matched = sameTag[0];
             }
             if (matched?.grade) {
-                return { grade: matched.grade, uid: matched.uid || uid };
+                return { grade: matched.grade, uid: matched.uid || uid, rowKey: matched.rowKey || rowKey };
             }
-            const detail = (sessionData.details || []).find(entry => {
+            const details = Array.isArray(sessionData.details) ? sessionData.details : [];
+            const detail = (rowKey ? details.find(entry => entry?.rowKey === rowKey) : null) || (!rowKey || !details.some(entry => !!entry?.rowKey) ? details.find(entry => {
                 if (!entry) return false;
                 if (entry.uid && entry.uid === uid) return true;
                 return entry.tag === tag && (!entry.uid || entry.uid === uid);
-            });
-            return detail?.grade ? { grade: detail.grade, uid: detail.uid || uid } : null;
+            }) : null);
+            return detail?.grade ? { grade: detail.grade, uid: detail.uid || uid, rowKey: detail.rowKey || rowKey } : null;
         }
         window.findSessionGradeEntry = findSessionGradeEntry;
 
@@ -8758,7 +8784,8 @@
             if (!tag || !infoStr) return null;
             try {
                 const info = JSON.parse(decodeURIComponent(infoStr));
-                return { tag, info, grade: row.getAttribute('data-grade') || '' };
+                const rowKey = getAnswerRowKey(tag, info);
+                return { tag, info, grade: row.getAttribute('data-grade') || '', rowKey };
             } catch (e) {
                 return null;
             }
@@ -8766,15 +8793,17 @@
 
         function buildSubmissionPayloadFromRows(rows = [], existingSession = null) {
             const mergedRecords = new Map();
+            const recordKey = (record) => record?.rowKey || getAnswerRowKey(record?.tag, record?.info) || getQuestionUid(record?.tag, record?.info);
             (rows || []).forEach(row => {
                 const record = parseAnswerRowRecord(row);
                 if (!record) return;
                 const existingGrade = findSessionGradeEntry(existingSession, record.tag, record.info);
                 if (!existingGrade) return;
-                mergedRecords.set(getQuestionUid(record.tag, record.info), {
+                mergedRecords.set(recordKey(record), {
                     tag: record.tag,
                     grade: existingGrade.grade,
-                    info: record.info
+                    info: record.info,
+                    rowKey: record.rowKey
                 });
             });
             const newRecords = [];
@@ -8782,7 +8811,7 @@
                 if (!row || row.getAttribute?.('data-submitted') === 'true') return;
                 const record = parseAnswerRowRecord(row);
                 if (!record || !record.grade) return;
-                mergedRecords.set(getQuestionUid(record.tag, record.info), record);
+                mergedRecords.set(recordKey(record), record);
                 newRecords.push(record);
             });
             return {

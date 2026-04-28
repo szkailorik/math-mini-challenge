@@ -1695,6 +1695,35 @@ if (!partialSession.allGrades.some(entry => entry.grade === 'wrong') || !partial
 if (context.window.findSessionGradeEntry?.(partialSession, 'k_conv_1', thirdInfo)) {
   throw new Error('A still-unsubmitted answer row was incorrectly auto-marked after incremental submission');
 }
+context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
+context.window.currentSetNumber = 110;
+const duplicateInfoA = { sec: '一、口算', num: 1, q: '48 ÷ 6 = （ ）', a: '8', step: '六八四十八。' };
+const duplicateInfoB = { sec: '一、口算', num: 2, q: '48 ÷ 6 = （ ）', a: '8', step: '六八四十八。' };
+const duplicateInfoC = { sec: '一、口算', num: 3, q: '48 ÷ 6 = （ ）', a: '8', step: '六八四十八。' };
+const duplicatePayload = context.window.buildSubmissionPayloadFromRows?.([
+  makeFakeRow({ tag: 'dup_div_fact', info: duplicateInfoA, grade: 'wrong' }),
+  makeFakeRow({ tag: 'dup_div_fact', info: duplicateInfoB, grade: 'careless' }),
+  makeFakeRow({ tag: 'dup_div_fact', info: duplicateInfoC }),
+], null);
+if (!duplicatePayload || duplicatePayload.records.length !== 2 || duplicatePayload.newRecords.length !== 2) {
+  throw new Error('Duplicate same-question rows were collapsed before saving the set report');
+}
+await context.window.StorageDB.saveSession('KAI', duplicatePayload.records, 110, 'advanced_fluency_v1');
+const duplicateProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+const duplicateSession = duplicateProfile.history.find(session => session.set === 110);
+if (!duplicateSession || duplicateSession.allGrades.length !== 2 || duplicateSession.details.length !== 2) {
+  throw new Error('Set report did not preserve duplicate same-question rows by position');
+}
+if (!context.window.findSessionGradeEntry?.(duplicateSession, 'dup_div_fact', duplicateInfoA) || !context.window.findSessionGradeEntry?.(duplicateSession, 'dup_div_fact', duplicateInfoB)) {
+  throw new Error('Position-based answer lookup did not find both duplicate submitted rows');
+}
+if (context.window.findSessionGradeEntry?.(duplicateSession, 'dup_div_fact', duplicateInfoC)) {
+  throw new Error('Position-based answer lookup incorrectly marked an unsubmitted duplicate row');
+}
+const duplicateErrorEntries = Object.values(duplicateProfile.errorBook || {});
+if (duplicateErrorEntries.length !== 1 || duplicateErrorEntries[0].count !== 2) {
+  throw new Error('Error book should merge duplicate same-question rows while retaining the set report occurrences');
+}
 const progressHtml = context.window.buildAnswerSubmissionSummary?.(
   context.window.getAnswerSubmissionProgress?.([
     { tag: 'k_dmul_basic', q: firstInfo.q, a: firstInfo.a, step: firstInfo.step },

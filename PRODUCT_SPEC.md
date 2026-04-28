@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.159 protects the paper-to-report grading loop from missing duplicate rows:
+
+- A set report stores each submitted answer by paper position, so two identical prompts in different question numbers remain two visible records.
+- The durable error book still merges those duplicate prompts by normalized question UID and increases the count, keeping remediation focused without hiding that the mistake happened twice.
+- Incremental submissions reuse the same position key, so completing only part of a paper first and adding the rest later does not overwrite same-prompt rows.
+
 v23.107 improves the second-stage bilingual helper line:
 
 - Closure papers still keep Chinese as the main reading line and English as a lighter support line.
