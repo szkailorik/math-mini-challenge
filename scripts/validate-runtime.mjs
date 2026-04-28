@@ -69,6 +69,9 @@ if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交�
 if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
   throw new Error('Post-submit automatic report navigation is missing from runtime script');
 }
+if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告')) {
+  throw new Error('Set review report print action is missing from runtime script');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1611,6 +1614,19 @@ if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !
 }
 if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练')) {
   throw new Error('Set review report is missing the in-report variant follow-up block');
+}
+if (!reviewHtml.includes('打印当前报告') || typeof context.window.printCurrentSetReviewReport !== 'function') {
+  throw new Error('Set review report is missing the current-report print action');
+}
+context.window.printCurrentSetReviewReport();
+await new Promise(resolve => setTimeout(resolve, 260));
+const setReviewPrintHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-sandbox-active') || !setReviewPrintHtml.includes('Set 106') || !setReviewPrintHtml.includes('本套错题变式跟训')) {
+  throw new Error('Set review report print sandbox did not stage the current report content');
+}
+emit('afterprint');
+if ((elements.get('print-root')?.innerHTML || '') !== '') {
+  throw new Error('Set review report print sandbox did not clear after afterprint');
 }
 const sampleFollowupCandidates = context.window.buildSetReviewFollowupCandidates?.(context.window.StorageDB.cache.KAI.history[0]);
 if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 2) {

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.164 adds printable set reports:
+
+- The set review modal can stage only the current report into the print sandbox, avoiding accidental printing of the long worksheet page.
+- Printed reports preserve mistake distribution, answer references, review advice, and follow-up variant controls/content for paper archiving.
+- This supports a daily paper workflow where the AB worksheet, answer key, and set review report can be kept together.
+
 v23.163 tightens the post-submit review loop:
 
 - When a learner's whole answer sheet is submitted, the app opens that learner's set report automatically.

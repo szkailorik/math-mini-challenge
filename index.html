@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.163 (提交后自动看报告)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.164 (本套报告打印)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.163</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.164</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.163';
-        const APP_RELEASE_LABEL = '提交后自动看报告';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.163 优化批改闭环：整套提交完成后自动打开本套报告；若还有未提交题，则自动定位下一题。';
+        const APP_VERSION = 'v23.164';
+        const APP_RELEASE_LABEL = '本套报告打印';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.164 本套报告新增独立打印：自动打开报告后，可直接打印当前报告用于纸质归档。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10322,8 +10322,44 @@
                 ? `📋 Set ${setNum} 第二阶段本套报告 / Closure Review`
                 : `📋 Set ${setNum} 本套批改报告 / Set Review`;
             const html = buildSetReviewSection('KAI', setNum, highlightStudent) + buildSetReviewSection('Lorik', setNum, highlightStudent);
-            document.getElementById('report-content-area').innerHTML = html;
+            const actions = `
+                <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px;">
+                    <button class="modal-btn" onclick="window.printCurrentSetReviewReport()">🖨️ 打印当前报告</button>
+                    <button class="modal-btn" onclick="window.showSetReportIntegrityAudit()">🧪 错题体检</button>
+                </div>`;
+            document.getElementById('report-content-area').innerHTML = actions + html;
             document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.printCurrentSetReviewReport = function() {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            const area = document.getElementById('report-content-area');
+            if (!root || !area || !area.innerHTML.trim()) {
+                showToast('当前没有可打印的本套报告。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const title = document.getElementById('modal-title')?.innerText || '本套批改报告';
+            root.innerHTML = `
+                <div class="sheet ans-sheet set-review-print-sheet">
+                    <div class="header">
+                        <h1>${title}</h1>
+                        <div class="info-row"><span>打印日期 Date: ${new Date().toLocaleDateString()}</span><span>Set ${window.currentSetNumber}</span></div>
+                    </div>
+                    ${area.innerHTML}
+                </div>`;
+            document.body.classList.add('print-sandbox-active');
+            showToast('🖨️ 打印提示：将只输出当前本套报告。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
         };
 
         window.togglePanel = function() {
