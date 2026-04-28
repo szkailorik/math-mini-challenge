@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.161 (错题体检面板)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.162 (提交后对照入口)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.161</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.162</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.161';
-        const APP_RELEASE_LABEL = '错题体检面板';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.161 新增“错题体检”：可以集中查看本套报告、历史批改记录和错题本是否一致，并一键重新修复。';
+        const APP_VERSION = 'v23.162';
+        const APP_RELEASE_LABEL = '提交后对照入口';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.162 优化提交后的纸卷对照：答案页会直接出现“查看本套报告、错题体检、打印变式训练”入口。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -7696,6 +7696,29 @@
                 </div>`;
         }
 
+        function buildSubmittedAnswerActionsHTML(student, sessionData = null) {
+            if (!sessionData) return '';
+            const details = Array.isArray(sessionData.details) ? sessionData.details : [];
+            const mistakeCount = details.length;
+            const wrongCount = details.filter(item => item?.grade === 'wrong').length;
+            const carelessCount = details.filter(item => item?.grade === 'careless').length;
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const followupButtons = mistakeCount > 0 ? `
+                <button type="button" class="review-jump-btn" onclick="window.printSetReviewFollowup('${normalized}', false)">打印本套错题变式</button>
+                <button type="button" class="review-jump-btn" onclick="window.printSetReviewFollowup('${normalized}', true)">打印变式+答案</button>
+            ` : '';
+            return `
+                <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid #bfdbfe; background:#eff6ff; color:#1e3a8a; font-size:13.5px; line-height:1.6; border-radius:10px;">
+                    <strong>提交后对照</strong>：本套已记录 ${mistakeCount} 条错题/粗心，其中概念错 ${wrongCount} 条、粗心 ${carelessCount} 条。
+                    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="review-jump-btn" onclick="window.showSetReview(${Number(sessionData.set || window.currentSetNumber)}, '${normalized}')">查看${normalized}本套报告</button>
+                        <button type="button" class="review-jump-btn" onclick="window.showSetReportIntegrityAudit()">错题体检</button>
+                        ${followupButtons}
+                    </div>
+                </div>`;
+        }
+        window.buildSubmittedAnswerActionsHTML = buildSubmittedAnswerActionsHTML;
+
         // 双语标题处理
         const buildQSection = (cnTitle, enTitle, pointsStr, items, heightClass, cols) => {
             const match = String(cnTitle || '').match(/^([^、]+)、\s*(.*)$/);
@@ -7767,10 +7790,11 @@
                     ${buildSheetFooter(paperCode, 'Question Paper')}
                 </div>`;
 
-            const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK', progressHtml = '') => {
+            const getAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'AK', progressHtml = '', sessionData = null) => {
                 let ansStamp = isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 已批改<br><span style="font-size:12px;">Graded</span></div>` : '';
                 let btnText = isCompleted ? `➕ 继续补交 ${name} 未提交的答案 (Submit Remaining)` : `📝 提交 ${name} 的批改并同步画像 (Submit Grades)`;
                 let btnStyle = isCompleted ? `background: #4caf50;` : ``;
+                const submittedActions = buildSubmittedAnswerActionsHTML(name, sessionData);
                 return `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${ansStamp}
@@ -7783,13 +7807,14 @@
                     </div>
                     ${buildSheetMetaBand(meta)}
                     ${progressHtml}
+                    ${submittedActions}
                     ${content}
                     <button class="submit-grades-btn no-print" style="${btnStyle}" onclick="window.submitGrades('${name}')">${btnText}</button>
                     ${buildSheetFooter(paperCode, 'Answer Key')}
                 </div>`;
             };
 
-            const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK', progressHtml = '') => `
+            const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK', progressHtml = '', sessionData = null) => `
                 <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
                     ${isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 第二阶段已批改<br><span style="font-size:12px;">Closure Graded</span></div>` : ''}
                     <div class="header">
@@ -7804,6 +7829,7 @@
                         第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
                     </div>
                     ${progressHtml}
+                    ${buildSubmittedAnswerActionsHTML(name, sessionData)}
                     ${content}
                     <button class="submit-grades-btn no-print" style="${isCompleted ? 'background:#0f766e;' : ''}" onclick="window.submitGrades('${name}')">${isCompleted ? `➕ 继续补交 ${name} 未提交的第二阶段答案` : `📝 提交 ${name} 的第二阶段批改`}</button>
                     ${buildSheetFooter(paperCode, 'Closure Answer Key')}
@@ -7908,12 +7934,12 @@
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'Answer / KAI' },
                         { label: 'Focus', value: 'Solutions & Review' }
-                    ], 'C-AK', closureKaiProgressHtml) +
+                    ], 'C-AK', closureKaiProgressHtml, closureKaiSession) +
                     getClosureAnsSheetHTML('Lorik', l_ans, !!closureLorikSession, [
                         { label: 'Programme', value: phaseMeta.label },
                         { label: 'Paper', value: 'Answer / Lorik' },
                         { label: 'Focus', value: 'Solutions & Review' }
-                    ], 'C-BK', closureLorikProgressHtml);
+                    ], 'C-BK', closureLorikProgressHtml, closureLorikSession);
                 refreshAllSubmitButtons();
                 return;
             }
@@ -8010,11 +8036,11 @@
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'Answer / KAI' },
                     { label: 'Focus', value: 'Solutions & Review' }
-                ], 'A-AK', advancedKaiProgressHtml) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession, [
+                ], 'A-AK', advancedKaiProgressHtml, kaiSession) + getAnsSheetHTML('Lorik', l_ans, !!lorikSession, [
                     { label: 'Programme', value: 'Advanced' },
                     { label: 'Paper', value: 'Answer / Lorik' },
                     { label: 'Focus', value: 'Solutions & Review' }
-                ], 'A-BK', advancedLorikProgressHtml);
+                ], 'A-BK', advancedLorikProgressHtml, lorikSession);
             refreshAllSubmitButtons();
         }
 

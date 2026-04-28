@@ -75,6 +75,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getAnswerRowKey` / `findSessionGradeEntry` / `buildSubmissionPayloadFromRows`: preserve per-position grading records inside a set report, while `errorBook` continues to aggregate by normalized question UID.
 - `normalizeSessionMistakeDetails` / `reconcileErrorBookFromHistory` / `buildSetReviewIntegrityHTML`: repair missing mistake details during profile migration, reconcile the error book against history, and surface a visible integrity check inside each set report.
 - `showSetReportIntegrityAudit` / `repairSetReportIntegrityNow`: expose a tutor-facing audit panel and manual repair action for current-program grading integrity.
+- `buildSubmittedAnswerActionsHTML`: adds learner-specific post-submit actions to answer sheets so tutors can jump from grading to report review and follow-up printing.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.

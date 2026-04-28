@@ -63,6 +63,9 @@ if (!html.includes('normalizeSessionMistakeDetails') || !html.includes('buildSet
 if (!html.includes('showSetReportIntegrityAudit') || !html.includes('错题体检')) {
   throw new Error('Set-report integrity audit panel is missing from runtime script or control panel');
 }
+if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交后对照')) {
+  throw new Error('Post-submit set review actions are missing from answer sheets');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1741,6 +1744,10 @@ if (!duplicateAudit || duplicateAudit.missing !== 0 || duplicateAudit.details !=
 const duplicateAuditHtml = context.window.buildSetReportIntegrityAuditHTML?.() || '';
 if (!duplicateAuditHtml.includes('错题记录体检') || !duplicateAuditHtml.includes('一键重新修复')) {
   throw new Error('Set-report integrity audit panel did not render the repair controls');
+}
+const submittedActionsHtml = context.window.buildSubmittedAnswerActionsHTML?.('KAI', duplicateSession) || '';
+if (!submittedActionsHtml.includes('提交后对照') || !submittedActionsHtml.includes('查看KAI本套报告') || !submittedActionsHtml.includes('打印本套错题变式')) {
+  throw new Error('Submitted answer sheet actions did not expose set report and follow-up print controls');
 }
 const legacyMigratedProfile = context.window.StorageDB.migrateProgramProfile?.({
   weights: {},

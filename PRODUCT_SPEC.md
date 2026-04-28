@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.162 improves the post-submit tutor workflow:
+
+- Submitted answer sheets now show a `提交后对照` action strip for the specific learner and set.
+- The strip links directly to the set report, the integrity audit, and printable same-mechanism follow-up variants.
+- This keeps paper grading, report review, and remediation printing in one place without forcing the tutor back through the global menu.
+
 v23.161 exposes the integrity model to the tutor:
 
 - A `错题体检` panel summarizes whether submitted grades, set-report mistake rows, and active error-book coverage agree for each learner.
