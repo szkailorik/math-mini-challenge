@@ -66,6 +66,9 @@ if (!html.includes('showSetReportIntegrityAudit') || !html.includes('错题体�
 if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交后对照')) {
   throw new Error('Post-submit set review actions are missing from answer sheets');
 }
+if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
+  throw new Error('Post-submit automatic report navigation is missing from runtime script');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }

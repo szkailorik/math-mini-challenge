@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.162 (提交后对照入口)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.163 (提交后自动看报告)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.162</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.163</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.162';
-        const APP_RELEASE_LABEL = '提交后对照入口';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.162 优化提交后的纸卷对照：答案页会直接出现“查看本套报告、错题体检、打印变式训练”入口。';
+        const APP_VERSION = 'v23.163';
+        const APP_RELEASE_LABEL = '提交后自动看报告';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.163 优化批改闭环：整套提交完成后自动打开本套报告；若还有未提交题，则自动定位下一题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9026,6 +9026,24 @@
         }
         window.focusAnswerSheet = focusAnswerSheet;
 
+        function handlePostSubmitReviewNavigation(student, setNum, remainingAfterSubmit = 0) {
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const run = () => {
+                if (remainingAfterSubmit > 0) {
+                    window.focusAnswerSheet(normalized);
+                    setTimeout(() => window.scrollToFirstPendingAnswer(normalized, { silent: true }), 160);
+                    return;
+                }
+                window.showSetReview(setNum, normalized);
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(run, 80)));
+            } else {
+                setTimeout(run, 120);
+            }
+        }
+        window.handlePostSubmitReviewNavigation = handlePostSubmitReviewNavigation;
+
         const SET_REVIEW_FOLLOWUP_LABELS = {
             decimal_division: '小数除法',
             fraction_operation: '分数运算',
@@ -10215,6 +10233,11 @@
             const sectionCounts = new Map();
             const reviewNavBase = `set-review-${student}-${setNum}`.replace(/[^a-zA-Z0-9_-]/g, '-');
             const integrityHTML = buildSetReviewIntegrityHTML(session);
+            const answerReturnHTML = `
+                <div class="no-print" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="review-jump-btn" onclick="window.closeReportModal(); window.focusAnswerSheet('${student}')">回到${student}答案页</button>
+                    <button class="review-jump-btn" onclick="window.showSetReportIntegrityAudit()">错题体检</button>
+                </div>`;
 
             details.forEach(detail => {
                 const rawSection = String(detail?.info?.sec || '').trim();
@@ -10279,6 +10302,7 @@
                     ✅ 正确 ${perfectCount} 题 · ⚠️ 粗心 ${carelessCount} 题 · ❌ 概念 ${wrongCount} 题 · 📓 错题已进入错题本和后续训练
                     ${isClosureSession ? `<div style="margin-top:8px;" class="knowledge-tags">${buildClosureSignalSummary(session)}</div>` : ''}
                     ${integrityHTML}
+                    ${answerReturnHTML}
                 </div>
                 ${distributionHTML}
                 <div style="padding:15px; max-height:360px; overflow:auto;">
@@ -10533,16 +10557,10 @@
                 if (remainingPending.length - newRecords.length > 0) {
                     window.answerPendingOnlyState[student] = true;
                 }
+                const remainingAfterSubmit = Math.max(0, remainingPending.length - newRecords.length);
+                const submittedSetNumber = window.currentSetNumber;
                 window.renderPaper();
-                const focusAfterRender = () => {
-                    window.focusAnswerSheet(student);
-                    setTimeout(() => window.scrollToFirstPendingAnswer(student, { silent: true }), 160);
-                };
-                if (typeof window.requestAnimationFrame === 'function') {
-                    window.requestAnimationFrame(() => window.requestAnimationFrame(focusAfterRender));
-                } else {
-                    setTimeout(focusAfterRender, 120);
-                }
+                handlePostSubmitReviewNavigation(student, submittedSetNumber, remainingAfterSubmit);
             } else {
                 const msg = existingSession
                     ? (remainingPending.length > 0

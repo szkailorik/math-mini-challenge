@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.163 tightens the post-submit review loop:
+
+- When a learner's whole answer sheet is submitted, the app opens that learner's set report automatically.
+- If the submission is partial, the app keeps the tutor in grading mode and moves to the next pending answer instead of interrupting with a report.
+- Set reports include return-to-answer-sheet and integrity-audit actions so paper review and additional grading remain connected.
+
 v23.162 improves the post-submit tutor workflow:
 
 - Submitted answer sheets now show a `提交后对照` action strip for the specific learner and set.
