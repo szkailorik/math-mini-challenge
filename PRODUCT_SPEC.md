@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.168 improves knowledge-map operation:
+
+- Tutors can view the knowledge map for both learners or filter it to KAI or Lorik.
+- The current filtered knowledge map can be printed through the print sandbox.
+- The printed map preserves the next-practice cards, error-book bridge, weak-point table, and domain profile for paper review.
+
 v23.167 makes the knowledge map actionable:
 
 - A top `今日先练` section selects the highest-value weak points for each learner.

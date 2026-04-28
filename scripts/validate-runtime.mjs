@@ -72,7 +72,7 @@ if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到
 if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
-if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('今日先练')) {
+if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('printCurrentKnowledgeMap') || !html.includes('只看 KAI')) {
   throw new Error('Human-readable knowledge map workflow is missing from runtime script');
 }
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
@@ -1232,6 +1232,19 @@ const knowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
   throw new Error('Knowledge map is not rendering as a parent-facing Chinese diagnostic view');
 }
+context.window.showKnowledgeMap?.('KAI');
+const filteredKnowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
+if (!filteredKnowledgeMapHtml.includes('KAI 今日先练') || filteredKnowledgeMapHtml.includes('Lorik 今日先练') || !filteredKnowledgeMapHtml.includes('打印当前知识地图')) {
+  throw new Error('Knowledge map learner filter did not focus the current learner view');
+}
+context.window.printCurrentKnowledgeMap?.();
+await new Promise(resolve => setTimeout(resolve, 260));
+const knowledgePrintHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-sandbox-active') || !knowledgePrintHtml.includes('KAI 知识点地图') || !knowledgePrintHtml.includes('今日先练')) {
+  throw new Error('Knowledge map print sandbox did not stage the filtered learner map');
+}
+emit('afterprint');
+context.__printCalls = 0;
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {
     lastSeen: { k_eq_divisor: 96 },

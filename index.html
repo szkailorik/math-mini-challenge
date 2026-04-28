@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.167 (知识地图今日先练)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.168 (知识地图筛选打印)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.167</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.168</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.167';
-        const APP_RELEASE_LABEL = '知识地图今日先练';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.167 知识地图新增“今日先练”：按孩子列出最该先补的知识点和练习方式。';
+        const APP_VERSION = 'v23.168';
+        const APP_RELEASE_LABEL = '知识地图筛选打印';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.168 知识地图新增 KAI/Lorik 筛选和独立打印，方便分别查看与归档。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8754,8 +8754,7 @@
             return '正常交错练习中保温';
         }
 
-        function buildKnowledgeNextStepCards(weakRows = []) {
-            const students = ['KAI', 'Lorik'];
+        function buildKnowledgeNextStepCards(weakRows = [], students = ['KAI', 'Lorik']) {
             return students.map(student => {
                 const topRows = weakRows.filter(row => row.student === student).slice(0, 3);
                 const body = topRows.length ? topRows.map((row, index) => {
@@ -8785,15 +8784,18 @@
         }
         window.buildKnowledgeNextStepCards = buildKnowledgeNextStepCards;
 
-        window.showKnowledgeMap = function() {
+        window.showKnowledgeMap = function(studentFilter = '') {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.remove('quick-review-modal');
             document.getElementById('modal-title').innerText = '🧭 知识点地图 / Knowledge Map';
 
-            const profiles = {
+            const allProfiles = {
                 KAI: StorageDB.getProfile("KAI") || {},
                 Lorik: StorageDB.getProfile("Lorik") || {}
             };
+            const normalizedFilter = String(studentFilter || '').toUpperCase() === 'KAI' ? 'KAI' : (String(studentFilter || '').toLowerCase() === 'lorik' ? 'Lorik' : '');
+            const profiles = normalizedFilter ? { [normalizedFilter]: allProfiles[normalizedFilter] } : allProfiles;
+            window.currentKnowledgeMapFilter = normalizedFilter;
             const weakTags = new Set();
             Object.values(profiles).forEach(profile => {
                 Object.entries(profile.weights || {}).forEach(([tag, weight]) => {
@@ -8811,7 +8813,8 @@
             });
             const knownTags = [...new Set([...Object.keys(KnowledgeBase), ...currentTags])].sort();
             const weakRows = buildKnowledgeWeakRows(profiles);
-            const nextStepCards = buildKnowledgeNextStepCards(weakRows);
+            const selectedStudents = normalizedFilter ? [normalizedFilter] : ['KAI', 'Lorik'];
+            const nextStepCards = buildKnowledgeNextStepCards(weakRows, selectedStudents);
             const domainSignals = summarizeDomainSignals(Object.values(profiles));
             const domainCards = KnowledgeDomains.map(domain => {
                 const tags = knownTags.filter(tag => tagMatchesPatterns(tag, domain.patterns));
@@ -8895,6 +8898,13 @@
                 }).join('')
                 : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
             const currentPolicy = getErrorBookPracticePolicy(Engine.getCycleState().code, 24);
+            const filterActions = `
+                <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px;">
+                    <button class="eb-filter-btn ${!normalizedFilter ? 'active' : ''}" style="padding:8px 12px; border-radius:8px;" onclick="window.showKnowledgeMap()">全部</button>
+                    <button class="eb-filter-btn ${normalizedFilter === 'KAI' ? 'active' : ''}" style="padding:8px 12px; border-radius:8px;" onclick="window.showKnowledgeMap('KAI')">只看 KAI</button>
+                    <button class="eb-filter-btn ${normalizedFilter === 'Lorik' ? 'active' : ''}" style="padding:8px 12px; border-radius:8px;" onclick="window.showKnowledgeMap('Lorik')">只看 Lorik</button>
+                    <button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printCurrentKnowledgeMap()">🖨️ 打印当前知识地图</button>
+                </div>`;
             const policyHtml = `
                 <div style="margin:0 0 10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#334155; font-size:13px; line-height:1.55;">
                     今日错题混入策略：<strong>${currentPolicy.label}</strong>。原题回炉约控制在 <strong>${Math.round(currentPolicy.exactReplayRatio * 100)}%</strong> 内，
@@ -8902,6 +8912,7 @@
                 </div>`;
 
             const html = `
+                ${filterActions}
                 <div class="report-section">
                     <h3>✅ 今日先练 / Next Practice</h3>
                     <div class="knowledge-grid">${nextStepCards}</div>
@@ -8936,6 +8947,37 @@
 
             document.getElementById('report-content-area').innerHTML = html;
             document.getElementById('report-modal').style.display = 'block';
+        };
+
+        window.printCurrentKnowledgeMap = function() {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            const area = document.getElementById('report-content-area');
+            if (!root || !area || !area.innerHTML.trim()) {
+                showToast('当前没有可打印的知识地图。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const filter = window.currentKnowledgeMapFilter || '';
+            root.innerHTML = `
+                <div class="sheet ans-sheet knowledge-map-print-sheet">
+                    <div class="header">
+                        <h1>${filter ? `${filter} 知识点地图` : '知识点地图'}</h1>
+                        <div class="info-row"><span>${filter ? '单人诊断' : '双人诊断'}</span><span>打印日期 Date: ${new Date().toLocaleDateString()}</span><span>Set ${window.currentSetNumber}</span></div>
+                    </div>
+                    ${area.innerHTML}
+                </div>`;
+            document.body.classList.add('print-sandbox-active');
+            showToast(filter ? `🖨️ 打印提示：将只输出${filter}知识地图。` : '🖨️ 打印提示：将输出当前知识地图。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
         };
 
         window.showCalculationQuickReview = function() {
