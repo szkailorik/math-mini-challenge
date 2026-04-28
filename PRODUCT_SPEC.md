@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.171 closes the loop for domain remediation:
+
+- Domain heat cards now offer both printable remediation and a matching grading page.
+- The grading page keeps the domain scope, source error UID, and per-item mechanism metadata, so `已会 / 粗心 / 又错` updates the durable error book correctly.
+- Domain practice generation uses a stable seed for the current learner/domain/error set, making the printed sheet and the grading sheet line up more reliably.
+
 v23.170 connects domain diagnosis to printable remediation:
 
 - Domain heat cards with active errors expose a direct print action for that learner and domain.

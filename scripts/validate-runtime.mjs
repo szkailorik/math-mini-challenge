@@ -72,7 +72,7 @@ if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到
 if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
-if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('buildKnowledgeDomainHeatmap') || !html.includes('printErrorBookDomainPractice') || !html.includes('领域专项补练')) {
+if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('buildKnowledgeDomainHeatmap') || !html.includes('printErrorBookDomainPractice') || !html.includes('openErrorBookDomainPracticeReview') || !html.includes('领域专项补练')) {
   throw new Error('Human-readable knowledge map workflow is missing from runtime script');
 }
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
@@ -1223,7 +1223,7 @@ const domainHeatHtml = context.window.buildKnowledgeDomainHeatmap?.({
   KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
   Lorik: { weights: {}, errorBook: {} }
 }, ['KAI']) || '';
-if (!domainHeatHtml.includes('KAI 领域热力') || !domainHeatHtml.includes('小数与位值') || !domainHeatHtml.includes('打印小数与位值补练+答案') || domainHeatHtml.includes('Lorik 领域热力')) {
+if (!domainHeatHtml.includes('KAI 领域热力') || !domainHeatHtml.includes('小数与位值') || !domainHeatHtml.includes('打印小数与位值补练+答案') || !domainHeatHtml.includes('批改小数与位值补练') || domainHeatHtml.includes('Lorik 领域热力')) {
   throw new Error('Knowledge map domain heatmap is missing learner-specific domain signals');
 }
 context.window.StorageDB.cache.KAI = {
@@ -1255,6 +1255,10 @@ context.__printCalls = 0;
 const domainPracticeHtml = context.window.buildErrorBookDomainPrintHTML?.('KAI', 'decimal', true) || '';
 if (!domainPracticeHtml.includes('领域专项补练：小数与位值') || !domainPracticeHtml.includes('参考答案')) {
   throw new Error('Error-book domain practice print sheet did not render decimal domain practice with answers');
+}
+const domainPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { domainId: 'decimal' }) || '';
+if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !domainPracticeReviewHtml.includes('data-domain-id="decimal"') || !domainPracticeReviewHtml.includes('data-source-uid="e4"')) {
+  throw new Error('Error-book domain practice grading sheet is missing domain scope metadata');
 }
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {
@@ -1632,6 +1636,18 @@ if (!practiceResultHtml.includes('专项批改结果') || !practiceResultHtml.in
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
 if (!practiceLogHtml.includes('最近专项批改') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
   throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts');
+}
+const domainPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_2',
+    grade: 'perfect',
+    sourceErrorUid: 'eb2',
+    mechanismKey: 'baseline-comparison',
+    info: { sec: '小数与位值领域补练', num: 1, q: '比较 0.49 和 1/2', a: '1/2 大', step: '先想 1/2 = 0.5。' }
+  }
+], 'advanced_fluency_v1', { domainId: 'decimal' });
+if (!domainPracticeLog?.domainId || !context.window.buildErrorBookPracticeResultHTML?.('KAI', domainPracticeLog).includes('小数与位值领域错题')) {
+  throw new Error('Error-book domain practice grading log is not preserving domain scope');
 }
 await context.window.StorageDB.saveErrorBookPractice('KAI', [
   {
