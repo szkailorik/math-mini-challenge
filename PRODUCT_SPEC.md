@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.166 makes the knowledge map parent-facing:
+
+- Internal tag codes are hidden from the visible knowledge-map tables.
+- Weak points are presented by learner, Chinese concept name, domain, level, priority, and practice advice.
+- Error-book bridge rows and knowledge-family cards now use human-readable concept labels while retaining raw tags internally for the adaptive engine.
+
 v23.165 refines report archiving:
 
 - Set review reports can be printed as the full two-learner report or filtered to one learner.

@@ -72,6 +72,9 @@ if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到
 if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
+if (!html.includes('buildKnowledgeWeakRows') || !html.includes('中文知识地图')) {
+  throw new Error('Human-readable knowledge map workflow is missing from runtime script');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1204,6 +1207,26 @@ const sampleErrorSignal = context.window.getErrorBookSignal?.(
 );
 if (!sampleErrorSignal || sampleErrorSignal.exactCount <= 4 || sampleErrorSignal.rewrongCount < 2 || sampleErrorSignal.score <= 0) {
   throw new Error('Error-book signal scoring is not prioritizing exact active re-wrong errors');
+}
+const sampleKnowledgeRows = context.window.buildKnowledgeWeakRows?.({
+  KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
+  Lorik: { weights: {}, errorBook: {} }
+}) || [];
+if (!sampleKnowledgeRows.length || sampleKnowledgeRows.some(row => /k_ddiv|l_div|c2_/.test(row.display?.name || ''))) {
+  throw new Error('Human-readable knowledge map rows are missing or still exposing raw code tags');
+}
+context.window.StorageDB.cache.KAI = {
+  weights: { k_ddiv_shift: 3 },
+  lastSeen: {},
+  history: [],
+  errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88, info: { q: '0.84 ÷ 1.2', a: '0.7' } } },
+  programs: {}
+};
+context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
+context.window.showKnowledgeMap?.();
+const knowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
+if (!knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
+  throw new Error('Knowledge map is not rendering as a parent-facing Chinese diagnostic view');
 }
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {

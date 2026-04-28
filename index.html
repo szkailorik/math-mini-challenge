@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.165 (单人报告打印)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.166 (中文知识地图)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.165</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.166</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.165';
-        const APP_RELEASE_LABEL = '单人报告打印';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.165 本套报告打印继续优化：可分别打印 KAI 或 Lorik 的单人报告，归档更清楚。';
+        const APP_VERSION = 'v23.166';
+        const APP_RELEASE_LABEL = '中文知识地图';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.166 优化知识地图：隐藏代码字段，改用中文知识点、学生、优先级和训练建议来展示。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8706,6 +8706,47 @@
             document.getElementById('report-modal').style.display = 'block';
         };
 
+        function getKnowledgeDisplay(tag) {
+            const tip = getKnowledgeTip(tag);
+            const family = getKnowledgeFamily(tag);
+            const domain = getKnowledgeDomain(tag);
+            const level = inferDifficulty(tag);
+            return {
+                name: tip?.name || family?.name || '综合训练点',
+                advice: tip?.advice || family?.advice || FallbackAdvice.advice,
+                familyName: family?.name || tip?.name || '综合训练',
+                domainName: domain?.name || '综合',
+                levelName: TRAINING_LEVELS[level]?.name || `L${level}`,
+                level
+            };
+        }
+        window.getKnowledgeDisplay = getKnowledgeDisplay;
+
+        function buildKnowledgeWeakRows(profiles = {}) {
+            const rows = new Map();
+            Object.entries(profiles).forEach(([student, profile]) => {
+                Object.entries(profile?.weights || {}).forEach(([tag, weight]) => {
+                    if (!(weight > 0)) return;
+                    const row = rows.get(`${student}:${tag}`) || { student, tag, weight: 0, activeErrors: 0, lastSet: 0 };
+                    row.weight += Number(weight || 0);
+                    rows.set(`${student}:${tag}`, row);
+                });
+                Object.values(profile?.errorBook || {}).forEach(entry => {
+                    if (!entry || entry.mastered || !entry.tag) return;
+                    const row = rows.get(`${student}:${entry.tag}`) || { student, tag: entry.tag, weight: 0, activeErrors: 0, lastSet: 0 };
+                    row.activeErrors += Math.max(1, Number(entry.count || 1));
+                    row.lastSet = Math.max(row.lastSet || 0, Number(entry.lastSet || 0));
+                    rows.set(`${student}:${entry.tag}`, row);
+                });
+            });
+            return Array.from(rows.values()).map(row => ({
+                ...row,
+                display: getKnowledgeDisplay(row.tag),
+                score: Math.min(row.weight + row.activeErrors * 1.4, 10)
+            })).sort((a, b) => b.score - a.score || b.activeErrors - a.activeErrors || a.display.name.localeCompare(b.display.name, 'zh-Hans-CN'));
+        }
+        window.buildKnowledgeWeakRows = buildKnowledgeWeakRows;
+
         window.showKnowledgeMap = function() {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.remove('quick-review-modal');
@@ -8731,6 +8772,7 @@
                 if (item && item.tag) currentTags.add(item.tag);
             });
             const knownTags = [...new Set([...Object.keys(KnowledgeBase), ...currentTags])].sort();
+            const weakRows = buildKnowledgeWeakRows(profiles);
             const domainSignals = summarizeDomainSignals(Object.values(profiles));
             const domainCards = KnowledgeDomains.map(domain => {
                 const tags = knownTags.filter(tag => tagMatchesPatterns(tag, domain.patterns));
@@ -8748,7 +8790,7 @@
                         <h4>${domain.name} ${weakCount ? `<span style="color:#dc2626; font-size:12px;">· ${weakCount} 个弱项</span>` : ''}</h4>
                         <p>${domain.desc}</p>
                         <div class="knowledge-tags">
-                            <span class="knowledge-tag">${tags.length} 个题型标签</span>
+                            <span class="knowledge-tag">${tags.length} 个训练点</span>
                             <span class="knowledge-tag">${levelText}</span>
                             <span class="knowledge-tag" style="color:${priorityColor}; border:1px solid ${priorityColor};">${signal.priority}</span>
                             <span class="knowledge-tag">活跃错次 ${signal.activeErrors}</span>
@@ -8759,9 +8801,13 @@
             const familyCards = KnowledgeFamilies.map(family => {
                 const tags = knownTags.filter(tag => tag.startsWith(family.prefix));
                 const weakCount = tags.filter(tag => weakTags.has(tag)).length;
-                const tagHtml = tags.length
-                    ? tags.map(tag => `<span class="knowledge-tag ${weakTags.has(tag) ? 'weak' : ''}">${tag}</span>`).join('')
-                    : `<span class="knowledge-tag">自动覆盖 ${family.prefix}*</span>`;
+                const pointNames = [...new Map(tags.map(tag => {
+                    const display = getKnowledgeDisplay(tag);
+                    return [display.name, { name: display.name, weak: weakTags.has(tag) }];
+                })).values()];
+                const tagHtml = pointNames.length
+                    ? pointNames.slice(0, 10).map(point => `<span class="knowledge-tag ${point.weak ? 'weak' : ''}">${point.name}</span>`).join('')
+                    : `<span class="knowledge-tag">系统会自动覆盖</span>`;
                 return `
                     <div class="knowledge-card">
                         <h4>${family.name} ${weakCount ? `<span style="color:#dc2626; font-size:12px;">· ${weakCount} 个弱项</span>` : ''}</h4>
@@ -8770,14 +8816,20 @@
                     </div>`;
             }).join('');
 
-            const weakHtml = weakTags.size
-                ? [...weakTags].sort().map(tag => {
-                    const tip = getKnowledgeTip(tag);
-                    const domain = getKnowledgeDomain(tag);
-                    const level = inferDifficulty(tag);
-                    return `<tr><td>${tag}</td><td>${domain ? domain.name : "综合"}</td><td>${TRAINING_LEVELS[level].name}</td><td>${tip.name}</td><td>${tip.advice}</td></tr>`;
+            const weakHtml = weakRows.length
+                ? weakRows.slice(0, 24).map(row => {
+                    const priority = row.score >= 7 ? '优先处理' : row.score >= 3 ? '本周加练' : '保持复现';
+                    const priorityColor = row.score >= 7 ? '#dc2626' : row.score >= 3 ? '#b45309' : '#15803d';
+                    return `<tr>
+                        <td>${row.student}</td>
+                        <td>${row.display.name}</td>
+                        <td>${row.display.domainName}</td>
+                        <td>${row.display.levelName}</td>
+                        <td style="color:${priorityColor}; font-weight:bold;">${priority}</td>
+                        <td>${row.display.advice}</td>
+                    </tr>`;
                 }).join('')
-                : `<tr><td colspan="5" style="color:#10b981; font-weight:bold;">当前没有明显弱项。继续保持稳定练习。</td></tr>`;
+                : `<tr><td colspan="6" style="color:#10b981; font-weight:bold;">当前没有明显弱项。继续保持稳定练习。</td></tr>`;
 
             const activeErrorEntries = Object.entries(profiles).flatMap(([student, profile]) =>
                 Object.entries(profile.errorBook || {})
@@ -8787,13 +8839,14 @@
             const bridgeHtml = activeErrorEntries.length
                 ? activeErrorEntries.slice(0, 16).map(entry => {
                     const domain = getKnowledgeDomain(entry.tag);
+                    const display = getKnowledgeDisplay(entry.tag);
                     const profile = profiles[entry.student] || {};
                     const signal = getErrorBookSignal(profile, entry.tag);
                     const mode = (entry.count || 1) >= 2 ? "原题回炉 + 同类变式" : "同类变式 + 领域迁移";
                     const pressure = signal.score >= 6 ? "高优先级" : signal.score >= 3 ? "中优先级" : "低优先级";
                     return `<tr>
                         <td>${entry.student}</td>
-                        <td>${entry.tag}</td>
+                        <td>${display.name}</td>
                         <td>${domain ? domain.name : "综合"}</td>
                         <td>${entry.count || 1}</td>
                         <td>Set ${entry.lastSet || "-"}</td>
@@ -8815,7 +8868,7 @@
                     <div style="padding:15px; max-height:260px; overflow:auto;">
                         ${policyHtml}
                         <table class="archive-table">
-                            <tr><th>学生</th><th>Tag</th><th>领域</th><th>错次</th><th>最近</th><th>进入训练方式</th><th>优先级</th></tr>
+                            <tr><th>学生</th><th>知识点</th><th>领域</th><th>错次</th><th>最近</th><th>进入训练方式</th><th>优先级</th></tr>
                             ${bridgeHtml}
                         </table>
                     </div>
@@ -8824,7 +8877,7 @@
                     <h3>🎯 当前弱项 / Active Weak Points</h3>
                     <div style="padding:15px; max-height:260px; overflow:auto;">
                         <table class="archive-table">
-                            <tr><th>Tag</th><th>领域</th><th>水准</th><th>知识点</th><th>训练提醒</th></tr>
+                            <tr><th>学生</th><th>知识点</th><th>领域</th><th>水准</th><th>处理建议</th><th>训练提醒</th></tr>
                             ${weakHtml}
                         </table>
                     </div>
