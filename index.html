@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.169 (知识地图领域热力)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.170 (领域专项补练)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.169</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.170</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.169';
-        const APP_RELEASE_LABEL = '知识地图领域热力';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.169 知识地图新增领域热力图：一眼看出小数、分数、方程、策略等模块哪里最需要加练。';
+        const APP_VERSION = 'v23.170';
+        const APP_RELEASE_LABEL = '领域专项补练';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.170 知识地图新增“领域专项补练”：从领域热力直接打印对应领域的错题补练。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8103,12 +8103,13 @@
             return Number(entry.rewrongCount || 0) > 0 || (entry.lastPracticeGrade && entry.lastPracticeGrade !== 'perfect');
         }
 
-        function getErrorBookPracticeEntries(student, { mechanismKey = '', includeMastered = false, priorityOnly = false } = {}) {
+        function getErrorBookPracticeEntries(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, domainId = '' } = {}) {
             const profile = StorageDB.getProfile(student) || {};
             const entries = Object.entries(profile.errorBook || {}).map(([uid, value]) => ({ uid, ...value }));
             return entries
                 .filter(entry => includeMastered || !entry.mastered)
                 .filter(entry => !priorityOnly || isErrorBookPriorityPracticeEntry(entry))
+                .filter(entry => !domainId || getKnowledgeDomain(entry.tag)?.id === domainId)
                 .filter(entry => {
                     const key = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                     return !mechanismKey || key === mechanismKey;
@@ -8147,6 +8148,31 @@
             }).filter(Boolean);
         }
 
+        function buildErrorBookDomainPracticeItems(student, domainId) {
+            const entries = getErrorBookPracticeEntries(student, { domainId }).slice(0, 8);
+            if (!entries.length) return [];
+            const used = new Set();
+            return entries.map(entry => {
+                const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
+                if (!built) return null;
+                const fingerprint = computeQuestionFingerprint(built);
+                if (used.has(fingerprint)) return null;
+                used.add(fingerprint);
+                const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                return {
+                    ...built,
+                    followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
+                    followupGrade: entry.grade || 'wrong',
+                    followupMechanismKey: resolvedMechanismKey,
+                    sourceErrorUid: entry.uid,
+                    sourceErrorCount: Math.max(1, entry.count || 1),
+                    sourceLastSet: entry.lastSet || '',
+                    isErrorBookDomainPractice: true,
+                    isReviewItem: true
+                };
+            }).filter(Boolean);
+        }
+
         function buildErrorBookMechanismPracticeItems(student, mechanismKey) {
             return buildErrorBookPracticeItems(student, { mechanismKey }).slice(0, 6).map(item => ({ ...item, isMechanismFollowup: true }));
         }
@@ -8177,6 +8203,33 @@
             </section>`;
         }
         window.buildErrorBookMechanismPrintHTML = buildErrorBookMechanismPrintHTML;
+
+        function buildErrorBookDomainPrintHTML(student, domainId, includeAnswers = true) {
+            const domain = KnowledgeDomains.find(item => item.id === domainId);
+            const items = buildErrorBookDomainPracticeItems(student, domainId);
+            if (!items.length || !domain) return '';
+            const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const printPack = getSetReviewFollowupPrintPack(items);
+            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
+            return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+                <header class="booklet-meta-band">
+                    <span>${student} · Domain Practice</span>
+                    <span>${domain.name}</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">领域专项补练：${domain.name}</h2>
+                    <p class="followup-print-subtitle">${domain.desc}</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
+                    <span>来源：错题本活跃错题</span>
+                </div>
+                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
+                ${answerBlock}
+            </section>`;
+        }
+        window.buildErrorBookDomainPrintHTML = buildErrorBookDomainPrintHTML;
 
         function getErrorBookPracticeScopeLabel(mechanismKey = '', priorityOnly = false) {
             const base = mechanismKey ? getErrorMechanismLabel(mechanismKey) : '全部活跃错题';
@@ -8533,6 +8586,33 @@
             }
         };
 
+        window.printErrorBookDomainPractice = function(student, domainId, includeAnswers = true) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const html = buildErrorBookDomainPrintHTML(student, domainId, includeAnswers);
+            if (!html) {
+                showToast('这个领域下暂时没有可打印的活跃错题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
+            showToast(includeAnswers ? '🖨️ 打印提示：将输出领域专项补练和答案参考。' : '🖨️ 打印提示：将只输出领域专项补练。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
         window.printErrorBookPractice = function(student, includeAnswers = false, priorityOnly = false) {
             ensurePrintLifecycleHooks();
             clearPrintMode();
@@ -8804,6 +8884,7 @@
                                 <div style="width:${pct}%; max-width:100%; height:100%; background:${color};"></div>
                             </div>
                             <div style="font-size:11.5px; color:#64748b; margin-top:4px;">活跃错次 ${signal.activeErrors} · 已攻克 ${signal.mastered}</div>
+                            ${signal.activeErrors ? `<div class="no-print" style="margin-top:5px;"><button class="eb-filter-btn" style="padding:4px 7px; border-radius:8px;" onclick="window.printErrorBookDomainPractice('${student}', '${signal.domain.id}', true)">打印${signal.domain.name}补练+答案</button></div>` : ''}
                         </div>`;
                 }).join('');
                 return `

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.170 connects domain diagnosis to printable remediation:
+
+- Domain heat cards with active errors expose a direct print action for that learner and domain.
+- The domain practice sheet is built from active error-book entries in the selected curriculum domain and can include answers.
+- This lets a tutor move from “fraction domain is hot” to a concrete printable remediation pack without manually filtering the error book.
+
 v23.169 adds domain-level heat to the knowledge map:
 
 - Each learner gets a domain heat card showing which curriculum domains are stable, warming up, or urgent.

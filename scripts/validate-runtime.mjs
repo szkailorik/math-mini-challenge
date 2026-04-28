@@ -72,7 +72,7 @@ if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到
 if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
-if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('buildKnowledgeDomainHeatmap') || !html.includes('printCurrentKnowledgeMap') || !html.includes('领域热力')) {
+if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('buildKnowledgeDomainHeatmap') || !html.includes('printErrorBookDomainPractice') || !html.includes('领域专项补练')) {
   throw new Error('Human-readable knowledge map workflow is missing from runtime script');
 }
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
@@ -1223,7 +1223,7 @@ const domainHeatHtml = context.window.buildKnowledgeDomainHeatmap?.({
   KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
   Lorik: { weights: {}, errorBook: {} }
 }, ['KAI']) || '';
-if (!domainHeatHtml.includes('KAI 领域热力') || !domainHeatHtml.includes('小数与位值') || domainHeatHtml.includes('Lorik 领域热力')) {
+if (!domainHeatHtml.includes('KAI 领域热力') || !domainHeatHtml.includes('小数与位值') || !domainHeatHtml.includes('打印小数与位值补练+答案') || domainHeatHtml.includes('Lorik 领域热力')) {
   throw new Error('Knowledge map domain heatmap is missing learner-specific domain signals');
 }
 context.window.StorageDB.cache.KAI = {
@@ -1252,6 +1252,10 @@ if (!context.document.body.classList.contains('print-sandbox-active') || !knowle
 }
 emit('afterprint');
 context.__printCalls = 0;
+const domainPracticeHtml = context.window.buildErrorBookDomainPrintHTML?.('KAI', 'decimal', true) || '';
+if (!domainPracticeHtml.includes('领域专项补练：小数与位值') || !domainPracticeHtml.includes('参考答案')) {
+  throw new Error('Error-book domain practice print sheet did not render decimal domain practice with answers');
+}
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {
     lastSeen: { k_eq_divisor: 96 },
