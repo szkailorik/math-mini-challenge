@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.169 adds domain-level heat to the knowledge map:
+
+- Each learner gets a domain heat card showing which curriculum domains are stable, warming up, or urgent.
+- The heat card combines adaptive weights, active error-book counts, and mastered counts.
+- Tutors can use it before the detailed weak-point table to choose whether today should target a single skill or a broader domain.
+
 v23.168 improves knowledge-map operation:
 
 - Tutors can view the knowledge map for both learners or filter it to KAI or Lorik.

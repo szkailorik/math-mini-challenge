@@ -86,6 +86,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `getKnowledgeDisplay` / `buildKnowledgeWeakRows`: convert internal adaptive tags into parent-facing Chinese concept labels, priority rows, and training advice for the knowledge map.
 - `buildKnowledgeNextStepCards`: adds learner-specific `今日先练` recommendations to the knowledge map and links to error-book practice printing.
+- `buildKnowledgeDomainHeatmap`: renders learner-specific domain heat cards from `summarizeDomainSignals` for quick curriculum-level triage.
 - `showKnowledgeMap(studentFilter)` / `printCurrentKnowledgeMap`: filter the knowledge map by learner and print the current map through the print sandbox.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.

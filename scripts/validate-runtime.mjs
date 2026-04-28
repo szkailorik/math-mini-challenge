@@ -72,7 +72,7 @@ if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到
 if (!html.includes('printCurrentSetReviewReport') || !html.includes('打印当前报告') || !html.includes('只打印${highlightStudent}报告')) {
   throw new Error('Set review report print action is missing from runtime script');
 }
-if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('printCurrentKnowledgeMap') || !html.includes('只看 KAI')) {
+if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNextStepCards') || !html.includes('buildKnowledgeDomainHeatmap') || !html.includes('printCurrentKnowledgeMap') || !html.includes('领域热力')) {
   throw new Error('Human-readable knowledge map workflow is missing from runtime script');
 }
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
@@ -1219,6 +1219,13 @@ const nextStepHtml = context.window.buildKnowledgeNextStepCards?.(sampleKnowledg
 if (!nextStepHtml.includes('KAI 今日先练') || !nextStepHtml.includes('小数除法') || !nextStepHtml.includes('打印错题专项+答案')) {
   throw new Error('Knowledge map next-step cards are missing learner-specific practice guidance');
 }
+const domainHeatHtml = context.window.buildKnowledgeDomainHeatmap?.({
+  KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
+  Lorik: { weights: {}, errorBook: {} }
+}, ['KAI']) || '';
+if (!domainHeatHtml.includes('KAI 领域热力') || !domainHeatHtml.includes('小数与位值') || domainHeatHtml.includes('Lorik 领域热力')) {
+  throw new Error('Knowledge map domain heatmap is missing learner-specific domain signals');
+}
 context.window.StorageDB.cache.KAI = {
   weights: { k_ddiv_shift: 3 },
   lastSeen: {},
@@ -1229,12 +1236,12 @@ context.window.StorageDB.cache.KAI = {
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.showKnowledgeMap?.();
 const knowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
-if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
+if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('领域热力') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
   throw new Error('Knowledge map is not rendering as a parent-facing Chinese diagnostic view');
 }
 context.window.showKnowledgeMap?.('KAI');
 const filteredKnowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
-if (!filteredKnowledgeMapHtml.includes('KAI 今日先练') || filteredKnowledgeMapHtml.includes('Lorik 今日先练') || !filteredKnowledgeMapHtml.includes('打印当前知识地图')) {
+if (!filteredKnowledgeMapHtml.includes('KAI 今日先练') || !filteredKnowledgeMapHtml.includes('KAI 领域热力') || filteredKnowledgeMapHtml.includes('Lorik 今日先练') || filteredKnowledgeMapHtml.includes('Lorik 领域热力') || !filteredKnowledgeMapHtml.includes('打印当前知识地图')) {
   throw new Error('Knowledge map learner filter did not focus the current learner view');
 }
 context.window.printCurrentKnowledgeMap?.();

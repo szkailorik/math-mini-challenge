@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.168 (知识地图筛选打印)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.169 (知识地图领域热力)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.168</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.169</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.168';
-        const APP_RELEASE_LABEL = '知识地图筛选打印';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.168 知识地图新增 KAI/Lorik 筛选和独立打印，方便分别查看与归档。';
+        const APP_VERSION = 'v23.169';
+        const APP_RELEASE_LABEL = '知识地图领域热力';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.169 知识地图新增领域热力图：一眼看出小数、分数、方程、策略等模块哪里最需要加练。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8784,6 +8784,38 @@
         }
         window.buildKnowledgeNextStepCards = buildKnowledgeNextStepCards;
 
+        function buildKnowledgeDomainHeatmap(profiles = {}, students = ['KAI', 'Lorik']) {
+            return students.map(student => {
+                const profile = profiles[student] || {};
+                const signals = summarizeDomainSignals([profile]).slice().sort((a, b) => b.score - a.score || b.activeErrors - a.activeErrors || a.domain.name.localeCompare(b.domain.name, 'zh-Hans-CN'));
+                const urgent = signals.filter(item => item.score >= 7).length;
+                const warm = signals.filter(item => item.score >= 3 && item.score < 7).length;
+                const rows = signals.map(signal => {
+                    const score = Number(signal.score || 0);
+                    const pct = Math.round(Math.max(4, score * 10));
+                    const color = score >= 7 ? '#dc2626' : score >= 3 ? '#b45309' : '#15803d';
+                    return `
+                        <div style="padding:7px 0; border-top:1px solid #e2e8f0;">
+                            <div style="display:flex; justify-content:space-between; gap:10px; align-items:center;">
+                                <strong style="font-size:12.5px; color:#0f172a;">${signal.domain.name}</strong>
+                                <span style="font-size:11.5px; color:${color}; font-weight:800;">${signal.priority}</span>
+                            </div>
+                            <div style="height:8px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-top:5px;">
+                                <div style="width:${pct}%; max-width:100%; height:100%; background:${color};"></div>
+                            </div>
+                            <div style="font-size:11.5px; color:#64748b; margin-top:4px;">活跃错次 ${signal.activeErrors} · 已攻克 ${signal.mastered}</div>
+                        </div>`;
+                }).join('');
+                return `
+                    <div class="knowledge-card">
+                        <h4>${student} 领域热力</h4>
+                        <p>${urgent ? `${urgent} 个领域需要优先补强。` : warm ? `${warm} 个领域建议本周加练。` : '整体稳定，按日常节奏保温。'}</p>
+                        ${rows}
+                    </div>`;
+            }).join('');
+        }
+        window.buildKnowledgeDomainHeatmap = buildKnowledgeDomainHeatmap;
+
         window.showKnowledgeMap = function(studentFilter = '') {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.remove('quick-review-modal');
@@ -8815,6 +8847,7 @@
             const weakRows = buildKnowledgeWeakRows(profiles);
             const selectedStudents = normalizedFilter ? [normalizedFilter] : ['KAI', 'Lorik'];
             const nextStepCards = buildKnowledgeNextStepCards(weakRows, selectedStudents);
+            const domainHeatmap = buildKnowledgeDomainHeatmap(profiles, selectedStudents);
             const domainSignals = summarizeDomainSignals(Object.values(profiles));
             const domainCards = KnowledgeDomains.map(domain => {
                 const tags = knownTags.filter(tag => tagMatchesPatterns(tag, domain.patterns));
@@ -8916,6 +8949,10 @@
                 <div class="report-section">
                     <h3>✅ 今日先练 / Next Practice</h3>
                     <div class="knowledge-grid">${nextStepCards}</div>
+                </div>
+                <div class="report-section">
+                    <h3>🌡️ 领域热力 / Domain Heat</h3>
+                    <div class="knowledge-grid">${domainHeatmap}</div>
                 </div>
                 <div class="report-section">
                     <h3>🔥 错题联合训练计划 / Error-Book Bridge</h3>
