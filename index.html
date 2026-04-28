@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.171 (领域补练批改)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.172 (补练复盘报告)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.171</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.172</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.171';
-        const APP_RELEASE_LABEL = '领域补练批改';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.171 领域专项补练新增批改闭环：纸上做完后可回系统标记已会/又错。';
+        const APP_VERSION = 'v23.172';
+        const APP_RELEASE_LABEL = '补练复盘报告';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.172 补练批改结果页新增范围标题和下一步复盘提醒，方便纸质卷归档。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8326,22 +8326,30 @@
             return { total: results.length, mastered, wrongAgain };
         }
 
+        function getErrorBookPracticeResultTitle(log = {}) {
+            if (log.domainId) return '领域补练批改结果';
+            if (log.priorityOnly) return '复错优先批改结果';
+            if (log.mechanismKey) return '机制补练批改结果';
+            return '专项批改结果';
+        }
+
         function buildErrorBookPracticeLogHTML(student, profile = {}) {
             const logs = (profile.errorBookPracticeLog || []).slice(-3).reverse();
             if (!logs.length) return '';
             const rows = logs.map(log => {
                 const summary = summarizeErrorBookPracticeLog(log);
                 const label = getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+                const resultTitle = getErrorBookPracticeResultTitle(log).replace('批改结果', '');
                 const logId = encodeURIComponent(log.id || '');
                 return `
                 <div class="eb-practice-log-row">
-                    <span><strong>${log.date || '最近'}</strong> · ${label} · ${summary.total} 题</span>
+                    <span><strong>${log.date || '最近'}</strong> · ${resultTitle} · ${label} · ${summary.total} 题</span>
                     <span>已会 ${summary.mastered} · <b>又错 ${summary.wrongAgain}</b> <button class="eb-filter-btn" style="padding:3px 7px; margin-left:6px; font-size:11.5px;" onclick="window.openErrorBookPracticeLog('${student}', '${logId}')">查看</button></span>
                 </div>`;
             }).join('');
             return `
             <div class="eb-practice-log">
-                <div class="eb-practice-log-title">${student} 最近专项批改</div>
+                <div class="eb-practice-log-title">${student} 最近补练批改</div>
                 <div class="eb-practice-log-list">${rows}</div>
             </div>`;
         }
@@ -8349,6 +8357,12 @@
         function buildErrorBookPracticeResultHTML(student, log = {}) {
             const summary = summarizeErrorBookPracticeLog(log);
             const label = getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+            const title = getErrorBookPracticeResultTitle(log);
+            const wrongItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
+            const wrongText = wrongItems.map(row => `第 ${row.idx + 1} 题`).join('、');
+            const nextAction = summary.wrongAgain
+                ? `${wrongText} 继续留在错题本。下一次先让孩子口述方法，再做同类变式。`
+                : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';
             const rows = (log.results || []).map((item, idx) => {
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '粗心又错' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
@@ -8363,7 +8377,7 @@
             return `
             <div class="sheet ans-sheet eb-practice-result-sheet">
                 <div class="header">
-                    <h1>${student} 专项批改结果</h1>
+                    <h1>${student} ${title}</h1>
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
                         <span>${log.date || ''}</span>
                         <span>范围：${label}</span>
@@ -8374,8 +8388,11 @@
                     <div class="eb-practice-report-card"><span>已会</span><b>${summary.mastered}</b></div>
                     <div class="eb-practice-report-card"><span>又错/粗心</span><b>${summary.wrongAgain}</b></div>
                 </div>
+                <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid ${summary.wrongAgain ? '#fecaca' : '#bbf7d0'}; background:${summary.wrongAgain ? '#fff7ed' : '#f0fdf4'}; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    <strong>下一步：</strong>${nextAction}
+                </div>
                 <table class="archive-table">
-                    <tr><th>#</th><th>专项题</th><th>结果</th><th>正确答案</th></tr>
+                    <tr><th>#</th><th>补练题</th><th>结果</th><th>正确答案</th></tr>
                     ${rows}
                 </table>
                 <div class="answer-progress-note no-print" style="margin:10px 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">

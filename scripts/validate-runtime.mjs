@@ -1630,11 +1630,11 @@ if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml
   throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
-if (!practiceResultHtml.includes('专项批改结果') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
+if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
 }
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
-if (!practiceLogHtml.includes('最近专项批改') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
+if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
   throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts');
 }
 const domainPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
@@ -1646,7 +1646,8 @@ const domainPracticeLog = await context.window.StorageDB.saveErrorBookPractice('
     info: { sec: '小数与位值领域补练', num: 1, q: '比较 0.49 和 1/2', a: '1/2 大', step: '先想 1/2 = 0.5。' }
   }
 ], 'advanced_fluency_v1', { domainId: 'decimal' });
-if (!domainPracticeLog?.domainId || !context.window.buildErrorBookPracticeResultHTML?.('KAI', domainPracticeLog).includes('小数与位值领域错题')) {
+const domainPracticeResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', domainPracticeLog) || '';
+if (!domainPracticeLog?.domainId || !domainPracticeResultHtml.includes('领域补练批改结果') || !domainPracticeResultHtml.includes('小数与位值领域错题') || !domainPracticeResultHtml.includes('全部过关')) {
   throw new Error('Error-book domain practice grading log is not preserving domain scope');
 }
 await context.window.StorageDB.saveErrorBookPractice('KAI', [

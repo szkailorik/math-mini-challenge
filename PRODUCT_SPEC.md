@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.172 improves the parent review loop after remediation:
+
+- Targeted practice result pages now name the scope type: domain remediation, mechanism remediation, wrong-again priority, or general error-book practice.
+- Each result page includes a next-step note that names the still-wrong question numbers, making paper-to-screen review faster.
+- Recent practice logs in the error book use the broader `最近补练批改` wording so domain remediation is not hidden under generic专项 wording.
+
 v23.171 closes the loop for domain remediation:
 
 - Domain heat cards now offer both printable remediation and a matching grading page.
