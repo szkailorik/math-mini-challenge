@@ -73,6 +73,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildClosureC2Variant`: supplies closure-specific review variants for second-stage bridge, unit, rate, speed, and validation tags when exact replay would duplicate the current paper.
 - `StorageDB.saveSession`: persists grading results, updates weights, maintains history, and rolls error-book counts forward or backward on resubmission.
 - `getAnswerRowKey` / `findSessionGradeEntry` / `buildSubmissionPayloadFromRows`: preserve per-position grading records inside a set report, while `errorBook` continues to aggregate by normalized question UID.
+- `normalizeSessionMistakeDetails` / `reconcileErrorBookFromHistory` / `buildSetReviewIntegrityHTML`: repair missing mistake details during profile migration, reconcile the error book against history, and surface a visible integrity check inside each set report.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.

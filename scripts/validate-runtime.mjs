@@ -57,6 +57,9 @@ if (!html.includes('复错优先卷') || !html.includes('priorityOnly')) {
 if (!html.includes('saveErrorBookPractice')) {
   throw new Error('Error-book targeted practice persistence is missing from storage layer');
 }
+if (!html.includes('normalizeSessionMistakeDetails') || !html.includes('buildSetReviewIntegrityHTML')) {
+  throw new Error('Set-report mistake integrity repair/check workflow is missing from runtime script');
+}
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
@@ -1723,6 +1726,42 @@ if (context.window.findSessionGradeEntry?.(duplicateSession, 'dup_div_fact', dup
 const duplicateErrorEntries = Object.values(duplicateProfile.errorBook || {});
 if (duplicateErrorEntries.length !== 1 || duplicateErrorEntries[0].count !== 2) {
   throw new Error('Error book should merge duplicate same-question rows while retaining the set report occurrences');
+}
+const duplicateIntegrityHtml = context.window.buildSetReviewIntegrityHTML?.(duplicateSession) || '';
+if (!duplicateIntegrityHtml.includes('错题记录完整性已核对') || !duplicateIntegrityHtml.includes('报告列出 2 条')) {
+  throw new Error('Set review integrity banner did not confirm the duplicate-row report coverage');
+}
+const legacyMigratedProfile = context.window.StorageDB.migrateProgramProfile?.({
+  weights: {},
+  lastSeen: {},
+  errorBook: {},
+  history: [{
+    set: 111,
+    date: '2026/4/28',
+    details: [],
+    allGrades: [{
+      tag: 'legacy_div_fact',
+      grade: 'wrong',
+      uid: 'legacy-row',
+      rowKey: 'legacy_div_fact::一、口算::1',
+      info: { sec: '一、口算', num: 1, q: '63 ÷ 7 = （ ）', a: '9', step: '七九六十三。' }
+    }]
+  }]
+}, 'advanced_fluency_v1');
+const legacySession = legacyMigratedProfile?.history?.find(session => session.set === 111);
+if (!legacySession || legacySession.details.length !== 1 || !legacySession.details[0].rowKey) {
+  throw new Error('Legacy session migration did not repair missing mistake details from allGrades');
+}
+const legacyErrorEntries = Object.values(legacyMigratedProfile.errorBook || {});
+if (legacyErrorEntries.length !== 1 || legacyErrorEntries[0].count !== 1) {
+  throw new Error('Legacy migration did not reconcile repaired mistake details back into the error book');
+}
+const warningIntegrityHtml = context.window.buildSetReviewIntegrityHTML?.({
+  allGrades: [{ tag: 'x', grade: 'wrong', uid: 'x1', rowKey: 'x::一::1', info: { sec: '一', num: 1, q: 'x', a: '1' } }],
+  details: []
+}) || '';
+if (!warningIntegrityHtml.includes('错题记录仍需复核') || !warningIntegrityHtml.includes('待补 1 条')) {
+  throw new Error('Set review integrity banner did not warn when details are still missing');
 }
 const progressHtml = context.window.buildAnswerSubmissionSummary?.(
   context.window.getAnswerSubmissionProgress?.([

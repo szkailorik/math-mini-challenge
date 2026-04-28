@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.160 adds a grading integrity safety net:
+
+- When local or cloud data is loaded, non-perfect `allGrades` entries are used to repair missing set-report `details` whenever the original row position can be recovered.
+- The error book is reconciled against historical mistake details so it has at least one active record for every known unresolved historical mistake UID.
+- Set reports show an integrity line comparing submitted grades, mistake count, and report-detail count, making a possible mismatch visible instead of silent.
+
 v23.159 protects the paper-to-report grading loop from missing duplicate rows:
 
 - A set report stores each submitted answer by paper position, so two identical prompts in different question numbers remain two visible records.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.159 (本套报告防漏题)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.160 (错题记录自检)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.159</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.160</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2545,9 +2545,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.159';
-        const APP_RELEASE_LABEL = '本套报告防漏题';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.159 修复本套报告漏题：同一道题即使在卷内重复出现，也会按题号位置逐条记录，同时错题本继续按题目合并复练。';
+        const APP_VERSION = 'v23.160';
+        const APP_RELEASE_LABEL = '错题记录自检';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.160 加固本套报告：打开本地或云端数据时会自动核对批改记录、错题详情和错题本，能补回的漏题会自动补齐。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3182,6 +3182,14 @@
             return next;
         }
 
+        function getAnswerRowKey(tag, info = {}) {
+            const sec = String(info?.sec || '').trim();
+            const num = String(info?.num || '').trim();
+            if (!tag || !sec || !num) return '';
+            return `${tag}::${sec}::${num}`;
+        }
+        window.getAnswerRowKey = getAnswerRowKey;
+
         function getProgramProfile(record, programId = getCurrentProgramId(), { create = false } = {}) {
             const studentRecord = ensureStudentRecordShape(record);
             if (programId === ADVANCED_PROGRAM_ID) return ensureProgramProfileShape(studentRecord, ADVANCED_PROGRAM_ID);
@@ -3223,6 +3231,108 @@
                 return acc;
             }, {});
         }
+
+        function normalizeSessionMistakeDetails(session = {}) {
+            if (!session || typeof session !== 'object') return { added: 0, upgraded: 0 };
+            const allGrades = Array.isArray(session.allGrades) ? session.allGrades : [];
+            const details = Array.isArray(session.details) ? session.details : [];
+            const used = new Set();
+            let added = 0;
+            let upgraded = 0;
+            const findReusableDetailIndex = (record, uid, rowKey) => {
+                if (rowKey) {
+                    const exact = details.findIndex((detail, index) => !used.has(index) && detail?.rowKey === rowKey);
+                    if (exact !== -1) return exact;
+                    const legacy = details.findIndex((detail, index) => !used.has(index) && !detail?.rowKey && detail?.uid === uid && detail?.tag === record.tag);
+                    if (legacy !== -1) return legacy;
+                }
+                return details.findIndex((detail, index) => !used.has(index) && detail?.uid === uid && detail?.tag === record.tag);
+            };
+            allGrades.forEach(record => {
+                if (!record || record.grade === 'perfect' || !record.grade || !record.tag || !record.info) return;
+                const uid = getQuestionUid(record.tag, record.info);
+                const rowKey = record.rowKey || getAnswerRowKey(record.tag, record.info);
+                const index = findReusableDetailIndex(record, uid, rowKey);
+                if (index !== -1) {
+                    used.add(index);
+                    const detail = details[index];
+                    const before = `${detail.uid || ''}|${detail.rowKey || ''}|${detail.mechanismKey || ''}`;
+                    detail.uid = detail.uid || uid;
+                    detail.rowKey = detail.rowKey || rowKey;
+                    detail.mechanismKey = detail.mechanismKey || getErrorMechanismKey(detail.tag || record.tag, detail.info || record.info);
+                    detail.info = detail.info || record.info;
+                    detail.grade = detail.grade || record.grade;
+                    if (`${detail.uid || ''}|${detail.rowKey || ''}|${detail.mechanismKey || ''}` !== before) upgraded += 1;
+                    return;
+                }
+                details.push({
+                    tag: record.tag,
+                    grade: record.grade,
+                    info: record.info,
+                    uid,
+                    rowKey,
+                    mechanismKey: getErrorMechanismKey(record.tag, record.info)
+                });
+                used.add(details.length - 1);
+                added += 1;
+            });
+            session.details = details;
+            return { added, upgraded };
+        }
+        window.normalizeSessionMistakeDetails = normalizeSessionMistakeDetails;
+
+        function reconcileErrorBookFromHistory(profile = {}) {
+            if (!profile || typeof profile !== 'object') return { added: 0, raised: 0 };
+            if (!profile.errorBook || typeof profile.errorBook !== 'object') profile.errorBook = {};
+            const summary = new Map();
+            (profile.history || []).forEach(session => {
+                (session.details || []).forEach(detail => {
+                    if (!detail?.tag || !detail?.info || !detail.grade || detail.grade === 'perfect') return;
+                    const uid = getQuestionUid(detail.tag, detail.info);
+                    const current = summary.get(uid) || {
+                        tag: detail.tag,
+                        info: detail.info,
+                        grade: detail.grade,
+                        count: 0,
+                        firstSet: session.set,
+                        firstDate: session.date,
+                        lastSet: session.set,
+                        lastDate: session.date,
+                        mechanismKey: detail.mechanismKey || getErrorMechanismKey(detail.tag, detail.info)
+                    };
+                    current.count += 1;
+                    if (detail.grade === 'wrong') current.grade = 'wrong';
+                    current.lastSet = session.set ?? current.lastSet;
+                    current.lastDate = session.date || current.lastDate;
+                    current.info = detail.info || current.info;
+                    current.mechanismKey = current.mechanismKey || detail.mechanismKey || getErrorMechanismKey(detail.tag, detail.info);
+                    summary.set(uid, current);
+                });
+            });
+            let added = 0;
+            let raised = 0;
+            summary.forEach((item, uid) => {
+                const existing = profile.errorBook[uid];
+                if (!existing) {
+                    profile.errorBook[uid] = { ...item, mastered: false };
+                    added += 1;
+                    return;
+                }
+                const before = Number(existing.count || 0);
+                existing.count = Math.max(1, before, item.count);
+                if (existing.count > before) raised += 1;
+                if (item.grade === 'wrong') existing.grade = 'wrong';
+                existing.tag = existing.tag || item.tag;
+                existing.info = existing.info || item.info;
+                existing.firstSet = existing.firstSet ?? item.firstSet;
+                existing.firstDate = existing.firstDate || item.firstDate;
+                existing.lastSet = existing.lastSet ?? item.lastSet;
+                existing.lastDate = existing.lastDate || item.lastDate;
+                existing.mechanismKey = existing.mechanismKey || item.mechanismKey;
+            });
+            return { added, raised };
+        }
+        window.reconcileErrorBookFromHistory = reconcileErrorBookFromHistory;
 
         const GistSync = {
             TOKEN_KEY: 'MathGistSync_token',
@@ -3565,7 +3675,10 @@
                     signalAdjustments: session.signalAdjustments || [],
                     signalSnapshot: session.signalSnapshot || null,
                     programId: session.programId || programId
-                }));
+                })).map(session => {
+                    normalizeSessionMistakeDetails(session);
+                    return session;
+                });
                 // v22 迁移：如果旧数据只有 history 没有 errorBook，从 history 重建
                 if (Object.keys(profile.errorBook).length === 0 && profile.history.length > 0) {
                     profile.history.forEach(session => {
@@ -3591,6 +3704,7 @@
                         });
                     });
                 }
+                reconcileErrorBookFromHistory(profile);
                 Object.keys(profile.errorBook).forEach(uid => {
                     let entry = profile.errorBook[uid] || {};
                     entry.count = Math.max(1, Number.parseInt(entry.count, 10) || 1);
@@ -8736,14 +8850,6 @@
             return computeErrorUid(tag, info?.q || '');
         }
 
-        function getAnswerRowKey(tag, info = {}) {
-            const sec = String(info?.sec || '').trim();
-            const num = String(info?.num || '').trim();
-            if (!tag || !sec || !num) return '';
-            return `${tag}::${sec}::${num}`;
-        }
-        window.getAnswerRowKey = getAnswerRowKey;
-
         function findSessionGradeEntry(sessionData, tag, info = {}) {
             if (!sessionData || !tag) return null;
             const uid = getQuestionUid(tag, info);
@@ -9934,6 +10040,31 @@
             }).join('');
         }
 
+        function getSetReviewIntegrity(session = {}) {
+            const allGrades = Array.isArray(session.allGrades) ? session.allGrades : [];
+            const details = Array.isArray(session.details) ? session.details : [];
+            const mistakes = allGrades.filter(item => item?.grade && item.grade !== 'perfect');
+            const detailKeys = new Set(details.map(item => item?.rowKey || item?.uid).filter(Boolean));
+            const missing = mistakes.filter(item => {
+                const key = item?.rowKey || item?.uid;
+                return key && !detailKeys.has(key);
+            });
+            return { graded: allGrades.length, mistakes: mistakes.length, details: details.length, missing: missing.length };
+        }
+
+        function buildSetReviewIntegrityHTML(session = {}) {
+            const integrity = getSetReviewIntegrity(session);
+            const ok = integrity.missing === 0 && integrity.details >= integrity.mistakes;
+            return `
+                <div style="margin-top:8px; padding:8px 10px; border-radius:8px; background:${ok ? '#ecfdf5' : '#fff7ed'}; color:${ok ? '#047857' : '#b45309'}; font-weight:800;">
+                    ${ok ? '✅ 错题记录完整性已核对' : '⚠️ 错题记录仍需复核'}：
+                    已批改 ${integrity.graded} 题 · 错题/粗心 ${integrity.mistakes} 条 · 报告列出 ${integrity.details} 条
+                    ${integrity.missing ? ` · 待补 ${integrity.missing} 条` : ''}
+                </div>`;
+        }
+        window.getSetReviewIntegrity = getSetReviewIntegrity;
+        window.buildSetReviewIntegrityHTML = buildSetReviewIntegrityHTML;
+
         function buildSetReviewSection(student, setNum, highlightStudent) {
             const profile = StorageDB.getProfile(student) || {};
             const session = findSetSession(profile, setNum);
@@ -9958,6 +10089,7 @@
             const followupHTML = buildSetReviewFollowupHTML(student, session);
             const sectionCounts = new Map();
             const reviewNavBase = `set-review-${student}-${setNum}`.replace(/[^a-zA-Z0-9_-]/g, '-');
+            const integrityHTML = buildSetReviewIntegrityHTML(session);
 
             details.forEach(detail => {
                 const rawSection = String(detail?.info?.sec || '').trim();
@@ -10021,6 +10153,7 @@
                 <div style="padding:12px 15px; background:#f8fafc; border-bottom:1px solid #e2e8f0; font-size:13.5px;">
                     ✅ 正确 ${perfectCount} 题 · ⚠️ 粗心 ${carelessCount} 题 · ❌ 概念 ${wrongCount} 题 · 📓 错题已进入错题本和后续训练
                     ${isClosureSession ? `<div style="margin-top:8px;" class="knowledge-tags">${buildClosureSignalSummary(session)}</div>` : ''}
+                    ${integrityHTML}
                 </div>
                 ${distributionHTML}
                 <div style="padding:15px; max-height:360px; overflow:auto;">
