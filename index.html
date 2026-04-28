@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.166 (中文知识地图)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.167 (知识地图今日先练)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.166</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.167</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.166';
-        const APP_RELEASE_LABEL = '中文知识地图';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.166 优化知识地图：隐藏代码字段，改用中文知识点、学生、优先级和训练建议来展示。';
+        const APP_VERSION = 'v23.167';
+        const APP_RELEASE_LABEL = '知识地图今日先练';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.167 知识地图新增“今日先练”：按孩子列出最该先补的知识点和练习方式。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8747,6 +8747,44 @@
         }
         window.buildKnowledgeWeakRows = buildKnowledgeWeakRows;
 
+        function getKnowledgePracticeAction(row = {}) {
+            if (row.activeErrors >= 2 || row.score >= 7) return '先做错题专项卷，再讲解一道同类变式';
+            if (row.activeErrors >= 1) return '先回看错题本，再穿插 2-3 道同类题';
+            if (row.weight >= 3) return '本周训练中保持出现，重点看速度和稳定性';
+            return '正常交错练习中保温';
+        }
+
+        function buildKnowledgeNextStepCards(weakRows = []) {
+            const students = ['KAI', 'Lorik'];
+            return students.map(student => {
+                const topRows = weakRows.filter(row => row.student === student).slice(0, 3);
+                const body = topRows.length ? topRows.map((row, index) => {
+                    const priority = row.score >= 7 ? '优先' : row.score >= 3 ? '加练' : '保温';
+                    const priorityColor = row.score >= 7 ? '#dc2626' : row.score >= 3 ? '#b45309' : '#15803d';
+                    return `
+                        <div style="padding:10px 0; border-top:${index ? '1px solid #e2e8f0' : '0'};">
+                            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start;">
+                                <strong style="color:#0f172a;">${row.display.name}</strong>
+                                <span class="knowledge-tag" style="color:${priorityColor}; border:1px solid ${priorityColor};">${priority}</span>
+                            </div>
+                            <div style="font-size:12px; color:#475569; margin-top:4px;">${row.display.domainName} · ${row.display.levelName} · 错次 ${row.activeErrors || 0}</div>
+                            <div style="font-size:12.5px; color:#334155; margin-top:5px;">${getKnowledgePracticeAction(row)}</div>
+                        </div>`;
+                }).join('') : `<div style="color:#047857; font-weight:800;">当前没有明显弱项，保持每日交错训练即可。</div>`;
+                return `
+                    <div class="knowledge-card">
+                        <h4>${student} 今日先练</h4>
+                        <p>先处理最高价值的 1-3 个知识点，避免一口气铺太多。</p>
+                        ${body}
+                        <div class="knowledge-tags" style="margin-top:8px;">
+                            <button class="eb-filter-btn" style="padding:5px 8px;" onclick="window.closeReportModal(); window.renderErrorBook()">打开错题本</button>
+                            <button class="eb-filter-btn" style="padding:5px 8px;" onclick="window.printErrorBookPractice('${student}', true)">打印错题专项+答案</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        window.buildKnowledgeNextStepCards = buildKnowledgeNextStepCards;
+
         window.showKnowledgeMap = function() {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.remove('quick-review-modal');
@@ -8773,6 +8811,7 @@
             });
             const knownTags = [...new Set([...Object.keys(KnowledgeBase), ...currentTags])].sort();
             const weakRows = buildKnowledgeWeakRows(profiles);
+            const nextStepCards = buildKnowledgeNextStepCards(weakRows);
             const domainSignals = summarizeDomainSignals(Object.values(profiles));
             const domainCards = KnowledgeDomains.map(domain => {
                 const tags = knownTags.filter(tag => tagMatchesPatterns(tag, domain.patterns));
@@ -8863,6 +8902,10 @@
                 </div>`;
 
             const html = `
+                <div class="report-section">
+                    <h3>✅ 今日先练 / Next Practice</h3>
+                    <div class="knowledge-grid">${nextStepCards}</div>
+                </div>
                 <div class="report-section">
                     <h3>🔥 错题联合训练计划 / Error-Book Bridge</h3>
                     <div style="padding:15px; max-height:260px; overflow:auto;">

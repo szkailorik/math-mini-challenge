@@ -85,6 +85,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `priorityOnly` error-book practice mode: filters targeted print/review sheets to wrong-again items and stores the scope in the practice log.
 - `getKnowledgeTip`: resolves exact knowledge-tag advice first, then family-level advice, then the generic fallback.
 - `getKnowledgeDisplay` / `buildKnowledgeWeakRows`: convert internal adaptive tags into parent-facing Chinese concept labels, priority rows, and training advice for the knowledge map.
+- `buildKnowledgeNextStepCards`: adds learner-specific `今日先练` recommendations to the knowledge map and links to error-book practice printing.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.

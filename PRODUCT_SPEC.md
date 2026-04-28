@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.167 makes the knowledge map actionable:
+
+- A top `今日先练` section selects the highest-value weak points for each learner.
+- Each recommendation includes the concept, domain, level, active error count, and a practice action.
+- The card links directly to the error book or printable error-book practice with answers.
+
 v23.166 makes the knowledge map parent-facing:
 
 - Internal tag codes are hidden from the visible knowledge-map tables.
