@@ -88,6 +88,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
 - `StorageDB.saveErrorBookPractice(meta.set)`: uses the supplied practice set when creating or updating error-book entries, keeping delayed backup grading aligned to the original report instead of the current counter.
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
+- `buildErrorBookPracticeResultHTML`: adds a source column when practice results carry `info.sourceLabel`, supporting paper-to-screen matching for backup second-pass remediation.
 - `getErrorBookPracticeResultTitle`: labels targeted-practice reports by scope so domain, mechanism, priority, and general error-book remediation remain distinguishable in reopened logs.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.
 - `getErrorEntryPracticePressure`: converts targeted-practice wrong-again counts into priority weight for error-book sorting, targeted-sheet ordering, and regular error-book selection signals.
