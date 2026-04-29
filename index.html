@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.181 (二刷复错清单)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.182 (二刷题目单印)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.181</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.182</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.181';
-        const APP_RELEASE_LABEL = '二刷复错清单';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.181 备用二刷结果的下一步提醒会直接列出对应原错题。';
+        const APP_VERSION = 'v23.182';
+        const APP_RELEASE_LABEL = '二刷题目单印';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.182 本套报告新增只打印备用二刷题目，答案可单独选择。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10741,6 +10741,7 @@
                     <div class="set-review-followup-actions no-print">
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
+                        <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', false)">🖨️ 打印备用二刷题目</button>
                         <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 打印备用二刷+答案</button>
                         <button class="modal-btn" onclick="window.openSetReviewBackupPracticeReview('${student}', ${Number(session.set || window.currentSetNumber)})">📝 批改备用二刷</button>
                     </div>

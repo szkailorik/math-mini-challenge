@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.182 separates backup second-pass printing modes:
+
+- Same-set reports expose a question-only `打印备用二刷题目` action for learner-facing paper.
+- The existing `打印备用二刷+答案` action remains available for parent answer checking.
+- Runtime validation asserts both question-only and answer-included backup print shells so the delayed review workflow stays usable.
+
 v23.181 makes wrong-again action more concrete:
 
 - Targeted-practice result summaries now prefer source mistake labels when naming wrong-again items.

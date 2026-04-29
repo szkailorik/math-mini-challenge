@@ -1691,7 +1691,7 @@ const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !reviewHtml.includes('第 2 小题') || !reviewHtml.includes('6')) {
   throw new Error('Set review report is missing set number, location, or answer');
 }
-if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练')) {
+if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练') || !reviewHtml.includes('打印备用二刷题目') || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)")) {
   throw new Error('Set review report is missing the in-report variant follow-up block');
 }
 if (!reviewHtml.includes('打印当前报告') || typeof context.window.printCurrentSetReviewReport !== 'function') {
@@ -1812,6 +1812,10 @@ if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtm
 const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
+}
+const sampleBackupQuestionOnlyPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, false) || '';
+if (!sampleBackupQuestionOnlyPrintHtml.includes('备用二刷变式') || !sampleBackupQuestionOnlyPrintHtml.includes('备用二刷题库') || sampleBackupQuestionOnlyPrintHtml.includes('答案：')) {
+  throw new Error('Set review backup question-only print shell should render backup questions without answers');
 }
 context.window.currentSetNumber = 109;
 const sampleBackupReviewHtml = context.window.buildSetReviewBackupPracticeReviewHTML?.('KAI', 106) || '';
