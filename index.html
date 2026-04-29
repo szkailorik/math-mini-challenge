@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.202 (微练错因)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.203 (自查口令)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1813,6 +1813,13 @@
             line-height: 1.38;
             font-weight: 800;
         }
+        .quick-review-micro-selfcheck {
+            margin-top: 4px;
+            color: #0f766e;
+            font-size: 11.5px;
+            line-height: 1.38;
+            font-weight: 800;
+        }
         details.quick-review-micro-answer {
             border-top: 1px dashed #bfd0e2;
             padding-top: 5px;
@@ -2744,7 +2751,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.202</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.203</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2823,9 +2830,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.202';
-        const APP_RELEASE_LABEL = '微练错因';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.202 名师词典微练答案新增错法提醒，做完马上诊断。';
+        const APP_VERSION = 'v23.203';
+        const APP_RELEASE_LABEL = '自查口令';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.203 名师词典微练新增自查口令，做完能自己查过程。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5574,6 +5581,28 @@
             return map[topic.id] || { q: `马上练：用 ${topic.title || '当前模型'} 做一道同结构题。`, a: '先说出模型，再写第一步。', warning: '错法提醒：先判断模型，再动笔计算。' };
         }
         window.getCalculationQuickReviewMicroDrill = getCalculationQuickReviewMicroDrill;
+        function getCalculationQuickReviewSelfCheck(topic = {}) {
+            const map = {
+                order_first: '自查口令：先看运算顺序，再看每行只算一层。',
+                make_ten: '自查口令：凑到整十整百后，补偿有没有乘完整。',
+                distribute: '自查口令：共同因数提一次，每一项都要算到。',
+                place_align: '自查口令：小数点先对齐，空位先补 0。',
+                decimal_scale: '自查口令：先数小数位，再估结果大小。',
+                division_scale: '自查口令：除数化整，被除数同倍跟着变。',
+                quotient_range: '自查口令：先判商的范围，再检查小数点。',
+                fraction_common: '自查口令：先通分，分母不相加减。',
+                cancel_before_multiply: '自查口令：能约先约，约完再乘。',
+                reciprocal_division: '自查口令：只倒除数，变乘后再约。',
+                representation_convert: '自查口令：先看题目要哪种形式，最后要约简。',
+                benchmark_compare: '自查口令：先统一表示，再和 0.5 或 1 比。',
+                unit_normalize: '自查口令：先统一单位，再写算式。',
+                relation_formula: '自查口令：先说关系式，再代数计算。',
+                chicken_rabbit_assumption: '自查口令：全假设，算差量，除以每只差。',
+                equation_inverse: '自查口令：看未知数位置，做相反运算。'
+            };
+            return map[topic.id] || '自查口令：先判断模型，再检查第一步。';
+        }
+        window.getCalculationQuickReviewSelfCheck = getCalculationQuickReviewSelfCheck;
         function getCalculationQuickReviewConfusable(topic = {}) {
             const map = {
                 order_first: '别和凑整混：顺序没定好，凑整也会凑错。',
@@ -5672,6 +5701,7 @@
                 ${(() => {
                     const checkpoint = getCalculationQuickReviewCheckpoint(topic);
                     const microDrill = getCalculationQuickReviewMicroDrill(topic);
+                    const selfCheck = getCalculationQuickReviewSelfCheck(topic);
                     const priority = getCalculationQuickReviewPriority(topic);
                     return `
                 <section class="quick-review-topic" id="quick-review-topic-${topic.id}" data-tier="${getCalculationQuickReviewTierKey(topic)}" data-priority="${priority.key}">
@@ -5731,8 +5761,9 @@
                                     <summary>做完后看答案</summary>
                                     <div>${microDrill.a}</div>
                                     <div class="quick-review-micro-warning">${microDrill.warning}</div>
+                                    <div class="quick-review-micro-selfcheck">${selfCheck}</div>
                                 </details>
-                                <div class="quick-review-micro-print-answer">微练答案：${microDrill.a}<br>${microDrill.warning}</div>
+                                <div class="quick-review-micro-print-answer">微练答案：${microDrill.a}<br>${microDrill.warning}<br>${selfCheck}</div>
                             </div>
                             <div class="quick-review-checkpoint">
                                 <div><span class="quick-review-checkpoint-label">先判断</span>${checkpoint.q}</div>

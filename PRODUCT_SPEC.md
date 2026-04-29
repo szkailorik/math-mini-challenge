@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.203 adds self-check cues to model micro drills:
+
+- Every micro drill answer now includes a short `自查口令`.
+- The cue turns feedback into an action the learner can apply before asking for help.
+- Print output keeps the cue with the answer and mistake-cause cue for paper review.
+
 v23.202 adds mistake-cause cues to model micro drills:
 
 - Every micro drill answer now includes a short `错法提醒`.
