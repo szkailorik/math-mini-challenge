@@ -150,8 +150,8 @@ if (!html.includes('followup-group')) {
 if (!html.includes('set-review-followup-overview')) {
   throw new Error('Set Review follow-up overview summary block is missing from runtime script');
 }
-if (!html.includes("complex_mixed: '复杂混合'")) {
-  throw new Error('Set Review follow-up complex mixed label is missing from runtime script');
+if (!html.includes("complex_mixed: '复杂混合'") || !html.includes("arithmetic_fluency: '基础运算变式'")) {
+  throw new Error('Set Review follow-up family labels are missing from runtime script');
 }
 if (!html.includes('function buildSetReviewComplexMixedVariant')) {
   throw new Error('Set Review follow-up complex mixed builder is missing from runtime script');
@@ -1305,8 +1305,8 @@ const sampleReplay = context.window.buildErrorReplayItem?.({
 if (!sampleReplay?.isErrorReplay || !sampleReplay?.isReviewItem || sampleReplay.q !== '2 &times; 3' || !sampleReplay.step.includes('Replay')) {
   throw new Error('Error replay item builder is not producing replay items');
 }
-if (sampleReplay?.qualityFamily !== '') {
-  throw new Error(`Expected non-rollout replay sample to keep empty qualityFamily, got ${sampleReplay?.qualityFamily}`);
+if (sampleReplay?.qualityFamily !== 'arithmetic_fluency') {
+  throw new Error(`Expected arithmetic replay sample to keep arithmetic_fluency qualityFamily, got ${sampleReplay?.qualityFamily}`);
 }
 if (sampleReplay?.replayLevel !== 'L3') {
   throw new Error(`Expected replay sample to be L3, got ${sampleReplay?.replayLevel}`);
@@ -1715,14 +1715,33 @@ if (sampleFollowupTargets.length < 2) {
   throw new Error('Set review follow-up targets still collapse different same-tag mistakes into one target');
 }
 const sampleFollowupItems = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
-if (!Array.isArray(sampleFollowupItems) || !sampleFollowupItems.length || sampleFollowupItems.length > 8) {
-  throw new Error('Set review follow-up item builder is not producing a compact follow-up set');
+if (!Array.isArray(sampleFollowupItems) || sampleFollowupItems.length !== context.window.StorageDB.cache.KAI.history[0].details.length) {
+  throw new Error('Set review follow-up item builder is not producing one variant for each current-set mistake');
 }
 if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
   throw new Error('Set review follow-up items are missing review metadata');
 }
 if (!sampleFollowupItems.every(item => item.followupMechanismKey)) {
   throw new Error('Set review follow-up items are missing followupMechanismKey metadata');
+}
+if (!sampleFollowupItems.every(item => item.followupSourceLabel)) {
+  throw new Error('Set review follow-up items are missing source-location labels');
+}
+if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
+  throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
+}
+const bulkFollowupSession = {
+  set: 107,
+  details: Array.from({ length: 11 }, (_, idx) => ({
+    tag: 'k_dmul_basic',
+    grade: idx % 3 === 0 ? 'careless' : 'wrong',
+    uid: `bulk-${idx}`,
+    info: { sec: '基础乘法', num: idx + 1, q: `${idx + 2} &times; ${idx + 3}`, a: `${(idx + 2) * (idx + 3)}`, step: '按乘法算。' }
+  }))
+};
+const bulkFollowupItems = context.window.buildSetReviewFollowupItems?.(bulkFollowupSession, 'KAI', 'advanced_fluency_v1') || [];
+if (bulkFollowupItems.length !== bulkFollowupSession.details.length) {
+  throw new Error(`Set review follow-up should match mistake count, got ${bulkFollowupItems.length} for ${bulkFollowupSession.details.length}`);
 }
 const sampleFollowupGroups = context.window.buildSetReviewFollowupGroups?.(sampleFollowupItems);
 if (!Array.isArray(sampleFollowupGroups) || !sampleFollowupGroups.length) {

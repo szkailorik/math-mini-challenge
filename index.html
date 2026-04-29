@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.172 (补练复盘报告)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.173 (一错一变式)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.172</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.173</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.172';
-        const APP_RELEASE_LABEL = '补练复盘报告';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.172 补练批改结果页新增范围标题和下一步复盘提醒，方便纸质卷归档。';
+        const APP_VERSION = 'v23.173';
+        const APP_RELEASE_LABEL = '一错一变式';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.173 本套错题变式跟训改为一条错题对应一条变式，并加强基础运算贴题度。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3070,6 +3070,10 @@
             bridge_compare: '基准比较',
             bridge_choice: '表示选择',
             bridge_apply: '转换后运用',
+            arithmetic_multiplication: '基础乘法结构',
+            arithmetic_division: '基础除法结构',
+            arithmetic_subtraction: '基础减法结构',
+            arithmetic_general: '基础四则运算',
             fraction_addsub: '分数通分加减',
             fraction_muldiv: '分数乘除与倒数',
             fraction_mixed: '带分数与混合分数',
@@ -3097,6 +3101,12 @@
                 if (/接近|更接近|比较|更大|更小/.test(source)) return 'bridge_compare';
                 if (/[+\-×÷=]/.test(source) || /计算/.test(source)) return 'bridge_apply';
                 return 'bridge_convert';
+            }
+            if (family === 'arithmetic_fluency') {
+                if (/[×*]|乘|倍/.test(source)) return 'arithmetic_multiplication';
+                if (/[÷/]|除|商/.test(source)) return 'arithmetic_division';
+                if (/[-−]|减|退位/.test(source)) return 'arithmetic_subtraction';
+                return 'arithmetic_general';
             }
             if (family === 'fraction_operation') {
                 if (/带分数|mixed/.test(source)) return 'fraction_mixed';
@@ -4483,6 +4493,7 @@
             { family: 'fraction_operation', test: tag => /^(k_fcalc_|l_fmix_)/.test(tag) },
             { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
             { family: 'complex_mixed', test: tag => /^(c2_mix_|k_oly_|l_bmix_)/.test(tag) },
+            { family: 'arithmetic_fluency', test: tag => /^(k_dmul_|l_mul_|k_sub_|l_sub_|l_div_)/.test(tag) },
             { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
             { family: 'equation_method', test: tag => /^(k_eq_|c2_eq_|c2_rate_eq)/.test(tag) },
             { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
@@ -9347,6 +9358,7 @@
             fraction_operation: '分数运算',
             conversion_bridge: '互化比较',
             complex_mixed: '复杂混合',
+            arithmetic_fluency: '基础运算变式',
             unit_rate_speed: '单位比率',
             equation_method: '方程方法',
             validation_estimation: '估算检验',
@@ -9360,6 +9372,7 @@
             if (/div|division|除/.test(source)) return 'decimal_division';
             if (/frac|fraction|分数/.test(source)) return 'fraction_operation';
             if (/conv|percent|compare|互化|百分/.test(source)) return 'conversion_bridge';
+            if (/[×÷*/+\-−]|乘|除|加|减/.test(source)) return 'arithmetic_fluency';
             if (/unit|rate|speed|单位|速度|比率/.test(source)) return 'unit_rate_speed';
             if (/eq|equation|方程/.test(source)) return 'equation_method';
             if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
@@ -9369,12 +9382,16 @@
         function buildSetReviewFollowupCandidates(session) {
             return (session?.details || []).map((detail, index) => {
                 const info = detail.info || {};
+                const sourceSection = String(info.sec || '').trim();
+                const sourceLabel = `${sourceSection ? `${sourceSection} · ` : ''}${info.num ? `第 ${info.num} 小题` : `错题 ${index + 1}`}`;
                 return {
                     id: `${detail.uid || detail.tag || 'mistake'}-${index}`,
                     uid: detail.uid || computeErrorUid(detail.tag, info.q || ''),
                     tag: detail.tag,
                     grade: detail.grade,
                     info,
+                    sourceLabel,
+                    sourceIndex: index + 1,
                     mechanismKey: detail.mechanismKey || getErrorMechanismKey(detail.tag, info),
                     family: getSetReviewFollowupFamily(detail.tag, info),
                     severity: detail.grade === 'wrong' ? 2 : 1
@@ -9383,23 +9400,104 @@
         }
 
         function buildSetReviewFollowupTargets(session) {
-            const grouped = new Map();
-            buildSetReviewFollowupCandidates(session).forEach(candidate => {
-                const key = `${candidate.uid || candidate.tag || candidate.family}:${candidate.grade}`;
-                const bucket = grouped.get(key) || {
+            return buildSetReviewFollowupCandidates(session)
+                .map(candidate => ({
                     tag: candidate.tag || '',
                     family: candidate.family,
                     grade: candidate.grade,
                     mechanismKey: candidate.mechanismKey || '',
-                    sourceItems: []
-                };
-                bucket.sourceItems.push(candidate);
-                grouped.set(key, bucket);
-            });
-            return Array.from(grouped.values()).sort((a, b) => {
+                    sourceItems: [candidate],
+                    sourceLabel: candidate.sourceLabel,
+                    sourceIndex: candidate.sourceIndex
+                }))
+                .sort((a, b) => {
                 const severityA = a.grade === 'wrong' ? 2 : 1;
                 const severityB = b.grade === 'wrong' ? 2 : 1;
-                return severityB - severityA || b.sourceItems.length - a.sourceItems.length;
+                return severityB - severityA || (a.sourceIndex || 0) - (b.sourceIndex || 0);
+            });
+        }
+
+        function getDecimalPlacesFromText(value = '') {
+            const text = String(value || '');
+            return text.includes('.') ? text.split('.')[1].replace(/[^\d].*$/, '').length : 0;
+        }
+
+        function formatVariantNumber(value, places = 0) {
+            const n = Number(value);
+            if (!Number.isFinite(n)) return '0';
+            if (places > 0) return n.toFixed(Math.min(4, places)).replace(/\.?0+$/, '');
+            return String(Math.round(n));
+        }
+
+        function varyNumberLike(sourceValue, places = 0, minValue = 1) {
+            const scale = 10 ** Math.min(4, Math.max(0, places));
+            const base = Math.max(Math.round(Number(sourceValue || 0) * scale), Math.round(minValue * scale));
+            const delta = Engine.randChoice([1, 2, 3, 4, 5, 6]) * (Engine.randChoice([1, -1]));
+            const next = Math.max(Math.round(minValue * scale), base + delta);
+            return Number((next / scale).toFixed(Math.min(4, places)));
+        }
+
+        function parseSimpleArithmeticPrompt(questionHtml = '') {
+            const normalized = normalizeErrorPrompt(questionHtml)
+                .replace(/[＝=].*$/, '')
+                .replace(/−/g, '-')
+                .trim();
+            const match = normalized.match(/(-?\d+(?:\.\d+)?)\s*([+×÷*/-])\s*(-?\d+(?:\.\d+)?)/);
+            if (!match) return null;
+            return {
+                leftText: match[1],
+                op: match[2] === '*' ? '×' : (match[2] === '/' ? '÷' : match[2]),
+                rightText: match[3],
+                left: Number(match[1]),
+                right: Number(match[3]),
+                leftPlaces: getDecimalPlacesFromText(match[1]),
+                rightPlaces: getDecimalPlacesFromText(match[3])
+            };
+        }
+
+        function buildSetReviewArithmeticVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const parsed = parseSimpleArithmeticPrompt(entry.info?.q || '');
+            if (!parsed || !Number.isFinite(parsed.left) || !Number.isFinite(parsed.right)) {
+                return buildGenericSetReviewVariant(target);
+            }
+            let left = varyNumberLike(Math.abs(parsed.left), parsed.leftPlaces, parsed.leftPlaces ? 0.01 : 1);
+            let right = varyNumberLike(Math.abs(parsed.right), parsed.rightPlaces, parsed.rightPlaces ? 0.01 : 1);
+            let q = '';
+            let answer = 0;
+            let step = '';
+            if (parsed.op === '×') {
+                answer = left * right;
+                q = `${formatVariantNumber(left, parsed.leftPlaces)} &times; ${formatVariantNumber(right, parsed.rightPlaces)} =`;
+                step = '同结构变式：仍然先按乘法算，再根据位值或估算检查结果。';
+            } else if (parsed.op === '÷') {
+                const quotientPlaces = Math.max(0, parsed.leftPlaces - parsed.rightPlaces);
+                const sourceQuotient = parsed.right ? Math.abs(parsed.left / parsed.right) : 2;
+                const quotient = varyNumberLike(sourceQuotient, quotientPlaces, 1);
+                right = varyNumberLike(Math.abs(parsed.right || 2), parsed.rightPlaces, parsed.rightPlaces ? 0.1 : 2);
+                left = right * quotient;
+                answer = quotient;
+                q = `${formatVariantNumber(left, Math.max(parsed.leftPlaces, parsed.rightPlaces + quotientPlaces))} &divide; ${formatVariantNumber(right, parsed.rightPlaces)} =`;
+                step = '同结构变式：仍然先看除数和被除数的关系，算完用乘法回查。';
+            } else if (parsed.op === '-') {
+                if (right > left) [left, right] = [right, left];
+                answer = left - right;
+                q = `${formatVariantNumber(left, parsed.leftPlaces)} &minus; ${formatVariantNumber(right, parsed.rightPlaces)} =`;
+                step = '同结构变式：仍然按位值对齐，遇到不够减先处理退位。';
+            } else {
+                answer = left + right;
+                q = `${formatVariantNumber(left, parsed.leftPlaces)} + ${formatVariantNumber(right, parsed.rightPlaces)} =`;
+                step = '同结构变式：仍然按位值对齐，算完用估算检查大小。';
+            }
+            return attachQualityMetadata({
+                tag: entry.tag || '',
+                q,
+                a: formatDecimal(answer),
+                step,
+                qualityFamily: 'arithmetic_fluency',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
             });
         }
 
@@ -10151,6 +10249,7 @@
             if (target.family === 'fraction_operation') return buildSetReviewFractionVariant(target);
             if (target.family === 'conversion_bridge') return buildSetReviewConversionVariant(target);
             if (target.family === 'complex_mixed') return buildSetReviewComplexMixedVariant(target);
+            if (target.family === 'arithmetic_fluency') return buildSetReviewArithmeticVariant(target);
             if (target.family === 'equation_method') return buildSetReviewEquationVariant(target);
             if (target.family === 'unit_rate_speed') return buildSetReviewUnitRateVariant(target);
             if (target.family === 'validation_estimation') return buildSetReviewValidationVariant(target);
@@ -10160,23 +10259,33 @@
         function buildSetReviewFollowupItems(session, student, programId) {
             const targets = buildSetReviewFollowupTargets(session);
             const items = [];
+            const usedFingerprints = new Set();
             targets.forEach(target => {
-                const quota = target.grade === 'wrong'
-                    ? Math.min(2, Math.max(1, target.sourceItems.length))
-                    : 1;
-                for (let index = 0; index < quota; index += 1) {
-                    const item = buildSetReviewVariantQuestion(target, student, programId);
-                    if (item) {
-                        items.push({
-                            ...item,
-                            followupFamily: target.family,
-                            followupGrade: target.grade,
-                            followupMechanismKey: target.mechanismKey || item.mechanismKey || ''
-                        });
+                let selected = null;
+                for (let attempt = 0; attempt < 6; attempt += 1) {
+                    const candidate = buildSetReviewVariantQuestion(target, student, programId);
+                    if (!candidate) continue;
+                    const fingerprint = computeQuestionFingerprint(candidate.q || '');
+                    selected = candidate;
+                    if (!fingerprint || !usedFingerprints.has(fingerprint)) {
+                        if (fingerprint) usedFingerprints.add(fingerprint);
+                        break;
                     }
                 }
+                if (selected) {
+                    const fingerprint = computeQuestionFingerprint(selected.q || '');
+                    if (fingerprint && !usedFingerprints.has(fingerprint)) usedFingerprints.add(fingerprint);
+                    items.push({
+                        ...selected,
+                        followupFamily: target.family,
+                        followupGrade: target.grade,
+                        followupMechanismKey: target.mechanismKey || selected.mechanismKey || '',
+                        followupSourceLabel: target.sourceLabel || '',
+                        sourceErrorUid: target.sourceItems?.[0]?.uid || ''
+                    });
+                }
             });
-            return items.slice(0, 8);
+            return items;
         }
 
         function buildSetReviewFollowupGroups(items = []) {
@@ -10248,18 +10357,20 @@
                     const shape = getSetReviewFollowupItemShape(item);
                     const density = getSetReviewFollowupItemDensity(item);
                     const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
+                    const sourceNote = item.followupSourceLabel ? `<div class="followup-review-log">对应原错题：${item.followupSourceLabel}</div>` : '';
                     return forPrint ? `
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <div class="followup-print-body">
                                 <div class="followup-q math-row">${item.q || '-'}</div>
+                                ${sourceNote}
                                 ${reviewLog}
                             </div>
                         </div>
                     ` : `
                         <div class="followup-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
-                            <div class="followup-q math-row">${item.q || item.prompt || '-'}</div>
+                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}</div>
                         </div>
                     `;
                 }).join('');
@@ -10325,13 +10436,14 @@
             }
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
+            const mistakeCount = wrongCount + carelessCount;
             const familySummary = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             return `
             <div class="set-review-followup" data-student="${student}">
                 <div class="set-review-followup-head">
                     <div>
                         <h4>🧩 本套错题变式跟训</h4>
-                        <div class="set-review-followup-subtitle">按这套卷里真正错过的知识点继续补一轮，不重做原题，只追打同一个错误机制。</div>
+                        <div class="set-review-followup-subtitle">一条错题对应一条变式，不重做原题，只追打同一个错误机制。</div>
                     </div>
                     <div class="set-review-followup-actions no-print">
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
@@ -10340,7 +10452,7 @@
                 </div>
                 <div class="set-review-followup-overview">
                     <div class="set-review-followup-summary">
-                        本次跟训共 <strong>${items.length}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
+                        本套错题/粗心 <strong>${mistakeCount}</strong> 条，本次跟训 <strong>${items.length}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
                     </div>
                     <div class="set-review-followup-metrics">
                         <div class="followup-metric">

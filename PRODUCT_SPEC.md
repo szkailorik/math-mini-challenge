@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.173 strengthens same-set follow-up practice:
+
+- The set-review follow-up now guarantees one variant item for every mistake/careless item recorded in that set.
+- Variants retain a source label so a tutor can match each follow-up item back to the paper question that triggered it.
+- Basic arithmetic mistakes use source-aware variants that preserve the same operation structure instead of falling back to broad mixed-practice prompts.
+
 v23.172 improves the parent review loop after remediation:
 
 - Targeted practice result pages now name the scope type: domain remediation, mechanism remediation, wrong-again priority, or general error-book practice.
