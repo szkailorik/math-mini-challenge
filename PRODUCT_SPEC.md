@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.175 adds a follow-up integrity check:
+
+- Same-set follow-up now audits mistake count, main variants, backup variants, source labels, duplicate fingerprints, and family drift.
+- The audit appears in the set-review follow-up block and printable follow-up sheet so tutors can see whether the remediation pack is complete before using it.
+- Runtime validation includes both passing and failing audit cases, protecting the one-mistake/two-variant rule during future item-bank expansion.
+
 v23.174 adds a two-variant reservoir for same-set remediation:
 
 - Each same-set mistake prepares a main variant and a backup variant. The main lane still stays one-to-one with the mistake count; the backup gives the tutor a ready second attempt for later retrieval.

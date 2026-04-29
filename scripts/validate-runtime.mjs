@@ -117,6 +117,9 @@ if (!html.includes('function buildSetReviewVariantQuestion')) {
 if (!html.includes('function buildSetReviewFollowupItems')) {
   throw new Error('Set Review follow-up item builder is missing from runtime script');
 }
+if (!html.includes('function getSetReviewFollowupAudit') || !html.includes('变式体检')) {
+  throw new Error('Set Review follow-up audit workflow is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupGroups')) {
   throw new Error('Set Review follow-up grouping helper is missing from runtime script');
 }
@@ -1730,6 +1733,14 @@ if (!sampleFollowupItems.every(item => item.followupSourceLabel)) {
 if (!sampleFollowupItems.every(item => item.followupBackupVariant?.q && item.followupBackupVariant?.a)) {
   throw new Error('Set review follow-up items are missing the second prepared backup variant');
 }
+const sampleFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems);
+if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2) {
+  throw new Error('Set review follow-up audit is not confirming one main and one backup variant per mistake');
+}
+const brokenFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems.slice(0, 1));
+if (brokenFollowupAudit?.ok || brokenFollowupAudit?.mainCount !== 1) {
+  throw new Error('Set review follow-up audit should flag missing variants');
+}
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
   throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
 }
@@ -1777,7 +1788,7 @@ if (!normalizedUidA || normalizedUidA !== normalizedUidB) {
   throw new Error('Error UID normalization does not treat equivalent math markup as the same prompt');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
-if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案')) {
+if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
 if (sampleFollowupPrintHtml.includes('class="blank math-inline-blank"') || sampleFollowupPrintHtml.includes('<div class="blank"></div>')) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.174 (互化变式贴题)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.175 (变式体检)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.174</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.175</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.174';
-        const APP_RELEASE_LABEL = '互化变式贴题';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.174 本套错题变式继续收紧互化方向：小数转分数、百分数转分数、比较题各走同形变式。';
+        const APP_VERSION = 'v23.175';
+        const APP_RELEASE_LABEL = '变式体检';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.175 本套错题变式新增体检：自动核对主变式、备用变式和重复风险。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10358,6 +10358,75 @@
             return items;
         }
 
+        function getSetReviewFollowupAudit(session = {}, items = []) {
+            const targets = buildSetReviewFollowupTargets(session);
+            const mistakeCount = targets.length;
+            const mainCount = items.length;
+            const backupCount = items.filter(item => item.followupBackupVariant?.q).length;
+            const sourceCount = items.filter(item => item.followupSourceLabel).length;
+            const duplicateFingerprints = new Set();
+            const seen = new Map();
+            items.forEach((item, index) => {
+                [
+                    { kind: '主变式', q: item.q || item.prompt || '' },
+                    { kind: '备用变式', q: item.followupBackupVariant?.q || '' }
+                ].forEach(part => {
+                    const fingerprint = computeQuestionFingerprint(part.q);
+                    if (!fingerprint) return;
+                    if (seen.has(fingerprint)) {
+                        duplicateFingerprints.add(fingerprint);
+                    } else {
+                        seen.set(fingerprint, `${index + 1}-${part.kind}`);
+                    }
+                });
+            });
+            const familyMismatch = items.filter(item => {
+                const sourceFamily = item.followupFamily || '';
+                const mainFamily = item.qualityFamily || sourceFamily;
+                const backupFamily = item.followupBackupVariant?.qualityFamily || sourceFamily;
+                return (sourceFamily && mainFamily && sourceFamily !== mainFamily) || (sourceFamily && backupFamily && sourceFamily !== backupFamily);
+            }).length;
+            const ok = mistakeCount === mainCount
+                && mistakeCount === backupCount
+                && sourceCount === mainCount
+                && duplicateFingerprints.size === 0
+                && familyMismatch === 0;
+            return {
+                ok,
+                mistakeCount,
+                mainCount,
+                backupCount,
+                sourceCount,
+                duplicateCount: duplicateFingerprints.size,
+                familyMismatch
+            };
+        }
+        window.getSetReviewFollowupAudit = getSetReviewFollowupAudit;
+
+        function buildSetReviewFollowupAuditHTML(audit = {}) {
+            const tone = audit.ok ? {
+                icon: '✅',
+                text: '变式体检通过',
+                bg: '#ecfdf5',
+                color: '#047857',
+                border: '#bbf7d0'
+            } : {
+                icon: '⚠️',
+                text: '变式体检需复核',
+                bg: '#fff7ed',
+                color: '#b45309',
+                border: '#fed7aa'
+            };
+            return `
+                <div class="answer-progress-note" style="margin:0 0 10px; padding:9px 12px; border:1px solid ${tone.border}; background:${tone.bg}; color:${tone.color}; font-size:13px; line-height:1.55; border-radius:8px; font-weight:800;">
+                    ${tone.icon} ${tone.text}：
+                    错题 ${audit.mistakeCount || 0} 条 · 主变式 ${audit.mainCount || 0} 题 · 备用 ${audit.backupCount || 0} 题 · 来源标注 ${audit.sourceCount || 0} 条
+                    ${audit.duplicateCount ? ` · 重复风险 ${audit.duplicateCount}` : ''}
+                    ${audit.familyMismatch ? ` · 类型偏移 ${audit.familyMismatch}` : ''}
+                </div>`;
+        }
+        window.buildSetReviewFollowupAuditHTML = buildSetReviewFollowupAuditHTML;
+
         function buildSetReviewFollowupGroups(items = []) {
             const groups = new Map();
             items.forEach(item => {
@@ -10511,6 +10580,7 @@
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const mistakeCount = wrongCount + carelessCount;
             const backupCount = items.filter(item => item.followupBackupVariant?.q).length;
+            const audit = getSetReviewFollowupAudit(session, items);
             const familySummary = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             return `
             <div class="set-review-followup" data-student="${student}">
@@ -10525,6 +10595,7 @@
                     </div>
                 </div>
                 <div class="set-review-followup-overview">
+                    ${buildSetReviewFollowupAuditHTML(audit)}
                     <div class="set-review-followup-summary">
                         本套错题/粗心 <strong>${mistakeCount}</strong> 条，本次跟训 <strong>${items.length}</strong> 题，备用变式 <strong>${backupCount}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
                     </div>
@@ -10997,6 +11068,7 @@
             if (!items.length) return '';
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
+            const audit = getSetReviewFollowupAudit(session, items);
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const compactMetaLeft = printPack === 'compact'
@@ -11020,6 +11092,7 @@
                     <span>${compactMetaLeft}</span>
                     <span>${compactMetaRight}</span>
                 </div>
+                ${buildSetReviewFollowupAuditHTML(audit)}
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
             </section>`;
