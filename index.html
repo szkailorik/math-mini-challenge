@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.175 (变式体检)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.176 (备用二刷卷)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.175</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.176</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.175';
-        const APP_RELEASE_LABEL = '变式体检';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.175 本套错题变式新增体检：自动核对主变式、备用变式和重复风险。';
+        const APP_VERSION = 'v23.176';
+        const APP_RELEASE_LABEL = '备用二刷卷';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.176 本套错题变式把备用题库拆成独立二刷卷，主练更清爽，复练更方便打印。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10497,22 +10497,19 @@
                     const density = getSetReviewFollowupItemDensity(item);
                     const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
                     const sourceNote = item.followupSourceLabel ? `<div class="followup-review-log">对应原错题：${item.followupSourceLabel}</div>` : '';
-                    const backup = item.followupBackupVariant;
-                    const backupNote = backup?.q ? `<div class="followup-review-log">备用变式：<span class="math-row">${backup.q}</span></div>` : '';
                     return forPrint ? `
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <div class="followup-print-body">
                                 <div class="followup-q math-row">${item.q || '-'}</div>
                                 ${sourceNote}
-                                ${backupNote}
                                 ${reviewLog}
                             </div>
                         </div>
                     ` : `
                         <div class="followup-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
-                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}${backupNote}</div>
+                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}</div>
                         </div>
                     `;
                 }).join('');
@@ -10542,14 +10539,73 @@
             }).join('');
         }
 
-        function buildSetReviewFollowupAnswerHTML(items, { forPrint = false } = {}) {
+        function buildSetReviewBackupItems(items = []) {
+            return items.map((item, idx) => ({
+                sourceNumber: idx + 1,
+                sourceLabel: item.followupSourceLabel || '',
+                family: item.followupFamily || item.followupBackupVariant?.qualityFamily || '',
+                grade: item.followupGrade || '',
+                mechanismKey: item.followupMechanismKey || '',
+                ...item.followupBackupVariant
+            })).filter(item => item?.q);
+        }
+        window.buildSetReviewBackupItems = buildSetReviewBackupItems;
+
+        function buildSetReviewBackupBankHTML(items = [], { forPrint = false, includeAnswers = false } = {}) {
+            const backups = buildSetReviewBackupItems(items);
+            if (!backups.length) return '';
+            const rows = backups.map((item, idx) => {
+                const shape = getSetReviewFollowupItemShape(item);
+                const density = getSetReviewFollowupItemDensity(item);
+                const sourceNote = item.sourceLabel ? `<div class="followup-review-log">对应原错题：${item.sourceLabel}</div>` : '';
+                const answerLine = includeAnswers ? `<div class="followup-review-log">答案：<span class="math-row">${item.a || '-'}</span>${item.step ? ` · ${item.step}` : ''}</div>` : '';
+                return forPrint ? `
+                    <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
+                        <span class="followup-num">${idx + 1}.</span>
+                        <div class="followup-print-body">
+                            <div class="followup-q math-row">${item.q}</div>
+                            ${sourceNote}
+                            ${answerLine}
+                        </div>
+                    </div>`
+                    : `<div class="followup-item" data-shape="${shape}" data-density="${density}">
+                        <span class="followup-num">${idx + 1}.</span>
+                        <div class="followup-q math-row">${item.q}${sourceNote}${answerLine}</div>
+                    </div>`;
+            }).join('');
+            if (forPrint) {
+                return `
+                <section class="followup-print-group">
+                    <div class="followup-print-group-head">
+                        <h3>备用二刷题库</h3>
+                        <span class="followup-print-kicker">隔天复练</span>
+                    </div>
+                    <div class="followup-print-group-note">主变式稳定后再做；如果主变式又错，优先打印这一组。</div>
+                    <div class="followup-print-list">${rows}</div>
+                </section>`;
+            }
+            return `
+            <section class="followup-group" data-grade="backup">
+                <div class="followup-group-head">
+                    <div class="followup-group-title-wrap">
+                        <span class="followup-group-kicker">隔天复练</span>
+                        <h5 class="followup-group-title">备用二刷题库</h5>
+                    </div>
+                    <span class="followup-group-note">主训练先做上面一错一练；这些备用题用于二刷、隔天或又错时加练。</span>
+                </div>
+                <div class="followup-group-list">${rows}</div>
+            </section>`;
+        }
+        window.buildSetReviewBackupBankHTML = buildSetReviewBackupBankHTML;
+
+        function buildSetReviewFollowupAnswerHTML(items, { forPrint = false, includeBackupAnswers = false } = {}) {
             if (!items.length) return '';
             const hasPracticeLog = items.some(item => item.isErrorBookPractice);
             const rows = items.map((item, idx) => `
                 <tr>
                     <td>${idx + 1}</td>
-                    <td><div class="math-row">${item.a || item.answer || '-'}</div>${item.followupBackupVariant?.a ? `<div style="margin-top:4px; color:#475569;">备用：<span class="math-row">${item.followupBackupVariant.a}</span></div>` : ''}</td>
-                    <td>${item.step || ''}${item.followupBackupVariant?.step ? `<div style="margin-top:4px; color:#475569;">备用提醒：${item.followupBackupVariant.step}</div>` : ''}</td>
+                    <td><div class="math-row">${item.a || item.answer || '-'}</div>${includeBackupAnswers && item.followupBackupVariant?.a ? `<div style="margin-top:4px; color:#475569;">备用：<span class="math-row">${item.followupBackupVariant.a}</span></div>` : ''}</td>
+                    <td>${item.step || ''}${includeBackupAnswers && item.followupBackupVariant?.step ? `<div style="margin-top:4px; color:#475569;">备用提醒：${item.followupBackupVariant.step}</div>` : ''}</td>
                     ${hasPracticeLog ? `<td>□ 已会　□ 又错</td>` : ''}
                 </tr>
             `).join('');
@@ -10592,6 +10648,7 @@
                     <div class="set-review-followup-actions no-print">
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
+                        <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 打印备用二刷+答案</button>
                     </div>
                 </div>
                 <div class="set-review-followup-overview">
@@ -10623,6 +10680,7 @@
                     </div>
                 </div>
                 <div class="set-review-followup-groups">${renderSetReviewFollowupGroups(items)}</div>
+                <div class="set-review-followup-groups">${buildSetReviewBackupBankHTML(items)}</div>
                 ${buildSetReviewFollowupAnswerHTML(items)}
             </div>`;
         }
@@ -11098,6 +11156,35 @@
             </section>`;
         }
 
+        function buildSetReviewBackupPrintHTML(student, setNum, includeAnswers = true) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            const backups = buildSetReviewBackupItems(items);
+            if (!backups.length) return '';
+            const audit = getSetReviewFollowupAudit(session, items);
+            const printPack = getSetReviewFollowupPrintPack(backups);
+            return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+                <header class="booklet-meta-band">
+                    <span>${student} · Set ${setNum}</span>
+                    <span>Backup Follow-up</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">备用二刷变式</h2>
+                    <p class="followup-print-subtitle">主变式做完后再用 · 适合隔天复练或又错时加练</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${backups.length} 题</strong> · 对应本套错题备用题库</span>
+                    <span>${includeAnswers ? '含参考答案' : '不含答案'}</span>
+                </div>
+                ${buildSetReviewFollowupAuditHTML(audit)}
+                <div class="followup-print-sheet">${buildSetReviewBackupBankHTML(items, { forPrint: true, includeAnswers })}</div>
+            </section>`;
+        }
+        window.buildSetReviewBackupPrintHTML = buildSetReviewBackupPrintHTML;
+
         window.printSetReviewFollowup = function(student, includeAnswers = false) {
             ensurePrintLifecycleHooks();
             clearPrintMode();
@@ -11114,6 +11201,33 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出变式训练和答案参考。' : '🖨️ 打印提示：将只输出变式训练页。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        window.printSetReviewBackupFollowup = function(student, includeAnswers = true) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const html = buildSetReviewBackupPrintHTML(student, window.currentSetNumber, includeAnswers);
+            if (!html) {
+                showToast('这位学生本套还没有可打印的备用二刷题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
+            showToast(includeAnswers ? '🖨️ 打印提示：将输出备用二刷题和答案参考。' : '🖨️ 打印提示：将只输出备用二刷题。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();

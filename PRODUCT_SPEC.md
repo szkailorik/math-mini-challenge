@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.176 separates immediate practice from backup practice:
+
+- The primary same-set follow-up sheet shows only the main one-to-one variants, keeping the child-facing workload clear.
+- Backup variants are collected into a separate second-pass bank with its own print action and optional answers.
+- This supports spacing: the second prepared variant can be used later without doubling the immediate post-review load.
+
 v23.175 adds a follow-up integrity check:
 
 - Same-set follow-up now audits mistake count, main variants, backup variants, source labels, duplicate fingerprints, and family drift.
