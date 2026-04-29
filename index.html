@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.195 (模型判断题)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.196 (先想再看)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1699,6 +1699,23 @@
             color: #47605a;
             font-weight: 700;
         }
+        details.quick-review-checkpoint-answer {
+            border-top: 1px dashed #bdd8ca;
+            padding-top: 5px;
+        }
+        details.quick-review-checkpoint-answer summary {
+            cursor: pointer;
+            color: #047857;
+            font-weight: 900;
+        }
+        .quick-review-checkpoint-print-answer { display:none; }
+        body.print-quick-review #print-root details.quick-review-checkpoint-answer { display:none; }
+        body.print-quick-review #print-root .quick-review-checkpoint-print-answer {
+            display:block;
+            margin-top:4px;
+            color:#47605a;
+            font-weight:700;
+        }
         .quick-review-topic-pins {
             display: flex;
             flex-wrap: wrap;
@@ -2564,7 +2581,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.195</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.196</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2643,9 +2660,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.195';
-        const APP_RELEASE_LABEL = '模型判断题';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.195 每个心智模型新增“先判断”短问，先练识别再看解法。';
+        const APP_VERSION = 'v23.196';
+        const APP_RELEASE_LABEL = '先想再看';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.196 名师词典判断题答案改为网页折叠提示，先想再看。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5436,7 +5453,11 @@
                             <div class="quick-review-example-row">${topic.example}</div>
                             <div class="quick-review-checkpoint">
                                 <div><span class="quick-review-checkpoint-label">先判断</span>${checkpoint.q}</div>
-                                <div class="quick-review-checkpoint-answer">应想到：${checkpoint.a}</div>
+                                <details class="quick-review-checkpoint-answer">
+                                    <summary>想好后点开提示</summary>
+                                    <div>应想到：${checkpoint.a}</div>
+                                </details>
+                                <div class="quick-review-checkpoint-print-answer">家长提示：${checkpoint.a}</div>
                             </div>
                             <div class="quick-review-topic-pins">${(topic.pins || []).map(pin => `<span class="quick-review-topic-pin">${pin}</span>`).join('')}</div>
                         </div>
