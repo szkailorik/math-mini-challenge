@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.203 (自查口令)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.204 (模型微练卷)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -238,6 +238,66 @@
                 color: #111 !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid-page !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-page {
+                width: 210mm !important;
+                min-height: var(--print-sheet-height) !important;
+                box-sizing: border-box !important;
+                padding: 10mm 12mm 12mm !important;
+                background: #fff !important;
+                color: #111 !important;
+                page-break-after: always !important;
+                break-after: page !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-page:last-child {
+                page-break-after: auto !important;
+                break-after: auto !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-head {
+                border-bottom: 1px solid #94a3b8 !important;
+                padding-bottom: 5mm !important;
+                margin-bottom: 5mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-head h2 {
+                margin: 0 0 2mm !important;
+                color: #111 !important;
+                font-size: 22px !important;
+                line-height: 1.15 !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-head p {
+                margin: 0 !important;
+                color: #334155 !important;
+                font-size: 11.5px !important;
+                line-height: 1.45 !important;
+                font-weight: 700 !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 3.2mm 4mm !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-item {
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 2mm !important;
+                padding: 2.5mm 3mm !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-item h3 {
+                margin: 0 0 1.6mm !important;
+                color: #0f172a !important;
+                font-size: 12px !important;
+                line-height: 1.25 !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-question,
+            body.print-quick-review #print-root .quick-review-drill-answer {
+                color: #111 !important;
+                font-size: 11.5px !important;
+                line-height: 1.42 !important;
+                font-weight: 700 !important;
+            }
+            body.print-quick-review #print-root .quick-review-drill-answer {
+                color: #334155 !important;
             }
             body.print-quick-review #print-root .quick-review-page {
                 width: 100% !important;
@@ -2751,7 +2811,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.203</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.204</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2830,9 +2890,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.203';
-        const APP_RELEASE_LABEL = '自查口令';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.203 名师词典微练新增自查口令，做完能自己查过程。';
+        const APP_VERSION = 'v23.204';
+        const APP_RELEASE_LABEL = '模型微练卷';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.204 名师词典新增独立 16 题模型微练卷和答案页。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5821,6 +5881,7 @@
                     ${forPrint ? '' : `
                         <div class="quick-review-actions no-print">
                             <button class="modal-btn" onclick="window.printCalculationQuickReview()">🖨️ 打印这页</button>
+                            <button class="modal-btn" onclick="window.printCalculationQuickReviewMicroDrillSheet()">📝 打印16题微练+答案</button>
                             <button class="modal-btn confirm" onclick="window.closeReportModal()">关闭</button>
                         </div>
                     `}
@@ -5828,6 +5889,51 @@
             `;
         }
         window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;
+        function buildCalculationQuickReviewMicroDrillSheetHTML() {
+            const topics = getCalculationQuickReviewTopics();
+            const questionItems = topics.map((topic, index) => {
+                const microDrill = getCalculationQuickReviewMicroDrill(topic);
+                const selfCheck = getCalculationQuickReviewSelfCheck(topic);
+                return `
+                    <article class="quick-review-drill-item">
+                        <h3>${String(index + 1).padStart(2, '0')}. ${topic.title.replace(/^\d+\.\s*/, '')}</h3>
+                        <div class="quick-review-drill-question">${microDrill.q}</div>
+                        <div class="quick-review-drill-answer">自查：${selfCheck.replace(/^自查口令：/, '')}</div>
+                    </article>
+                `;
+            }).join('');
+            const answerItems = topics.map((topic, index) => {
+                const microDrill = getCalculationQuickReviewMicroDrill(topic);
+                const selfCheck = getCalculationQuickReviewSelfCheck(topic);
+                return `
+                    <article class="quick-review-drill-item">
+                        <h3>${String(index + 1).padStart(2, '0')}. ${topic.shortLabel} · 参考答案</h3>
+                        <div class="quick-review-drill-answer">${microDrill.a}</div>
+                        <div class="quick-review-drill-answer">${microDrill.warning}</div>
+                        <div class="quick-review-drill-answer">${selfCheck}</div>
+                    </article>
+                `;
+            }).join('');
+            return `
+                <div class="quick-review-drill-print-shell">
+                    <section class="quick-review-drill-page">
+                        <div class="quick-review-drill-head">
+                            <h2>16题模型微练卷</h2>
+                            <p>每个心智模型只做 1 题。先说模型，再写第一步，最后按自查口令检查。</p>
+                        </div>
+                        <div class="quick-review-drill-grid">${questionItems}</div>
+                    </section>
+                    <section class="quick-review-drill-page">
+                        <div class="quick-review-drill-head">
+                            <h2>16题模型微练卷 · 参考答案</h2>
+                            <p>答案旁保留错法提醒和自查口令，方便纸面讲评时快速定位错误来源。</p>
+                        </div>
+                        <div class="quick-review-drill-grid">${answerItems}</div>
+                    </section>
+                </div>
+            `;
+        }
+        window.buildCalculationQuickReviewMicroDrillSheetHTML = buildCalculationQuickReviewMicroDrillSheetHTML;
         function getErrorEntryPracticePressure(entry = {}) {
             const rewrong = Math.max(0, Number(entry.rewrongCount || 0));
             const practice = Math.max(0, Number(entry.practiceCount || 0));
@@ -12113,6 +12219,28 @@
             root.innerHTML = `<div class="quick-review-print-shell">${buildCalculationQuickReviewHTML({ forPrint: true })}</div>`;
             document.body.classList.add('print-quick-review', 'print-sandbox-active');
             showToast('📘 打印知识总览提示：建议纵向打印，并关闭页眉页脚。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        window.printCalculationQuickReviewMicroDrillSheet = function() {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            root.innerHTML = buildCalculationQuickReviewMicroDrillSheetHTML();
+            document.body.classList.add('print-quick-review', 'print-sandbox-active');
+            showToast('📝 打印模型微练提示：将输出题目页和参考答案页。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();

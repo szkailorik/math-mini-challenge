@@ -227,6 +227,9 @@ if (!html.includes('function getCalculationQuickReviewMicroDrill')) {
 if (!html.includes('function getCalculationQuickReviewSelfCheck')) {
   throw new Error('Calculation Quick Review self-check helper is missing from runtime script');
 }
+if (!html.includes('function buildCalculationQuickReviewMicroDrillSheetHTML')) {
+  throw new Error('Calculation Quick Review micro-drill sheet builder is missing from runtime script');
+}
 if (!html.includes('function getCalculationQuickReviewConfusable')) {
   throw new Error('Calculation Quick Review confusable-model helper is missing from runtime script');
 }
@@ -241,6 +244,9 @@ if (!html.includes('window.showCalculationQuickReview = function()')) {
 }
 if (!html.includes('window.printCalculationQuickReview = function()')) {
   throw new Error('Calculation Quick Review print function is missing from runtime script');
+}
+if (!html.includes('window.printCalculationQuickReviewMicroDrillSheet = function()')) {
+  throw new Error('Calculation Quick Review micro-drill sheet print function is missing from runtime script');
 }
 if (!html.includes('window.showCalculationQuickReview()') && !html.includes("window.showCalculationQuickReview()")) {
   throw new Error('Calculation Quick Review control-panel shortcut is missing its action binding');
@@ -493,6 +499,10 @@ if (!context.getCalculationQuickReviewMicroDrill?.({ id: 'chicken_rabbit_assumpt
 if (!context.getCalculationQuickReviewSelfCheck?.({ id: 'division_scale' })?.includes('同倍') || !context.getCalculationQuickReviewSelfCheck?.({ id: 'chicken_rabbit_assumption' })?.includes('全假设')) {
   throw new Error('Calculation Quick Review should provide model-specific self-check cues');
 }
+const quickReviewDrillSheetHtml = context.buildCalculationQuickReviewMicroDrillSheetHTML?.() || '';
+if (!quickReviewDrillSheetHtml.includes('16题模型微练卷') || !quickReviewDrillSheetHtml.includes('参考答案') || !quickReviewDrillSheetHtml.includes('自查：') || !quickReviewDrillSheetHtml.includes('错法提醒')) {
+  throw new Error('Calculation Quick Review micro-drill sheet should include questions, answers, and cues');
+}
 if (!context.getCalculationQuickReviewConfusable?.({ id: 'decimal_scale' })?.includes('小数除法')) {
   throw new Error('Calculation Quick Review should provide per-model confusion cues');
 }
@@ -525,6 +535,9 @@ if (!reviewModalHtml.includes('高频必练') || !reviewModalHtml.includes('每�
 }
 if (!reviewModalHtml.includes('1题微练') || !reviewModalHtml.includes('做完后看答案') || !reviewModalHtml.includes('错法提醒') || !reviewModalHtml.includes('自查口令') || !reviewModalHtml.includes('马上练：0.6 × 0.08') || !reviewModalHtml.includes('兔 4 只，鸡 6 只')) {
   throw new Error('Calculation Quick Review micro drills did not render');
+}
+if (!reviewModalHtml.includes('打印16题微练+答案')) {
+  throw new Error('Calculation Quick Review micro-drill print shortcut did not render');
 }
 if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('想好后点开提示') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {
   throw new Error('Calculation Quick Review checkpoints did not render');
@@ -564,6 +577,16 @@ if (!quickReviewPrintRootHtml.includes('家长提示：') || !quickReviewPrintRo
 }
 if (!quickReviewPrintRootHtml.includes('微练答案：') || !quickReviewPrintRootHtml.includes('错法提醒') || !quickReviewPrintRootHtml.includes('自查口令') || !quickReviewPrintRootHtml.includes('quick-review-micro-print-answer')) {
   throw new Error('Calculation Quick Review print sandbox should include micro-drill answers');
+}
+context.__printCalls = 0;
+context.printCalculationQuickReviewMicroDrillSheet();
+await new Promise(resolve => setTimeout(resolve, 260));
+if ((context.__printCalls || 0) < 1) {
+  throw new Error('Calculation Quick Review micro-drill sheet print function did not call window.print');
+}
+const microDrillPrintRootHtml = String(elements.get('print-root')?.innerHTML || '');
+if (!microDrillPrintRootHtml.includes('quick-review-drill-print-shell') || !microDrillPrintRootHtml.includes('16题模型微练卷 · 参考答案') || !microDrillPrintRootHtml.includes('自查：') || !microDrillPrintRootHtml.includes('错法提醒')) {
+  throw new Error('Calculation Quick Review micro-drill sheet print sandbox is incomplete');
 }
 context.closeReportModal();
 if (reviewModalContent?.classList?.contains('quick-review-modal')) {

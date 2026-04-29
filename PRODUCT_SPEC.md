@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.204 adds a standalone printable model micro-drill sheet:
+
+- The dictionary can print a compact 16-question drill sheet without printing the full reference.
+- The first page contains one aligned drill per model; the second page contains answers, mistake-cause cues, and self-check cues.
+- This supports short retrieval practice sessions when the parent only wants practice, not the full dictionary.
+
 v23.203 adds self-check cues to model micro drills:
 
 - Every micro drill answer now includes a short `自查口令`.
