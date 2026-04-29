@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.200 adds a learning-priority layer to the model dictionary:
+
+- Each model is labeled as `高频必练`, `每周巩固`, or `进阶拓展`.
+- The labels translate the 16-model reference into a practical study cadence.
+- This supports spacing and interleaving by keeping high-frequency foundations active while preserving weekly strategy practice and advanced extensions.
+
 v23.199 adds core-first filtering to the model dictionary:
 
 - Screen view can filter all models, core models, or advanced models.

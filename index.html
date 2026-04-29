@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.199 (核心优先筛选)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.200 (优先级导学)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1424,6 +1424,33 @@
             line-height: 1.5;
             font-weight: 800;
         }
+        .quick-review-priority-strip {
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:8px;
+            margin-top:9px;
+        }
+        .quick-review-priority-card {
+            border:1px solid #d9e3ea;
+            border-radius:8px;
+            background:rgba(255,255,255,0.78);
+            padding:8px 9px;
+            color:#214d5a;
+        }
+        .quick-review-priority-card strong {
+            display:block;
+            color:#10233f;
+            font-size:12px;
+            line-height:1.25;
+            margin-bottom:3px;
+        }
+        .quick-review-priority-card span {
+            display:block;
+            color:#52677a;
+            font-size:11px;
+            line-height:1.35;
+            font-weight:700;
+        }
         .quick-review-route-strip {
             display:grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1563,6 +1590,47 @@
             line-height: 1.15;
             color: #10233f;
             font-family: 'Georgia', 'Baskerville', serif;
+        }
+        .quick-review-topic-priority {
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            gap:6px;
+            margin-top:7px;
+            color:#52677a;
+            font-size:11px;
+            line-height:1.35;
+            font-weight:800;
+        }
+        .quick-review-priority-badge {
+            display:inline-flex;
+            align-items:center;
+            border:1px solid #cfdce6;
+            border-radius:8px;
+            padding:3px 7px;
+            background:#fff;
+            color:#123b73;
+            font-size:10.5px;
+            line-height:1.2;
+        }
+        .quick-review-priority-badge[data-priority="daily"] {
+            border-style:solid;
+            border-width:2px;
+            color:#991b1b;
+            border-color:#f0b7a4;
+            background:#fff7ed;
+        }
+        .quick-review-priority-badge[data-priority="weekly"] {
+            border-style:dashed;
+            color:#0f766e;
+            border-color:#9ccdc4;
+            background:#f0fdfa;
+        }
+        .quick-review-priority-badge[data-priority="advanced"] {
+            border-style:double;
+            color:#5b21b6;
+            border-color:#c8b5ee;
+            background:#faf7ff;
         }
         .quick-review-emphasis {
             margin: 0;
@@ -2598,6 +2666,7 @@
             .quick-review-focus-strip,
             .quick-review-nav,
             .quick-review-summary-strip,
+            .quick-review-priority-strip,
             .quick-review-flow,
             .quick-review-support-grid,
             .quick-review-support-columns {
@@ -2625,7 +2694,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.199</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.200</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2704,9 +2773,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.199';
-        const APP_RELEASE_LABEL = '核心优先筛选';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.199 名师词典新增全部/核心/进阶筛选，日常先看核心模型。';
+        const APP_VERSION = 'v23.200';
+        const APP_RELEASE_LABEL = '优先级导学';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.200 名师词典新增高频必练/每周巩固/进阶拓展节奏。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5319,6 +5388,41 @@
             return getCalculationQuickReviewTopicTier(topic) === '进阶模型' ? 'advanced' : 'core';
         }
         window.getCalculationQuickReviewTierKey = getCalculationQuickReviewTierKey;
+        function getCalculationQuickReviewPriority(topic = {}) {
+            const daily = new Set(['order_first', 'place_align', 'decimal_scale', 'division_scale', 'quotient_range', 'fraction_common', 'cancel_before_multiply', 'representation_convert', 'unit_normalize', 'relation_formula']);
+            const weekly = new Set(['make_ten', 'distribute', 'benchmark_compare']);
+            if (daily.has(topic.id)) {
+                return {
+                    key: 'daily',
+                    label: '高频必练',
+                    cadence: '每天遇到相关题先回想，错一次就进当日复盘。',
+                    short: '每天先扫'
+                };
+            }
+            if (weekly.has(topic.id)) {
+                return {
+                    key: 'weekly',
+                    label: '每周巩固',
+                    cadence: '每周用少量变式保持手感，见到结构再调用。',
+                    short: '每周保温'
+                };
+            }
+            return {
+                key: 'advanced',
+                label: '进阶拓展',
+                cadence: '基础模型稳定后再加练，重点看条件识别和反推。',
+                short: '掌握后加练'
+            };
+        }
+        window.getCalculationQuickReviewPriority = getCalculationQuickReviewPriority;
+        function getCalculationQuickReviewPriorityGroups() {
+            return [
+                { key: 'daily', label: '高频必练', note: '先定顺序、位值、小数、分数、单位和关系式，属于每天训练的底盘。' },
+                { key: 'weekly', label: '每周巩固', note: '凑整、拆合、基准比较每周少量穿插，防止只会硬算。' },
+                { key: 'advanced', label: '进阶拓展', note: '倒数、鸡兔同笼、方程逆运算放在基础稳定后集中识别。' }
+            ];
+        }
+        window.getCalculationQuickReviewPriorityGroups = getCalculationQuickReviewPriorityGroups;
         function getCalculationQuickReviewUseWhen(topic = {}) {
             const map = {
                 order_first: '四则混合里同时出现括号、乘除、加减时。',
@@ -5466,6 +5570,12 @@
                     <div class="quick-review-usage-text">${item.text}</div>
                 </div>
             `).join('');
+            const priorityGuideHtml = getCalculationQuickReviewPriorityGroups().map(group => `
+                <div class="quick-review-priority-card" data-priority="${group.key}">
+                    <strong>${group.label}</strong>
+                    <span>${group.note}</span>
+                </div>
+            `).join('');
             const focusHtml = recommendationTopics.map((topic, index) => `
                 <article class="quick-review-focus-card">
                     <div class="quick-review-focus-top">
@@ -5481,7 +5591,7 @@
                 </article>
             `).join('');
             const navHtml = topics.map((topic, index) => `
-                <button type="button" class="quick-review-nav-chip" data-tier="${getCalculationQuickReviewTierKey(topic)}" onclick="window.jumpToQuickReviewTopic('${topic.id}')">
+                <button type="button" class="quick-review-nav-chip" data-tier="${getCalculationQuickReviewTierKey(topic)}" data-priority="${getCalculationQuickReviewPriority(topic).key}" onclick="window.jumpToQuickReviewTopic('${topic.id}')">
                     <span class="quick-review-nav-num">${String(index + 1).padStart(2, '0')}</span>
                     <span>${topic.shortLabel}</span>
                 </button>
@@ -5489,12 +5599,17 @@
             const topicHtml = topics.map(topic => `
                 ${(() => {
                     const checkpoint = getCalculationQuickReviewCheckpoint(topic);
+                    const priority = getCalculationQuickReviewPriority(topic);
                     return `
-                <section class="quick-review-topic" id="quick-review-topic-${topic.id}" data-tier="${getCalculationQuickReviewTierKey(topic)}">
+                <section class="quick-review-topic" id="quick-review-topic-${topic.id}" data-tier="${getCalculationQuickReviewTierKey(topic)}" data-priority="${priority.key}">
                     <div class="quick-review-topic-head">
                         <div>
                             <div class="quick-review-topic-kicker">${getCalculationQuickReviewTopicTier(topic)} · ${topic.kicker}</div>
                             <h3 class="quick-review-topic-title">${topic.title}</h3>
+                            <div class="quick-review-topic-priority">
+                                <span class="quick-review-priority-badge" data-priority="${priority.key}">${priority.label}</span>
+                                <span>${priority.cadence}</span>
+                            </div>
                         </div>
                         <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
                     </div>
@@ -5582,6 +5697,7 @@
                         <div class="quick-review-usage-strip">${usageHtml}</div>
                         <div class="quick-review-recommendations">${recommendationHtml}</div>
                         <div class="quick-review-model-summary">${getCalculationQuickReviewModelSummary(topics)}</div>
+                        <div class="quick-review-priority-strip">${priorityGuideHtml}</div>
                         <div class="quick-review-route-strip">${routeHtml}</div>
                         <div class="quick-review-focus-strip">${focusHtml}</div>
                     </div>

@@ -209,6 +209,12 @@ if (!html.includes('function getCalculationQuickReviewTopicTier')) {
 if (!html.includes('function getCalculationQuickReviewTierKey')) {
   throw new Error('Calculation Quick Review tier-key helper is missing from runtime script');
 }
+if (!html.includes('function getCalculationQuickReviewPriority')) {
+  throw new Error('Calculation Quick Review priority helper is missing from runtime script');
+}
+if (!html.includes('function getCalculationQuickReviewPriorityGroups')) {
+  throw new Error('Calculation Quick Review priority-group helper is missing from runtime script');
+}
 if (!html.includes('function getCalculationQuickReviewRouteGroups')) {
   throw new Error('Calculation Quick Review route-group helper is missing from runtime script');
 }
@@ -455,6 +461,13 @@ if (context.getCalculationQuickReviewTopicTier?.({ id: 'chicken_rabbit_assumptio
 if (context.getCalculationQuickReviewTierKey?.({ id: 'equation_inverse' }) !== 'advanced' || context.getCalculationQuickReviewTierKey?.({ id: 'order_first' }) !== 'core') {
   throw new Error('Calculation Quick Review should expose tier keys for filtering');
 }
+if (context.getCalculationQuickReviewPriority?.({ id: 'order_first' })?.label !== '高频必练' || context.getCalculationQuickReviewPriority?.({ id: 'make_ten' })?.label !== '每周巩固' || context.getCalculationQuickReviewPriority?.({ id: 'equation_inverse' })?.label !== '进阶拓展') {
+  throw new Error('Calculation Quick Review should expose learning-priority labels');
+}
+const quickReviewPriorityGroups = context.getCalculationQuickReviewPriorityGroups?.() || [];
+if (!Array.isArray(quickReviewPriorityGroups) || quickReviewPriorityGroups.length !== 3 || !quickReviewPriorityGroups.some(group => group.label === '高频必练')) {
+  throw new Error('Calculation Quick Review should expose three priority groups');
+}
 if (!context.getCalculationQuickReviewUseWhen?.({ id: 'chicken_rabbit_assumption' })?.includes('总只数') || !context.getCalculationQuickReviewModelSummary?.(quickReviewTopics)?.includes('13 个核心模型')) {
   throw new Error('Calculation Quick Review should explain when to use each model and summarize core/advanced counts');
 }
@@ -494,6 +507,9 @@ if (!reviewModalHtml.includes('先看算式结构') || !reviewModalHtml.includes
 }
 if (!reviewModalHtml.includes('全部 16 个') || !reviewModalHtml.includes('只看核心 13 个') || !reviewModalHtml.includes('只看进阶 3 个') || !reviewModalHtml.includes('data-model-filter="all"')) {
   throw new Error('Calculation Quick Review model filters did not render');
+}
+if (!reviewModalHtml.includes('高频必练') || !reviewModalHtml.includes('每周巩固') || !reviewModalHtml.includes('进阶拓展') || !reviewModalHtml.includes('data-priority="daily"')) {
+  throw new Error('Calculation Quick Review priority guidance did not render');
 }
 if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('想好后点开提示') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {
   throw new Error('Calculation Quick Review checkpoints did not render');
