@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.194 adds a model-selection route layer:
+
+- The dictionary now groups the 16 models into four first-choice routes: expression structure, decimal/fraction, application relations, and advanced models.
+- Learners can classify the problem before choosing a specific model, reducing selection load.
+- The route layer appears in screen and print views so model recognition remains part of paper review.
+
 v23.193 adds model-use recognition cues:
 
 - The dictionary hero now states the core/advanced split so the page reads as a curated model set, not a content dump.

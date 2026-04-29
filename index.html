@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.193 (模型使用场景)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.194 (模型选择路线)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -384,6 +384,7 @@
         body.print-quick-review #print-root .quick-review-example-row,
         body.print-quick-review #print-root .quick-review-usage-text,
         body.print-quick-review #print-root .quick-review-model-summary,
+        body.print-quick-review #print-root .quick-review-route-card,
         body.print-quick-review #print-root .quick-review-usewhen,
         body.print-quick-review #print-root .quick-review-memory-route,
         body.print-quick-review #print-root .quick-review-focus-copy,
@@ -1421,6 +1422,36 @@
             font-size: 12.5px;
             line-height: 1.5;
             font-weight: 800;
+        }
+        .quick-review-route-strip {
+            display:grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap:8px;
+            margin-top:9px;
+        }
+        .quick-review-route-card {
+            border:1px solid #d9e3ea;
+            border-radius:8px;
+            background:rgba(255,255,255,0.8);
+            padding:8px 9px;
+            text-align:left;
+            color:#214d5a;
+            font-family:inherit;
+            cursor:pointer;
+        }
+        .quick-review-route-card strong {
+            display:block;
+            color:#123b73;
+            font-size:12.5px;
+            line-height:1.25;
+            margin-bottom:4px;
+        }
+        .quick-review-route-card span {
+            display:block;
+            color:#52677a;
+            font-size:11px;
+            line-height:1.35;
+            font-weight:700;
         }
         .quick-review-mistake {
             margin: 0 0 10px;
@@ -2508,7 +2539,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.193</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.194</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2587,9 +2618,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.193';
-        const APP_RELEASE_LABEL = '模型使用场景';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.193 名师词典每个模型新增“什么时候用”，先识别题型再套套路。';
+        const APP_VERSION = 'v23.194';
+        const APP_RELEASE_LABEL = '模型选择路线';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.194 名师词典新增4条选模型路线，先分类再选套路。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5226,6 +5257,31 @@
             return `本页不是题库摘抄：${coreCount} 个核心模型先保正确率，${advancedCount} 个进阶模型处理已学过的分数除法、鸡兔同笼和方程逆运算。`;
         }
         window.getCalculationQuickReviewModelSummary = getCalculationQuickReviewModelSummary;
+        function getCalculationQuickReviewRouteGroups() {
+            return [
+                {
+                    label: '先看算式结构',
+                    hint: '顺序、凑整、拆合、对位',
+                    targetId: 'order_first'
+                },
+                {
+                    label: '再看小数分数',
+                    hint: '小数位、除法化整、通分、约分、互化',
+                    targetId: 'decimal_scale'
+                },
+                {
+                    label: '应用题先看关系',
+                    hint: '单位统一、数量关系',
+                    targetId: 'unit_normalize'
+                },
+                {
+                    label: '已学进阶再处理',
+                    hint: '分数除法、鸡兔同笼、方程',
+                    targetId: 'reciprocal_division'
+                }
+            ];
+        }
+        window.getCalculationQuickReviewRouteGroups = getCalculationQuickReviewRouteGroups;
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
             const pins = [];
@@ -5335,6 +5391,12 @@
             `).join('');
             const pinsHtml = buildCalculationQuickReviewPins(topics).map(pin => `<span class="quick-review-pin">${pin}</span>`).join('');
             const recommendationHtml = `当前优先看：${recommendations.join('、')}。先看上面的两块，再往下细看专题。`;
+            const routeHtml = getCalculationQuickReviewRouteGroups().map(group => `
+                <button type="button" class="quick-review-route-card" onclick="window.jumpToQuickReviewTopic('${group.targetId}')">
+                    <strong>${group.label}</strong>
+                    <span>${group.hint}</span>
+                </button>
+            `).join('');
             return `
                 <div class="quick-review-page" data-program="${programId}">
                     <div class="quick-review-hero">
@@ -5349,6 +5411,7 @@
                         <div class="quick-review-usage-strip">${usageHtml}</div>
                         <div class="quick-review-recommendations">${recommendationHtml}</div>
                         <div class="quick-review-model-summary">${getCalculationQuickReviewModelSummary(topics)}</div>
+                        <div class="quick-review-route-strip">${routeHtml}</div>
                         <div class="quick-review-focus-strip">${focusHtml}</div>
                     </div>
                     <div class="quick-review-nav">${navHtml}</div>
