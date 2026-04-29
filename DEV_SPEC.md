@@ -117,7 +117,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getDomainSignal` / `summarizeDomainSignals`: converts domain-level weak tags and active error-book counts into adaptive selection bonuses and reporting priority.
 - `getErrorBookSignal` / `buildErrorReplayItem`: bridges active error-book entries back into generated training as capped exact replay or same-tag variation.
 - `showKnowledgeMap`: renders current weak tags, domain profile, and knowledge-family coverage.
-- `showCalculationQuickReview`: renders the child-facing quick-review page using a stable topic registry, stage-aware emphasis copy, light recommendation chips, a stronger two-topic focus strip, jump-to-topic helpers, and dedicated print markup.
+- `showCalculationQuickReview`: renders the child-facing `15大终极心智模型 / 名师词典` page using a stable 15-model registry, core/advanced model labels, stage-aware emphasis copy, recommendation chips, jump-to-topic helpers, and dedicated print markup.
 - `getProgramSignalDelta` / `snapshotProgramSignals`: convert second-stage grading into five independent closure-signal buckets without contaminating first-stage weights.
 - `printQuestionSheets` / `printAnswerSheets`: stages cloned printable sheets into `#print-root`, switches the body into a print sandbox mode, and relies on `afterprint` and print media lifecycle hooks to restore the normal page state.
 - Print output now uses a dedicated print sandbox instead of paginating the live long page directly, reducing browser-specific blank-even-page regressions.

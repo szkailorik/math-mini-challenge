@@ -203,6 +203,9 @@ if (!html.includes('function getCalculationQuickReviewRecommendations')) {
 if (!html.includes('function getCalculationQuickReviewRecommendationTopics')) {
   throw new Error('Calculation Quick Review recommendation-topic helper is missing from runtime script');
 }
+if (!html.includes('function getCalculationQuickReviewTopicTier')) {
+  throw new Error('Calculation Quick Review topic-tier helper is missing from runtime script');
+}
 if (!html.includes('window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;')) {
   throw new Error('Calculation Quick Review topic jump helper is missing from runtime script');
 }
@@ -215,7 +218,7 @@ if (!html.includes('window.printCalculationQuickReview = function()')) {
 if (!html.includes('window.showCalculationQuickReview()') && !html.includes("window.showCalculationQuickReview()")) {
   throw new Error('Calculation Quick Review control-panel shortcut is missing its action binding');
 }
-if (!html.includes('📘 计算知识总览 / Quick Review') && !html.includes('📘 计算总览')) {
+if (!html.includes('📘 计算知识总览 / Quick Review') && !html.includes('📘 计算总览') && !html.includes('📘 名师词典')) {
   throw new Error('Calculation Quick Review control-panel shortcut is missing');
 }
 if (!html.includes('.math-op') || !html.includes('.math-eq') || !html.includes('.math-compare')) {
@@ -427,10 +430,17 @@ context.showCalculationQuickReview();
 const reviewModalHtml = String(elements.get('report-content-area')?.innerHTML || '');
 const reviewModalTitle = String(elements.get('modal-title')?.innerText || '');
 const reviewModalContent = elements.get('report-modal-content');
-if (!reviewModalTitle.includes('计算知识总览')) {
+const quickReviewTopics = context.getCalculationQuickReviewTopics?.() || [];
+if (!Array.isArray(quickReviewTopics) || quickReviewTopics.length !== 15) {
+  throw new Error('Calculation Quick Review should render exactly 15 mental-model topics');
+}
+if (context.getCalculationQuickReviewTopicTier?.({ id: 'reciprocal_division' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'order_first' }) !== '核心模型') {
+  throw new Error('Calculation Quick Review should mark core and advanced model tiers');
+}
+if (!reviewModalTitle.includes('15大终极心智模型')) {
   throw new Error('Calculation Quick Review did not update the modal title');
 }
-if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('整数四则与简算')) {
+if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('01. 先定顺序模型') || !reviewModalHtml.includes('15. 方程逆运算模型')) {
   throw new Error('Calculation Quick Review did not render the expected page shell or topic content');
 }
 if (!reviewModalHtml.includes('当前优先看：')) {
@@ -451,7 +461,7 @@ if (!reviewModalHtml.includes('先做这一步')) {
 if (!reviewModalHtml.includes('最后检查')) {
   throw new Error('Calculation Quick Review final-check copy did not render');
 }
-if (!reviewModalHtml.includes('典型例子') || !reviewModalHtml.includes('补充速查') || !reviewModalHtml.includes('回想顺序')) {
+if (!reviewModalHtml.includes('模型例题') || !reviewModalHtml.includes('补充速查') || !reviewModalHtml.includes('回想顺序')) {
   throw new Error('Calculation Quick Review topic blocks are incomplete');
 }
 if (!reviewModalContent?.classList?.contains('quick-review-modal')) {

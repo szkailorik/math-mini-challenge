@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.190 (候选池择优)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.191 (15大心智模型)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2486,7 +2486,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.190</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.191</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2537,7 +2537,7 @@
                 <button class="ctrl-btn" style="background:#0284c7; color:white;" onclick="window.showCloudArchive()">🗄️ 学习档案</button>
                 <button class="ctrl-btn" style="background:#b45309; color:white;" onclick="window.showSetReportIntegrityAudit()">🧪 错题体检</button>
                 <button class="ctrl-btn" style="background:#7c3aed; color:white;" onclick="window.showKnowledgeMap()">🧭 知识点地图</button>
-                <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.showCalculationQuickReview()">📘 计算总览</button>
+                <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.showCalculationQuickReview()">📘 名师词典</button>
                 <button class="ctrl-btn" style="background:#f59e0b; color:white;" onclick="window.renderErrorBook()">📓 专属错题本</button>
             </div>
         </div>
@@ -2565,9 +2565,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.190';
-        const APP_RELEASE_LABEL = '候选池择优';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.190 当日错题变式改为候选池评分择优，主变式和备用二刷更贴原题。';
+        const APP_VERSION = 'v23.191';
+        const APP_RELEASE_LABEL = '15大心智模型';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.191 名师词典重做为15个计算心智模型，例题全部按套路重新生成，减少噪音。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4802,184 +4802,326 @@
         }
         const CALCULATION_QUICK_REVIEW_PAGE = {
             id: 'calculation_quick_review',
-            title: '计算知识总览 / Calculation Quick Review',
-            subtitle: '快速想起规则、方法和注意点，不是背百科。',
-            printTitle: 'Calculation Quick Review',
-            printSubtitle: '孩子愿意看、老师愿意打的高质量计算复习讲义',
+            title: '15大终极心智模型 / 名师词典',
+            subtitle: '每个模型只讲一个套路，一眼看懂什么时候用、第一步怎么下手。',
+            printTitle: '15 Core Math Models',
+            printSubtitle: '高质量、低噪音的计算套路复习讲义',
             usageMoments: [
                 { label: '练前 30 秒', text: '先看推荐专题，再抓关键提醒。' },
                 { label: '练后 1 分钟', text: '对照刚错的地方，马上回想。' },
-                { label: '考前 2 分钟', text: '只抓钉子句和典型例子。' }
+                { label: '考前 2 分钟', text: '只抓钉子句和模型例题。' }
             ]
         };
         const CALCULATION_QUICK_REVIEW_TOPICS = [
             {
-                id: 'integer_ops',
-                shortLabel: '整数四则',
-                title: '整数四则与简算',
-                kicker: 'Integer Operations',
-                hook: '先看顺序，再看能不能凑整。',
-                firstMove: '先圈先算的部分，再找能凑整的数。',
-                finalCheck: '最后看顺序对不对，结果像不像。',
+                id: 'order_first',
+                shortLabel: '顺序',
+                title: '01. 先定顺序模型',
+                kicker: 'Order First',
+                hook: '不是先看到哪个数就算哪个数，先看谁必须先算。',
+                firstMove: '把括号、乘除、加减顺序先圈出来，再开始动笔。',
+                finalCheck: '最后问一句：我有没有跳过括号或把加法提前了？',
+                patterns: ['c2_mix_', 'l_bmix_', 'k_oly_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '先稳住四则顺序，减少“会算但顺序错”的失分。',
+                    [CLOSURE_PROGRAM_ID]: '复杂混合题先看结构，不急着把数字往下算。'
+                },
+                rules: ['有括号先括号', '先乘除后加减', '同级运算再从左到右'],
+                techniques: ['先圈运算层级', '把必须先算的部分写在第一行', '每换一行只做一个层级'],
+                example: '18 + 6 × 4 = 18 + 24 = 42',
+                pitfalls: ['别写成 24 × 4', '别一行里偷偷改两个地方'],
+                memoryRoute: '先圈层级 → 再算第一层 → 最后合并',
+                pins: ['先圈顺序', '一层一层算']
+            },
+            {
+                id: 'make_ten',
+                shortLabel: '凑整',
+                title: '02. 凑整补偿模型',
+                kicker: 'Make Whole',
+                hook: '看到 99、101、9.9、12.5，先想离好算的数差多少。',
+                firstMove: '先把接近整十整百的数改成整十整百，再补回来。',
+                finalCheck: '最后检查补的是加回去，还是减回去。',
                 patterns: ['k_oly_', 'l_bmix_', 'l_mul_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓顺序、凑整和分配律，少出低级错。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓结构，再决定凑整、拆分还是补偿。'
+                    [ADVANCED_PROGRAM_ID]: '重点练把难算数字换成好算数字。',
+                    [CLOSURE_PROGRAM_ID]: '重点练判断“补偿方向”，不要只背 99/101。'
                 },
-                rules: ['先乘除，后加减', '有括号先算括号', '分配律能拆也能合'],
-                techniques: ['能凑整先凑整', '99、101 先想补偿', '先估大概结果'],
-                example: '99 × 37 = 100 × 37 − 37 = 3663',
-                pitfalls: ['别从左到右一路算', '别漏掉括号后的整体'],
-                memoryRoute: '先看顺序 → 再找凑整 → 最后估结果',
-                pins: ['先看顺序', '能凑先凑']
+                rules: ['99 = 100 - 1', '101 = 100 + 1', '补偿要按乘数一起补'],
+                techniques: ['先凑整', '再算整百整十', '最后补加或补减'],
+                example: '99 × 37 = 100 × 37 - 1 × 37 = 3663',
+                pitfalls: ['别只算 100 × 37 就停', '别把减 37 写成减 1'],
+                memoryRoute: '先凑整 → 再整算 → 最后补偿',
+                pins: ['凑整', '补回来']
             },
             {
-                id: 'written_algorithms',
-                shortLabel: '竖式乘除',
-                title: '竖式乘法与竖式除法',
-                kicker: 'Written Algorithms',
-                hook: '先估商，再对位，小数点别乱。',
-                firstMove: '先想商大概多大，再写竖式。',
-                finalCheck: '最后看小数点、补 0 和验算。',
-                patterns: ['l_div_', 'l_div_decimal_', 'k_ddiv_', 'k_sub_', 'l_sub_'],
+                id: 'distribute',
+                shortLabel: '拆合',
+                title: '03. 分配律拆合模型',
+                kicker: 'Distribute & Combine',
+                hook: '两个数都难算时，拆一个；两项有共同因数时，合起来。',
+                firstMove: '先找共同因数，或者把其中一个数拆成好算的两块。',
+                finalCheck: '最后看每一块有没有都乘到。',
+                patterns: ['k_oly_', 'l_bmix_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓对位、估商、补 0 和小数点。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓商的范围，再定小数点。'
+                    [ADVANCED_PROGRAM_ID]: '重点练“拆开算”和“合起来算”的互相转换。',
+                    [CLOSURE_PROGRAM_ID]: '重点练先识别共同结构，再决定拆还是合。'
                 },
-                rules: ['数位要对齐', '先估商再下笔', '不够除时商写 0'],
-                techniques: ['先看商大于 1 还是小于 1', '添 0 再除值不变', '算完用乘法反查'],
+                rules: ['a × (b + c) = a × b + a × c', 'a × b + a × c = a × (b + c)', '共同因数只能提共同的部分'],
+                techniques: ['拆成整十整百', '提共同因数', '每一项都要乘到'],
+                example: '24 × 15 = 24 × (10 + 5) = 240 + 120 = 360',
+                pitfalls: ['别漏乘其中一项', '别看到加号就乱拆'],
+                memoryRoute: '先找共同结构 → 再拆或合 → 最后逐项检查',
+                pins: ['拆好算', '合共同']
+            },
+            {
+                id: 'place_align',
+                shortLabel: '对位',
+                title: '04. 位值对齐模型',
+                kicker: 'Place Value',
+                hook: '加减不是把数字排整齐，是把同位值排整齐。',
+                firstMove: '先把小数点或个位对齐，再补空位。',
+                finalCheck: '最后看十分位、百分位有没有错位相加。',
+                patterns: ['k_sub_', 'l_sub_', 'k_dmul_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓加减对位和退位稳定性。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓小数、单位、结果检查之间的位值一致。'
+                },
+                rules: ['个位对个位', '小数点对小数点', '不够减才退位'],
+                techniques: ['竖式先写小数点', '空位可以补 0', '退位后要改原位数字'],
+                example: '3.6 + 0.48 = 3.60 + 0.48 = 4.08',
+                pitfalls: ['别写成 3.108', '别把 0.48 当 48 个十分之一'],
+                memoryRoute: '先对小数点 → 再补 0 → 最后逐位算',
+                pins: ['小数点对齐', '空位补 0']
+            },
+            {
+                id: 'decimal_scale',
+                shortLabel: '小数位',
+                title: '05. 小数位数模型',
+                kicker: 'Decimal Scale',
+                hook: '小数乘法先当整数乘，最后用数量级把小数点放回去。',
+                firstMove: '先数两个因数一共有几位小数，再暂时按整数乘。',
+                finalCheck: '最后估一下结果应该比原数大还是小。',
+                patterns: ['k_dmul_', 'l_div_decimal_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓位数和数量级双检查。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓小数乘法和结果合理性的连接。'
+                },
+                rules: ['乘法先按整数乘', '两个因数小数位数相加', '结果小数位数按总位数放回'],
+                techniques: ['先估大小', '整数乘完再点小数点', '结果异常先查位数'],
+                example: '0.24 × 0.3：24 × 3 = 72，两边共 3 位小数，所以是 0.072',
+                pitfalls: ['别把 0.072 写成 0.72', '别忘先估结果小于 0.24'],
+                memoryRoute: '先数位 → 再整数乘 → 最后估大小',
+                pins: ['先数位', '估大小']
+            },
+            {
+                id: 'division_scale',
+                shortLabel: '除法化整',
+                title: '06. 除数化整模型',
+                kicker: 'Make Divisor Whole',
+                hook: '小数除法先把除数变成整数，被除数也要同步变。',
+                firstMove: '先看除数有几位小数，两边同时乘 10、100 或 1000。',
+                finalCheck: '最后用“商 × 除数 = 被除数”反查。',
+                patterns: ['k_ddiv_', 'l_div_decimal_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓同倍扩大，不让小数点乱跑。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓化整前后商不变的理由。'
+                },
+                rules: ['除数有小数先化整', '被除数必须同倍扩大', '商保持不变'],
+                techniques: ['先移动除数小数点', '被除数跟着移同样位数', '算完乘回去验算'],
                 example: '4.8 ÷ 0.6 = 48 ÷ 6 = 8',
-                pitfalls: ['商的小数点别乱放', '中间不够除时别漏写 0'],
-                memoryRoute: '先估商 → 再对位 → 最后用乘法验算',
-                pins: ['先估商', '不够写 0']
+                pitfalls: ['别只移动除数', '别把 0.6 看成 6 后忘了 4.8 也要变'],
+                memoryRoute: '先化整除数 → 同步被除数 → 最后乘法验算',
+                pins: ['除数化整', '两边同变']
             },
             {
-                id: 'decimal_ops',
-                shortLabel: '小数计算',
-                title: '小数加减乘除',
-                kicker: 'Decimal Operations',
-                hook: '先管小数点，再算整数部分。',
-                firstMove: '先想小数点怎么处理，再动笔。',
-                finalCheck: '最后看位数对不对，结果大不大。',
-                patterns: ['k_dmul_', 'k_ddiv_', 'l_div_decimal_'],
+                id: 'quotient_range',
+                shortLabel: '估商',
+                title: '07. 商的范围模型',
+                kicker: 'Quotient Range',
+                hook: '下笔除之前，先判断商应该大于 1 还是小于 1。',
+                firstMove: '先比较被除数和除数的大小，再估一个合理范围。',
+                finalCheck: '最后看商乘回除数，能不能回到被除数附近。',
+                patterns: ['k_ddiv_', 'l_div_decimal_', 'c2_est_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓小数点、位数和数量级。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓小数计算和单位、率、结果判断的连接。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓商的大致范围，保护小数点。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓估算和验算，避免精算正确但量级错。'
                 },
-                rules: ['加减先对齐小数点', '乘法先按整数乘', '除法先把除数化整'],
-                techniques: ['先估结果大小', '乘完再数位数', '除前先想商的范围'],
-                example: '0.24 × 0.3 = 24 × 3 ÷ 1000 = 0.072',
-                pitfalls: ['位数别数错', '化整后别漏同步变化'],
-                memoryRoute: '先看小数点 → 再算整数部分 → 最后查数量级',
-                pins: ['先估大小', '先化整再除']
+                rules: ['被除数大于除数，商通常大于 1', '被除数小于除数，商通常小于 1', '除以小于 1 的数，商会变大'],
+                techniques: ['先比大小', '先估几倍', '结果离谱就查小数点'],
+                example: '0.48 ÷ 0.6：0.48 比 0.6 小，所以商应小于 1，结果是 0.8',
+                pitfalls: ['别把 0.8 写成 8', '别只看数字 48 和 6'],
+                memoryRoute: '先比大小 → 再估几倍 → 最后乘回查',
+                pins: ['先估商', '乘回查']
             },
             {
-                id: 'fraction_ops',
-                shortLabel: '分数计算',
-                title: '分数加减乘除',
-                kicker: 'Fraction Operations',
-                hook: '先通分或倒数，再约分。',
-                firstMove: '先看要通分、倒数，还是约分。',
-                finalCheck: '最后看是不是最简，除法变没变倒数。',
+                id: 'fraction_common',
+                shortLabel: '通分',
+                title: '08. 分数通分模型',
+                kicker: 'Common Denominator',
+                hook: '分数加减先让分母说同一种语言。',
+                firstMove: '先找公分母，再把两个分数改成同分母。',
+                finalCheck: '最后看分母有没有保持不变，结果有没有约分。',
                 patterns: ['k_fcalc_', 'l_fmix_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓通分、约分、倒数和最简结果。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓分数运算和互化、比较之间的连通。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓加减必须先通分。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓通分和最简结果的完整链路。'
                 },
-                rules: ['加减先通分', '乘前能约分先约分', '除以分数等于乘倒数'],
-                techniques: ['带分数先化假分数', '连乘优先交叉约分', '最后化最简'],
-                example: '3/4 ÷ 1/2 = 3/4 × 2 = 3/2',
-                pitfalls: ['别把除法直接当乘法', '结果别忘最简'],
-                memoryRoute: '先通分或倒数 → 再约分 → 最后化最简',
-                pins: ['先通分', '先约再乘']
+                rules: ['同分母才能直接加减分子', '异分母先通分', '结果要约成最简'],
+                techniques: ['先找最小公倍数', '分子分母同乘', '分母不参与相加'],
+                example: `${new Frac(3, 4).toHTML()} - ${new Frac(1, 6).toHTML()} = ${new Frac(9, 12).toHTML()} - ${new Frac(2, 12).toHTML()} = ${new Frac(7, 12).toHTML()}`,
+                pitfalls: ['别把分母也相减', '别通分后忘记改分子'],
+                memoryRoute: '先找公分母 → 再同乘改写 → 最后加减分子',
+                pins: ['先通分', '分母不加减']
             },
             {
-                id: 'conversion_compare',
-                shortLabel: '互化比较',
-                title: '分数、小数、百分数互化与比较',
-                kicker: 'Conversion & Compare',
-                hook: '先统一形式，再抓基准值。',
-                firstMove: '先想统一成哪一种形式。',
-                finalCheck: '最后看是不是按题目要求保留了形式。',
+                id: 'cancel_before_multiply',
+                shortLabel: '先约',
+                title: '09. 乘前约分模型',
+                kicker: 'Cancel First',
+                hook: '分数乘法不要硬乘大数，能约先约。',
+                firstMove: '先看分子和分母之间有没有能约的公因数。',
+                finalCheck: '最后看结果是不是最简。',
+                patterns: ['k_fcalc_', 'l_fmix_', 'k_oly_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓交叉约分，减轻计算负担。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓“先约再乘”的结构意识。'
+                },
+                rules: ['乘法可以交叉约分', '约分只能分子和分母约', '约完再乘更稳'],
+                techniques: ['先找公因数', '把大数化小', '最后再乘分子分母'],
+                example: `${new Frac(3, 8).toHTML()} × 16 = 3 × 2 = 6`,
+                pitfalls: ['别先算 3 × 16 再除 8', '别把两个分子互相约'],
+                memoryRoute: '先找可约 → 再化小 → 最后相乘',
+                pins: ['能约先约', '少算大数']
+            },
+            {
+                id: 'reciprocal_division',
+                shortLabel: '倒数',
+                title: '10. 除以分数模型',
+                kicker: 'Reciprocal',
+                hook: '除以一个分数，就是乘它的倒数。',
+                firstMove: '先把除号改成乘号，同时把第二个分数倒过来。',
+                finalCheck: '最后检查倒的是除数，不是被除数。',
+                patterns: ['k_fcalc_', 'l_fmix_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓倒数方向和约分。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓除法变乘法后仍要检查结果大小。'
+                },
+                rules: ['除以分数等于乘倒数', '只倒除数', '能约分再乘'],
+                techniques: ['先变号', '再倒第二个分数', '乘前先约分'],
+                example: `${new Frac(3, 4).toHTML()} ÷ ${new Frac(1, 2).toHTML()} = ${new Frac(3, 4).toHTML()} × 2 = ${new Frac(3, 2).toHTML()}`,
+                pitfalls: ['别把第一个分数也倒了', '别忘了除号已经变乘号'],
+                memoryRoute: '先变乘 → 再倒除数 → 最后约分',
+                pins: ['只倒除数', '变乘再算']
+            },
+            {
+                id: 'representation_convert',
+                shortLabel: '互化',
+                title: '11. 表示互化模型',
+                kicker: 'Representation',
+                hook: '分数、小数、百分数只是同一个数量的不同衣服。',
+                firstMove: '先判断题目最后要哪种形式，再选择互化方向。',
+                finalCheck: '最后看答案形式是不是题目要的。',
                 patterns: ['k_conv_', 'l_conv_', 'c2_bridge_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓常见基准值和“先统一再比较”。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓互化后谁更接近 1、1/2 或 0。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓常见基准值的快速互化。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓互化是为了比较、计算或判断，不是机械变形。'
                 },
-                rules: ['先统一形式再比', '百分数先想每百份', '常见分数要会化小数'],
-                techniques: ['抓 1/2、1/4、3/4、4/5', '看离基准值近还是远', '不会比时先互化'],
-                example: '0.25 = 25% = 1/4',
-                pitfalls: ['别只看数字表面', '互化后别忘题目要什么形式'],
-                memoryRoute: '先统一形式 → 再抓基准值 → 最后比较',
-                pins: ['先统一再比', '抓基准值']
+                rules: ['小数化分数先看位数', '百分数就是每百份', '分数化小数可用除法或基准值'],
+                techniques: ['记住 1/2、1/4、1/5、1/8', '看题目要小数还是分数', '互化后再进入计算'],
+                example: `0.375 = ${new Frac(375, 1000).toHTML()} = ${new Frac(3, 8).toHTML()}`,
+                pitfalls: ['别互化完形式不符合题目', '别把 0.375 写成 3/75'],
+                memoryRoute: '先看目标形式 → 再选方向 → 最后约分或补 %',
+                pins: ['看目标形式', '常见值']
             },
             {
-                id: 'unit_rate',
-                shortLabel: '单位比率',
-                title: '单位换算与常见数量关系',
-                kicker: 'Units & Rates',
-                hook: '先统一单位，再看关系式。',
-                firstMove: '先把单位统一，再列关系。',
-                finalCheck: '最后看单位统一没，答案单位写没写。',
-                patterns: ['c2_unit_', 'c2_rate_'],
+                id: 'benchmark_compare',
+                shortLabel: '基准',
+                title: '12. 基准比较模型',
+                kicker: 'Benchmark Compare',
+                hook: '比较时不要只盯数字表面，先找 0、1/2、1 这些基准。',
+                firstMove: '先把两个量放到同一个基准附近看。',
+                finalCheck: '最后确认比较的是大小，不是数字位数长短。',
+                patterns: ['k_conv_', 'l_conv_', 'c2_bridge_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓统一单位和基础数量关系式。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓速度、单价、平均量的综合应用。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓 1/2、3/4、1 的基准比较。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓“更接近谁”的判断。'
                 },
-                rules: ['先统一单位', '总价 = 单价 × 数量', '路程 = 速度 × 时间'],
-                techniques: ['先看量纲对不对', '先找整体量再列式', '换算后再算'],
-                example: '2.4 km = 2400 m',
-                pitfalls: ['单位不同别直接算', '看清谁是单价谁是数量'],
-                memoryRoute: '先统一单位 → 再找关系式 → 最后代数',
-                pins: ['先统一单位', '先看量纲']
+                rules: ['先统一或靠近同一基准', '5/8 = 0.625', '百分数、分数、小数可以互相比较'],
+                techniques: ['先看离 1/2 多远', '再看离 1 多远', '必要时统一成小数'],
+                example: `${new Frac(5, 8).toHTML()} = 0.625，所以 ${new Frac(5, 8).toHTML()} > 0.62`,
+                pitfalls: ['别以为 0.62 一定比 5/8 大', '别只比较分子或小数位数'],
+                memoryRoute: '先找基准 → 再统一表示 → 最后比大小',
+                pins: ['找基准', '统一再比']
             },
             {
-                id: 'equation_method',
-                shortLabel: '方程逆运算',
-                title: '方程与逆运算',
-                kicker: 'Equation Method',
-                hook: '先写关系，再做逆运算。',
-                firstMove: '先写谁和谁相等，再动第一步。',
-                finalCheck: '最后看能不能代回，关系变没变。',
+                id: 'unit_normalize',
+                shortLabel: '单位',
+                title: '13. 单位统一模型',
+                kicker: 'Unit Normalize',
+                hook: '单位不同不能直接算，先把它们翻译成同一种单位。',
+                firstMove: '先圈出所有单位，决定统一成大单位还是小单位。',
+                finalCheck: '最后把答案单位写出来，并看数值是否合理。',
+                patterns: ['c2_unit_', 'c2_rate_', 'c2_speed_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓单位换算后再计算。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓单位、关系式和答案合理性连在一起。'
+                },
+                rules: ['km 和 m 不能直接加减', 'kg 和 g 先统一', '时间单位也要统一'],
+                techniques: ['先圈单位', '换成同一种单位', '答案带单位回读题意'],
+                example: '2.4 km - 350 m = 2400 m - 350 m = 2050 m',
+                pitfalls: ['别把 2.4 和 350 直接相减', '别算完漏写单位'],
+                memoryRoute: '先圈单位 → 再统一 → 最后带单位作答',
+                pins: ['单位先统一', '答案带单位']
+            },
+            {
+                id: 'relation_formula',
+                shortLabel: '关系',
+                title: '14. 数量关系模型',
+                kicker: 'Relation Formula',
+                hook: '应用题先找关系，不先抓数字。',
+                firstMove: '先写出总量、每份量、份数之间的关系式。',
+                finalCheck: '最后看求的是总量、每份量还是份数。',
+                patterns: ['c2_rate_', 'c2_speed_', 'c2_unit_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓单价、数量、总价和速度关系。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓关系式能不能迁移到折扣、平均量和速度题。'
+                },
+                rules: ['总价 = 单价 × 数量', '路程 = 速度 × 时间', '总量 = 每份量 × 份数'],
+                techniques: ['先写关系式', '再把已知量放进去', '求哪个量就反着算'],
+                example: '每本 12 元，买 5 本：总价 = 12 × 5 = 60 元',
+                pitfalls: ['别看到两个数就乘', '别把单价和数量换反'],
+                memoryRoute: '先写关系 → 再代数 → 最后回答所求',
+                pins: ['先关系', '再数字']
+            },
+            {
+                id: 'equation_inverse',
+                shortLabel: '方程',
+                title: '15. 方程逆运算模型',
+                kicker: 'Equation Inverse',
+                hook: '方程不是搬来搬去，先看未知数站在哪个位置。',
+                firstMove: '先读出关系，再用逆运算一步一步还原未知数。',
+                finalCheck: '最后把答案代回原式检查。',
                 patterns: ['k_eq_', 'c2_eq_'],
                 programEmphasis: {
                     [ADVANCED_PROGRAM_ID]: '重点抓未知数位置和逆运算方向。',
                     [CLOSURE_PROGRAM_ID]: '重点抓方程背后的数量关系，不只会移项。'
                 },
-                rules: ['先想谁和谁相等', '等式两边同时变化', '按逆运算一步一步回推'],
-                techniques: ['未知数在减数要慢', '未知数在除数先写关系', '每次只做一步'],
-                example: 'x × 25 = 10，先求 10 ÷ 25',
-                pitfalls: ['别把减数和被减数弄反', '别一步跳太多'],
-                memoryRoute: '先写关系 → 再逆运算 → 最后回代检查',
-                pins: ['先写关系', '一步一变']
-            },
-            {
-                id: 'estimation_validation',
-                shortLabel: '估算检验',
-                title: '估算、验算与结果合理性判断',
-                kicker: 'Estimate & Validate',
-                hook: '先看范围，再算，再检验。',
-                firstMove: '先想结果比 1 大还是小，离整十整百近不近。',
-                finalCheck: '最后看结果合不合理，单位对不对。',
-                patterns: ['c2_est_', 'c2_speed_', 'k_ddiv_', 'l_div_decimal_'],
-                programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓数量级和商的大致范围。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓结果是否合理、是否符合情境和单位。'
-                },
-                rules: ['先看结果大概范围', '算完再做估算对照', '单位和情境要合理'],
-                techniques: ['先看比 1 大还是小', '先抓接近整十整百', '结果异常先回查小数点'],
-                example: '4.8 ÷ 0.6 的商一定大于 1，不可能是 0.8',
-                pitfalls: ['只算不检验', '数量级不对还往下写'],
-                memoryRoute: '先看范围 → 再精算 → 最后检验合理性',
-                pins: ['先看范围', '算完再验']
+                rules: ['等式两边同样变化', '未知数在减数、除数位置要特别慢', '每次只做一步逆运算'],
+                techniques: ['先写文字关系', '再逆运算', '最后回代检查'],
+                example: '<i class="var">x</i> ÷ 4 = 3.5，所以 <i class="var">x</i> = 3.5 × 4 = 14',
+                pitfalls: ['别把除数和被除数弄反', '别省略回代检查'],
+                memoryRoute: '先读关系 → 再逆运算 → 最后回代',
+                pins: ['看未知数位置', '回代检查']
             }
         ];
         function getCalculationQuickReviewTopics() {
             return CALCULATION_QUICK_REVIEW_TOPICS;
         }
+        window.getCalculationQuickReviewTopics = getCalculationQuickReviewTopics;
         function getCalculationQuickReviewTopic(topicId) {
             return CALCULATION_QUICK_REVIEW_TOPICS.find(topic => topic.id === topicId) || null;
         }
+        window.getCalculationQuickReviewTopic = getCalculationQuickReviewTopic;
         function getCalculationQuickReviewEmphasis(topic, programId) {
             if (!topic) return '';
             return topic.programEmphasis?.[programId] || topic.programEmphasis?.[ADVANCED_PROGRAM_ID] || '';
@@ -5006,10 +5148,14 @@
             const selected = scoredTopics.filter(item => item.score > 0).slice(0, 2).map(item => item.topic);
             if (selected.length >= 2) return selected;
             const fallbackIds = programId === CLOSURE_PROGRAM_ID
-                ? ['conversion_compare', 'unit_rate']
-                : ['written_algorithms', 'equation_method'];
+                ? ['representation_convert', 'relation_formula']
+                : ['division_scale', 'place_align'];
             return fallbackIds.map(id => getCalculationQuickReviewTopic(id)).filter(Boolean);
         }
+        function getCalculationQuickReviewTopicTier(topic = {}) {
+            return ['reciprocal_division', 'equation_inverse'].includes(topic.id) ? '进阶模型' : '核心模型';
+        }
+        window.getCalculationQuickReviewTopicTier = getCalculationQuickReviewTopicTier;
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
             const pins = [];
@@ -5068,7 +5214,7 @@
                 <section class="quick-review-topic" id="quick-review-topic-${topic.id}">
                     <div class="quick-review-topic-head">
                         <div>
-                            <div class="quick-review-topic-kicker">${topic.kicker}</div>
+                            <div class="quick-review-topic-kicker">${getCalculationQuickReviewTopicTier(topic)} · ${topic.kicker}</div>
                             <h3 class="quick-review-topic-title">${topic.title}</h3>
                         </div>
                         <p class="quick-review-emphasis">${getCalculationQuickReviewEmphasis(topic, programId)}</p>
@@ -5109,7 +5255,7 @@
                             </div>
                         </div>
                         <div class="quick-review-example">
-                            <h4>典型例子</h4>
+                            <h4>模型例题</h4>
                             <div class="quick-review-example-row">${topic.example}</div>
                             <div class="quick-review-topic-pins">${(topic.pins || []).map(pin => `<span class="quick-review-topic-pin">${pin}</span>`).join('')}</div>
                         </div>
@@ -9206,7 +9352,7 @@
         window.showCalculationQuickReview = function() {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.add('quick-review-modal');
-            document.getElementById('modal-title').innerText = '📘 计算知识总览 / Calculation Quick Review';
+            document.getElementById('modal-title').innerText = '📘 15大终极心智模型 / 名师词典';
             document.getElementById('report-content-area').innerHTML = buildCalculationQuickReviewHTML();
             document.getElementById('report-modal').style.display = 'block';
         };

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.191 rebuilds the teacher dictionary as a lower-noise model dictionary:
+
+- The quick-review page is now positioned as `15大终极心智模型 / 名师词典`.
+- The first pass keeps 13 core elementary calculation models and marks fraction division plus equation inverse reasoning as advanced models.
+- Examples are authored for the model being taught instead of being pulled from the generated practice bank, reducing mismatched “topic says one thing, problem trains another” noise.
+
 v23.190 improves same-day variant selection quality:
 
 - The set-review follow-up engine now samples a candidate pool before choosing each main and backup variant.
