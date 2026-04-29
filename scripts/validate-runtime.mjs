@@ -138,7 +138,9 @@ if (!html.includes('function buildSetReviewFollowupHTML')) {
 if (
   !html.includes('function buildSetReviewBackupBankHTML') ||
   !html.includes('function buildSetReviewBackupAnswerHTML') ||
+  !html.includes('function buildSetReviewBackupAnswerPrintHTML') ||
   !html.includes('function buildSetReviewBackupPracticeReviewHTML') ||
+  !html.includes('window.printSetReviewBackupAnswers') ||
   !html.includes('window.openSetReviewBackupPracticeReview') ||
   !html.includes('window.printSetReviewBackupFollowup')
 ) {
@@ -1692,7 +1694,7 @@ const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !reviewHtml.includes('第 2 小题') || !reviewHtml.includes('6')) {
   throw new Error('Set review report is missing set number, location, or answer');
 }
-if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练') || !reviewHtml.includes('打印备用二刷题目') || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)")) {
+if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练') || !reviewHtml.includes('打印备用二刷题目') || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)") || !reviewHtml.includes('打印备用二刷答案') || !reviewHtml.includes("printSetReviewBackupAnswers('KAI')")) {
   throw new Error('Set review report is missing the in-report variant follow-up block');
 }
 if (!reviewHtml.includes('打印当前报告') || typeof context.window.printCurrentSetReviewReport !== 'function') {
@@ -1820,6 +1822,10 @@ if (sampleBackupPrintHtml.indexOf('答案：') < sampleBackupPrintHtml.indexOf('
 const sampleBackupQuestionOnlyPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, false) || '';
 if (!sampleBackupQuestionOnlyPrintHtml.includes('备用二刷变式') || !sampleBackupQuestionOnlyPrintHtml.includes('备用二刷题库') || sampleBackupQuestionOnlyPrintHtml.includes('备用二刷参考答案') || sampleBackupQuestionOnlyPrintHtml.includes('答案：')) {
   throw new Error('Set review backup question-only print shell should render backup questions without answers');
+}
+const sampleBackupAnswerOnlyPrintHtml = context.window.buildSetReviewBackupAnswerPrintHTML?.('KAI', 106) || '';
+if (!sampleBackupAnswerOnlyPrintHtml.includes('备用二刷答案') || !sampleBackupAnswerOnlyPrintHtml.includes('备用二刷参考答案') || !sampleBackupAnswerOnlyPrintHtml.includes('答案：') || sampleBackupAnswerOnlyPrintHtml.includes('备用二刷题库')) {
+  throw new Error('Set review backup answer-only print shell should render answers without the question bank');
 }
 context.window.currentSetNumber = 109;
 const sampleBackupReviewHtml = context.window.buildSetReviewBackupPracticeReviewHTML?.('KAI', 106) || '';

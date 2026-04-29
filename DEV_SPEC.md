@@ -84,6 +84,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
 - `printSetReviewBackupFollowup(student, false)`: exposed from the set-review action bar as a question-only backup second-pass print path; `true` still prints the answer reference.
 - `buildSetReviewBackupAnswerHTML`: renders backup second-pass answers as a separate reference section after the question sheet instead of inline under each question.
+- `buildSetReviewBackupAnswerPrintHTML` / `printSetReviewBackupAnswers`: provide an answer-only print path for backup second-pass parent checking.
 - `buildSetReviewBackupPracticeReviewHTML` / `openSetReviewBackupPracticeReview`: open a grading sheet for the backup second-pass bank and route its results through the error-book practice log with `set-review-backup` scope metadata.
 - `buildSetReviewFollowupItems` / `buildSetReviewBackupItems`: carry original mistake prompt/answer metadata into backup second-pass grading so result logs can show the original item beside the variant.
 - `handlePostSubmitReviewNavigation`: routes successful submissions to the set report only when the sheet is complete, otherwise returns focus to the next pending answer.

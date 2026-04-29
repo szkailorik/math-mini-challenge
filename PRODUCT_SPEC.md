@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.184 completes backup second-pass print separation:
+
+- Same-set reports expose an answer-only `打印备用二刷答案` action for parent checking.
+- Backup second-pass printing now supports question-only, answer-only, and combined-but-separated modes.
+- Runtime validation asserts the answer-only shell does not include the learner-facing backup question bank.
+
 v23.183 separates learner work from answer checking:
 
 - Backup second-pass answer-included printing now renders a clean question sheet first.
