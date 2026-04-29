@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.195 adds recognition checkpoints to each mental model:
+
+- Each model now includes a short `先判断` prompt that asks the learner which model should be used.
+- The checkpoint trains retrieval and model recognition before worked-solution reading.
+- These checkpoints appear in screen and print views for parent-led oral review.
+
 v23.194 adds a model-selection route layer:
 
 - The dictionary now groups the 16 models into four first-choice routes: expression structure, decimal/fraction, application relations, and advanced models.

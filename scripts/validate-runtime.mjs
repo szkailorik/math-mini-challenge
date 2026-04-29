@@ -209,6 +209,9 @@ if (!html.includes('function getCalculationQuickReviewTopicTier')) {
 if (!html.includes('function getCalculationQuickReviewRouteGroups')) {
   throw new Error('Calculation Quick Review route-group helper is missing from runtime script');
 }
+if (!html.includes('function getCalculationQuickReviewCheckpoint')) {
+  throw new Error('Calculation Quick Review checkpoint helper is missing from runtime script');
+}
 if (!html.includes('window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;')) {
   throw new Error('Calculation Quick Review topic jump helper is missing from runtime script');
 }
@@ -447,6 +450,9 @@ const quickReviewRoutes = context.getCalculationQuickReviewRouteGroups?.() || []
 if (!Array.isArray(quickReviewRoutes) || quickReviewRoutes.length !== 4 || !quickReviewRoutes.some(route => route.label === '已学进阶再处理')) {
   throw new Error('Calculation Quick Review should expose four model-selection route groups');
 }
+if (!context.getCalculationQuickReviewCheckpoint?.({ id: 'equation_inverse' })?.q?.includes('x')) {
+  throw new Error('Calculation Quick Review should provide per-model recognition checkpoints');
+}
 if (!reviewModalTitle.includes('16大终极心智模型')) {
   throw new Error('Calculation Quick Review did not update the modal title');
 }
@@ -467,6 +473,9 @@ if (!reviewModalHtml.includes('什么时候用') || !reviewModalHtml.includes('�
 }
 if (!reviewModalHtml.includes('先看算式结构') || !reviewModalHtml.includes('已学进阶再处理')) {
   throw new Error('Calculation Quick Review route groups did not render');
+}
+if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {
+  throw new Error('Calculation Quick Review checkpoints did not render');
 }
 if (!reviewModalHtml.includes('最容易错')) {
   throw new Error('Calculation Quick Review top-mistake copy did not render');

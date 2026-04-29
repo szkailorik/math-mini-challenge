@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.194 (模型选择路线)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.195 (模型判断题)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -382,6 +382,7 @@
         body.print-quick-review #print-root .quick-review-emphasis,
         body.print-quick-review #print-root .quick-review-block li,
         body.print-quick-review #print-root .quick-review-example-row,
+        body.print-quick-review #print-root .quick-review-checkpoint,
         body.print-quick-review #print-root .quick-review-usage-text,
         body.print-quick-review #print-root .quick-review-model-summary,
         body.print-quick-review #print-root .quick-review-route-card,
@@ -1674,6 +1675,30 @@
             color: #12253f;
             letter-spacing: 0.01em;
         }
+        .quick-review-checkpoint {
+            margin-top: 8px;
+            border: 1px solid #d9e6dd;
+            border-radius: 8px;
+            background: rgba(246,252,248,0.94);
+            padding: 8px 9px;
+            color: #14532d;
+            font-size: 12px;
+            line-height: 1.45;
+            font-weight: 800;
+        }
+        .quick-review-checkpoint-label {
+            display: inline-block;
+            margin-right: 7px;
+            color: #047857;
+            font-size: 10.5px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .quick-review-checkpoint-answer {
+            margin-top: 4px;
+            color: #47605a;
+            font-weight: 700;
+        }
         .quick-review-topic-pins {
             display: flex;
             flex-wrap: wrap;
@@ -2539,7 +2564,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.194</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.195</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2618,9 +2643,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.194';
-        const APP_RELEASE_LABEL = '模型选择路线';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.194 名师词典新增4条选模型路线，先分类再选套路。';
+        const APP_VERSION = 'v23.195';
+        const APP_RELEASE_LABEL = '模型判断题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.195 每个心智模型新增“先判断”短问，先练识别再看解法。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5282,6 +5307,28 @@
             ];
         }
         window.getCalculationQuickReviewRouteGroups = getCalculationQuickReviewRouteGroups;
+        function getCalculationQuickReviewCheckpoint(topic = {}) {
+            const map = {
+                order_first: { q: '看到 20 - 3 × 4，先算 20 - 3 还是 3 × 4？', a: '先用先定顺序模型，先算 3 × 4。' },
+                make_ten: { q: '看到 101 × 28，第一反应应该是什么？', a: '用凑整补偿模型，把 101 看成 100 + 1。' },
+                distribute: { q: '看到 36 × 12 + 64 × 12，应该拆还是合？', a: '用分配律拆合模型，先合成 (36 + 64) × 12。' },
+                place_align: { q: '3.6 + 0.48 竖式第一步写什么？', a: '用位值对齐模型，先把小数点对齐。' },
+                decimal_scale: { q: '0.24 × 0.3 算完整数 72 后，下一步看什么？', a: '用小数位数模型，数一共有 3 位小数。' },
+                division_scale: { q: '4.8 ÷ 0.6 能直接竖式除吗？', a: '先用除数化整模型，变成 48 ÷ 6。' },
+                quotient_range: { q: '0.48 ÷ 0.6 的商应该大于 1 还是小于 1？', a: '用商的范围模型，0.48 小于 0.6，所以商小于 1。' },
+                fraction_common: { q: `${new Frac(3, 4).toHTML()} - ${new Frac(1, 6).toHTML()} 能直接减分子吗？`, a: '用分数通分模型，先通成同分母。' },
+                cancel_before_multiply: { q: `${new Frac(3, 8).toHTML()} × 16 先硬乘还是先约？`, a: '用乘前约分模型，先把 16 和 8 约掉。' },
+                reciprocal_division: { q: `${new Frac(3, 4).toHTML()} ÷ ${new Frac(1, 2).toHTML()} 要倒哪个分数？`, a: '用除以分数模型，只倒除数 1/2。' },
+                representation_convert: { q: '0.375 要化成分数，先写成几分之几？', a: '用表示互化模型，先写成 375/1000 再约分。' },
+                benchmark_compare: { q: `${new Frac(5, 8).toHTML()} 和 0.62 比，先想到哪个基准值？`, a: '用基准比较模型，先想 5/8 = 0.625。' },
+                unit_normalize: { q: '2.4 km - 350 m 可以直接 2.4 - 350 吗？', a: '用单位统一模型，先把 2.4 km 变成 2400 m。' },
+                relation_formula: { q: '每本 12 元，5 本共多少元，先写什么关系？', a: '用数量关系模型，先写总价 = 单价 × 数量。' },
+                chicken_rabbit_assumption: { q: '鸡兔同笼总脚数已知，第一步假设什么？', a: '用假设差量模型，先全假设成鸡或全假设成兔。' },
+                equation_inverse: { q: '<i class="var">x</i> ÷ 4 = 3.5，先做什么逆运算？', a: '用方程逆运算模型，x = 3.5 × 4。' }
+            };
+            return map[topic.id] || { q: '这题先判断属于哪个模型？', a: `优先回到 ${topic.title || '当前模型'} 的使用场景。` };
+        }
+        window.getCalculationQuickReviewCheckpoint = getCalculationQuickReviewCheckpoint;
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
             const pins = [];
@@ -5337,6 +5384,9 @@
                 </button>
             `).join('');
             const topicHtml = topics.map(topic => `
+                ${(() => {
+                    const checkpoint = getCalculationQuickReviewCheckpoint(topic);
+                    return `
                 <section class="quick-review-topic" id="quick-review-topic-${topic.id}">
                     <div class="quick-review-topic-head">
                         <div>
@@ -5384,10 +5434,16 @@
                         <div class="quick-review-example">
                             <h4>模型例题</h4>
                             <div class="quick-review-example-row">${topic.example}</div>
+                            <div class="quick-review-checkpoint">
+                                <div><span class="quick-review-checkpoint-label">先判断</span>${checkpoint.q}</div>
+                                <div class="quick-review-checkpoint-answer">应想到：${checkpoint.a}</div>
+                            </div>
                             <div class="quick-review-topic-pins">${(topic.pins || []).map(pin => `<span class="quick-review-topic-pin">${pin}</span>`).join('')}</div>
                         </div>
                     </div>
                 </section>
+                    `;
+                })()}
             `).join('');
             const pinsHtml = buildCalculationQuickReviewPins(topics).map(pin => `<span class="quick-review-pin">${pin}</span>`).join('');
             const recommendationHtml = `当前优先看：${recommendations.join('、')}。先看上面的两块，再往下细看专题。`;
