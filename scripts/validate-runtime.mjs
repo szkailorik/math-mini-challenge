@@ -206,6 +206,9 @@ if (!html.includes('function getCalculationQuickReviewRecommendationTopics')) {
 if (!html.includes('function getCalculationQuickReviewTopicTier')) {
   throw new Error('Calculation Quick Review topic-tier helper is missing from runtime script');
 }
+if (!html.includes('function getCalculationQuickReviewTierKey')) {
+  throw new Error('Calculation Quick Review tier-key helper is missing from runtime script');
+}
 if (!html.includes('function getCalculationQuickReviewRouteGroups')) {
   throw new Error('Calculation Quick Review route-group helper is missing from runtime script');
 }
@@ -217,6 +220,9 @@ if (!html.includes('function getCalculationQuickReviewConfusable')) {
 }
 if (!html.includes('window.jumpToQuickReviewTopic = jumpToQuickReviewTopic;')) {
   throw new Error('Calculation Quick Review topic jump helper is missing from runtime script');
+}
+if (!html.includes('window.setCalculationQuickReviewModelFilter = setCalculationQuickReviewModelFilter;')) {
+  throw new Error('Calculation Quick Review model-filter helper is missing from runtime script');
 }
 if (!html.includes('window.showCalculationQuickReview = function()')) {
   throw new Error('Calculation Quick Review entrypoint is missing from runtime script');
@@ -446,6 +452,9 @@ if (!Array.isArray(quickReviewTopics) || quickReviewTopics.length !== 16) {
 if (context.getCalculationQuickReviewTopicTier?.({ id: 'chicken_rabbit_assumption' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'equation_inverse' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'order_first' }) !== '核心模型') {
   throw new Error('Calculation Quick Review should mark core and advanced model tiers');
 }
+if (context.getCalculationQuickReviewTierKey?.({ id: 'equation_inverse' }) !== 'advanced' || context.getCalculationQuickReviewTierKey?.({ id: 'order_first' }) !== 'core') {
+  throw new Error('Calculation Quick Review should expose tier keys for filtering');
+}
 if (!context.getCalculationQuickReviewUseWhen?.({ id: 'chicken_rabbit_assumption' })?.includes('总只数') || !context.getCalculationQuickReviewModelSummary?.(quickReviewTopics)?.includes('13 个核心模型')) {
   throw new Error('Calculation Quick Review should explain when to use each model and summarize core/advanced counts');
 }
@@ -482,6 +491,9 @@ if (!reviewModalHtml.includes('什么时候用') || !reviewModalHtml.includes('�
 }
 if (!reviewModalHtml.includes('先看算式结构') || !reviewModalHtml.includes('已学进阶再处理') || !reviewModalHtml.includes('先问自己')) {
   throw new Error('Calculation Quick Review route groups did not render');
+}
+if (!reviewModalHtml.includes('全部 16 个') || !reviewModalHtml.includes('只看核心 13 个') || !reviewModalHtml.includes('只看进阶 3 个') || !reviewModalHtml.includes('data-model-filter="all"')) {
+  throw new Error('Calculation Quick Review model filters did not render');
 }
 if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('想好后点开提示') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {
   throw new Error('Calculation Quick Review checkpoints did not render');

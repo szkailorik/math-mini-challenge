@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.198 (路线先问)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.199 (核心优先筛选)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1461,6 +1461,36 @@
             line-height:1.35;
             font-weight:800;
         }
+        .quick-review-filter-strip {
+            display:flex;
+            flex-wrap:wrap;
+            gap:7px;
+            margin:10px 0 12px;
+        }
+        .quick-review-filter-btn {
+            border:1px solid #cfdce6;
+            border-radius:8px;
+            background:#fff;
+            color:#214d5a;
+            padding:6px 10px;
+            font-size:11.5px;
+            line-height:1.25;
+            font-weight:800;
+            font-family:inherit;
+            cursor:pointer;
+        }
+        .quick-review-filter-btn.active,
+        .quick-review-filter-btn[aria-pressed="true"] {
+            background:#123b73;
+            border-color:#123b73;
+            color:#fff;
+        }
+        .quick-review-page[data-model-filter="core"] .quick-review-topic[data-tier="advanced"],
+        .quick-review-page[data-model-filter="core"] .quick-review-nav-chip[data-tier="advanced"],
+        .quick-review-page[data-model-filter="advanced"] .quick-review-topic[data-tier="core"],
+        .quick-review-page[data-model-filter="advanced"] .quick-review-nav-chip[data-tier="core"] {
+            display:none;
+        }
         .quick-review-mistake {
             margin: 0 0 10px;
             padding: 8px 10px;
@@ -2595,7 +2625,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.198</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.199</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2674,9 +2704,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.198';
-        const APP_RELEASE_LABEL = '路线先问';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.198 模型路线新增“先问自己”，先判大类再选模型。';
+        const APP_VERSION = 'v23.199';
+        const APP_RELEASE_LABEL = '核心优先筛选';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.199 名师词典新增全部/核心/进阶筛选，日常先看核心模型。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5285,6 +5315,10 @@
             return ['reciprocal_division', 'chicken_rabbit_assumption', 'equation_inverse'].includes(topic.id) ? '进阶模型' : '核心模型';
         }
         window.getCalculationQuickReviewTopicTier = getCalculationQuickReviewTopicTier;
+        function getCalculationQuickReviewTierKey(topic = {}) {
+            return getCalculationQuickReviewTopicTier(topic) === '进阶模型' ? 'advanced' : 'core';
+        }
+        window.getCalculationQuickReviewTierKey = getCalculationQuickReviewTierKey;
         function getCalculationQuickReviewUseWhen(topic = {}) {
             const map = {
                 order_first: '四则混合里同时出现括号、乘除、加减时。',
@@ -5406,6 +5440,18 @@
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
+        function setCalculationQuickReviewModelFilter(filter = 'all') {
+            const normalized = ['all', 'core', 'advanced'].includes(filter) ? filter : 'all';
+            const page = document.querySelector('.quick-review-page');
+            if (!page) return;
+            page.dataset.modelFilter = normalized;
+            page.querySelectorAll('.quick-review-filter-btn').forEach(btn => {
+                const active = btn.dataset.filter === normalized;
+                btn.classList.toggle('active', active);
+                btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+        }
+        window.setCalculationQuickReviewModelFilter = setCalculationQuickReviewModelFilter;
         function buildCalculationQuickReviewHTML({ forPrint = false } = {}) {
             const programId = getCurrentProgramId();
             const topics = getCalculationQuickReviewTopics();
@@ -5435,7 +5481,7 @@
                 </article>
             `).join('');
             const navHtml = topics.map((topic, index) => `
-                <button type="button" class="quick-review-nav-chip" onclick="window.jumpToQuickReviewTopic('${topic.id}')">
+                <button type="button" class="quick-review-nav-chip" data-tier="${getCalculationQuickReviewTierKey(topic)}" onclick="window.jumpToQuickReviewTopic('${topic.id}')">
                     <span class="quick-review-nav-num">${String(index + 1).padStart(2, '0')}</span>
                     <span>${topic.shortLabel}</span>
                 </button>
@@ -5444,7 +5490,7 @@
                 ${(() => {
                     const checkpoint = getCalculationQuickReviewCheckpoint(topic);
                     return `
-                <section class="quick-review-topic" id="quick-review-topic-${topic.id}">
+                <section class="quick-review-topic" id="quick-review-topic-${topic.id}" data-tier="${getCalculationQuickReviewTierKey(topic)}">
                     <div class="quick-review-topic-head">
                         <div>
                             <div class="quick-review-topic-kicker">${getCalculationQuickReviewTopicTier(topic)} · ${topic.kicker}</div>
@@ -5516,8 +5562,14 @@
                     <div class="quick-review-route-question">先问自己：${group.question}</div>
                 </button>
             `).join('');
+            const filterHtml = forPrint ? '' : `
+                <div class="quick-review-filter-strip no-print" aria-label="模型筛选">
+                    <button type="button" class="quick-review-filter-btn active" data-filter="all" aria-pressed="true" onclick="window.setCalculationQuickReviewModelFilter('all')">全部 16 个</button>
+                    <button type="button" class="quick-review-filter-btn" data-filter="core" aria-pressed="false" onclick="window.setCalculationQuickReviewModelFilter('core')">只看核心 13 个</button>
+                    <button type="button" class="quick-review-filter-btn" data-filter="advanced" aria-pressed="false" onclick="window.setCalculationQuickReviewModelFilter('advanced')">只看进阶 3 个</button>
+                </div>`;
             return `
-                <div class="quick-review-page" data-program="${programId}">
+                <div class="quick-review-page" data-program="${programId}" data-model-filter="all">
                     <div class="quick-review-hero">
                         <div class="quick-review-hero-top">
                             <div>
@@ -5533,6 +5585,7 @@
                         <div class="quick-review-route-strip">${routeHtml}</div>
                         <div class="quick-review-focus-strip">${focusHtml}</div>
                     </div>
+                    ${filterHtml}
                     <div class="quick-review-nav">${navHtml}</div>
                     <div class="quick-review-topics">${topicHtml}</div>
                     <div class="quick-review-footer-pins">${pinsHtml}</div>
