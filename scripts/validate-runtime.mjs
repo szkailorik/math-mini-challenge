@@ -137,6 +137,7 @@ if (!html.includes('function buildSetReviewFollowupHTML')) {
 }
 if (
   !html.includes('function buildSetReviewBackupBankHTML') ||
+  !html.includes('function buildSetReviewBackupAnswerHTML') ||
   !html.includes('function buildSetReviewBackupPracticeReviewHTML') ||
   !html.includes('window.openSetReviewBackupPracticeReview') ||
   !html.includes('window.printSetReviewBackupFollowup')
@@ -1810,11 +1811,14 @@ if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtm
   throw new Error('Set review backup bank should render backup questions with optional answers');
 }
 const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, true) || '';
-if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('答案：')) {
+if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('备用二刷参考答案') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
 }
+if (sampleBackupPrintHtml.indexOf('答案：') < sampleBackupPrintHtml.indexOf('备用二刷参考答案')) {
+  throw new Error('Set review backup answer-included print should keep answers in a separate reference section after the questions');
+}
 const sampleBackupQuestionOnlyPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, false) || '';
-if (!sampleBackupQuestionOnlyPrintHtml.includes('备用二刷变式') || !sampleBackupQuestionOnlyPrintHtml.includes('备用二刷题库') || sampleBackupQuestionOnlyPrintHtml.includes('答案：')) {
+if (!sampleBackupQuestionOnlyPrintHtml.includes('备用二刷变式') || !sampleBackupQuestionOnlyPrintHtml.includes('备用二刷题库') || sampleBackupQuestionOnlyPrintHtml.includes('备用二刷参考答案') || sampleBackupQuestionOnlyPrintHtml.includes('答案：')) {
   throw new Error('Set review backup question-only print shell should render backup questions without answers');
 }
 context.window.currentSetNumber = 109;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.182 (二刷题目单印)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.183 (二刷答案分离)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.182</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.183</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.182';
-        const APP_RELEASE_LABEL = '二刷题目单印';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.182 本套报告新增只打印备用二刷题目，答案可单独选择。';
+        const APP_VERSION = 'v23.183';
+        const APP_RELEASE_LABEL = '二刷答案分离';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.183 备用二刷+答案改为题目页和参考答案页分离，孩子做题更干净。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10647,6 +10647,28 @@
         }
         window.buildSetReviewBackupBankHTML = buildSetReviewBackupBankHTML;
 
+        function buildSetReviewBackupAnswerHTML(backups = [], { forPrint = false } = {}) {
+            if (!backups.length) return '';
+            const rows = backups.map((item, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${item.sourceLabel || '-'}</td>
+                    <td><div class="math-row">答案：${item.a || '-'}</div></td>
+                    <td>${item.step || ''}</td>
+                </tr>
+            `).join('');
+            return `
+            <div class="set-review-followup-answer review-answer-pack ${forPrint ? 'print-answer-sheet' : ''}">
+                <h5>备用二刷参考答案</h5>
+                <p class="set-review-followup-answer-note">这一页给家长核对用。孩子先完成前面的备用二刷题目，再使用这里批改。</p>
+                <table class="archive-table">
+                    <tr><th>#</th><th>对应原错题</th><th>答案</th><th>检查提醒</th></tr>
+                    ${rows}
+                </table>
+            </div>`;
+        }
+        window.buildSetReviewBackupAnswerHTML = buildSetReviewBackupAnswerHTML;
+
         function buildSetReviewBackupPracticeReviewHTML(student, setNum) {
             const profile = StorageDB.getProfile(student) || {};
             const session = findSetSession(profile, setNum);
@@ -11260,6 +11282,7 @@
             if (!backups.length) return '';
             const audit = getSetReviewFollowupAudit(session, items);
             const printPack = getSetReviewFollowupPrintPack(backups);
+            const answerBlock = includeAnswers ? buildSetReviewBackupAnswerHTML(backups, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell" data-pack="${printPack}">
                 <header class="booklet-meta-band">
@@ -11275,7 +11298,8 @@
                     <span>${includeAnswers ? '含参考答案' : '不含答案'}</span>
                 </div>
                 ${buildSetReviewFollowupAuditHTML(audit)}
-                <div class="followup-print-sheet">${buildSetReviewBackupBankHTML(items, { forPrint: true, includeAnswers })}</div>
+                <div class="followup-print-sheet">${buildSetReviewBackupBankHTML(items, { forPrint: true, includeAnswers: false })}</div>
+                ${answerBlock}
             </section>`;
         }
         window.buildSetReviewBackupPrintHTML = buildSetReviewBackupPrintHTML;
