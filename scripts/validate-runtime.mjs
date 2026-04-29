@@ -453,6 +453,9 @@ const quickReviewRoutes = context.getCalculationQuickReviewRouteGroups?.() || []
 if (!Array.isArray(quickReviewRoutes) || quickReviewRoutes.length !== 4 || !quickReviewRoutes.some(route => route.label === '已学进阶再处理')) {
   throw new Error('Calculation Quick Review should expose four model-selection route groups');
 }
+if (!quickReviewRoutes.every(route => route.question) || !quickReviewRoutes.some(route => /小数点/.test(route.question))) {
+  throw new Error('Calculation Quick Review route groups should include first-question prompts');
+}
 if (!context.getCalculationQuickReviewCheckpoint?.({ id: 'equation_inverse' })?.q?.includes('x')) {
   throw new Error('Calculation Quick Review should provide per-model recognition checkpoints');
 }
@@ -477,7 +480,7 @@ if (!reviewModalHtml.includes('先记住')) {
 if (!reviewModalHtml.includes('什么时候用') || !reviewModalHtml.includes('本页不是题库摘抄')) {
   throw new Error('Calculation Quick Review use-case and model-summary copy did not render');
 }
-if (!reviewModalHtml.includes('先看算式结构') || !reviewModalHtml.includes('已学进阶再处理')) {
+if (!reviewModalHtml.includes('先看算式结构') || !reviewModalHtml.includes('已学进阶再处理') || !reviewModalHtml.includes('先问自己')) {
   throw new Error('Calculation Quick Review route groups did not render');
 }
 if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('想好后点开提示') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {

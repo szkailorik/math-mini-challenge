@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.198 adds first-question prompts to route selection:
+
+- Each of the four model-selection routes now asks a short `先问自己` question.
+- This helps learners choose the broad family before picking an exact model.
+- The route prompts appear in print as well, supporting oral sorting before problem solving.
+
 v23.197 adds model discrimination cues:
 
 - Each model now has a short `别混淆` note that contrasts it with a nearby model.
