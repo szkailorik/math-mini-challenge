@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.200 (优先级导学)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.201 (模型微练)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -321,7 +321,8 @@
             body.print-quick-review #print-root .quick-review-memory-route,
             body.print-quick-review #print-root .quick-review-flow-step,
             body.print-quick-review #print-root .quick-review-support-block,
-            body.print-quick-review #print-root .quick-review-example {
+            body.print-quick-review #print-root .quick-review-example,
+            body.print-quick-review #print-root .quick-review-micro-drill {
                 background: #fff !important;
                 box-shadow: none !important;
             }
@@ -382,6 +383,7 @@
         body.print-quick-review #print-root .quick-review-emphasis,
         body.print-quick-review #print-root .quick-review-block li,
         body.print-quick-review #print-root .quick-review-example-row,
+        body.print-quick-review #print-root .quick-review-micro-drill,
         body.print-quick-review #print-root .quick-review-checkpoint,
         body.print-quick-review #print-root .quick-review-usage-text,
         body.print-quick-review #print-root .quick-review-model-summary,
@@ -1780,6 +1782,47 @@
             color: #12253f;
             letter-spacing: 0.01em;
         }
+        .quick-review-micro-drill {
+            margin-top: 8px;
+            border: 1px solid #d8e4f0;
+            border-radius: 8px;
+            background: rgba(247,250,255,0.96);
+            padding: 8px 9px;
+            color: #123b73;
+            font-size: 12px;
+            line-height: 1.45;
+            font-weight: 800;
+        }
+        .quick-review-micro-label {
+            display: inline-block;
+            margin-right: 7px;
+            color: #1d4ed8;
+            font-size: 10.5px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .quick-review-micro-answer {
+            margin-top: 4px;
+            color: #405a72;
+            font-weight: 700;
+        }
+        details.quick-review-micro-answer {
+            border-top: 1px dashed #bfd0e2;
+            padding-top: 5px;
+        }
+        details.quick-review-micro-answer summary {
+            cursor: pointer;
+            color: #1d4ed8;
+            font-weight: 900;
+        }
+        .quick-review-micro-print-answer { display:none; }
+        body.print-quick-review #print-root details.quick-review-micro-answer { display:none; }
+        body.print-quick-review #print-root .quick-review-micro-print-answer {
+            display:block;
+            margin-top:4px;
+            color:#405a72;
+            font-weight:700;
+        }
         .quick-review-checkpoint {
             margin-top: 8px;
             border: 1px solid #d9e6dd;
@@ -2694,7 +2737,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.200</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.201</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2773,9 +2816,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.200';
-        const APP_RELEASE_LABEL = '优先级导学';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.200 名师词典新增高频必练/每周巩固/进阶拓展节奏。';
+        const APP_VERSION = 'v23.201';
+        const APP_RELEASE_LABEL = '模型微练';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.201 名师词典每个模型新增 1 题微练和折叠答案。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5502,6 +5545,28 @@
             return map[topic.id] || { q: '这题先判断属于哪个模型？', a: `优先回到 ${topic.title || '当前模型'} 的使用场景。` };
         }
         window.getCalculationQuickReviewCheckpoint = getCalculationQuickReviewCheckpoint;
+        function getCalculationQuickReviewMicroDrill(topic = {}) {
+            const map = {
+                order_first: { q: '马上练：32 - 4 × 5 = ?', a: '先算 4 × 5 = 20，再算 32 - 20 = 12。' },
+                make_ten: { q: '马上练：98 × 24 = ?', a: '把 98 看成 100 - 2，100 × 24 - 2 × 24 = 2400 - 48 = 2352。' },
+                distribute: { q: '马上练：27 × 14 + 73 × 14 = ?', a: '先合共同因数，(27 + 73) × 14 = 100 × 14 = 1400。' },
+                place_align: { q: '马上练：5.2 - 0.68 = ?', a: '先写成 5.20 - 0.68，结果是 4.52。' },
+                decimal_scale: { q: '马上练：0.6 × 0.08 = ?', a: '先算 6 × 8 = 48，两数共 3 位小数，所以是 0.048。' },
+                division_scale: { q: '马上练：7.2 ÷ 0.09 = ?', a: '除数化整，两边同时扩大 100 倍，720 ÷ 9 = 80。' },
+                quotient_range: { q: '马上练：0.35 ÷ 0.7 的商大于 1 吗？算出结果。', a: '0.35 比 0.7 小，商小于 1；0.35 ÷ 0.7 = 0.5。' },
+                fraction_common: { q: `马上练：${new Frac(5, 6).toHTML()} - ${new Frac(1, 4).toHTML()} = ?`, a: `先通成 12 分母，${new Frac(10, 12).toHTML()} - ${new Frac(3, 12).toHTML()} = ${new Frac(7, 12).toHTML()}。` },
+                cancel_before_multiply: { q: `马上练：${new Frac(5, 12).toHTML()} × 18 = ?`, a: `先约 18 和 12，变成 ${new Frac(5, 2).toHTML()} × 3 = ${new Frac(15, 2).toHTML()}。` },
+                reciprocal_division: { q: `马上练：${new Frac(2, 3).toHTML()} ÷ ${new Frac(4, 5).toHTML()} = ?`, a: `只倒除数，${new Frac(2, 3).toHTML()} × ${new Frac(5, 4).toHTML()} = ${new Frac(5, 6).toHTML()}。` },
+                representation_convert: { q: '马上练：0.45 化成最简分数。', a: `0.45 = ${new Frac(45, 100).toHTML()} = ${new Frac(9, 20).toHTML()}。` },
+                benchmark_compare: { q: `马上练：${new Frac(7, 12).toHTML()} 和 0.6，谁大？`, a: `${new Frac(7, 12).toHTML()} ≈ 0.583，小于 0.6，所以 0.6 更大。` },
+                unit_normalize: { q: '马上练：3.5 m + 80 cm = ? m', a: '先统一单位，3.5 m = 350 cm，350 + 80 = 430 cm = 4.3 m。' },
+                relation_formula: { q: '马上练：3 小时走 72 km，平均速度是多少？', a: '速度 = 路程 ÷ 时间，72 ÷ 3 = 24 km/h。' },
+                chicken_rabbit_assumption: { q: '马上练：鸡兔共 10 只，共 28 条腿，鸡和兔各几只？', a: '全当鸡有 20 条腿，少 8 条；每只兔多 2 条腿，所以兔 4 只，鸡 6 只。' },
+                equation_inverse: { q: '马上练：x - 8.6 = 12.4，x = ?', a: '用逆运算，x = 12.4 + 8.6 = 21。' }
+            };
+            return map[topic.id] || { q: `马上练：用 ${topic.title || '当前模型'} 做一道同结构题。`, a: '先说出模型，再写第一步。' };
+        }
+        window.getCalculationQuickReviewMicroDrill = getCalculationQuickReviewMicroDrill;
         function getCalculationQuickReviewConfusable(topic = {}) {
             const map = {
                 order_first: '别和凑整混：顺序没定好，凑整也会凑错。',
@@ -5599,6 +5664,7 @@
             const topicHtml = topics.map(topic => `
                 ${(() => {
                     const checkpoint = getCalculationQuickReviewCheckpoint(topic);
+                    const microDrill = getCalculationQuickReviewMicroDrill(topic);
                     const priority = getCalculationQuickReviewPriority(topic);
                     return `
                 <section class="quick-review-topic" id="quick-review-topic-${topic.id}" data-tier="${getCalculationQuickReviewTierKey(topic)}" data-priority="${priority.key}">
@@ -5652,6 +5718,14 @@
                         <div class="quick-review-example">
                             <h4>模型例题</h4>
                             <div class="quick-review-example-row">${topic.example}</div>
+                            <div class="quick-review-micro-drill">
+                                <div><span class="quick-review-micro-label">1题微练</span>${microDrill.q}</div>
+                                <details class="quick-review-micro-answer">
+                                    <summary>做完后看答案</summary>
+                                    <div>${microDrill.a}</div>
+                                </details>
+                                <div class="quick-review-micro-print-answer">微练答案：${microDrill.a}</div>
+                            </div>
                             <div class="quick-review-checkpoint">
                                 <div><span class="quick-review-checkpoint-label">先判断</span>${checkpoint.q}</div>
                                 <details class="quick-review-checkpoint-answer">

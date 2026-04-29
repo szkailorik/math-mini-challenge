@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.201 adds one aligned micro drill to every model-dictionary entry:
+
+- Each drill is hand-written for the target model instead of sampled from the general question bank.
+- Screen answers are collapsed so learners retrieve first and check second.
+- Print output exposes parent-facing answers for paper-based oral review.
+
 v23.200 adds a learning-priority layer to the model dictionary:
 
 - Each model is labeled as `高频必练`, `每周巩固`, or `进阶拓展`.
