@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.201 (模型微练)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.202 (微练错因)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1806,6 +1806,13 @@
             color: #405a72;
             font-weight: 700;
         }
+        .quick-review-micro-warning {
+            margin-top: 4px;
+            color: #7c2d12;
+            font-size: 11.5px;
+            line-height: 1.38;
+            font-weight: 800;
+        }
         details.quick-review-micro-answer {
             border-top: 1px dashed #bfd0e2;
             padding-top: 5px;
@@ -2737,7 +2744,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.201</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.202</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2816,9 +2823,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.201';
-        const APP_RELEASE_LABEL = '模型微练';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.201 名师词典每个模型新增 1 题微练和折叠答案。';
+        const APP_VERSION = 'v23.202';
+        const APP_RELEASE_LABEL = '微练错因';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.202 名师词典微练答案新增错法提醒，做完马上诊断。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5547,24 +5554,24 @@
         window.getCalculationQuickReviewCheckpoint = getCalculationQuickReviewCheckpoint;
         function getCalculationQuickReviewMicroDrill(topic = {}) {
             const map = {
-                order_first: { q: '马上练：32 - 4 × 5 = ?', a: '先算 4 × 5 = 20，再算 32 - 20 = 12。' },
-                make_ten: { q: '马上练：98 × 24 = ?', a: '把 98 看成 100 - 2，100 × 24 - 2 × 24 = 2400 - 48 = 2352。' },
-                distribute: { q: '马上练：27 × 14 + 73 × 14 = ?', a: '先合共同因数，(27 + 73) × 14 = 100 × 14 = 1400。' },
-                place_align: { q: '马上练：5.2 - 0.68 = ?', a: '先写成 5.20 - 0.68，结果是 4.52。' },
-                decimal_scale: { q: '马上练：0.6 × 0.08 = ?', a: '先算 6 × 8 = 48，两数共 3 位小数，所以是 0.048。' },
-                division_scale: { q: '马上练：7.2 ÷ 0.09 = ?', a: '除数化整，两边同时扩大 100 倍，720 ÷ 9 = 80。' },
-                quotient_range: { q: '马上练：0.35 ÷ 0.7 的商大于 1 吗？算出结果。', a: '0.35 比 0.7 小，商小于 1；0.35 ÷ 0.7 = 0.5。' },
-                fraction_common: { q: `马上练：${new Frac(5, 6).toHTML()} - ${new Frac(1, 4).toHTML()} = ?`, a: `先通成 12 分母，${new Frac(10, 12).toHTML()} - ${new Frac(3, 12).toHTML()} = ${new Frac(7, 12).toHTML()}。` },
-                cancel_before_multiply: { q: `马上练：${new Frac(5, 12).toHTML()} × 18 = ?`, a: `先约 18 和 12，变成 ${new Frac(5, 2).toHTML()} × 3 = ${new Frac(15, 2).toHTML()}。` },
-                reciprocal_division: { q: `马上练：${new Frac(2, 3).toHTML()} ÷ ${new Frac(4, 5).toHTML()} = ?`, a: `只倒除数，${new Frac(2, 3).toHTML()} × ${new Frac(5, 4).toHTML()} = ${new Frac(5, 6).toHTML()}。` },
-                representation_convert: { q: '马上练：0.45 化成最简分数。', a: `0.45 = ${new Frac(45, 100).toHTML()} = ${new Frac(9, 20).toHTML()}。` },
-                benchmark_compare: { q: `马上练：${new Frac(7, 12).toHTML()} 和 0.6，谁大？`, a: `${new Frac(7, 12).toHTML()} ≈ 0.583，小于 0.6，所以 0.6 更大。` },
-                unit_normalize: { q: '马上练：3.5 m + 80 cm = ? m', a: '先统一单位，3.5 m = 350 cm，350 + 80 = 430 cm = 4.3 m。' },
-                relation_formula: { q: '马上练：3 小时走 72 km，平均速度是多少？', a: '速度 = 路程 ÷ 时间，72 ÷ 3 = 24 km/h。' },
-                chicken_rabbit_assumption: { q: '马上练：鸡兔共 10 只，共 28 条腿，鸡和兔各几只？', a: '全当鸡有 20 条腿，少 8 条；每只兔多 2 条腿，所以兔 4 只，鸡 6 只。' },
-                equation_inverse: { q: '马上练：x - 8.6 = 12.4，x = ?', a: '用逆运算，x = 12.4 + 8.6 = 21。' }
+                order_first: { q: '马上练：32 - 4 × 5 = ?', a: '先算 4 × 5 = 20，再算 32 - 20 = 12。', warning: '错法提醒：不能先算 32 - 4；先圈乘法。' },
+                make_ten: { q: '马上练：98 × 24 = ?', a: '把 98 看成 100 - 2，100 × 24 - 2 × 24 = 2400 - 48 = 2352。', warning: '错法提醒：补偿的是 2 个 24，不是只减 2。' },
+                distribute: { q: '马上练：27 × 14 + 73 × 14 = ?', a: '先合共同因数，(27 + 73) × 14 = 100 × 14 = 1400。', warning: '错法提醒：共同因数 14 只能提一次，不要写成 100 × 28。' },
+                place_align: { q: '马上练：5.2 - 0.68 = ?', a: '先写成 5.20 - 0.68，结果是 4.52。', warning: '错法提醒：5.2 后面要补 0，不能把 2 和 8 直接对齐。' },
+                decimal_scale: { q: '马上练：0.6 × 0.08 = ?', a: '先算 6 × 8 = 48，两数共 3 位小数，所以是 0.048。', warning: '错法提醒：0.08 有两位小数，结果不是 0.48。' },
+                division_scale: { q: '马上练：7.2 ÷ 0.09 = ?', a: '除数化整，两边同时扩大 100 倍，720 ÷ 9 = 80。', warning: '错法提醒：除数扩大 100 倍时，被除数也要同倍扩大。' },
+                quotient_range: { q: '马上练：0.35 ÷ 0.7 的商大于 1 吗？算出结果。', a: '0.35 比 0.7 小，商小于 1；0.35 ÷ 0.7 = 0.5。', warning: '错法提醒：先判断商小于 1，避免把 0.5 写成 5。' },
+                fraction_common: { q: `马上练：${new Frac(5, 6).toHTML()} - ${new Frac(1, 4).toHTML()} = ?`, a: `先通成 12 分母，${new Frac(10, 12).toHTML()} - ${new Frac(3, 12).toHTML()} = ${new Frac(7, 12).toHTML()}。`, warning: '错法提醒：分母通成一样后，只减分子，分母保持 12。' },
+                cancel_before_multiply: { q: `马上练：${new Frac(5, 12).toHTML()} × 18 = ?`, a: `先约 18 和 12，变成 ${new Frac(5, 2).toHTML()} × 3 = ${new Frac(15, 2).toHTML()}。`, warning: '错法提醒：能先约就先约，不要先把 5 × 18 算成大数。' },
+                reciprocal_division: { q: `马上练：${new Frac(2, 3).toHTML()} ÷ ${new Frac(4, 5).toHTML()} = ?`, a: `只倒除数，${new Frac(2, 3).toHTML()} × ${new Frac(5, 4).toHTML()} = ${new Frac(5, 6).toHTML()}。`, warning: '错法提醒：只倒第二个分数，第一个分数不能倒。' },
+                representation_convert: { q: '马上练：0.45 化成最简分数。', a: `0.45 = ${new Frac(45, 100).toHTML()} = ${new Frac(9, 20).toHTML()}。`, warning: '错法提醒：化成分数后要约分，45/100 还不是最简。' },
+                benchmark_compare: { q: `马上练：${new Frac(7, 12).toHTML()} 和 0.6，谁大？`, a: `${new Frac(7, 12).toHTML()} ≈ 0.583，小于 0.6，所以 0.6 更大。`, warning: '错法提醒：别只看分子 7 大；要转成同一种表示再比。' },
+                unit_normalize: { q: '马上练：3.5 m + 80 cm = ? m', a: '先统一单位，3.5 m = 350 cm，350 + 80 = 430 cm = 4.3 m。', warning: '错法提醒：不能直接 3.5 + 80；先统一到同一个单位。' },
+                relation_formula: { q: '马上练：3 小时走 72 km，平均速度是多少？', a: '速度 = 路程 ÷ 时间，72 ÷ 3 = 24 km/h。', warning: '错法提醒：问平均速度时，用路程除以时间，不是时间除以路程。' },
+                chicken_rabbit_assumption: { q: '马上练：鸡兔共 10 只，共 28 条腿，鸡和兔各几只？', a: '全当鸡有 20 条腿，少 8 条；每只兔多 2 条腿，所以兔 4 只，鸡 6 只。', warning: '错法提醒：差 8 条腿后要除以每只差 2 条腿。' },
+                equation_inverse: { q: '马上练：x - 8.6 = 12.4，x = ?', a: '用逆运算，x = 12.4 + 8.6 = 21。', warning: '错法提醒：减 8.6 的逆运算是加 8.6，不要再减一次。' }
             };
-            return map[topic.id] || { q: `马上练：用 ${topic.title || '当前模型'} 做一道同结构题。`, a: '先说出模型，再写第一步。' };
+            return map[topic.id] || { q: `马上练：用 ${topic.title || '当前模型'} 做一道同结构题。`, a: '先说出模型，再写第一步。', warning: '错法提醒：先判断模型，再动笔计算。' };
         }
         window.getCalculationQuickReviewMicroDrill = getCalculationQuickReviewMicroDrill;
         function getCalculationQuickReviewConfusable(topic = {}) {
@@ -5723,8 +5730,9 @@
                                 <details class="quick-review-micro-answer">
                                     <summary>做完后看答案</summary>
                                     <div>${microDrill.a}</div>
+                                    <div class="quick-review-micro-warning">${microDrill.warning}</div>
                                 </details>
-                                <div class="quick-review-micro-print-answer">微练答案：${microDrill.a}</div>
+                                <div class="quick-review-micro-print-answer">微练答案：${microDrill.a}<br>${microDrill.warning}</div>
                             </div>
                             <div class="quick-review-checkpoint">
                                 <div><span class="quick-review-checkpoint-label">先判断</span>${checkpoint.q}</div>

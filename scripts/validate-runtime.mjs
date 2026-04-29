@@ -484,7 +484,7 @@ if (!quickReviewRoutes.every(route => route.question) || !quickReviewRoutes.some
 if (!context.getCalculationQuickReviewCheckpoint?.({ id: 'equation_inverse' })?.q?.includes('x')) {
   throw new Error('Calculation Quick Review should provide per-model recognition checkpoints');
 }
-if (!context.getCalculationQuickReviewMicroDrill?.({ id: 'chicken_rabbit_assumption' })?.a?.includes('兔 4 只') || !context.getCalculationQuickReviewMicroDrill?.({ id: 'decimal_scale' })?.q?.includes('0.6')) {
+if (!context.getCalculationQuickReviewMicroDrill?.({ id: 'chicken_rabbit_assumption' })?.a?.includes('兔 4 只') || !context.getCalculationQuickReviewMicroDrill?.({ id: 'decimal_scale' })?.q?.includes('0.6') || !context.getCalculationQuickReviewMicroDrill?.({ id: 'equation_inverse' })?.warning?.includes('逆运算')) {
   throw new Error('Calculation Quick Review should provide model-aligned micro drills');
 }
 if (!context.getCalculationQuickReviewConfusable?.({ id: 'decimal_scale' })?.includes('小数除法')) {
@@ -517,7 +517,7 @@ if (!reviewModalHtml.includes('全部 16 个') || !reviewModalHtml.includes('只
 if (!reviewModalHtml.includes('高频必练') || !reviewModalHtml.includes('每周巩固') || !reviewModalHtml.includes('进阶拓展') || !reviewModalHtml.includes('data-priority="daily"')) {
   throw new Error('Calculation Quick Review priority guidance did not render');
 }
-if (!reviewModalHtml.includes('1题微练') || !reviewModalHtml.includes('做完后看答案') || !reviewModalHtml.includes('马上练：0.6 × 0.08') || !reviewModalHtml.includes('兔 4 只，鸡 6 只')) {
+if (!reviewModalHtml.includes('1题微练') || !reviewModalHtml.includes('做完后看答案') || !reviewModalHtml.includes('错法提醒') || !reviewModalHtml.includes('马上练：0.6 × 0.08') || !reviewModalHtml.includes('兔 4 只，鸡 6 只')) {
   throw new Error('Calculation Quick Review micro drills did not render');
 }
 if (!reviewModalHtml.includes('先判断') || !reviewModalHtml.includes('想好后点开提示') || !reviewModalHtml.includes('应想到：') || !reviewModalHtml.includes('鸡兔同笼总脚数已知')) {
@@ -556,7 +556,7 @@ if (!quickReviewPrintRootHtml.includes('quick-review-print-shell') || !quickRevi
 if (!quickReviewPrintRootHtml.includes('家长提示：') || !quickReviewPrintRootHtml.includes('quick-review-checkpoint-print-answer')) {
   throw new Error('Calculation Quick Review print sandbox should include parent-facing checkpoint answers');
 }
-if (!quickReviewPrintRootHtml.includes('微练答案：') || !quickReviewPrintRootHtml.includes('quick-review-micro-print-answer')) {
+if (!quickReviewPrintRootHtml.includes('微练答案：') || !quickReviewPrintRootHtml.includes('错法提醒') || !quickReviewPrintRootHtml.includes('quick-review-micro-print-answer')) {
   throw new Error('Calculation Quick Review print sandbox should include micro-drill answers');
 }
 context.closeReportModal();
