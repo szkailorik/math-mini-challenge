@@ -1769,8 +1769,12 @@ if (qualityBrokenAudit?.ok || qualityBrokenAudit?.qualityIssueCount !== 1) {
   throw new Error('Set review follow-up audit should flag low-quality variants');
 }
 const qualityBrokenAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(qualityBrokenAudit) || '';
-if (!qualityBrokenAuditHtml.includes('第 1 题主变式') || !qualityBrokenAuditHtml.includes('运算结构不一致')) {
+if (!qualityBrokenAuditHtml.includes('第 1 题主变式') || !qualityBrokenAuditHtml.includes('运算结构不一致') || !qualityBrokenAuditHtml.includes('使用建议')) {
   throw new Error('Set review follow-up audit should render concrete quality issue details');
+}
+const healthyAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(sampleFollowupAudit) || '';
+if (!healthyAuditHtml.includes('可直接作为今日错题变式跟训')) {
+  throw new Error('Set review follow-up audit should render a direct-use recommendation when variants pass');
 }
 const arithmeticQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], sampleFollowupItems[0]);
 if (!arithmeticQuality?.ok || arithmeticQuality.score !== 100) {

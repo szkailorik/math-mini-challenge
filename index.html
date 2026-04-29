@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.187 (变式风险清单)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.188 (变式使用建议)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.187</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.188</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.187';
-        const APP_RELEASE_LABEL = '变式风险清单';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.187 变式体检会列出具体风险题号和原因，方便人工复核。';
+        const APP_VERSION = 'v23.188';
+        const APP_RELEASE_LABEL = '变式使用建议';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.188 变式体检新增使用建议，告诉家长今天该直接做还是先复核。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10595,6 +10595,9 @@
             const qualityIssueRows = Array.isArray(audit.qualityIssues) && audit.qualityIssues.length
                 ? `<div style="margin-top:6px; font-weight:700; color:#92400e;">${audit.qualityIssues.slice(0, 4).map(item => `第 ${item.num} 题${item.kind}（${item.sourceLabel}）：${(item.reasons || []).join('、')}`).join('<br>')}</div>`
                 : '';
+            const usageAdvice = audit.ok
+                ? '使用建议：可直接作为今日错题变式跟训，先做主变式，隔天或又错时再做备用二刷。'
+                : '使用建议：先做无风险的主变式；标出风险的题先由家长看一眼，确认贴近原错题后再给孩子做。';
             return `
                 <div class="answer-progress-note" style="margin:0 0 10px; padding:9px 12px; border:1px solid ${tone.border}; background:${tone.bg}; color:${tone.color}; font-size:13px; line-height:1.55; border-radius:8px; font-weight:800;">
                     ${tone.icon} ${tone.text}：
@@ -10603,6 +10606,7 @@
                     ${audit.familyMismatch ? ` · 类型偏移 ${audit.familyMismatch}` : ''}
                     ${audit.qualityIssueCount ? ` · 贴合度风险 ${audit.qualityIssueCount}` : ''}
                     ${qualityIssueRows}
+                    <div style="margin-top:6px; font-weight:700;">${usageAdvice}</div>
                 </div>`;
         }
         window.buildSetReviewFollowupAuditHTML = buildSetReviewFollowupAuditHTML;

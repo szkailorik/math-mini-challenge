@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.188 adds parent-facing usage advice to variant audits:
+
+- Passing audits recommend using the same-day variants directly, then saving backup variants for delayed or wrong-again review.
+- Risky audits recommend assigning safe variants first and manually checking flagged variants before use.
+- This converts diagnostic signals into a concrete parent workflow without hiding the underlying quality details.
+
 v23.187 makes variant audit findings actionable:
 
 - The set-review audit now includes concrete quality issue rows when a main or backup variant fails the fit gate.
