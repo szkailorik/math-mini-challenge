@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.185 adds a quality gate for same-day variants:
+
+- Same-set follow-up candidates are scored before use so exact repeats, family drift, operation drift, and conversion-direction drift are filtered out when possible.
+- Arithmetic variants must keep the source operation structure and decimal-place intent; conversion variants must preserve the original conversion or comparison direction.
+- The set-review audit now includes `贴合度风险`, making weak variants visible instead of silently entering the remediation pack.
+
 v23.184 completes backup second-pass print separation:
 
 - Same-set reports expose an answer-only `打印备用二刷答案` action for parent checking.

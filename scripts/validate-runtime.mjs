@@ -114,6 +114,9 @@ if (!html.includes('function buildSetReviewFollowupTargets')) {
 if (!html.includes('function buildSetReviewVariantQuestion')) {
   throw new Error('Set Review follow-up variant dispatcher is missing from runtime script');
 }
+if (!html.includes('function getSetReviewVariantQuality')) {
+  throw new Error('Set Review follow-up quality gate is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupItems')) {
   throw new Error('Set Review follow-up item builder is missing from runtime script');
 }
@@ -1744,13 +1747,31 @@ if (!sampleFollowupItems.every(item => item.followupSourceLabel)) {
 if (!sampleFollowupItems.every(item => item.followupBackupVariant?.q && item.followupBackupVariant?.a)) {
   throw new Error('Set review follow-up items are missing the second prepared backup variant');
 }
+if (!sampleFollowupItems.every(item => item.followupQualityScore === 100 && (!item.followupQualityWarnings || item.followupQualityWarnings.length === 0))) {
+  throw new Error('Set review follow-up items should pass the same-structure quality gate');
+}
 const sampleFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems);
-if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2) {
+if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2 || sampleFollowupAudit.qualityIssueCount !== 0) {
   throw new Error('Set review follow-up audit is not confirming one main and one backup variant per mistake');
 }
 const brokenFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems.slice(0, 1));
 if (brokenFollowupAudit?.ok || brokenFollowupAudit?.mainCount !== 1) {
   throw new Error('Set review follow-up audit should flag missing variants');
+}
+const qualityBrokenAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], [
+  { ...sampleFollowupItems[0], followupQualityWarnings: ['运算结构不一致'] },
+  sampleFollowupItems[1]
+]);
+if (qualityBrokenAudit?.ok || qualityBrokenAudit?.qualityIssueCount !== 1) {
+  throw new Error('Set review follow-up audit should flag low-quality variants');
+}
+const arithmeticQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], sampleFollowupItems[0]);
+if (!arithmeticQuality?.ok || arithmeticQuality.score !== 100) {
+  throw new Error('Set review quality gate should accept same-operation arithmetic variants');
+}
+const arithmeticDriftQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], { q: `0.6 + <span class="frac"><span>3</span><span class="bottom">4</span></span> =`, qualityFamily: 'complex_mixed' });
+if (arithmeticDriftQuality?.ok || !arithmeticDriftQuality?.reasons?.some(reason => /结构|知识族/.test(reason))) {
+  throw new Error('Set review quality gate should reject drifted arithmetic variants');
 }
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
   throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
@@ -1769,6 +1790,10 @@ const conversionFollowupSession = {
 const conversionFollowupItems = context.window.buildSetReviewFollowupItems?.(conversionFollowupSession, 'KAI', 'advanced_fluency_v1') || [];
 if (conversionFollowupItems.length !== 1 || !/^\d*\.?\d+ =/.test(conversionFollowupItems[0]?.q || '') || /%/.test(conversionFollowupItems[0]?.q || '')) {
   throw new Error('Decimal-to-fraction source mistakes should keep the same conversion direction in follow-up variants');
+}
+const conversionQuality = context.window.getSetReviewVariantQuality?.(context.window.buildSetReviewFollowupTargets?.(conversionFollowupSession)?.[0], conversionFollowupItems[0]);
+if (!conversionQuality?.ok) {
+  throw new Error('Set review quality gate should accept same-direction conversion variants');
 }
 if (!conversionFollowupItems[0]?.followupBackupVariant?.q || /%/.test(conversionFollowupItems[0].followupBackupVariant.q)) {
   throw new Error('Decimal-to-fraction source mistakes should prepare a same-direction backup variant');

@@ -77,10 +77,12 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `showSetReportIntegrityAudit` / `repairSetReportIntegrityNow`: expose a tutor-facing audit panel and manual repair action for current-program grading integrity.
 - `buildSubmittedAnswerActionsHTML`: adds learner-specific post-submit actions to answer sheets so tutors can jump from grading to report review and follow-up printing.
 - `buildSetReviewFollowupTargets`: keeps one target per same-set mistake, rather than collapsing by tag/uid, so follow-up item count matches the set report mistake count.
+- `getSetReviewVariantQuality` / `pickSetReviewVariant`: score same-day variants before accepting them, filtering exact repeats, family drift, arithmetic operation drift, decimal-place drift, and conversion-direction drift when alternatives exist.
 - `buildSetReviewArithmeticVariant`: creates source-aware same-operation variants for basic multiplication, division, addition, and subtraction mistakes.
 - `pickSetReviewVariant` / `buildSetReviewBackupVariantPayload`: prepare a second same-structure variant for each same-set mistake without doubling the main follow-up count.
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.
+- `getSetReviewFollowupAudit`: now also reports `qualityIssueCount` as `贴合度风险` when a main or backup variant fails the source-fit gate.
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
 - `printSetReviewBackupFollowup(student, false)`: exposed from the set-review action bar as a question-only backup second-pass print path; `true` still prints the answer reference.
 - `buildSetReviewBackupAnswerHTML`: renders backup second-pass answers as a separate reference section after the question sheet instead of inline under each question.
