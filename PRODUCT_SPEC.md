@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.193 adds model-use recognition cues:
+
+- The dictionary hero now states the core/advanced split so the page reads as a curated model set, not a content dump.
+- Each model includes a short `什么时候用` cue to train recognition before procedure execution.
+- The cue is included in screen and print views, supporting low-noise review away from the app.
+
 v23.192 expands the model dictionary to 16 entries:
 
 - Model 15 is `假设差量模型（鸡兔同笼）`, because the learner has already studied it and it is valuable for structured application problems.

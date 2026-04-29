@@ -437,6 +437,9 @@ if (!Array.isArray(quickReviewTopics) || quickReviewTopics.length !== 16) {
 if (context.getCalculationQuickReviewTopicTier?.({ id: 'chicken_rabbit_assumption' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'equation_inverse' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'order_first' }) !== '核心模型') {
   throw new Error('Calculation Quick Review should mark core and advanced model tiers');
 }
+if (!context.getCalculationQuickReviewUseWhen?.({ id: 'chicken_rabbit_assumption' })?.includes('总只数') || !context.getCalculationQuickReviewModelSummary?.(quickReviewTopics)?.includes('13 个核心模型')) {
+  throw new Error('Calculation Quick Review should explain when to use each model and summarize core/advanced counts');
+}
 if (!reviewModalTitle.includes('16大终极心智模型')) {
   throw new Error('Calculation Quick Review did not update the modal title');
 }
@@ -451,6 +454,9 @@ if (!reviewModalHtml.includes('今日先看 01') || (!reviewModalHtml.includes('
 }
 if (!reviewModalHtml.includes('先记住')) {
   throw new Error('Calculation Quick Review memory-hook copy did not render');
+}
+if (!reviewModalHtml.includes('什么时候用') || !reviewModalHtml.includes('本页不是题库摘抄')) {
+  throw new Error('Calculation Quick Review use-case and model-summary copy did not render');
 }
 if (!reviewModalHtml.includes('最容易错')) {
   throw new Error('Calculation Quick Review top-mistake copy did not render');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.192 (16大心智模型)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.193 (模型使用场景)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -378,13 +378,15 @@
             body.print-quick-review #print-root .quick-review-topic-title {
                 font-size: 15px !important;
             }
-            body.print-quick-review #print-root .quick-review-topic-kicker,
-            body.print-quick-review #print-root .quick-review-emphasis,
-            body.print-quick-review #print-root .quick-review-block li,
-            body.print-quick-review #print-root .quick-review-example-row,
-            body.print-quick-review #print-root .quick-review-usage-text,
-            body.print-quick-review #print-root .quick-review-memory-route,
-            body.print-quick-review #print-root .quick-review-focus-copy,
+        body.print-quick-review #print-root .quick-review-topic-kicker,
+        body.print-quick-review #print-root .quick-review-emphasis,
+        body.print-quick-review #print-root .quick-review-block li,
+        body.print-quick-review #print-root .quick-review-example-row,
+        body.print-quick-review #print-root .quick-review-usage-text,
+        body.print-quick-review #print-root .quick-review-model-summary,
+        body.print-quick-review #print-root .quick-review-usewhen,
+        body.print-quick-review #print-root .quick-review-memory-route,
+        body.print-quick-review #print-root .quick-review-focus-copy,
             body.print-quick-review #print-root .quick-review-focus-route,
             body.print-quick-review #print-root .quick-review-hook,
             body.print-quick-review #print-root .quick-review-mistake,
@@ -1377,11 +1379,12 @@
         }
         .quick-review-summary-strip {
             display: grid;
-            grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(220px, 0.85fr);
             gap: 8px 10px;
             margin-bottom: 10px;
         }
-        .quick-review-hook {
+        .quick-review-hook,
+        .quick-review-usewhen {
             margin: 0;
             padding: 7px 9px;
             border-radius: 12px;
@@ -1392,6 +1395,11 @@
             line-height: 1.48;
             font-weight: 800;
         }
+        .quick-review-usewhen {
+            border-color:#d8e2f0;
+            background:linear-gradient(180deg, rgba(247,250,255,0.98), rgba(241,247,254,0.98));
+            color:#1e3a8a;
+        }
         .quick-review-hook-label {
             display: inline-block;
             margin-right: 8px;
@@ -1399,6 +1407,20 @@
             letter-spacing: 0.06em;
             text-transform: uppercase;
             font-size: 11px;
+        }
+        .quick-review-usewhen .quick-review-hook-label {
+            color:#1d4ed8;
+        }
+        .quick-review-model-summary {
+            margin-top: 9px;
+            padding: 8px 10px;
+            border: 1px solid #d6e2e7;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.72);
+            color: #214d5a;
+            font-size: 12.5px;
+            line-height: 1.5;
+            font-weight: 800;
         }
         .quick-review-mistake {
             margin: 0 0 10px;
@@ -2486,7 +2508,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.192</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.193</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2565,9 +2587,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.192';
-        const APP_RELEASE_LABEL = '16大心智模型';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.192 名师词典升级为16个心智模型，鸡兔同笼和方程逆运算都保留为进阶模型。';
+        const APP_VERSION = 'v23.193';
+        const APP_RELEASE_LABEL = '模型使用场景';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.193 名师词典每个模型新增“什么时候用”，先识别题型再套套路。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5176,6 +5198,34 @@
             return ['reciprocal_division', 'chicken_rabbit_assumption', 'equation_inverse'].includes(topic.id) ? '进阶模型' : '核心模型';
         }
         window.getCalculationQuickReviewTopicTier = getCalculationQuickReviewTopicTier;
+        function getCalculationQuickReviewUseWhen(topic = {}) {
+            const map = {
+                order_first: '四则混合里同时出现括号、乘除、加减时。',
+                make_ten: '数字接近整十、整百，或出现 99、101、9.9、12.5 时。',
+                distribute: '乘法里有括号，或两项都乘同一个数时。',
+                place_align: '整数或小数加减，尤其小数位数不一样时。',
+                decimal_scale: '小数乘法需要决定结果小数点位置时。',
+                division_scale: '除数是小数，需要先把除数化成整数时。',
+                quotient_range: '除法结果容易把 0.8 写成 8，或商的大小不确定时。',
+                fraction_common: '异分母分数加减时。',
+                cancel_before_multiply: '分数乘法或整数乘分数，数字看起来会变大时。',
+                reciprocal_division: '题目出现“除以一个分数”时。',
+                representation_convert: '分数、小数、百分数互化，或题目要求换一种表示时。',
+                benchmark_compare: '比较大小或判断谁更接近 0、1/2、1 时。',
+                unit_normalize: '应用题里单位不同，不能直接加减乘除时。',
+                relation_formula: '应用题先要判断总量、每份量、份数、速度或单价关系时。',
+                chicken_rabbit_assumption: '总只数和总脚数已知，需要求两类数量时。',
+                equation_inverse: '题目给了等式，要求还原未知数时。'
+            };
+            return map[topic.id] || '看到相同结构的题时，先套这个模型。';
+        }
+        window.getCalculationQuickReviewUseWhen = getCalculationQuickReviewUseWhen;
+        function getCalculationQuickReviewModelSummary(topics = []) {
+            const coreCount = topics.filter(topic => getCalculationQuickReviewTopicTier(topic) === '核心模型').length;
+            const advancedCount = topics.length - coreCount;
+            return `本页不是题库摘抄：${coreCount} 个核心模型先保正确率，${advancedCount} 个进阶模型处理已学过的分数除法、鸡兔同笼和方程逆运算。`;
+        }
+        window.getCalculationQuickReviewModelSummary = getCalculationQuickReviewModelSummary;
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
             const pins = [];
@@ -5241,6 +5291,7 @@
                     </div>
                     <div class="quick-review-summary-strip">
                         <div class="quick-review-hook"><span class="quick-review-hook-label">先记住</span>${topic.hook}</div>
+                        <div class="quick-review-usewhen"><span class="quick-review-hook-label">什么时候用</span>${getCalculationQuickReviewUseWhen(topic)}</div>
                         <div class="quick-review-memory-route">
                             <span class="quick-review-memory-label">回想顺序</span>
                             <span>${topic.memoryRoute}</span>
@@ -5297,6 +5348,7 @@
                         </div>
                         <div class="quick-review-usage-strip">${usageHtml}</div>
                         <div class="quick-review-recommendations">${recommendationHtml}</div>
+                        <div class="quick-review-model-summary">${getCalculationQuickReviewModelSummary(topics)}</div>
                         <div class="quick-review-focus-strip">${focusHtml}</div>
                     </div>
                     <div class="quick-review-nav">${navHtml}</div>
