@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.177 (二刷批改闭环)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.178 (二刷溯源回写)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.177</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.178</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.177';
-        const APP_RELEASE_LABEL = '二刷批改闭环';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.177 备用二刷卷新增批改入口，二刷结果可回写错题本。';
+        const APP_VERSION = 'v23.178';
+        const APP_RELEASE_LABEL = '二刷溯源回写';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.178 备用二刷批改按报告 Set 回写错题本，并可从结果页返回本套报告。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3948,12 +3948,13 @@
                 let profile = ensureProgramProfileShape(this.getProfile(student, programId), programId);
                 let today = new Date().toLocaleDateString();
                 let nowTs = Date.now();
+                const practiceSet = Number(meta.set || window.currentSetNumber);
                 let log = {
                     id: `ebp_${programId}_${nowTs}`,
                     date: today,
                     ts: nowTs,
                     programId,
-                    set: Number(meta.set || window.currentSetNumber),
+                    set: practiceSet,
                     mechanismKey: meta.mechanismKey || '',
                     domainId: meta.domainId || '',
                     practiceKind: meta.practiceKind || '',
@@ -3973,9 +3974,9 @@
                             info: record.info,
                             grade: record.grade,
                             count: 0,
-                            firstSet: window.currentSetNumber,
+                            firstSet: practiceSet,
                             firstDate: today,
-                            lastSet: window.currentSetNumber,
+                            lastSet: practiceSet,
                             lastDate: today,
                             mechanismKey: record.mechanismKey || getErrorMechanismKey(record.tag, record.info),
                             mastered: false
@@ -3996,7 +3997,7 @@
                         entry.grade = record.grade === 'wrong' ? 'wrong' : (entry.grade || record.grade);
                         entry.count = Math.max(1, Number(entry.count || 0) + 1);
                         entry.rewrongCount = Math.max(0, Number(entry.rewrongCount || 0)) + 1;
-                        entry.lastSet = window.currentSetNumber;
+                        entry.lastSet = practiceSet;
                         entry.lastDate = today;
                     }
                     log.results.push({
@@ -8377,6 +8378,9 @@
             const nextAction = summary.wrongAgain
                 ? `${wrongText} 继续留在错题本。下一次先让孩子口述方法，再做同类变式。`
                 : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';
+            const returnToSetReviewButton = log.practiceKind === 'set-review-backup' && Number(log.set)
+                ? `<button class="review-jump-btn no-print" onclick="window.showSetReview(${Number(log.set)}, '${student}')">返回 Set ${Number(log.set)} 本套报告</button>`
+                : '';
             const rows = (log.results || []).map((item, idx) => {
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '粗心又错' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
@@ -8413,6 +8417,7 @@
                     已会题会进入已掌握；又错或粗心题会继续留在错题本，并参与后续间隔复练。
                 </div>
                 <button class="review-jump-btn no-print" onclick="window.printCurrentErrorBookPracticeResult()">打印本次结果</button>
+                ${returnToSetReviewButton}
                 <button class="review-jump-btn no-print" onclick="window.renderErrorBook()">返回错题本</button>
             </div>`;
         }

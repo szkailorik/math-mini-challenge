@@ -1813,6 +1813,7 @@ const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KA
 if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
 }
+context.window.currentSetNumber = 109;
 const sampleBackupReviewHtml = context.window.buildSetReviewBackupPracticeReviewHTML?.('KAI', 106) || '';
 if (
   !sampleBackupReviewHtml.includes('备用二刷批改') ||
@@ -1833,7 +1834,14 @@ const backupPracticeLog = await context.window.StorageDB.saveErrorBookPractice('
   }
 ], 'advanced_fluency_v1', { set: 106, practiceKind: 'set-review-backup', scopeLabel: 'Set 106 备用二刷' });
 const backupResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', backupPracticeLog) || '';
-if (backupPracticeLog?.set !== 106 || !backupResultHtml.includes('备用二刷批改结果') || !backupResultHtml.includes('Set 106 备用二刷')) {
+const backupProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
+if (
+  backupPracticeLog?.set !== 106 ||
+  backupProfile.errorBook.r1?.lastSet !== 106 ||
+  !backupResultHtml.includes('备用二刷批改结果') ||
+  !backupResultHtml.includes('Set 106 备用二刷') ||
+  !backupResultHtml.includes('返回 Set 106 本套报告')
+) {
   throw new Error('Set review backup grading log is not preserving its result title or scope label');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };

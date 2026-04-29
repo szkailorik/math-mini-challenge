@@ -86,6 +86,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `handlePostSubmitReviewNavigation`: routes successful submissions to the set report only when the sheet is complete, otherwise returns focus to the next pending answer.
 - `printCurrentSetReviewReport`: stages the currently open set review into the print sandbox, with optional KAI/Lorik filtering, so report printing does not include the full app page.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
+- `StorageDB.saveErrorBookPractice(meta.set)`: uses the supplied practice set when creating or updating error-book entries, keeping delayed backup grading aligned to the original report instead of the current counter.
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `getErrorBookPracticeResultTitle`: labels targeted-practice reports by scope so domain, mechanism, priority, and general error-book remediation remain distinguishable in reopened logs.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.
