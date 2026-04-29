@@ -79,6 +79,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSetReviewFollowupTargets`: keeps one target per same-set mistake, rather than collapsing by tag/uid, so follow-up item count matches the set report mistake count.
 - `getSetReviewStructureSignature`: maps source and variant prompts to lightweight skeletons such as `arith:×:integer` or `conversion:decimal-to-fraction`.
 - `getSetReviewVariantQuality` / `pickSetReviewVariant`: score same-day variants before accepting them, filtering exact repeats, family drift, arithmetic operation drift, decimal-place drift, and conversion-direction drift when alternatives exist.
+- `collectSetReviewVariantCandidates` / `getSetReviewVariantSelectionScore`: build and rank a candidate pool for each main/backup same-day variant before selecting the strongest non-duplicate item.
 - `buildSetReviewArithmeticVariant`: creates source-aware same-operation variants for basic multiplication, division, addition, and subtraction mistakes.
 - `pickSetReviewVariant` / `buildSetReviewBackupVariantPayload`: prepare a second same-structure variant for each same-set mistake without doubling the main follow-up count.
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.

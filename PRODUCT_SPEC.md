@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.190 improves same-day variant selection quality:
+
+- The set-review follow-up engine now samples a candidate pool before choosing each main and backup variant.
+- Candidate ranking favors same skeleton, same knowledge family, non-duplicate prompts, answer completeness, and explanation availability.
+- The variant audit reports how many candidates were considered so tutors can see that the final pack was selected, not merely accepted from a single random draw.
+
 v23.189 makes variant quality visible per item:
 
 - Each same-day main and backup variant now carries a compact quality badge.

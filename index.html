@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.189 (逐题质量标记)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.190 (候选池择优)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2486,7 +2486,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.189</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.190</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2565,9 +2565,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.189';
-        const APP_RELEASE_LABEL = '逐题质量标记';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.189 每道当日变式旁新增贴合原题/需复核标记，质量一眼可见。';
+        const APP_VERSION = 'v23.190';
+        const APP_RELEASE_LABEL = '候选池择优';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.190 当日错题变式改为候选池评分择优，主变式和备用二刷更贴原题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10468,28 +10468,56 @@
             };
         }
 
-        function pickSetReviewVariant(target, student, programId, usedFingerprints = new Set(), maxAttempts = 8) {
-            let fallback = null;
-            let fallbackQuality = null;
+        function getSetReviewVariantSelectionScore(target = {}, candidate = {}, quality = null) {
+            const measured = quality || getSetReviewVariantQuality(target, candidate);
+            let score = measured.score || 0;
+            if (measured.ok) score += 30;
+            if (measured.sourceSignature && measured.candidateSignature && measured.sourceSignature === measured.candidateSignature) score += 12;
+            if ((candidate.qualityFamily || target.family || '') === (target.family || '')) score += 8;
+            if (candidate.q || candidate.prompt) score += 4;
+            if (candidate.a || candidate.answer) score += 4;
+            if (candidate.step) score += 2;
+            return score;
+        }
+        window.getSetReviewVariantSelectionScore = getSetReviewVariantSelectionScore;
+
+        function collectSetReviewVariantCandidates(target, student, programId, usedFingerprints = new Set(), maxAttempts = 12) {
+            const candidates = [];
+            const localSeen = new Set();
             for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
                 const candidate = buildSetReviewVariantQuestion(target, student, programId);
                 if (!candidate) continue;
-                const fingerprint = computeQuestionFingerprint(candidate.q || '');
-                const isUsed = !!fingerprint && usedFingerprints.has(fingerprint);
+                const q = candidate.q || candidate.prompt || '';
+                const fingerprint = computeQuestionFingerprint(q);
+                if (!fingerprint || localSeen.has(fingerprint)) continue;
+                localSeen.add(fingerprint);
                 const quality = getSetReviewVariantQuality(target, candidate);
-                if (!isUsed && (!fallback || quality.score > (fallbackQuality?.score ?? -1))) {
-                    fallback = candidate;
-                    fallbackQuality = quality;
-                }
-                if (!isUsed && quality.ok) {
-                    if (fingerprint) usedFingerprints.add(fingerprint);
-                    return attachSetReviewVariantQuality(target, candidate);
-                }
+                candidates.push({
+                    candidate,
+                    fingerprint,
+                    quality,
+                    isUsed: usedFingerprints.has(fingerprint),
+                    selectionScore: getSetReviewVariantSelectionScore(target, candidate, quality)
+                });
             }
-            if (fallback) {
-                const fingerprint = computeQuestionFingerprint(fallback.q || '');
-                if (fingerprint && !usedFingerprints.has(fingerprint)) usedFingerprints.add(fingerprint);
-                return attachSetReviewVariantQuality(target, fallback);
+            return candidates.sort((a, b) => {
+                if (a.isUsed !== b.isUsed) return a.isUsed ? 1 : -1;
+                if (a.quality.ok !== b.quality.ok) return a.quality.ok ? -1 : 1;
+                return b.selectionScore - a.selectionScore;
+            });
+        }
+        window.collectSetReviewVariantCandidates = collectSetReviewVariantCandidates;
+
+        function pickSetReviewVariant(target, student, programId, usedFingerprints = new Set(), maxAttempts = 8) {
+            const candidateRows = collectSetReviewVariantCandidates(target, student, programId, usedFingerprints, maxAttempts);
+            const selected = candidateRows.find(row => !row.isUsed);
+            if (selected) {
+                usedFingerprints.add(selected.fingerprint);
+                return {
+                    ...attachSetReviewVariantQuality(target, selected.candidate),
+                    followupCandidatePoolSize: candidateRows.length,
+                    followupSelectionScore: selected.selectionScore
+                };
             }
             return null;
         }
@@ -10504,7 +10532,9 @@
                 step: backup.step || '',
                 qualityFamily: backup.qualityFamily || target.family || '',
                 followupQualityScore: backup.followupQualityScore,
-                followupQualityWarnings: backup.followupQualityWarnings || []
+                followupQualityWarnings: backup.followupQualityWarnings || [],
+                followupCandidatePoolSize: backup.followupCandidatePoolSize || 0,
+                followupSelectionScore: backup.followupSelectionScore || 0
             };
         }
 
@@ -10538,6 +10568,11 @@
             const mainCount = items.length;
             const backupCount = items.filter(item => item.followupBackupVariant?.q).length;
             const sourceCount = items.filter(item => item.followupSourceLabel).length;
+            const candidatePoolCount = items.reduce((sum, item) => {
+                return sum
+                    + Number(item.followupCandidatePoolSize || 0)
+                    + Number(item.followupBackupVariant?.followupCandidatePoolSize || 0);
+            }, 0);
             const duplicateFingerprints = new Set();
             const seen = new Map();
             items.forEach((item, index) => {
@@ -10589,6 +10624,7 @@
                 mainCount,
                 backupCount,
                 sourceCount,
+                candidatePoolCount,
                 duplicateCount: duplicateFingerprints.size,
                 familyMismatch,
                 qualityIssueCount,
@@ -10621,6 +10657,7 @@
                 <div class="answer-progress-note" style="margin:0 0 10px; padding:9px 12px; border:1px solid ${tone.border}; background:${tone.bg}; color:${tone.color}; font-size:13px; line-height:1.55; border-radius:8px; font-weight:800;">
                     ${tone.icon} ${tone.text}：
                     错题 ${audit.mistakeCount || 0} 条 · 主变式 ${audit.mainCount || 0} 题 · 备用 ${audit.backupCount || 0} 题 · 来源标注 ${audit.sourceCount || 0} 条
+                    ${audit.candidatePoolCount ? ` · 候选池 ${audit.candidatePoolCount} 题择优` : ''}
                     ${audit.duplicateCount ? ` · 重复风险 ${audit.duplicateCount}` : ''}
                     ${audit.familyMismatch ? ` · 类型偏移 ${audit.familyMismatch}` : ''}
                     ${audit.qualityIssueCount ? ` · 贴合度风险 ${audit.qualityIssueCount}` : ''}

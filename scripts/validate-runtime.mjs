@@ -117,6 +117,9 @@ if (!html.includes('function buildSetReviewVariantQuestion')) {
 if (!html.includes('function getSetReviewVariantQuality')) {
   throw new Error('Set Review follow-up quality gate is missing from runtime script');
 }
+if (!html.includes('function getSetReviewVariantSelectionScore') || !html.includes('function collectSetReviewVariantCandidates')) {
+  throw new Error('Set Review follow-up candidate-pool selector is missing from runtime script');
+}
 if (!html.includes('function getSetReviewStructureSignature')) {
   throw new Error('Set Review follow-up structure signature helper is missing from runtime script');
 }
@@ -1753,12 +1756,19 @@ if (!sampleFollowupItems.every(item => item.followupSourceLabel)) {
 if (!sampleFollowupItems.every(item => item.followupBackupVariant?.q && item.followupBackupVariant?.a)) {
   throw new Error('Set review follow-up items are missing the second prepared backup variant');
 }
+if (!sampleFollowupItems.every(item => item.followupCandidatePoolSize >= 1 && item.followupSelectionScore > 0 && item.followupBackupVariant?.followupCandidatePoolSize >= 1)) {
+  throw new Error('Set review follow-up items should retain candidate-pool selection metadata for main and backup variants');
+}
 if (!sampleFollowupItems.every(item => item.followupQualityScore === 100 && (!item.followupQualityWarnings || item.followupQualityWarnings.length === 0))) {
   throw new Error('Set review follow-up items should pass the same-structure quality gate');
 }
 const sampleFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems);
-if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2 || sampleFollowupAudit.qualityIssueCount !== 0) {
+if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2 || sampleFollowupAudit.qualityIssueCount !== 0 || sampleFollowupAudit.candidatePoolCount < 4) {
   throw new Error('Set review follow-up audit is not confirming one main and one backup variant per mistake');
+}
+const candidatePoolRows = context.window.collectSetReviewVariantCandidates?.(sampleFollowupTargets[0], 'KAI', 'advanced_fluency_v1', new Set(), 8) || [];
+if (!candidatePoolRows.length || candidatePoolRows[0].isUsed || candidatePoolRows[0].selectionScore <= 0 || !candidatePoolRows[0].quality?.ok) {
+  throw new Error('Set review candidate-pool selector should rank usable high-quality variants first');
 }
 const brokenFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems.slice(0, 1));
 if (brokenFollowupAudit?.ok || brokenFollowupAudit?.mainCount !== 1) {
@@ -1776,7 +1786,7 @@ if (!qualityBrokenAuditHtml.includes('第 1 题主变式') || !qualityBrokenAudi
   throw new Error('Set review follow-up audit should render concrete quality issue details');
 }
 const healthyAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(sampleFollowupAudit) || '';
-if (!healthyAuditHtml.includes('可直接作为今日错题变式跟训')) {
+if (!healthyAuditHtml.includes('可直接作为今日错题变式跟训') || !healthyAuditHtml.includes('候选池')) {
   throw new Error('Set review follow-up audit should render a direct-use recommendation when variants pass');
 }
 const arithmeticQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], sampleFollowupItems[0]);
