@@ -117,6 +117,9 @@ if (!html.includes('function buildSetReviewVariantQuestion')) {
 if (!html.includes('function getSetReviewVariantQuality')) {
   throw new Error('Set Review follow-up quality gate is missing from runtime script');
 }
+if (!html.includes('function getSetReviewStructureSignature')) {
+  throw new Error('Set Review follow-up structure signature helper is missing from runtime script');
+}
 if (!html.includes('function buildSetReviewFollowupItems')) {
   throw new Error('Set Review follow-up item builder is missing from runtime script');
 }
@@ -1769,8 +1772,13 @@ const arithmeticQuality = context.window.getSetReviewVariantQuality?.(sampleFoll
 if (!arithmeticQuality?.ok || arithmeticQuality.score !== 100) {
   throw new Error('Set review quality gate should accept same-operation arithmetic variants');
 }
+const arithmeticSourceSignature = context.window.getSetReviewStructureSignature?.('2 &times; 3', 'arithmetic_fluency');
+const arithmeticVariantSignature = context.window.getSetReviewStructureSignature?.(sampleFollowupItems[0]?.q || '', 'arithmetic_fluency');
+if (arithmeticSourceSignature !== 'arith:×:integer' || arithmeticVariantSignature !== 'arith:×:integer') {
+  throw new Error('Set review structure signatures should preserve integer multiplication skeletons');
+}
 const arithmeticDriftQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], { q: `0.6 + <span class="frac"><span>3</span><span class="bottom">4</span></span> =`, qualityFamily: 'complex_mixed' });
-if (arithmeticDriftQuality?.ok || !arithmeticDriftQuality?.reasons?.some(reason => /结构|知识族/.test(reason))) {
+if (arithmeticDriftQuality?.ok || !arithmeticDriftQuality?.reasons?.some(reason => /结构|骨架|知识族/.test(reason))) {
   throw new Error('Set review quality gate should reject drifted arithmetic variants');
 }
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
@@ -1794,6 +1802,10 @@ if (conversionFollowupItems.length !== 1 || !/^\d*\.?\d+ =/.test(conversionFollo
 const conversionQuality = context.window.getSetReviewVariantQuality?.(context.window.buildSetReviewFollowupTargets?.(conversionFollowupSession)?.[0], conversionFollowupItems[0]);
 if (!conversionQuality?.ok) {
   throw new Error('Set review quality gate should accept same-direction conversion variants');
+}
+const conversionSignature = context.window.getSetReviewStructureSignature?.(conversionFollowupItems[0]?.q || '', 'conversion_bridge');
+if (conversionSignature !== 'conversion:decimal-to-fraction') {
+  throw new Error('Set review structure signatures should preserve decimal-to-fraction conversion skeletons');
 }
 if (!conversionFollowupItems[0]?.followupBackupVariant?.q || /%/.test(conversionFollowupItems[0].followupBackupVariant.q)) {
   throw new Error('Decimal-to-fraction source mistakes should prepare a same-direction backup variant');

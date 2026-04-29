@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.185 (当日变式质检)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.186 (变式骨架质检)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.185</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.186</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.185';
-        const APP_RELEASE_LABEL = '当日变式质检';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.185 当日错题变式新增质量闸门，优先保留同结构、同方向变式。';
+        const APP_VERSION = 'v23.186';
+        const APP_RELEASE_LABEL = '变式骨架质检';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.186 当日错题变式新增题型骨架识别，进一步提升贴题质量。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10348,6 +10348,40 @@
             return buildGenericSetReviewVariant(target);
         }
 
+        function getSetReviewStructureSignature(questionHtml = '', family = '') {
+            const normalized = normalizeErrorPrompt(questionHtml || '');
+            const arithmetic = parseSimpleArithmeticPrompt(questionHtml);
+            if (arithmetic) {
+                const decimalMode = arithmetic.leftPlaces + arithmetic.rightPlaces > 0 ? 'decimal' : 'integer';
+                return `arith:${arithmetic.op}:${decimalMode}`;
+            }
+            if (family === 'conversion_bridge') {
+                if (/○|比较|更大|更小|circle-blank|>|&gt;|<|&lt;/.test(`${questionHtml} ${normalized}`)) return 'conversion:compare';
+                if (/%\s*=|百分/.test(normalized)) return 'conversion:percent-to-fraction';
+                if (/^\d*\.?\d+\s*=/.test(normalized) && !/%/.test(normalized)) return 'conversion:decimal-to-fraction';
+                if (/frac|分数/.test(`${questionHtml} ${normalized}`) && /=/.test(normalized)) return 'conversion:fraction-to-decimal';
+                return 'conversion:general';
+            }
+            if (family === 'fraction_operation') {
+                const opMatch = normalized.match(/[+×÷*/−-]/);
+                return `fraction:${opMatch ? opMatch[0].replace('−', '-') : 'general'}`;
+            }
+            if (family === 'equation_method') {
+                if (/÷|&divide;|\//.test(questionHtml)) return 'equation:division';
+                if (/×|&times;|\*/.test(questionHtml)) return 'equation:multiplication';
+                if (/\+/.test(questionHtml)) return 'equation:addition';
+                if (/−|&minus;|-/.test(questionHtml)) return 'equation:subtraction';
+                return 'equation:general';
+            }
+            if (family === 'unit_rate_speed') {
+                if (/km\/h|速度|路程|speed|h\b/.test(`${questionHtml} ${normalized}`)) return 'unit:speed';
+                if (/每|单价|元/.test(`${questionHtml} ${normalized}`)) return 'unit:price';
+                return 'unit:conversion';
+            }
+            return family ? `${family}:general` : 'generic';
+        }
+        window.getSetReviewStructureSignature = getSetReviewStructureSignature;
+
         function getSetReviewVariantQuality(target = {}, candidate = {}) {
             const entry = target.sourceItems?.[0] || {};
             const sourceQ = entry.info?.q || '';
@@ -10357,11 +10391,16 @@
             const reasons = [];
             const sourceFamily = target.family || '';
             const candidateFamily = candidate.qualityFamily || sourceFamily;
+            const sourceSignature = getSetReviewStructureSignature(sourceQ, sourceFamily);
+            const candidateSignature = getSetReviewStructureSignature(candidateQ, candidateFamily);
             if (sourceFingerprint && candidateFingerprint && sourceFingerprint === candidateFingerprint) {
                 reasons.push('和原错题完全相同');
             }
             if (sourceFamily && candidateFamily && sourceFamily !== candidateFamily) {
                 reasons.push('知识族跑偏');
+            }
+            if (sourceSignature && candidateSignature && sourceSignature !== 'generic' && candidateSignature !== 'generic' && sourceSignature !== candidateSignature) {
+                reasons.push('题型骨架不一致');
             }
             const sourceText = normalizeErrorPrompt(sourceQ);
             const candidateText = normalizeErrorPrompt(candidateQ);
@@ -10394,7 +10433,9 @@
             return {
                 ok: reasons.length === 0,
                 score: Math.max(0, 100 - reasons.length * 25),
-                reasons
+                reasons,
+                sourceSignature,
+                candidateSignature
             };
         }
         window.getSetReviewVariantQuality = getSetReviewVariantQuality;

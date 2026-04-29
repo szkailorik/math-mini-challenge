@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.186 adds structure signatures to same-day variant quality:
+
+- Same-set mistakes and variants now receive a lightweight problem skeleton signature, such as integer multiplication or decimal-to-fraction conversion.
+- The quality gate rejects candidates whose skeleton no longer matches the source mistake when a better candidate exists.
+- This raises the precision of retrieval practice by keeping variants close to the original error mechanism while still changing surface numbers.
+
 v23.185 adds a quality gate for same-day variants:
 
 - Same-set follow-up candidates are scored before use so exact repeats, family drift, operation drift, and conversion-direction drift are filtered out when possible.
