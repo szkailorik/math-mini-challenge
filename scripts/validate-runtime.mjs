@@ -135,7 +135,12 @@ if (!html.includes('function getSetReviewFollowupPrintPack')) {
 if (!html.includes('function buildSetReviewFollowupHTML')) {
   throw new Error('Set Review follow-up renderer is missing from runtime script');
 }
-if (!html.includes('function buildSetReviewBackupBankHTML') || !html.includes('window.printSetReviewBackupFollowup')) {
+if (
+  !html.includes('function buildSetReviewBackupBankHTML') ||
+  !html.includes('function buildSetReviewBackupPracticeReviewHTML') ||
+  !html.includes('window.openSetReviewBackupPracticeReview') ||
+  !html.includes('window.printSetReviewBackupFollowup')
+) {
   throw new Error('Set Review backup variant bank workflow is missing from runtime script');
 }
 if (!html.includes('function buildSetReviewFollowupAnswerHTML')) {
@@ -1807,6 +1812,29 @@ if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtm
 const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
+}
+const sampleBackupReviewHtml = context.window.buildSetReviewBackupPracticeReviewHTML?.('KAI', 106) || '';
+if (
+  !sampleBackupReviewHtml.includes('备用二刷批改') ||
+  !sampleBackupReviewHtml.includes('data-practice-kind="set-review-backup"') ||
+  !sampleBackupReviewHtml.includes('data-set-num="106"') ||
+  !sampleBackupReviewHtml.includes('data-source-uid="r1"') ||
+  !sampleBackupReviewHtml.includes('提交备用二刷批改')
+) {
+  throw new Error('Set review backup practice review shell is missing grading metadata or submit action');
+}
+const backupPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_dmul_basic',
+    grade: 'wrong',
+    sourceErrorUid: 'r1',
+    mechanismKey: 'arithmetic_multiplication',
+    info: { sec: '备用二刷卷', num: 1, q: '3 × 4', a: '12', step: '按乘法口诀。' }
+  }
+], 'advanced_fluency_v1', { set: 106, practiceKind: 'set-review-backup', scopeLabel: 'Set 106 备用二刷' });
+const backupResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', backupPracticeLog) || '';
+if (backupPracticeLog?.set !== 106 || !backupResultHtml.includes('备用二刷批改结果') || !backupResultHtml.includes('Set 106 备用二刷')) {
+  throw new Error('Set review backup grading log is not preserving its result title or scope label');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';

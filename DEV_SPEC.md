@@ -82,6 +82,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
+- `buildSetReviewBackupPracticeReviewHTML` / `openSetReviewBackupPracticeReview`: open a grading sheet for the backup second-pass bank and route its results through the error-book practice log with `set-review-backup` scope metadata.
 - `handlePostSubmitReviewNavigation`: routes successful submissions to the set report only when the sheet is complete, otherwise returns focus to the next pending answer.
 - `printCurrentSetReviewReport`: stages the currently open set review into the print sandbox, with optional KAI/Lorik filtering, so report printing does not include the full app page.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.176 (备用二刷卷)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.177 (二刷批改闭环)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.176</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.177</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.176';
-        const APP_RELEASE_LABEL = '备用二刷卷';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.176 本套错题变式把备用题库拆成独立二刷卷，主练更清爽，复练更方便打印。';
+        const APP_VERSION = 'v23.177';
+        const APP_RELEASE_LABEL = '二刷批改闭环';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.177 备用二刷卷新增批改入口，二刷结果可回写错题本。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3953,9 +3953,11 @@
                     date: today,
                     ts: nowTs,
                     programId,
-                    set: window.currentSetNumber,
+                    set: Number(meta.set || window.currentSetNumber),
                     mechanismKey: meta.mechanismKey || '',
                     domainId: meta.domainId || '',
+                    practiceKind: meta.practiceKind || '',
+                    scopeLabel: meta.scopeLabel || '',
                     priorityOnly: !!meta.priorityOnly,
                     results: []
                 };
@@ -8338,6 +8340,7 @@
         }
 
         function getErrorBookPracticeResultTitle(log = {}) {
+            if (log.practiceKind === 'set-review-backup') return '备用二刷批改结果';
             if (log.domainId) return '领域补练批改结果';
             if (log.priorityOnly) return '复错优先批改结果';
             if (log.mechanismKey) return '机制补练批改结果';
@@ -8349,7 +8352,7 @@
             if (!logs.length) return '';
             const rows = logs.map(log => {
                 const summary = summarizeErrorBookPracticeLog(log);
-                const label = getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+                const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
                 const resultTitle = getErrorBookPracticeResultTitle(log).replace('批改结果', '');
                 const logId = encodeURIComponent(log.id || '');
                 return `
@@ -8367,7 +8370,7 @@
 
         function buildErrorBookPracticeResultHTML(student, log = {}) {
             const summary = summarizeErrorBookPracticeLog(log);
-            const label = getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
             const title = getErrorBookPracticeResultTitle(log);
             const wrongItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             const wrongText = wrongItems.map(row => `第 ${row.idx + 1} 题`).join('、');
@@ -8754,11 +8757,14 @@
             const reviewSheet = document.querySelector(`.eb-practice-review-sheet[data-student="${student}"]`);
             const priorityOnly = reviewSheet?.getAttribute('data-priority-only') === 'true';
             const domainId = reviewSheet?.getAttribute('data-domain-id') || '';
+            const practiceKind = reviewSheet?.getAttribute('data-practice-kind') || '';
+            const scopeLabel = reviewSheet?.getAttribute('data-scope-label') || '';
+            const setNum = Number(reviewSheet?.getAttribute('data-set-num') || window.currentSetNumber);
             if (!records.length) {
                 showToast('请至少批改一道专项题后再提交。', { background: '#b45309', duration: 2600 });
                 return;
             }
-            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { mechanismKey: domainId ? '' : (window._ebMechanism || ''), priorityOnly, domainId });
+            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, domainId, practiceKind, scopeLabel });
             if (!log) {
                 showToast('这次专项批改没有可保存的记录。', { background: '#b45309', duration: 2600 });
                 return;
@@ -10543,6 +10549,7 @@
             return items.map((item, idx) => ({
                 sourceNumber: idx + 1,
                 sourceLabel: item.followupSourceLabel || '',
+                sourceErrorUid: item.sourceErrorUid || '',
                 family: item.followupFamily || item.followupBackupVariant?.qualityFamily || '',
                 grade: item.followupGrade || '',
                 mechanismKey: item.followupMechanismKey || '',
@@ -10598,6 +10605,50 @@
         }
         window.buildSetReviewBackupBankHTML = buildSetReviewBackupBankHTML;
 
+        function buildSetReviewBackupPracticeReviewHTML(student, setNum) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            const backups = buildSetReviewBackupItems(items);
+            if (!backups.length) return '';
+            const rows = backups.map((item, idx) => {
+                const infoObj = { sec: '备用二刷卷', num: idx + 1, q: item.q, a: item.a, step: item.step || '' };
+                const encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
+                return `
+                <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${item.sourceErrorUid || ''}" data-mechanism-key="${item.mechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
+                    <div class="ans-content">
+                        <div class="ans-q-line"><span class="ans-num">${idx + 1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif;">[备用二刷] <span class="math-row">${beautifyMathHTML(item.q || '-')}</span></span></div>
+                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[答案] <strong class="highlight"><span class="math-row">${beautifyMathHTML(item.a || '-')}</span></strong>${item.step ? ` · <span class="math-row">${beautifyMathHTML(item.step)}</span>` : ''}</div>
+                        <div class="ans-tip">对应原错题：${item.sourceLabel || '本套错题'}。✓ 已会会归档原错题；✗ 或 ⚠️ 会继续留在错题本。</div>
+                    </div>
+                    <div class="grade-area no-print">
+                        <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
+                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
+                    </div>
+                </div>`;
+            }).join('');
+            return `
+            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="false" data-domain-id="" data-set-num="${Number(setNum)}" data-practice-kind="set-review-backup" data-scope-label="Set ${setNum} 备用二刷">
+                <div class="header">
+                    <h1>${student} Set ${setNum} 备用二刷批改</h1>
+                    <div class="info-row" style="font-weight:normal; font-size:14px;">
+                        <span>范围：本套错题备用变式</span>
+                        <span>${backups.length} 题</span>
+                    </div>
+                </div>
+                <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    批改备用二刷卷：✓ 代表原错题已会，可进入已掌握；✗ 或 ⚠️ 会让原错题继续保留并提高后续复练优先级。
+                </div>
+                <div class="ans-grid-block">${rows}</div>
+                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交备用二刷批改，更新错题本</button>
+                <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.showSetReview(${Number(setNum || window.currentSetNumber)}, '${student}')">返回本套报告</button>
+            </div>`;
+        }
+        window.buildSetReviewBackupPracticeReviewHTML = buildSetReviewBackupPracticeReviewHTML;
+        window.buildSetReviewBackupReviewHTML = buildSetReviewBackupPracticeReviewHTML;
+
         function buildSetReviewFollowupAnswerHTML(items, { forPrint = false, includeBackupAnswers = false } = {}) {
             if (!items.length) return '';
             const hasPracticeLog = items.some(item => item.isErrorBookPractice);
@@ -10649,6 +10700,7 @@
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
                         <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
                         <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 打印备用二刷+答案</button>
+                        <button class="modal-btn" onclick="window.openSetReviewBackupPracticeReview('${student}', ${Number(session.set || window.currentSetNumber)})">📝 批改备用二刷</button>
                     </div>
                 </div>
                 <div class="set-review-followup-overview">
@@ -11193,7 +11245,8 @@
                 showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
                 return;
             }
-            const html = buildSetReviewFollowupPrintHTML(student, window.currentSetNumber, includeAnswers);
+            const setNum = Number(window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const html = buildSetReviewFollowupPrintHTML(student, setNum, includeAnswers);
             if (!html) {
                 showToast('这位学生本套还没有可打印的变式训练。', { background: '#b45309', duration: 2600 });
                 return;
@@ -11220,7 +11273,8 @@
                 showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
                 return;
             }
-            const html = buildSetReviewBackupPrintHTML(student, window.currentSetNumber, includeAnswers);
+            const setNum = Number(window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const html = buildSetReviewBackupPrintHTML(student, setNum, includeAnswers);
             if (!html) {
                 showToast('这位学生本套还没有可打印的备用二刷题。', { background: '#b45309', duration: 2600 });
                 return;
@@ -11237,6 +11291,20 @@
             } else {
                 setTimeout(triggerPrint, 220);
             }
+        };
+
+        window.openSetReviewBackupPracticeReview = function(student, setNum = window.currentSetReviewContext?.setNum || window.currentSetNumber) {
+            const resolvedSetNum = Number(setNum || window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const html = buildSetReviewBackupPracticeReviewHTML(student, resolvedSetNum);
+            if (!html) {
+                showToast('这位学生本套还没有可批改的备用二刷题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const reportModal = document.getElementById('report-modal');
+            if (reportModal) reportModal.style.display = 'none';
+            document.getElementById('paper-container').innerHTML = html;
+            showToast(`📝 已打开 Set ${resolvedSetNum} 备用二刷批改页。`, { background: '#0f766e', duration: 2400 });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
         // ================= 交互控制与数据编码闭环 =================

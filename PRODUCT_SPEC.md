@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.177 closes the backup second-pass loop:
+
+- Same-set reports now let tutors open a grading page for the backup second-pass sheet.
+- Backup grading uses the same `已会 / 粗心 / 又错` feedback model as targeted error-book practice, preserving source error UIDs so results update the original mistake record.
+- Follow-up printing and backup grading resolve the report's own Set number, so reopening an older report does not accidentally print or grade the current set.
+
 v23.176 separates immediate practice from backup practice:
 
 - The primary same-set follow-up sheet shows only the main one-to-one variants, keeping the child-facing workload clear.
