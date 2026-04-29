@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.196 (先想再看)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.197 (模型辨析)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1716,6 +1716,13 @@
             color:#47605a;
             font-weight:700;
         }
+        .quick-review-confusable {
+            margin-top: 5px;
+            color: #7c2d12;
+            font-size: 11.5px;
+            line-height: 1.4;
+            font-weight: 800;
+        }
         .quick-review-topic-pins {
             display: flex;
             flex-wrap: wrap;
@@ -2581,7 +2588,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.196</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.197</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2660,9 +2667,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.196';
-        const APP_RELEASE_LABEL = '先想再看';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.196 名师词典判断题答案改为网页折叠提示，先想再看。';
+        const APP_VERSION = 'v23.197';
+        const APP_RELEASE_LABEL = '模型辨析';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.197 名师词典新增“别混淆”提示，减少套错模型。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -5346,6 +5353,28 @@
             return map[topic.id] || { q: '这题先判断属于哪个模型？', a: `优先回到 ${topic.title || '当前模型'} 的使用场景。` };
         }
         window.getCalculationQuickReviewCheckpoint = getCalculationQuickReviewCheckpoint;
+        function getCalculationQuickReviewConfusable(topic = {}) {
+            const map = {
+                order_first: '别和凑整混：顺序没定好，凑整也会凑错。',
+                make_ten: '别和分配律混：这里只是把一个数靠近整十整百再补偿。',
+                distribute: '别和凑整混：出现共同因数或括号时，优先看拆合结构。',
+                place_align: '别和小数位数混：加减看对齐，乘法才数总小数位。',
+                decimal_scale: '别和除数化整混：小数乘法数位，小数除法先看除数。',
+                division_scale: '别和商的范围混：化整是改题，估商是检查结果大小。',
+                quotient_range: '别和精算混：这是下笔前先保护小数点的位置。',
+                fraction_common: '别和约分混：加减先通分，乘法才优先约分。',
+                cancel_before_multiply: '别和通分混：乘法不需要通分，先看能不能约。',
+                reciprocal_division: '别和乘前约分混：先把除法变乘倒数，再约分。',
+                representation_convert: '别和基准比较混：互化是换衣服，比较是判断大小。',
+                benchmark_compare: '别和表示互化混：这里互化只是为了比较，不是最终答案。',
+                unit_normalize: '别和数量关系混：单位没统一前，关系式也容易列错。',
+                relation_formula: '别和鸡兔同笼混：普通关系题先写公式，鸡兔题先全假设。',
+                chicken_rabbit_assumption: '别和方程混：这里先用全假设和差量，不急着设 x。',
+                equation_inverse: '别和数量关系混：已经给出等式时，重点看未知数位置。'
+            };
+            return map[topic.id] || '别急着套公式，先确认题目结构。';
+        }
+        window.getCalculationQuickReviewConfusable = getCalculationQuickReviewConfusable;
         function buildCalculationQuickReviewPins(topics) {
             const seen = new Set();
             const pins = [];
@@ -5458,6 +5487,7 @@
                                     <div>应想到：${checkpoint.a}</div>
                                 </details>
                                 <div class="quick-review-checkpoint-print-answer">家长提示：${checkpoint.a}</div>
+                                <div class="quick-review-confusable">别混淆：${getCalculationQuickReviewConfusable(topic)}</div>
                             </div>
                             <div class="quick-review-topic-pins">${(topic.pins || []).map(pin => `<span class="quick-review-topic-pin">${pin}</span>`).join('')}</div>
                         </div>

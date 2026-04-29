@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.197 adds model discrimination cues:
+
+- Each model now has a short `别混淆` note that contrasts it with a nearby model.
+- The goal is to reduce wrong model selection, especially across decimal place value, fraction operation, conversion/comparison, and application-problem families.
+- This supports interleaving by teaching learners to notice why one model fits and another does not.
+
 v23.196 strengthens retrieval practice in the model dictionary:
 
 - Checkpoint answers are collapsed on screen behind a `想好后点开提示` control.
