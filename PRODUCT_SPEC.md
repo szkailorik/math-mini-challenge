@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.187 makes variant audit findings actionable:
+
+- The set-review audit now includes concrete quality issue rows when a main or backup variant fails the fit gate.
+- Each row names the variant number, whether it is the main or backup variant, the source mistake label, and the reason.
+- This keeps parent review practical: risky variants can be skipped or checked manually before assigning them.
+
 v23.186 adds structure signatures to same-day variant quality:
 
 - Same-set mistakes and variants now receive a lightweight problem skeleton signature, such as integer multiplication or decimal-to-fraction conversion.

@@ -84,6 +84,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.
 - `getSetReviewFollowupAudit`: now also reports `qualityIssueCount` as `贴合度风险` when a main or backup variant fails the source-fit gate.
+- `buildSetReviewFollowupAuditHTML`: renders concrete quality issue rows with variant number, main/backup lane, source label, and warning reason.
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
 - `printSetReviewBackupFollowup(student, false)`: exposed from the set-review action bar as a question-only backup second-pass print path; `true` still prints the answer reference.
 - `buildSetReviewBackupAnswerHTML`: renders backup second-pass answers as a separate reference section after the question sheet instead of inline under each question.

@@ -1768,6 +1768,10 @@ const qualityBrokenAudit = context.window.getSetReviewFollowupAudit?.(context.wi
 if (qualityBrokenAudit?.ok || qualityBrokenAudit?.qualityIssueCount !== 1) {
   throw new Error('Set review follow-up audit should flag low-quality variants');
 }
+const qualityBrokenAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(qualityBrokenAudit) || '';
+if (!qualityBrokenAuditHtml.includes('第 1 题主变式') || !qualityBrokenAuditHtml.includes('运算结构不一致')) {
+  throw new Error('Set review follow-up audit should render concrete quality issue details');
+}
 const arithmeticQuality = context.window.getSetReviewVariantQuality?.(sampleFollowupTargets[0], sampleFollowupItems[0]);
 if (!arithmeticQuality?.ok || arithmeticQuality.score !== 100) {
   throw new Error('Set review quality gate should accept same-operation arithmetic variants');

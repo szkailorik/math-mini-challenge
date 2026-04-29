@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.186 (变式骨架质检)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.187 (变式风险清单)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.186</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.187</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.186';
-        const APP_RELEASE_LABEL = '变式骨架质检';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.186 当日错题变式新增题型骨架识别，进一步提升贴题质量。';
+        const APP_VERSION = 'v23.187';
+        const APP_RELEASE_LABEL = '变式风险清单';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.187 变式体检会列出具体风险题号和原因，方便人工复核。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10546,6 +10546,18 @@
                 const backupWarnings = Array.isArray(item.followupBackupVariant?.followupQualityWarnings) ? item.followupBackupVariant.followupQualityWarnings : [];
                 return mainWarnings.length > 0 || backupWarnings.length > 0;
             }).length;
+            const qualityIssues = [];
+            items.forEach((item, index) => {
+                const sourceLabel = item.followupSourceLabel || `错题 ${index + 1}`;
+                const mainWarnings = Array.isArray(item.followupQualityWarnings) ? item.followupQualityWarnings : [];
+                const backupWarnings = Array.isArray(item.followupBackupVariant?.followupQualityWarnings) ? item.followupBackupVariant.followupQualityWarnings : [];
+                if (mainWarnings.length) {
+                    qualityIssues.push({ num: index + 1, kind: '主变式', sourceLabel, reasons: mainWarnings });
+                }
+                if (backupWarnings.length) {
+                    qualityIssues.push({ num: index + 1, kind: '备用变式', sourceLabel, reasons: backupWarnings });
+                }
+            });
             const ok = mistakeCount === mainCount
                 && mistakeCount === backupCount
                 && sourceCount === mainCount
@@ -10560,7 +10572,8 @@
                 sourceCount,
                 duplicateCount: duplicateFingerprints.size,
                 familyMismatch,
-                qualityIssueCount
+                qualityIssueCount,
+                qualityIssues
             };
         }
         window.getSetReviewFollowupAudit = getSetReviewFollowupAudit;
@@ -10579,6 +10592,9 @@
                 color: '#b45309',
                 border: '#fed7aa'
             };
+            const qualityIssueRows = Array.isArray(audit.qualityIssues) && audit.qualityIssues.length
+                ? `<div style="margin-top:6px; font-weight:700; color:#92400e;">${audit.qualityIssues.slice(0, 4).map(item => `第 ${item.num} 题${item.kind}（${item.sourceLabel}）：${(item.reasons || []).join('、')}`).join('<br>')}</div>`
+                : '';
             return `
                 <div class="answer-progress-note" style="margin:0 0 10px; padding:9px 12px; border:1px solid ${tone.border}; background:${tone.bg}; color:${tone.color}; font-size:13px; line-height:1.55; border-radius:8px; font-weight:800;">
                     ${tone.icon} ${tone.text}：
@@ -10586,6 +10602,7 @@
                     ${audit.duplicateCount ? ` · 重复风险 ${audit.duplicateCount}` : ''}
                     ${audit.familyMismatch ? ` · 类型偏移 ${audit.familyMismatch}` : ''}
                     ${audit.qualityIssueCount ? ` · 贴合度风险 ${audit.qualityIssueCount}` : ''}
+                    ${qualityIssueRows}
                 </div>`;
         }
         window.buildSetReviewFollowupAuditHTML = buildSetReviewFollowupAuditHTML;
