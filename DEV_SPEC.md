@@ -86,6 +86,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getSetReviewFollowupAudit`: now also reports `qualityIssueCount` as `贴合度风险` when a main or backup variant fails the source-fit gate.
 - `buildSetReviewFollowupAuditHTML`: renders concrete quality issue rows with variant number, main/backup lane, source label, and warning reason.
 - `buildSetReviewFollowupAuditHTML`: includes parent-facing usage advice for pass/fail audit states so the report tells tutors how to use the variant pack.
+- `buildSetReviewQualityBadge`: renders per-item `贴合原题` / `需复核` badges for main and backup variants in screen and print views.
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
 - `printSetReviewBackupFollowup(student, false)`: exposed from the set-review action bar as a question-only backup second-pass print path; `true` still prints the answer reference.
 - `buildSetReviewBackupAnswerHTML`: renders backup second-pass answers as a separate reference section after the question sheet instead of inline under each question.

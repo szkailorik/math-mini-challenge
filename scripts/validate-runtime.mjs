@@ -135,6 +135,9 @@ if (!html.includes('function getSetReviewFollowupItemShape')) {
 if (!html.includes('function getSetReviewFollowupItemDensity')) {
   throw new Error('Set Review follow-up item-density helper is missing from runtime script');
 }
+if (!html.includes('function buildSetReviewQualityBadge')) {
+  throw new Error('Set Review follow-up quality badge helper is missing from runtime script');
+}
 if (!html.includes('function getSetReviewFollowupPrintPack')) {
   throw new Error('Set Review follow-up print-pack helper is missing from runtime script');
 }
@@ -1844,8 +1847,12 @@ if (!normalizedUidA || normalizedUidA !== normalizedUidB) {
   throw new Error('Error UID normalization does not treat equivalent math markup as the same prompt');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
-if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过')) {
+if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过') || !sampleFollowupPrintHtml.includes('贴合原题')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
+}
+const warningBadgeHtml = context.window.buildSetReviewQualityBadge?.({ followupQualityWarnings: ['题型骨架不一致'] }) || '';
+if (!warningBadgeHtml.includes('需复核') || !warningBadgeHtml.includes('题型骨架不一致')) {
+  throw new Error('Set review quality badge should render warning reasons');
 }
 if (sampleFollowupPrintHtml.includes('备用变式：')) {
   throw new Error('Primary set review follow-up print sheet should not inline backup variants');
@@ -1854,7 +1861,7 @@ if (sampleFollowupPrintHtml.includes('class="blank math-inline-blank"') || sampl
   throw new Error('Set review follow-up print HTML still contains legacy underline blanks');
 }
 const sampleBackupBankHtml = context.window.buildSetReviewBackupBankHTML?.(sampleFollowupItems, { includeAnswers: true }) || '';
-if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtml.includes('答案：')) {
+if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtml.includes('答案：') || !sampleBackupBankHtml.includes('贴合原题')) {
   throw new Error('Set review backup bank should render backup questions with optional answers');
 }
 const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, true) || '';

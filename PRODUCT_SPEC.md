@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.189 makes variant quality visible per item:
+
+- Each same-day main and backup variant now carries a compact quality badge.
+- Passing variants show `贴合原题`; risky variants show `需复核` with the warning reason.
+- Badges appear in screen and print contexts so tutors can make item-level assignment decisions without relying only on the audit summary.
+
 v23.188 adds parent-facing usage advice to variant audits:
 
 - Passing audits recommend using the same-day variants directly, then saving backup variants for delayed or wrong-again review.

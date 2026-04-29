@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.188 (变式使用建议)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.189 (逐题质量标记)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2244,6 +2244,25 @@
             letter-spacing:0.02em;
             line-height:1.2;
         }
+        .followup-quality-badge {
+            display:inline-block;
+            margin-left:6px;
+            padding:1px 5px;
+            border:1px solid #bbf7d0;
+            border-radius:6px;
+            color:#047857;
+            background:#ecfdf5;
+            font-size:10.5px;
+            line-height:1.25;
+            font-family:'Songti SC', serif;
+            font-weight:700;
+            vertical-align:middle;
+        }
+        .followup-quality-badge.warn {
+            border-color:#fed7aa;
+            color:#b45309;
+            background:#fff7ed;
+        }
         .followup-print-item .followup-num,
         .followup-print-item .followup-q {
             color:#b91c1c;
@@ -2467,7 +2486,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.188</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.189</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2565,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.188';
-        const APP_RELEASE_LABEL = '变式使用建议';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.188 变式体检新增使用建议，告诉家长今天该直接做还是先复核。';
+        const APP_VERSION = 'v23.189';
+        const APP_RELEASE_LABEL = '逐题质量标记';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.189 每道当日变式旁新增贴合原题/需复核标记，质量一眼可见。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10668,6 +10687,15 @@
             return `${numerals[index] || `${index + 1}`}、 ${label}`;
         }
 
+        function buildSetReviewQualityBadge(item = {}) {
+            const warnings = Array.isArray(item.followupQualityWarnings) ? item.followupQualityWarnings : [];
+            if (warnings.length) {
+                return `<span class="followup-quality-badge warn">需复核：${warnings.slice(0, 2).join('、')}</span>`;
+            }
+            return `<span class="followup-quality-badge">贴合原题</span>`;
+        }
+        window.buildSetReviewQualityBadge = buildSetReviewQualityBadge;
+
         function renderSetReviewFollowupGroups(items = [], { forPrint = false } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
@@ -10681,11 +10709,12 @@
                     const density = getSetReviewFollowupItemDensity(item);
                     const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
                     const sourceNote = item.followupSourceLabel ? `<div class="followup-review-log">对应原错题：${item.followupSourceLabel}</div>` : '';
+                    const qualityBadge = buildSetReviewQualityBadge(item);
                     return forPrint ? `
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <div class="followup-print-body">
-                                <div class="followup-q math-row">${item.q || '-'}</div>
+                                <div class="followup-q math-row">${item.q || '-'}${qualityBadge}</div>
                                 ${sourceNote}
                                 ${reviewLog}
                             </div>
@@ -10693,7 +10722,7 @@
                     ` : `
                         <div class="followup-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
-                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}</div>
+                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${qualityBadge}${sourceNote}</div>
                         </div>
                     `;
                 }).join('');
@@ -10747,18 +10776,19 @@
                 const density = getSetReviewFollowupItemDensity(item);
                 const sourceNote = item.sourceLabel ? `<div class="followup-review-log">对应原错题：${item.sourceLabel}</div>` : '';
                 const answerLine = includeAnswers ? `<div class="followup-review-log">答案：<span class="math-row">${item.a || '-'}</span>${item.step ? ` · ${item.step}` : ''}</div>` : '';
+                const qualityBadge = buildSetReviewQualityBadge(item);
                 return forPrint ? `
                     <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                         <span class="followup-num">${idx + 1}.</span>
                         <div class="followup-print-body">
-                            <div class="followup-q math-row">${item.q}</div>
+                            <div class="followup-q math-row">${item.q}${qualityBadge}</div>
                             ${sourceNote}
                             ${answerLine}
                         </div>
                     </div>`
                     : `<div class="followup-item" data-shape="${shape}" data-density="${density}">
                         <span class="followup-num">${idx + 1}.</span>
-                        <div class="followup-q math-row">${item.q}${sourceNote}${answerLine}</div>
+                        <div class="followup-q math-row">${item.q}${qualityBadge}${sourceNote}${answerLine}</div>
                     </div>`;
             }).join('');
             if (forPrint) {
