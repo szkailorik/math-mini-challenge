@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.174 adds a two-variant reservoir for same-set remediation:
+
+- Each same-set mistake prepares a main variant and a backup variant. The main lane still stays one-to-one with the mistake count; the backup gives the tutor a ready second attempt for later retrieval.
+- Source-aware conversion variants preserve the original task direction, such as decimal-to-fraction or percent-to-fraction, instead of only matching a broad tag.
+- Answer references include backup answers and reminders so a printed report can support immediate practice and delayed review.
+
 v23.173 strengthens same-set follow-up practice:
 
 - The set-review follow-up now guarantees one variant item for every mistake/careless item recorded in that set.

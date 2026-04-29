@@ -78,6 +78,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildSubmittedAnswerActionsHTML`: adds learner-specific post-submit actions to answer sheets so tutors can jump from grading to report review and follow-up printing.
 - `buildSetReviewFollowupTargets`: keeps one target per same-set mistake, rather than collapsing by tag/uid, so follow-up item count matches the set report mistake count.
 - `buildSetReviewArithmeticVariant`: creates source-aware same-operation variants for basic multiplication, division, addition, and subtraction mistakes.
+- `pickSetReviewVariant` / `buildSetReviewBackupVariantPayload`: prepare a second same-structure variant for each same-set mistake without doubling the main follow-up count.
+- `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
 - `handlePostSubmitReviewNavigation`: routes successful submissions to the set report only when the sheet is complete, otherwise returns focus to the next pending answer.
 - `printCurrentSetReviewReport`: stages the currently open set review into the print sandbox, with optional KAI/Lorik filtering, so report printing does not include the full app page.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.

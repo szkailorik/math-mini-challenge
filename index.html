@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.173 (一错一变式)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.174 (互化变式贴题)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.173</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.174</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.173';
-        const APP_RELEASE_LABEL = '一错一变式';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.173 本套错题变式跟训改为一条错题对应一条变式，并加强基础运算贴题度。';
+        const APP_VERSION = 'v23.174';
+        const APP_RELEASE_LABEL = '互化变式贴题';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.174 本套错题变式继续收紧互化方向：小数转分数、百分数转分数、比较题各走同形变式。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9922,6 +9922,8 @@
 
         function buildSetReviewConversionVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            const sourceAware = buildSourceAwareConversionVariant(target);
+            if (sourceAware) return sourceAware;
             if (/^c2_bridge_/.test(entry.tag || '')) {
                 const built = buildClosureC2Variant(entry, '[本套变式 Follow-up] ');
                 if (built) {
@@ -10139,6 +10141,53 @@
             });
         }
 
+        function buildSourceAwareConversionVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const source = normalizeErrorPrompt(entry.info?.q || '');
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'conversion_bridge',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true
+            };
+            if (/○|比较|更大|更小/.test(source)) {
+                const pool = [
+                    { frac: new Frac(1, 2), benchmark: 0.5, values: [0.48, 0.49, 0.51, 0.52] },
+                    { frac: new Frac(3, 4), benchmark: 0.75, values: [0.73, 0.74, 0.76, 0.77] },
+                    { frac: new Frac(4, 5), benchmark: 0.8, values: [0.78, 0.79, 0.81, 0.82] },
+                    { frac: new Frac(5, 8), benchmark: 0.625, values: [0.61, 0.62, 0.63, 0.64] }
+                ];
+                const item = Engine.randChoice(pool);
+                const right = Engine.randChoice(item.values);
+                return attachQualityMetadata({
+                    ...baseMeta,
+                    q: `${item.frac.toHTML()}<span class="circle-blank"></span>${right.toFixed(2)}`,
+                    a: item.benchmark > right ? '&gt;' : '&lt;',
+                    step: `同形变式：仍然先把分数化成小数 ${formatDecimal(item.benchmark)}，再逐位比较。`
+                });
+            }
+            if (/%\s*=|百分/.test(source)) {
+                const percent = Engine.randChoice([12.5, 20, 25, 37.5, 40, 62.5, 75]);
+                return attachQualityMetadata({
+                    ...baseMeta,
+                    q: `${percent}% = (   )`,
+                    a: new Frac(percent, 100).toHTML(),
+                    step: '同形变式：仍然先把百分数写成分母 100 的分数，再约成最简。'
+                });
+            }
+            if (/^\d*\.?\d+\s*=/.test(source) && !/%/.test(source)) {
+                const decimal = Engine.randChoice([0.125, 0.2, 0.25, 0.375, 0.4, 0.625, 0.75, 0.875]);
+                return attachQualityMetadata({
+                    ...baseMeta,
+                    q: `${decimal} = (   )`,
+                    a: new Frac(decimal, 1).toHTML(),
+                    step: '同形变式：仍然先把小数写成分母 10、100 或 1000 的分数，再约分。'
+                });
+            }
+            return null;
+        }
+
         function buildSetReviewEquationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             if (/^c2_eq_/.test(entry.tag || '')) {
@@ -10256,31 +10305,52 @@
             return buildGenericSetReviewVariant(target);
         }
 
+        function pickSetReviewVariant(target, student, programId, usedFingerprints = new Set(), maxAttempts = 8) {
+            let fallback = null;
+            for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+                const candidate = buildSetReviewVariantQuestion(target, student, programId);
+                if (!candidate) continue;
+                const fingerprint = computeQuestionFingerprint(candidate.q || '');
+                fallback = candidate;
+                if (!fingerprint || !usedFingerprints.has(fingerprint)) {
+                    if (fingerprint) usedFingerprints.add(fingerprint);
+                    return candidate;
+                }
+            }
+            if (fallback) {
+                const fingerprint = computeQuestionFingerprint(fallback.q || '');
+                if (fingerprint && !usedFingerprints.has(fingerprint)) usedFingerprints.add(fingerprint);
+            }
+            return fallback;
+        }
+
+        function buildSetReviewBackupVariantPayload(target, student, programId, usedFingerprints) {
+            const backup = pickSetReviewVariant(target, student, programId, usedFingerprints, 10);
+            if (!backup) return null;
+            return {
+                tag: backup.tag || target.tag || '',
+                q: backup.q || backup.prompt || '',
+                a: backup.a || backup.answer || '',
+                step: backup.step || '',
+                qualityFamily: backup.qualityFamily || target.family || ''
+            };
+        }
+
         function buildSetReviewFollowupItems(session, student, programId) {
             const targets = buildSetReviewFollowupTargets(session);
             const items = [];
             const usedFingerprints = new Set();
             targets.forEach(target => {
-                let selected = null;
-                for (let attempt = 0; attempt < 6; attempt += 1) {
-                    const candidate = buildSetReviewVariantQuestion(target, student, programId);
-                    if (!candidate) continue;
-                    const fingerprint = computeQuestionFingerprint(candidate.q || '');
-                    selected = candidate;
-                    if (!fingerprint || !usedFingerprints.has(fingerprint)) {
-                        if (fingerprint) usedFingerprints.add(fingerprint);
-                        break;
-                    }
-                }
+                const selected = pickSetReviewVariant(target, student, programId, usedFingerprints, 8);
                 if (selected) {
-                    const fingerprint = computeQuestionFingerprint(selected.q || '');
-                    if (fingerprint && !usedFingerprints.has(fingerprint)) usedFingerprints.add(fingerprint);
+                    const backupVariant = buildSetReviewBackupVariantPayload(target, student, programId, usedFingerprints);
                     items.push({
                         ...selected,
                         followupFamily: target.family,
                         followupGrade: target.grade,
                         followupMechanismKey: target.mechanismKey || selected.mechanismKey || '',
                         followupSourceLabel: target.sourceLabel || '',
+                        followupBackupVariant: backupVariant,
                         sourceErrorUid: target.sourceItems?.[0]?.uid || ''
                     });
                 }
@@ -10358,19 +10428,22 @@
                     const density = getSetReviewFollowupItemDensity(item);
                     const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
                     const sourceNote = item.followupSourceLabel ? `<div class="followup-review-log">对应原错题：${item.followupSourceLabel}</div>` : '';
+                    const backup = item.followupBackupVariant;
+                    const backupNote = backup?.q ? `<div class="followup-review-log">备用变式：<span class="math-row">${backup.q}</span></div>` : '';
                     return forPrint ? `
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <div class="followup-print-body">
                                 <div class="followup-q math-row">${item.q || '-'}</div>
                                 ${sourceNote}
+                                ${backupNote}
                                 ${reviewLog}
                             </div>
                         </div>
                     ` : `
                         <div class="followup-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
-                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}</div>
+                            <div class="followup-q math-row">${item.q || item.prompt || '-'}${sourceNote}${backupNote}</div>
                         </div>
                     `;
                 }).join('');
@@ -10406,8 +10479,8 @@
             const rows = items.map((item, idx) => `
                 <tr>
                     <td>${idx + 1}</td>
-                    <td><div class="math-row">${item.a || item.answer || '-'}</div></td>
-                    <td>${item.step || ''}</td>
+                    <td><div class="math-row">${item.a || item.answer || '-'}</div>${item.followupBackupVariant?.a ? `<div style="margin-top:4px; color:#475569;">备用：<span class="math-row">${item.followupBackupVariant.a}</span></div>` : ''}</td>
+                    <td>${item.step || ''}${item.followupBackupVariant?.step ? `<div style="margin-top:4px; color:#475569;">备用提醒：${item.followupBackupVariant.step}</div>` : ''}</td>
                     ${hasPracticeLog ? `<td>□ 已会　□ 又错</td>` : ''}
                 </tr>
             `).join('');
@@ -10437,6 +10510,7 @@
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const mistakeCount = wrongCount + carelessCount;
+            const backupCount = items.filter(item => item.followupBackupVariant?.q).length;
             const familySummary = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             return `
             <div class="set-review-followup" data-student="${student}">
@@ -10452,7 +10526,7 @@
                 </div>
                 <div class="set-review-followup-overview">
                     <div class="set-review-followup-summary">
-                        本套错题/粗心 <strong>${mistakeCount}</strong> 条，本次跟训 <strong>${items.length}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
+                        本套错题/粗心 <strong>${mistakeCount}</strong> 条，本次跟训 <strong>${items.length}</strong> 题，备用变式 <strong>${backupCount}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
                     </div>
                     <div class="set-review-followup-metrics">
                         <div class="followup-metric">
@@ -10470,6 +10544,10 @@
                         <div class="followup-metric">
                             <span class="followup-metric-label">覆盖家族</span>
                             <span class="followup-metric-value">${Array.from(new Set(items.map(item => item.followupFamily))).length} 类</span>
+                        </div>
+                        <div class="followup-metric">
+                            <span class="followup-metric-label">备用题库</span>
+                            <span class="followup-metric-value">${backupCount} 题</span>
                         </div>
                     </div>
                 </div>

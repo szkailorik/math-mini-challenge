@@ -1727,8 +1727,29 @@ if (!sampleFollowupItems.every(item => item.followupMechanismKey)) {
 if (!sampleFollowupItems.every(item => item.followupSourceLabel)) {
   throw new Error('Set review follow-up items are missing source-location labels');
 }
+if (!sampleFollowupItems.every(item => item.followupBackupVariant?.q && item.followupBackupVariant?.a)) {
+  throw new Error('Set review follow-up items are missing the second prepared backup variant');
+}
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
   throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
+}
+const conversionFollowupSession = {
+  set: 108,
+  details: [
+    {
+      tag: 'k_conv_1',
+      grade: 'wrong',
+      uid: 'conv-source-1',
+      info: { sec: '互化专项', num: 1, q: '0.25 = (   )', a: '1/4', step: '先写成分母100的分数再约分。' }
+    }
+  ]
+};
+const conversionFollowupItems = context.window.buildSetReviewFollowupItems?.(conversionFollowupSession, 'KAI', 'advanced_fluency_v1') || [];
+if (conversionFollowupItems.length !== 1 || !/^\d*\.?\d+ =/.test(conversionFollowupItems[0]?.q || '') || /%/.test(conversionFollowupItems[0]?.q || '')) {
+  throw new Error('Decimal-to-fraction source mistakes should keep the same conversion direction in follow-up variants');
+}
+if (!conversionFollowupItems[0]?.followupBackupVariant?.q || /%/.test(conversionFollowupItems[0].followupBackupVariant.q)) {
+  throw new Error('Decimal-to-fraction source mistakes should prepare a same-direction backup variant');
 }
 const bulkFollowupSession = {
   set: 107,
