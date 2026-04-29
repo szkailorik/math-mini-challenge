@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.180 deepens backup result traceability:
+
+- Backup second-pass practice results preserve the original mistake prompt and answer, not only the source location label.
+- The result table renders the source prompt inside the `对应原错题` column so tutors can compare original error, backup variant, grading result, and correct answer in one place.
+- This keeps delayed review aligned with retrieval practice while reducing paper shuffling during parent-led correction.
+
 v23.179 improves paper-to-screen traceability:
 
 - Backup second-pass grading stores the source mistake label in each practice result.

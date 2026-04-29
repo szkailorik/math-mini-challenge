@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.179 (二刷来源对照)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.180 (二刷原题对照)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.179</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.180</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.179';
-        const APP_RELEASE_LABEL = '二刷来源对照';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.179 备用二刷批改结果新增原错题来源列，纸质卷核对更清楚。';
+        const APP_VERSION = 'v23.180';
+        const APP_RELEASE_LABEL = '二刷原题对照';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.180 备用二刷批改结果显示原错题题干，纸质原卷核对更直接。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8382,7 +8382,18 @@
                 if (item.sourceErrorUid) return `原错题 ${String(item.sourceErrorUid).slice(0, 8)}`;
                 return '';
             };
-            const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceLabel(item));
+            const getPracticeResultSourceHTML = (item = {}) => {
+                const info = item.info || {};
+                const sourceLabel = getPracticeResultSourceLabel(item);
+                const sourceQ = info.sourceQ || '';
+                const sourceA = info.sourceA || '';
+                if (!sourceLabel && !sourceQ && !sourceA) return '';
+                return `
+                <div>${sourceLabel || '原错题'}</div>
+                ${sourceQ ? `<div class="math-row" style="margin-top:4px; color:#334155;">${sourceQ}</div>` : ''}
+                ${sourceA ? `<div class="math-row" style="margin-top:3px; color:#64748b; font-size:12.5px;">原答案：${sourceA}</div>` : ''}`;
+            };
+            const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
             const wrongItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             const wrongText = wrongItems.map(row => `第 ${row.idx + 1} 题`).join('、');
             const nextAction = summary.wrongAgain
@@ -8394,11 +8405,11 @@
             const rows = (log.results || []).map((item, idx) => {
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '粗心又错' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
-                const sourceLabel = getPracticeResultSourceLabel(item);
+                const sourceHTML = getPracticeResultSourceHTML(item);
                 return `
                 <tr>
                     <td>${idx + 1}</td>
-                    ${hasSourceColumn ? `<td>${sourceLabel || '-'}</td>` : ''}
+                    ${hasSourceColumn ? `<td>${sourceHTML || '-'}</td>` : ''}
                     <td><div class="math-row">${item.info?.q || '-'}</div></td>
                     <td><span style="color:${gradeColor}; font-weight:800;">${gradeLabel}</span></td>
                     <td><div class="math-row">${item.info?.a || '-'}</div></td>
@@ -9402,6 +9413,16 @@
             return 'generic_followup';
         }
 
+        function getSetReviewSourceInfo(target = {}) {
+            const source = target.sourceItems?.[0] || {};
+            const info = source.info || {};
+            return {
+                sourceQ: info.q || '',
+                sourceA: info.a || '',
+                sourceStep: info.step || ''
+            };
+        }
+
         function buildSetReviewFollowupCandidates(session) {
             return (session?.details || []).map((detail, index) => {
                 const info = detail.info || {};
@@ -10367,6 +10388,7 @@
                 const selected = pickSetReviewVariant(target, student, programId, usedFingerprints, 8);
                 if (selected) {
                     const backupVariant = buildSetReviewBackupVariantPayload(target, student, programId, usedFingerprints);
+                    const sourceInfo = getSetReviewSourceInfo(target);
                     items.push({
                         ...selected,
                         followupFamily: target.family,
@@ -10374,6 +10396,7 @@
                         followupMechanismKey: target.mechanismKey || selected.mechanismKey || '',
                         followupSourceLabel: target.sourceLabel || '',
                         followupBackupVariant: backupVariant,
+                        ...sourceInfo,
                         sourceErrorUid: target.sourceItems?.[0]?.uid || ''
                     });
                 }
@@ -10567,6 +10590,9 @@
                 sourceNumber: idx + 1,
                 sourceLabel: item.followupSourceLabel || '',
                 sourceErrorUid: item.sourceErrorUid || '',
+                sourceQ: item.sourceQ || '',
+                sourceA: item.sourceA || '',
+                sourceStep: item.sourceStep || '',
                 family: item.followupFamily || item.followupBackupVariant?.qualityFamily || '',
                 grade: item.followupGrade || '',
                 mechanismKey: item.followupMechanismKey || '',
@@ -10630,7 +10656,7 @@
             const backups = buildSetReviewBackupItems(items);
             if (!backups.length) return '';
             const rows = backups.map((item, idx) => {
-                const infoObj = { sec: '备用二刷卷', num: idx + 1, q: item.q, a: item.a, step: item.step || '', sourceLabel: item.sourceLabel || '', sourceSet: setNum };
+                const infoObj = { sec: '备用二刷卷', num: idx + 1, q: item.q, a: item.a, step: item.step || '', sourceLabel: item.sourceLabel || '', sourceQ: item.sourceQ || '', sourceA: item.sourceA || '', sourceSet: setNum };
                 const encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
                 return `
                 <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${item.sourceErrorUid || ''}" data-mechanism-key="${item.mechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">

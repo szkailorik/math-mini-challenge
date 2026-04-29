@@ -83,12 +83,14 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.
 - `buildSetReviewBackupBankHTML` / `buildSetReviewBackupPrintHTML` / `printSetReviewBackupFollowup`: split backup variants into a separate second-pass practice bank and printable sheet.
 - `buildSetReviewBackupPracticeReviewHTML` / `openSetReviewBackupPracticeReview`: open a grading sheet for the backup second-pass bank and route its results through the error-book practice log with `set-review-backup` scope metadata.
+- `buildSetReviewFollowupItems` / `buildSetReviewBackupItems`: carry original mistake prompt/answer metadata into backup second-pass grading so result logs can show the original item beside the variant.
 - `handlePostSubmitReviewNavigation`: routes successful submissions to the set report only when the sheet is complete, otherwise returns focus to the next pending answer.
 - `printCurrentSetReviewReport`: stages the currently open set review into the print sandbox, with optional KAI/Lorik filtering, so report printing does not include the full app page.
 - `StorageDB.saveErrorBookPractice`: persists targeted error-book sheet grading, marks mastered items, keeps wrong-again items active, and stores a compact practice log for sync.
 - `StorageDB.saveErrorBookPractice(meta.set)`: uses the supplied practice set when creating or updating error-book entries, keeping delayed backup grading aligned to the original report instead of the current counter.
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `buildErrorBookPracticeResultHTML`: adds a source column when practice results carry `info.sourceLabel`, supporting paper-to-screen matching for backup second-pass remediation.
+- `buildErrorBookPracticeResultHTML`: renders source prompt and original answer inside the source column when `info.sourceQ/sourceA` are present.
 - `getErrorBookPracticeResultTitle`: labels targeted-practice reports by scope so domain, mechanism, priority, and general error-book remediation remain distinguishable in reopened logs.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.
 - `getErrorEntryPracticePressure`: converts targeted-practice wrong-again counts into priority weight for error-book sorting, targeted-sheet ordering, and regular error-book selection signals.

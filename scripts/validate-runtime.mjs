@@ -1821,6 +1821,7 @@ if (
   !sampleBackupReviewHtml.includes('data-set-num="106"') ||
   !sampleBackupReviewHtml.includes('data-source-uid="r1"') ||
   !sampleBackupReviewHtml.includes('sourceLabel') ||
+  !sampleBackupReviewHtml.includes('sourceQ') ||
   !sampleBackupReviewHtml.includes('提交备用二刷批改')
 ) {
   throw new Error('Set review backup practice review shell is missing grading metadata or submit action');
@@ -1831,7 +1832,7 @@ const backupPracticeLog = await context.window.StorageDB.saveErrorBookPractice('
     grade: 'wrong',
     sourceErrorUid: 'r1',
     mechanismKey: 'arithmetic_multiplication',
-    info: { sec: '备用二刷卷', num: 1, q: '3 × 4', a: '12', step: '按乘法口诀。', sourceLabel: '复杂乘法 · 第 2 小题', sourceSet: 106 }
+    info: { sec: '备用二刷卷', num: 1, q: '3 × 4', a: '12', step: '按乘法口诀。', sourceLabel: '复杂乘法 · 第 2 小题', sourceQ: '2 × 3', sourceA: '6', sourceSet: 106 }
   }
 ], 'advanced_fluency_v1', { set: 106, practiceKind: 'set-review-backup', scopeLabel: 'Set 106 备用二刷' });
 const backupResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', backupPracticeLog) || '';
@@ -1843,6 +1844,8 @@ if (
   !backupResultHtml.includes('Set 106 备用二刷') ||
   !backupResultHtml.includes('对应原错题') ||
   !backupResultHtml.includes('复杂乘法 · 第 2 小题') ||
+  !backupResultHtml.includes('2 × 3') ||
+  !backupResultHtml.includes('原答案：6') ||
   !backupResultHtml.includes('返回 Set 106 本套报告')
 ) {
   throw new Error('Set review backup grading log is not preserving its result title or scope label');
