@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.191 (15大心智模型)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.192 (16大心智模型)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2486,7 +2486,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.191</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.192</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2565,9 +2565,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.191';
-        const APP_RELEASE_LABEL = '15大心智模型';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.191 名师词典重做为15个计算心智模型，例题全部按套路重新生成，减少噪音。';
+        const APP_VERSION = 'v23.192';
+        const APP_RELEASE_LABEL = '16大心智模型';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.192 名师词典升级为16个心智模型，鸡兔同笼和方程逆运算都保留为进阶模型。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4802,9 +4802,9 @@
         }
         const CALCULATION_QUICK_REVIEW_PAGE = {
             id: 'calculation_quick_review',
-            title: '15大终极心智模型 / 名师词典',
+            title: '16大终极心智模型 / 名师词典',
             subtitle: '每个模型只讲一个套路，一眼看懂什么时候用、第一步怎么下手。',
-            printTitle: '15 Core Math Models',
+            printTitle: '16 Core Math Models',
             printSubtitle: '高质量、低噪音的计算套路复习讲义',
             usageMoments: [
                 { label: '练前 30 秒', text: '先看推荐专题，再抓关键提醒。' },
@@ -5076,27 +5076,47 @@
             {
                 id: 'relation_formula',
                 shortLabel: '关系',
-                title: '14. 数量关系模型',
+                title: '14. 数量关系与逆运算模型',
                 kicker: 'Relation Formula',
-                hook: '应用题先找关系，不先抓数字。',
+                hook: '应用题先找关系，不先抓数字；求反方向时用逆运算。',
                 firstMove: '先写出总量、每份量、份数之间的关系式。',
-                finalCheck: '最后看求的是总量、每份量还是份数。',
-                patterns: ['c2_rate_', 'c2_speed_', 'c2_unit_'],
+                finalCheck: '最后看求的是总量、每份量、份数，还是未知数。',
+                patterns: ['c2_rate_', 'c2_speed_', 'c2_unit_', 'k_eq_', 'c2_eq_'],
                 programEmphasis: {
-                    [ADVANCED_PROGRAM_ID]: '重点抓单价、数量、总价和速度关系。',
-                    [CLOSURE_PROGRAM_ID]: '重点抓关系式能不能迁移到折扣、平均量和速度题。'
+                    [ADVANCED_PROGRAM_ID]: '重点抓单价、数量、总价、速度关系和简单逆运算。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓关系式能不能迁移到折扣、平均量、速度题和方程题。'
                 },
-                rules: ['总价 = 单价 × 数量', '路程 = 速度 × 时间', '总量 = 每份量 × 份数'],
+                rules: ['总价 = 单价 × 数量', '路程 = 速度 × 时间', '求反方向就用逆运算'],
                 techniques: ['先写关系式', '再把已知量放进去', '求哪个量就反着算'],
-                example: '每本 12 元，买 5 本：总价 = 12 × 5 = 60 元',
-                pitfalls: ['别看到两个数就乘', '别把单价和数量换反'],
-                memoryRoute: '先写关系 → 再代数 → 最后回答所求',
-                pins: ['先关系', '再数字']
+                example: '每本 12 元，5 本共 60 元；反过来求单价：60 ÷ 5 = 12 元',
+                pitfalls: ['别看到两个数就乘', '别把单价和数量换反', '别忘反方向要用除法或逆运算'],
+                memoryRoute: '先写关系 → 再看求谁 → 最后正算或反算',
+                pins: ['先关系', '反着算']
+            },
+            {
+                id: 'chicken_rabbit_assumption',
+                shortLabel: '鸡兔',
+                title: '15. 假设差量模型（鸡兔同笼）',
+                kicker: 'Assume & Difference',
+                hook: '先全部假设成一种，再用差量把多出来的部分换回来。',
+                firstMove: '先假设全是脚少的动物，算出一共多少脚。',
+                finalCheck: '最后把鸡数、兔数代回去，检查总只数和总脚数。',
+                patterns: ['k_oly_', 'c2_rate_'],
+                programEmphasis: {
+                    [ADVANCED_PROGRAM_ID]: '重点抓“全假设 + 差几只脚 + 每换一只差几只脚”。',
+                    [CLOSURE_PROGRAM_ID]: '重点抓假设法背后的差量结构，避免只靠猜。'
+                },
+                rules: ['先全部假设成一种', '总差量 ÷ 每只差量 = 要替换的只数', '最后用总数补出另一类'],
+                techniques: ['通常先假设全是鸡', '多出的脚数除以 2 得兔数', '代回总只数和总脚数双检查'],
+                example: '鸡兔共 8 只，脚共 22 只。先全当鸡：8 × 2 = 16，差 6 只脚；每换 1 只兔多 2 只脚，所以兔 3 只，鸡 5 只。',
+                pitfalls: ['别靠试数字乱猜', '别把“每只差 2 脚”写成差 4 脚', '最后一定要代回检查'],
+                memoryRoute: '先全假设 → 再算总差 → 最后除以每只差量',
+                pins: ['全假设', '差量除']
             },
             {
                 id: 'equation_inverse',
                 shortLabel: '方程',
-                title: '15. 方程逆运算模型',
+                title: '16. 方程逆运算模型',
                 kicker: 'Equation Inverse',
                 hook: '方程不是搬来搬去，先看未知数站在哪个位置。',
                 firstMove: '先读出关系，再用逆运算一步一步还原未知数。',
@@ -5153,7 +5173,7 @@
             return fallbackIds.map(id => getCalculationQuickReviewTopic(id)).filter(Boolean);
         }
         function getCalculationQuickReviewTopicTier(topic = {}) {
-            return ['reciprocal_division', 'equation_inverse'].includes(topic.id) ? '进阶模型' : '核心模型';
+            return ['reciprocal_division', 'chicken_rabbit_assumption', 'equation_inverse'].includes(topic.id) ? '进阶模型' : '核心模型';
         }
         window.getCalculationQuickReviewTopicTier = getCalculationQuickReviewTopicTier;
         function buildCalculationQuickReviewPins(topics) {
@@ -9352,7 +9372,7 @@
         window.showCalculationQuickReview = function() {
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.add('quick-review-modal');
-            document.getElementById('modal-title').innerText = '📘 15大终极心智模型 / 名师词典';
+            document.getElementById('modal-title').innerText = '📘 16大终极心智模型 / 名师词典';
             document.getElementById('report-content-area').innerHTML = buildCalculationQuickReviewHTML();
             document.getElementById('report-modal').style.display = 'block';
         };

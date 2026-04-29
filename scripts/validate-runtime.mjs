@@ -431,16 +431,16 @@ const reviewModalHtml = String(elements.get('report-content-area')?.innerHTML ||
 const reviewModalTitle = String(elements.get('modal-title')?.innerText || '');
 const reviewModalContent = elements.get('report-modal-content');
 const quickReviewTopics = context.getCalculationQuickReviewTopics?.() || [];
-if (!Array.isArray(quickReviewTopics) || quickReviewTopics.length !== 15) {
-  throw new Error('Calculation Quick Review should render exactly 15 mental-model topics');
+if (!Array.isArray(quickReviewTopics) || quickReviewTopics.length !== 16) {
+  throw new Error('Calculation Quick Review should render exactly 16 mental-model topics');
 }
-if (context.getCalculationQuickReviewTopicTier?.({ id: 'reciprocal_division' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'order_first' }) !== '核心模型') {
+if (context.getCalculationQuickReviewTopicTier?.({ id: 'chicken_rabbit_assumption' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'equation_inverse' }) !== '进阶模型' || context.getCalculationQuickReviewTopicTier?.({ id: 'order_first' }) !== '核心模型') {
   throw new Error('Calculation Quick Review should mark core and advanced model tiers');
 }
-if (!reviewModalTitle.includes('15大终极心智模型')) {
+if (!reviewModalTitle.includes('16大终极心智模型')) {
   throw new Error('Calculation Quick Review did not update the modal title');
 }
-if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('01. 先定顺序模型') || !reviewModalHtml.includes('15. 方程逆运算模型')) {
+if (!reviewModalHtml.includes('quick-review-page') || !reviewModalHtml.includes('01. 先定顺序模型') || !reviewModalHtml.includes('15. 假设差量模型') || !reviewModalHtml.includes('16. 方程逆运算模型') || !reviewModalHtml.includes('鸡兔共 8 只')) {
   throw new Error('Calculation Quick Review did not render the expected page shell or topic content');
 }
 if (!reviewModalHtml.includes('当前优先看：')) {
