@@ -1844,6 +1844,7 @@ if (
   !backupResultHtml.includes('Set 106 备用二刷') ||
   !backupResultHtml.includes('对应原错题') ||
   !backupResultHtml.includes('复杂乘法 · 第 2 小题') ||
+  !backupResultHtml.includes('复杂乘法 · 第 2 小题 继续留在错题本') ||
   !backupResultHtml.includes('2 × 3') ||
   !backupResultHtml.includes('原答案：6') ||
   !backupResultHtml.includes('返回 Set 106 本套报告')

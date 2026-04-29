@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.181 makes wrong-again action more concrete:
+
+- Targeted-practice result summaries now prefer source mistake labels when naming wrong-again items.
+- Backup second-pass reports can say which original paper question still needs attention, not only which backup item row was wrong.
+- This makes delayed feedback more actionable for parent-led review and reduces the chance of remediating the wrong source item.
+
 v23.180 deepens backup result traceability:
 
 - Backup second-pass practice results preserve the original mistake prompt and answer, not only the source location label.

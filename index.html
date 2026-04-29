@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.180 (二刷原题对照)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.181 (二刷复错清单)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2467,7 +2467,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.180</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.181</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2546,9 +2546,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.180';
-        const APP_RELEASE_LABEL = '二刷原题对照';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.180 备用二刷批改结果显示原错题题干，纸质原卷核对更直接。';
+        const APP_VERSION = 'v23.181';
+        const APP_RELEASE_LABEL = '二刷复错清单';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.181 备用二刷结果的下一步提醒会直接列出对应原错题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -8379,7 +8379,6 @@
                 if (info.sourceSec || info.sourceNum) {
                     return `${info.sourceSec ? `${info.sourceSec} · ` : ''}${info.sourceNum ? `第 ${info.sourceNum} 小题` : '原错题'}`;
                 }
-                if (item.sourceErrorUid) return `原错题 ${String(item.sourceErrorUid).slice(0, 8)}`;
                 return '';
             };
             const getPracticeResultSourceHTML = (item = {}) => {
@@ -8395,7 +8394,7 @@
             };
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
             const wrongItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
-            const wrongText = wrongItems.map(row => `第 ${row.idx + 1} 题`).join('、');
+            const wrongText = wrongItems.map(row => getPracticeResultSourceLabel(row.item) || `第 ${row.idx + 1} 题`).join('、');
             const nextAction = summary.wrongAgain
                 ? `${wrongText} 继续留在错题本。下一次先让孩子口述方法，再做同类变式。`
                 : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';

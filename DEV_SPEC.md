@@ -91,6 +91,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `buildErrorBookPracticeResultHTML` / `buildErrorBookPracticeLogHTML`: expose targeted-practice outcomes immediately after grading and summarize recent practice logs inside the error-book view.
 - `buildErrorBookPracticeResultHTML`: adds a source column when practice results carry `info.sourceLabel`, supporting paper-to-screen matching for backup second-pass remediation.
 - `buildErrorBookPracticeResultHTML`: renders source prompt and original answer inside the source column when `info.sourceQ/sourceA` are present.
+- `buildErrorBookPracticeResultHTML`: uses source labels in the wrong-again next-step sentence when available, so backup remediation points back to the original paper question.
 - `getErrorBookPracticeResultTitle`: labels targeted-practice reports by scope so domain, mechanism, priority, and general error-book remediation remain distinguishable in reopened logs.
 - `openErrorBookPracticeLog` / `printCurrentErrorBookPracticeResult`: let tutors reopen recent targeted-practice reports and print the current result sheet through the print sandbox.
 - `getErrorEntryPracticePressure`: converts targeted-practice wrong-again counts into priority weight for error-book sorting, targeted-sheet ordering, and regular error-book selection signals.
