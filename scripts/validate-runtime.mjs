@@ -1418,7 +1418,7 @@ const domainPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML
 if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !domainPracticeReviewHtml.includes('data-domain-id="decimal"') || !domainPracticeReviewHtml.includes('data-source-uid="e4"')) {
   throw new Error('Error-book domain practice grading sheet is missing domain scope metadata');
 }
-if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('清空重填') || !domainPracticeReviewHtml.includes('practice-batch-progress') || !domainPracticeReviewHtml.includes('暂不能提交')) {
+if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('全部需讲解 ⚠️') || !domainPracticeReviewHtml.includes('清空重填') || !domainPracticeReviewHtml.includes('practice-batch-progress') || !domainPracticeReviewHtml.includes('暂不能提交')) {
   throw new Error('Error-book domain practice grading sheet is missing batch refill actions');
 }
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
@@ -1757,7 +1757,7 @@ if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= p
   throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
 }
 const reviewHtmlForPractice = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { mechanismKey: 'representation-conversion' }) || '';
-if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部又错 ✗') || !reviewHtmlForPractice.includes('还差')) {
+if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部需讲解 ⚠️') || !reviewHtmlForPractice.includes('全部又错 ✗') || !reviewHtmlForPractice.includes('还差')) {
   throw new Error('Error-book targeted practice grading sheet is missing review rows or submit action');
 }
 const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
@@ -2051,6 +2051,8 @@ if (
   !sampleFollowupReviewHtml.includes('提交主变式批改') ||
   !sampleFollowupReviewHtml.includes('纸卷快速回填') ||
   !sampleFollowupReviewHtml.includes('全部已会 ✓') ||
+  !sampleFollowupReviewHtml.includes('全部需讲解 ⚠️') ||
+  !sampleFollowupReviewHtml.includes('需讲解 / 半会') ||
   !sampleFollowupReviewHtml.includes('practice-batch-progress') ||
   !sampleFollowupReviewHtml.includes('暂不能提交')
 ) {
@@ -2065,7 +2067,9 @@ if (
   !sampleBackupReviewHtml.includes('sourceQ') ||
   !sampleBackupReviewHtml.includes('提交备用二刷批改') ||
   !sampleBackupReviewHtml.includes('纸卷快速回填') ||
+  !sampleBackupReviewHtml.includes('全部需讲解 ⚠️') ||
   !sampleBackupReviewHtml.includes('全部又错 ✗') ||
+  !sampleBackupReviewHtml.includes('需讲解 / 半会') ||
   !sampleBackupReviewHtml.includes('practice-batch-progress') ||
   !sampleBackupReviewHtml.includes('暂不能提交')
 ) {

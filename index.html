@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.208 (完整回填)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.209 (需讲解回填)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1239,6 +1239,7 @@
         }
         .practice-batch-btn:hover { border-color:#64748b; background:#f1f5f9; }
         .practice-batch-btn.perfect { color:#166534; border-color:#bbf7d0; }
+        .practice-batch-btn.careless { color:#92400e; border-color:#fde68a; }
         .practice-batch-btn.wrong { color:#991b1b; border-color:#fecaca; }
         .practice-batch-btn.clear { color:#475569; }
 
@@ -2935,7 +2936,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.208</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.209</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3014,9 +3015,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.208';
-        const APP_RELEASE_LABEL = '完整回填';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.208 批改页新增回填进度和漏题拦截，纸卷结果必须完整录入后再提交。';
+        const APP_VERSION = 'v23.209';
+        const APP_RELEASE_LABEL = '需讲解回填';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.209 纸卷回填新增「全部需讲解」并统一 ⚠️ 为需讲解/半会状态。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9240,7 +9241,7 @@
                     </div>
                     <div class="grade-area no-print">
                         <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
-                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn careless" title="需讲解 / 半会" onclick="window.markAnswer(this, 'careless')">⚠️</button>
                         <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
                     </div>
                 </div>`;
@@ -9335,7 +9336,7 @@
                 ? `<button class="review-jump-btn no-print" onclick="window.showSetReview(${Number(log.set)}, '${student}')">返回 Set ${Number(log.set)} 本套报告</button>`
                 : '';
             const rows = (log.results || []).map((item, idx) => {
-                const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '粗心又错' : '又错');
+                const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '需讲解' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
                 const sourceHTML = getPracticeResultSourceHTML(item);
                 return `
@@ -9718,11 +9719,12 @@
             return `
             <div class="practice-batch-tools no-print">
                 <div>
-                    <strong>纸卷快速回填</strong>：${label} 如果大多数题已会，先一键全选 ✓，再把少数错题改成 ⚠️ / ✗。
+                    <strong>纸卷快速回填</strong>：${label} 如果大多数题已会，先一键全选 ✓，再把少数题改成 ⚠️ 需讲解或 ✗ 又错。
                     <div class="practice-batch-progress" data-student="${student}" data-total="${total}">已回填 0 / ${total} 题 · 还有 ${total} 题未填</div>
                 </div>
                 <div class="practice-batch-actions">
                     <button class="practice-batch-btn perfect" onclick="window.markErrorBookPracticeBatch('${student}', 'perfect')">全部已会 ✓</button>
+                    <button class="practice-batch-btn careless" onclick="window.markErrorBookPracticeBatch('${student}', 'careless')">全部需讲解 ⚠️</button>
                     <button class="practice-batch-btn wrong" onclick="window.markErrorBookPracticeBatch('${student}', 'wrong')">全部又错 ✗</button>
                     <button class="practice-batch-btn clear" onclick="window.clearErrorBookPracticeBatch('${student}')">清空重填</button>
                 </div>
@@ -9781,7 +9783,7 @@
                     changed += 1;
                 }
             });
-            const label = type === 'perfect' ? '已会' : (type === 'wrong' ? '又错' : '需复查');
+            const label = type === 'perfect' ? '已会' : (type === 'wrong' ? '又错' : '需讲解');
             updateErrorBookPracticeBatchProgress(student);
             showToast(`已批量标记 ${changed} 题为「${label}」，请把少数例外单独改掉后再提交。`, { background: '#0f766e', duration: 2600 });
         };
@@ -11932,7 +11934,7 @@
                     </div>
                     <div class="grade-area no-print">
                         <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
-                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn careless" title="需讲解 / 半会" onclick="window.markAnswer(this, 'careless')">⚠️</button>
                         <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
                     </div>
                 </div>`;
@@ -11976,7 +11978,7 @@
                     </div>
                     <div class="grade-area no-print">
                         <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
-                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn careless" title="需讲解 / 半会" onclick="window.markAnswer(this, 'careless')">⚠️</button>
                         <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
                     </div>
                 </div>`;
