@@ -148,6 +148,10 @@ if (!html.includes('function buildSetReviewFollowupHTML')) {
   throw new Error('Set Review follow-up renderer is missing from runtime script');
 }
 if (
+  !html.includes('function buildSetReviewFollowupAnswerPrintHTML') ||
+  !html.includes('function buildSetReviewFollowupPracticeReviewHTML') ||
+  !html.includes('window.printSetReviewFollowupAnswers') ||
+  !html.includes('window.openSetReviewFollowupPracticeReview') ||
   !html.includes('function buildSetReviewBackupBankHTML') ||
   !html.includes('function buildSetReviewBackupAnswerHTML') ||
   !html.includes('function buildSetReviewBackupAnswerPrintHTML') ||
@@ -1825,7 +1829,7 @@ const reviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !reviewHtml.includes('第 2 小题') || !reviewHtml.includes('6')) {
   throw new Error('Set review report is missing set number, location, or answer');
 }
-if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('打印变式训练') || !reviewHtml.includes('打印备用二刷题目') || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)") || !reviewHtml.includes('打印备用二刷答案') || !reviewHtml.includes("printSetReviewBackupAnswers('KAI')")) {
+if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('今日变式跟训') || !reviewHtml.includes('备用二刷') || !reviewHtml.includes("printSetReviewFollowup('KAI', false)") || !reviewHtml.includes("printSetReviewFollowupAnswers('KAI')") || !reviewHtml.includes("openSetReviewFollowupPracticeReview('KAI'") || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)") || !reviewHtml.includes("printSetReviewBackupAnswers('KAI')") || !reviewHtml.includes("openSetReviewBackupPracticeReview('KAI'")) {
   throw new Error('Set review report is missing the in-report variant follow-up block');
 }
 if (!reviewHtml.includes('打印当前报告') || typeof context.window.printCurrentSetReviewReport !== 'function') {
@@ -1979,6 +1983,14 @@ const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.
 if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过') || !sampleFollowupPrintHtml.includes('贴合原题')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
+const sampleFollowupQuestionOnlyPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, false) || '';
+if (!sampleFollowupQuestionOnlyPrintHtml.includes('错题变式训练') || sampleFollowupQuestionOnlyPrintHtml.includes('参考答案')) {
+  throw new Error('Set review follow-up question-only print shell should render practice without answers');
+}
+const sampleFollowupAnswerOnlyPrintHtml = context.window.buildSetReviewFollowupAnswerPrintHTML?.('KAI', 106) || '';
+if (!sampleFollowupAnswerOnlyPrintHtml.includes('主变式答案') || !sampleFollowupAnswerOnlyPrintHtml.includes('主变式参考答案') || sampleFollowupAnswerOnlyPrintHtml.includes('错题变式训练')) {
+  throw new Error('Set review follow-up answer-only print shell should render answers without the practice sheet');
+}
 const warningBadgeHtml = context.window.buildSetReviewQualityBadge?.({ followupQualityWarnings: ['题型骨架不一致'] }) || '';
 if (!warningBadgeHtml.includes('需复核') || !warningBadgeHtml.includes('题型骨架不一致')) {
   throw new Error('Set review quality badge should render warning reasons');
@@ -2010,6 +2022,18 @@ if (!sampleBackupAnswerOnlyPrintHtml.includes('备用二刷答案') || !sampleBa
 }
 context.window.currentSetNumber = 109;
 const sampleBackupReviewHtml = context.window.buildSetReviewBackupPracticeReviewHTML?.('KAI', 106) || '';
+const sampleFollowupReviewHtml = context.window.buildSetReviewFollowupPracticeReviewHTML?.('KAI', 106) || '';
+if (
+  !sampleFollowupReviewHtml.includes('主变式批改') ||
+  !sampleFollowupReviewHtml.includes('data-practice-kind="set-review-followup"') ||
+  !sampleFollowupReviewHtml.includes('data-set-num="106"') ||
+  !sampleFollowupReviewHtml.includes('data-source-uid="r1"') ||
+  !sampleFollowupReviewHtml.includes('sourceLabel') ||
+  !sampleFollowupReviewHtml.includes('sourceQ') ||
+  !sampleFollowupReviewHtml.includes('提交主变式批改')
+) {
+  throw new Error('Set review main follow-up practice review shell is missing grading metadata or submit action');
+}
 if (
   !sampleBackupReviewHtml.includes('备用二刷批改') ||
   !sampleBackupReviewHtml.includes('data-practice-kind="set-review-backup"') ||
@@ -2045,6 +2069,25 @@ if (
   !backupResultHtml.includes('返回 Set 106 本套报告')
 ) {
   throw new Error('Set review backup grading log is not preserving its result title or scope label');
+}
+const mainFollowupPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_dmul_basic',
+    grade: 'careless',
+    sourceErrorUid: 'r2',
+    mechanismKey: 'arithmetic_multiplication',
+    info: { sec: '变式训练卷', num: 1, q: '4 × 6', a: '24', step: '按乘法口诀。', sourceLabel: '复杂乘法 · 第 3 小题', sourceQ: '4 × 5', sourceA: '20', sourceSet: 106 }
+  }
+], 'advanced_fluency_v1', { set: 106, practiceKind: 'set-review-followup', scopeLabel: 'Set 106 主变式跟训' });
+const mainFollowupResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', mainFollowupPracticeLog) || '';
+if (
+  mainFollowupPracticeLog?.set !== 106 ||
+  !mainFollowupResultHtml.includes('主变式批改结果') ||
+  !mainFollowupResultHtml.includes('Set 106 主变式跟训') ||
+  !mainFollowupResultHtml.includes('复杂乘法 · 第 3 小题') ||
+  !mainFollowupResultHtml.includes('返回 Set 106 本套报告')
+) {
+  throw new Error('Set review main follow-up grading log is not preserving its result title or scope label');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';

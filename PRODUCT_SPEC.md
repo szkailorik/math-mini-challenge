@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.205 reorganizes same-set variant follow-up into two symmetric lanes:
+
+- `今日变式跟训` and `备用二刷` each expose question-only, answer-only, question+answer, and grading actions.
+- Main variants can now be graded back into the error-book practice log, not only backup variants.
+- Follow-up print sheets use roomier exam-like spacing so practice items do not cluster at the top of the page.
+
 v23.204 adds a standalone printable model micro-drill sheet:
 
 - The dictionary can print a compact 16-question drill sheet without printing the full reference.

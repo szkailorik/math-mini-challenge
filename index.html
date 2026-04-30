@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.204 (模型微练卷)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.205 (变式闭环)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2327,7 +2327,12 @@
         .set-review-followup-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
         .set-review-followup-head h4 { margin:0; color:#0f172a; font-size:16px; line-height:1.35; }
         .set-review-followup-subtitle { margin-top:4px; color:#64748b; font-size:12px; line-height:1.45; }
-        .set-review-followup-actions { display:flex; gap:8px; flex-wrap:wrap; }
+        .set-review-followup-actions { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+        .set-review-action-card { border:1px solid #dbe4ee; border-radius:8px; background:#fff; padding:10px; display:grid; gap:8px; }
+        .set-review-action-card h5 { margin:0; color:#0f172a; font-size:13px; line-height:1.3; }
+        .set-review-action-card p { margin:0; color:#64748b; font-size:11.5px; line-height:1.45; }
+        .set-review-action-buttons { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:7px; }
+        .set-review-action-buttons .modal-btn { width:100%; padding:8px 10px; font-size:12px; border-radius:8px; }
         .set-review-followup-overview {
             border:1px solid #e2e8f0;
             border-radius:14px;
@@ -2409,9 +2414,14 @@
         .set-review-followup-empty { margin-top:10px; padding:12px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:13px; }
         .set-review-followup-print-shell {
             width: 184mm;
+            min-height: var(--print-sheet-height);
             margin: 0 auto;
             color:#0f172a;
             font-family: "Times New Roman", Georgia, serif;
+            box-sizing:border-box;
+            padding: 6mm 4mm 8mm;
+            display:flex;
+            flex-direction:column;
         }
         .set-review-followup-print-shell[data-pack="compact"] {
             width: 186mm;
@@ -2471,7 +2481,7 @@
             font-weight:700;
             letter-spacing:0.08em;
         }
-        .followup-print-sheet { display:grid; gap:8px; }
+        .followup-print-sheet { display:grid; gap:11px; flex:1; align-content:start; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:6px; }
         .followup-print-group {
             page-break-inside:avoid;
@@ -2515,7 +2525,7 @@
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-kicker {
             font-size: 9px;
         }
-        .followup-print-list { display:grid; gap:4px; }
+        .followup-print-list { display:grid; gap:7px; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:3px; }
         .followup-print-item {
             display:grid;
@@ -2524,7 +2534,13 @@
             align-items:flex-start;
             font-size:15px;
             line-height:1.52;
+            min-height: 13mm;
+            padding: 2mm 0;
             page-break-inside:avoid;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-item {
+            min-height: 0;
+            padding: 0;
         }
         .followup-print-item[data-density="dense"] {
             font-size:13.4px;
@@ -2633,6 +2649,11 @@
             border-color:#cbd5e1;
             background:#fff;
         }
+        .set-review-followup-print-shell[data-mode="answer-only"] .set-review-followup-answer.print-answer-sheet {
+            page-break-before:auto;
+            break-before:auto;
+            margin-top:0;
+        }
         body.print-set-review-followup,
         body.print-set-review-followup-with-answers {
             background: #fff !important;
@@ -2689,6 +2710,7 @@
 
         @media (max-width: 760px) {
             .set-review-followup-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .set-review-followup-actions { grid-template-columns: 1fr; }
             .followup-item { flex-wrap: wrap; }
             .followup-family { margin-left: 32px; }
         }
@@ -2811,7 +2833,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.204</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.205</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2890,9 +2912,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.204';
-        const APP_RELEASE_LABEL = '模型微练卷';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.204 名师词典新增独立 16 题模型微练卷和答案页。';
+        const APP_VERSION = 'v23.205';
+        const APP_RELEASE_LABEL = '变式闭环';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.205 本套变式打印与批改入口重整，主变式和备用二刷都能闭环。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9148,6 +9170,7 @@
         }
 
         function getErrorBookPracticeResultTitle(log = {}) {
+            if (log.practiceKind === 'set-review-followup') return '主变式批改结果';
             if (log.practiceKind === 'set-review-backup') return '备用二刷批改结果';
             if (log.domainId) return '领域补练批改结果';
             if (log.priorityOnly) return '复错优先批改结果';
@@ -9205,7 +9228,7 @@
             const nextAction = summary.wrongAgain
                 ? `${wrongText} 继续留在错题本。下一次先让孩子口述方法，再做同类变式。`
                 : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';
-            const returnToSetReviewButton = log.practiceKind === 'set-review-backup' && Number(log.set)
+            const returnToSetReviewButton = (log.practiceKind === 'set-review-backup' || log.practiceKind === 'set-review-followup') && Number(log.set)
                 ? `<button class="review-jump-btn no-print" onclick="window.showSetReview(${Number(log.set)}, '${student}')">返回 Set ${Number(log.set)} 本套报告</button>`
                 : '';
             const rows = (log.results || []).map((item, idx) => {
@@ -11707,6 +11730,48 @@
         window.buildSetReviewBackupPracticeReviewHTML = buildSetReviewBackupPracticeReviewHTML;
         window.buildSetReviewBackupReviewHTML = buildSetReviewBackupPracticeReviewHTML;
 
+        function buildSetReviewFollowupPracticeReviewHTML(student, setNum) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            if (!items.length) return '';
+            const rows = items.map((item, idx) => {
+                const infoObj = { sec: '变式训练卷', num: idx + 1, q: item.q || item.prompt || '', a: item.a || item.answer || '', step: item.step || '', sourceLabel: item.followupSourceLabel || '', sourceQ: item.sourceQ || '', sourceA: item.sourceA || '', sourceSet: setNum };
+                const encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
+                return `
+                <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${item.sourceErrorUid || ''}" data-mechanism-key="${item.followupMechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
+                    <div class="ans-content">
+                        <div class="ans-q-line"><span class="ans-num">${idx + 1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif;">[主变式] <span class="math-row">${beautifyMathHTML(item.q || item.prompt || '-')}</span></span></div>
+                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[答案] <strong class="highlight"><span class="math-row">${beautifyMathHTML(item.a || item.answer || '-')}</span></strong>${item.step ? ` · <span class="math-row">${beautifyMathHTML(item.step)}</span>` : ''}</div>
+                        <div class="ans-tip">对应原错题：${item.followupSourceLabel || '本套错题'}。✓ 已会会归档原错题；✗ 或 ⚠️ 会继续留在错题本。</div>
+                    </div>
+                    <div class="grade-area no-print">
+                        <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
+                        <button class="grade-btn careless" title="还会粗心" onclick="window.markAnswer(this, 'careless')">⚠️</button>
+                        <button class="grade-btn wrong" title="又错了" onclick="window.markAnswer(this, 'wrong')">✗</button>
+                    </div>
+                </div>`;
+            }).join('');
+            return `
+            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="false" data-domain-id="" data-set-num="${Number(setNum)}" data-practice-kind="set-review-followup" data-scope-label="Set ${setNum} 主变式跟训">
+                <div class="header">
+                    <h1>${student} Set ${setNum} 主变式批改</h1>
+                    <div class="info-row" style="font-weight:normal; font-size:14px;">
+                        <span>范围：本套错题主变式</span>
+                        <span>${items.length} 题</span>
+                    </div>
+                </div>
+                <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    批改主变式训练：✓ 代表对应原错题已会，可进入已掌握；✗ 或 ⚠️ 会让原错题继续保留并提高后续复练优先级。
+                </div>
+                <div class="ans-grid-block">${rows}</div>
+                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交主变式批改，更新错题本</button>
+                <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.showSetReview(${Number(setNum || window.currentSetNumber)}, '${student}')">返回本套报告</button>
+            </div>`;
+        }
+        window.buildSetReviewFollowupPracticeReviewHTML = buildSetReviewFollowupPracticeReviewHTML;
+
         function buildSetReviewFollowupAnswerHTML(items, { forPrint = false, includeBackupAnswers = false } = {}) {
             if (!items.length) return '';
             const hasPracticeLog = items.some(item => item.isErrorBookPractice);
@@ -11755,12 +11820,26 @@
                         <div class="set-review-followup-subtitle">一条错题对应一条变式，不重做原题，只追打同一个错误机制。</div>
                     </div>
                     <div class="set-review-followup-actions no-print">
-                        <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 打印变式训练</button>
-                        <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 打印训练+答案</button>
-                        <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', false)">🖨️ 打印备用二刷题目</button>
-                        <button class="modal-btn" onclick="window.printSetReviewBackupAnswers('${student}')">🧾 打印备用二刷答案</button>
-                        <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 打印备用二刷+答案</button>
-                        <button class="modal-btn" onclick="window.openSetReviewBackupPracticeReview('${student}', ${Number(session.set || window.currentSetNumber)})">📝 批改备用二刷</button>
+                        <div class="set-review-action-card">
+                            <h5>今日变式跟训</h5>
+                            <p>先做这一组，一道错题对应一道主变式。</p>
+                            <div class="set-review-action-buttons">
+                                <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 题目</button>
+                                <button class="modal-btn" onclick="window.printSetReviewFollowupAnswers('${student}')">🧾 答案</button>
+                                <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 题目+答案</button>
+                                <button class="modal-btn" onclick="window.openSetReviewFollowupPracticeReview('${student}', ${Number(session.set || window.currentSetNumber)})">📝 批改</button>
+                            </div>
+                        </div>
+                        <div class="set-review-action-card">
+                            <h5>备用二刷</h5>
+                            <p>隔天复练或主变式又错时再用。</p>
+                            <div class="set-review-action-buttons">
+                                <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', false)">🖨️ 题目</button>
+                                <button class="modal-btn" onclick="window.printSetReviewBackupAnswers('${student}')">🧾 答案</button>
+                                <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 题目+答案</button>
+                                <button class="modal-btn" onclick="window.openSetReviewBackupPracticeReview('${student}', ${Number(session.set || window.currentSetNumber)})">📝 批改</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="set-review-followup-overview">
@@ -12330,7 +12409,7 @@
             if (!backups.length) return '';
             const printPack = getSetReviewFollowupPrintPack(backups);
             return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-mode="answer-only">
                 <header class="booklet-meta-band">
                     <span>${student} · Set ${setNum}</span>
                     <span>Backup Answers</span>
@@ -12347,6 +12426,32 @@
             </section>`;
         }
         window.buildSetReviewBackupAnswerPrintHTML = buildSetReviewBackupAnswerPrintHTML;
+
+        function buildSetReviewFollowupAnswerPrintHTML(student, setNum) {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, setNum);
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            if (!items.length) return '';
+            const printPack = getSetReviewFollowupPrintPack(items);
+            return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-mode="answer-only">
+                <header class="booklet-meta-band">
+                    <span>${student} · Set ${setNum}</span>
+                    <span>Main Variant Answers</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">主变式答案</h2>
+                    <p class="followup-print-subtitle">家长核对用 · 对照孩子完成的今日变式跟训题目页</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 主变式参考答案</span>
+                    <span>仅答案</span>
+                </div>
+                ${buildSetReviewFollowupAnswerHTML(items, { forPrint: true })}
+            </section>`;
+        }
+        window.buildSetReviewFollowupAnswerPrintHTML = buildSetReviewFollowupAnswerPrintHTML;
 
         window.printSetReviewFollowup = function(student, includeAnswers = false) {
             ensurePrintLifecycleHooks();
@@ -12365,6 +12470,34 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出变式训练和答案参考。' : '🖨️ 打印提示：将只输出变式训练页。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        window.printSetReviewFollowupAnswers = function(student) {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const setNum = Number(window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const html = buildSetReviewFollowupAnswerPrintHTML(student, setNum);
+            if (!html) {
+                showToast('这位学生本套还没有可打印的主变式答案。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add('print-set-review-followup-with-answers', 'print-sandbox-active');
+            showToast('🖨️ 打印提示：将只输出主变式参考答案。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
@@ -12443,6 +12576,20 @@
             if (reportModal) reportModal.style.display = 'none';
             document.getElementById('paper-container').innerHTML = html;
             showToast(`📝 已打开 Set ${resolvedSetNum} 备用二刷批改页。`, { background: '#0f766e', duration: 2400 });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.openSetReviewFollowupPracticeReview = function(student, setNum = window.currentSetReviewContext?.setNum || window.currentSetNumber) {
+            const resolvedSetNum = Number(setNum || window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const html = buildSetReviewFollowupPracticeReviewHTML(student, resolvedSetNum);
+            if (!html) {
+                showToast('这位学生本套还没有可批改的主变式题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const reportModal = document.getElementById('report-modal');
+            if (reportModal) reportModal.style.display = 'none';
+            document.getElementById('paper-container').innerHTML = html;
+            showToast(`📝 已打开 Set ${resolvedSetNum} 主变式批改页。`, { background: '#0f766e', duration: 2400 });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
