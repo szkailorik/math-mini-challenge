@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.207 (批量回填)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.208 (完整回填)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1203,6 +1203,24 @@
         }
         .practice-batch-tools strong {
             color:#0f172a;
+        }
+        .practice-batch-progress {
+            display:inline-flex;
+            align-items:center;
+            gap:5px;
+            margin-top:4px;
+            padding:3px 8px;
+            border:1px solid #fde68a;
+            border-radius:999px;
+            background:#fff7ed;
+            color:#92400e;
+            font-size:12px;
+            font-weight:800;
+        }
+        .practice-batch-progress.complete {
+            border-color:#bbf7d0;
+            background:#ecfdf5;
+            color:#047857;
         }
         .practice-batch-actions {
             display:flex;
@@ -2917,7 +2935,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.207</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.208</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2996,9 +3014,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.207';
-        const APP_RELEASE_LABEL = '批量回填';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.207 变式和专项批改页新增批量回填工具，纸卷批完后可一键标记大多数题。';
+        const APP_VERSION = 'v23.208';
+        const APP_RELEASE_LABEL = '完整回填';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.208 批改页新增回填进度和漏题拦截，纸卷结果必须完整录入后再提交。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9239,9 +9257,9 @@
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
                     批改纸质专项卷：✓ 代表这道错题已会，会移入已掌握；✗ 或 ⚠️ 会保留在错题本，并记录为专项复错。
                 </div>
-                ${buildErrorBookPracticeBatchToolsHTML(student, title)}
+                ${buildErrorBookPracticeBatchToolsHTML(student, title, items.length)}
                 <div class="ans-grid-block">${rows}</div>
-                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交专项批改，更新错题本</button>
+                <button class="submit-grades-btn no-print" data-ready-text="提交专项批改，更新错题本" onclick="window.submitErrorBookPractice('${student}')" disabled>还差 ${items.length} 题未回填，暂不能提交</button>
                 <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.renderErrorBook()">返回错题本</button>
             </div>`;
         }
@@ -9633,6 +9651,7 @@
                 return;
             }
             document.getElementById('paper-container').innerHTML = html;
+            updateErrorBookPracticeBatchProgress(student);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
 
@@ -9644,6 +9663,7 @@
                 return;
             }
             document.getElementById('paper-container').innerHTML = html;
+            updateErrorBookPracticeBatchProgress(student);
             showToast(`📝 已打开${domain ? domain.name : '领域'}补练批改页。`, { background: '#0f766e', duration: 2400 });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -9693,10 +9713,14 @@
             };
         }
 
-        function buildErrorBookPracticeBatchToolsHTML(student, label = '这张纸卷') {
+        function buildErrorBookPracticeBatchToolsHTML(student, label = '这张纸卷', totalCount = 0) {
+            const total = Number(totalCount || 0);
             return `
             <div class="practice-batch-tools no-print">
-                <div><strong>纸卷快速回填</strong>：${label} 如果大多数题已会，先一键全选 ✓，再把少数错题改成 ⚠️ / ✗。</div>
+                <div>
+                    <strong>纸卷快速回填</strong>：${label} 如果大多数题已会，先一键全选 ✓，再把少数错题改成 ⚠️ / ✗。
+                    <div class="practice-batch-progress" data-student="${student}" data-total="${total}">已回填 0 / ${total} 题 · 还有 ${total} 题未填</div>
+                </div>
                 <div class="practice-batch-actions">
                     <button class="practice-batch-btn perfect" onclick="window.markErrorBookPracticeBatch('${student}', 'perfect')">全部已会 ✓</button>
                     <button class="practice-batch-btn wrong" onclick="window.markErrorBookPracticeBatch('${student}', 'wrong')">全部又错 ✗</button>
@@ -9714,6 +9738,35 @@
         }
         window.getActiveErrorBookPracticeRows = getActiveErrorBookPracticeRows;
 
+        function getErrorBookPracticeFillStats(student) {
+            const rows = getActiveErrorBookPracticeRows(student);
+            const graded = rows.filter(row => row.getAttribute('data-grade')).length;
+            return { total: rows.length, graded, missing: Math.max(0, rows.length - graded) };
+        }
+        window.getErrorBookPracticeFillStats = getErrorBookPracticeFillStats;
+
+        function updateErrorBookPracticeBatchProgress(student) {
+            const stats = getErrorBookPracticeFillStats(student);
+            const sheet = document.querySelector(`.eb-practice-review-sheet[data-student="${student}"]`);
+            const progress = sheet?.querySelector?.(`.practice-batch-progress[data-student="${student}"]`);
+            if (progress) {
+                progress.textContent = stats.missing
+                    ? `已回填 ${stats.graded} / ${stats.total} 题 · 还有 ${stats.missing} 题未填`
+                    : `已回填 ${stats.graded} / ${stats.total} 题 · 可以提交`;
+                if (stats.total > 0 && stats.missing === 0) progress.classList.add('complete');
+                else progress.classList.remove('complete');
+            }
+            const btn = sheet?.querySelector?.('.submit-grades-btn');
+            if (btn) {
+                btn.disabled = !(stats.total > 0 && stats.missing === 0);
+                btn.textContent = stats.missing
+                    ? `还差 ${stats.missing} 题未回填，暂不能提交`
+                    : (btn.getAttribute('data-ready-text') || btn.textContent || '提交批改，更新错题本');
+            }
+            return stats;
+        }
+        window.updateErrorBookPracticeBatchProgress = updateErrorBookPracticeBatchProgress;
+
         window.markErrorBookPracticeBatch = function(student, type = 'perfect') {
             const rows = getActiveErrorBookPracticeRows(student);
             if (!rows.length) {
@@ -9729,6 +9782,7 @@
                 }
             });
             const label = type === 'perfect' ? '已会' : (type === 'wrong' ? '又错' : '需复查');
+            updateErrorBookPracticeBatchProgress(student);
             showToast(`已批量标记 ${changed} 题为「${label}」，请把少数例外单独改掉后再提交。`, { background: '#0f766e', duration: 2600 });
         };
 
@@ -9743,12 +9797,14 @@
                 row.style.backgroundColor = '';
                 row.querySelectorAll('.grade-btn').forEach(btn => btn.classList.remove('active'));
             });
+            updateErrorBookPracticeBatchProgress(student);
             showToast(`已清空 ${rows.length} 题的临时批改，可重新按纸卷回填。`, { background: '#64748b', duration: 2400 });
         };
 
         window.submitErrorBookPractice = async function(student) {
             const rows = Array.from(document.querySelectorAll(`.eb-practice-grade-row[data-student="${student}"]`));
             const records = rows.map(parseErrorBookPracticeRow).filter(Boolean);
+            const missingRows = rows.filter(row => row.getAttribute('data-submitted') !== 'true' && !row.getAttribute('data-grade'));
             const reviewSheet = document.querySelector(`.eb-practice-review-sheet[data-student="${student}"]`);
             const priorityOnly = reviewSheet?.getAttribute('data-priority-only') === 'true';
             const domainId = reviewSheet?.getAttribute('data-domain-id') || '';
@@ -9757,6 +9813,14 @@
             const setNum = Number(reviewSheet?.getAttribute('data-set-num') || window.currentSetNumber);
             if (!records.length) {
                 showToast('请至少批改一道专项题后再提交。', { background: '#b45309', duration: 2600 });
+                updateErrorBookPracticeBatchProgress(student);
+                return;
+            }
+            if (missingRows.length) {
+                missingRows[0]?.classList?.add?.('pending-focus');
+                missingRows[0]?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+                updateErrorBookPracticeBatchProgress(student);
+                showToast(`还有 ${missingRows.length} 题没有回填，请先补齐再提交，避免错题漏记。`, { background: '#b45309', duration: 3200 });
                 return;
             }
             const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, domainId, practiceKind, scopeLabel });
@@ -11885,9 +11949,9 @@
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
                     批改备用二刷卷：✓ 代表原错题已会，可进入已掌握；✗ 或 ⚠️ 会让原错题继续保留并提高后续复练优先级。
                 </div>
-                ${buildErrorBookPracticeBatchToolsHTML(student, '备用二刷')}
+                ${buildErrorBookPracticeBatchToolsHTML(student, '备用二刷', backups.length)}
                 <div class="ans-grid-block">${rows}</div>
-                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交备用二刷批改，更新错题本</button>
+                <button class="submit-grades-btn no-print" data-ready-text="提交备用二刷批改，更新错题本" onclick="window.submitErrorBookPractice('${student}')" disabled>还差 ${backups.length} 题未回填，暂不能提交</button>
                 <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.showSetReview(${Number(setNum || window.currentSetNumber)}, '${student}')">返回本套报告</button>
             </div>`;
         }
@@ -11929,9 +11993,9 @@
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
                     批改主变式训练：✓ 代表对应原错题已会，可进入已掌握；✗ 或 ⚠️ 会让原错题继续保留并提高后续复练优先级。
                 </div>
-                ${buildErrorBookPracticeBatchToolsHTML(student, '主变式')}
+                ${buildErrorBookPracticeBatchToolsHTML(student, '主变式', items.length)}
                 <div class="ans-grid-block">${rows}</div>
-                <button class="submit-grades-btn no-print" onclick="window.submitErrorBookPractice('${student}')">提交主变式批改，更新错题本</button>
+                <button class="submit-grades-btn no-print" data-ready-text="提交主变式批改，更新错题本" onclick="window.submitErrorBookPractice('${student}')" disabled>还差 ${items.length} 题未回填，暂不能提交</button>
                 <button class="review-jump-btn no-print" style="margin-top:10px;" onclick="window.showSetReview(${Number(setNum || window.currentSetNumber)}, '${student}')">返回本套报告</button>
             </div>`;
         }
@@ -12742,6 +12806,7 @@
             const reportModal = document.getElementById('report-modal');
             if (reportModal) reportModal.style.display = 'none';
             document.getElementById('paper-container').innerHTML = html;
+            updateErrorBookPracticeBatchProgress(student);
             showToast(`📝 已打开 Set ${resolvedSetNum} 备用二刷批改页。`, { background: '#0f766e', duration: 2400 });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -12756,6 +12821,7 @@
             const reportModal = document.getElementById('report-modal');
             if (reportModal) reportModal.style.display = 'none';
             document.getElementById('paper-container').innerHTML = html;
+            updateErrorBookPracticeBatchProgress(student);
             showToast(`📝 已打开 Set ${resolvedSetNum} 主变式批改页。`, { background: '#0f766e', duration: 2400 });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };
@@ -12777,12 +12843,14 @@
             btn.classList.add('active');
             let row = btn.closest('.ans-row');
             row.setAttribute('data-grade', type);
+            row.classList.remove('pending-focus');
 
             if(type === 'perfect') row.style.backgroundColor = '#f1f8e9';
             else if(type === 'careless') row.style.backgroundColor = '#fff8e1';
             else if(type === 'wrong') row.style.backgroundColor = '#ffebee';
             const student = row?.getAttribute?.('data-student');
             if (student) refreshSubmitButtonState(student);
+            if (row?.classList?.contains?.('eb-practice-grade-row') && student) updateErrorBookPracticeBatchProgress(student);
         };
 
         window.submitGrades = async function(student) {

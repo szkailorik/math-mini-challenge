@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.208 adds a completeness guard to paper-result refill:
+
+- Variant and error-book grading pages display filled-versus-total progress.
+- Submit remains blocked until every active row has a grade.
+- Missing rows are highlighted before save, reducing accidental data loss from partially entered paper sheets.
+
 v23.207 reduces friction when entering paper-graded follow-up work:
 
 - Same-set main variants, backup variants, and error-book practice review pages expose batch refill actions.

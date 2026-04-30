@@ -81,8 +81,11 @@ if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
 if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('function buildSetReviewPrintActionGuide') || !html.includes('followup-paper-grade') || !html.includes('followup-print-action-guide')) {
   throw new Error('Set review print paper-grading and refill guidance is missing');
 }
-if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('practice-batch-tools')) {
+if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
+}
+if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
+  throw new Error('Error-book practice complete-refill guard is missing');
 }
 if (!html.includes('MathEngine_SetCounters')) {
   throw new Error('Program-aware set counter storage key is missing from runtime script');
@@ -1415,7 +1418,7 @@ const domainPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML
 if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !domainPracticeReviewHtml.includes('data-domain-id="decimal"') || !domainPracticeReviewHtml.includes('data-source-uid="e4"')) {
   throw new Error('Error-book domain practice grading sheet is missing domain scope metadata');
 }
-if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('清空重填')) {
+if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('清空重填') || !domainPracticeReviewHtml.includes('practice-batch-progress') || !domainPracticeReviewHtml.includes('暂不能提交')) {
   throw new Error('Error-book domain practice grading sheet is missing batch refill actions');
 }
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
@@ -1754,7 +1757,7 @@ if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= p
   throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
 }
 const reviewHtmlForPractice = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { mechanismKey: 'representation-conversion' }) || '';
-if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部又错 ✗')) {
+if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部又错 ✗') || !reviewHtmlForPractice.includes('还差')) {
   throw new Error('Error-book targeted practice grading sheet is missing review rows or submit action');
 }
 const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
@@ -2047,7 +2050,9 @@ if (
   !sampleFollowupReviewHtml.includes('sourceQ') ||
   !sampleFollowupReviewHtml.includes('提交主变式批改') ||
   !sampleFollowupReviewHtml.includes('纸卷快速回填') ||
-  !sampleFollowupReviewHtml.includes('全部已会 ✓')
+  !sampleFollowupReviewHtml.includes('全部已会 ✓') ||
+  !sampleFollowupReviewHtml.includes('practice-batch-progress') ||
+  !sampleFollowupReviewHtml.includes('暂不能提交')
 ) {
   throw new Error('Set review main follow-up practice review shell is missing grading metadata or submit action');
 }
@@ -2060,7 +2065,9 @@ if (
   !sampleBackupReviewHtml.includes('sourceQ') ||
   !sampleBackupReviewHtml.includes('提交备用二刷批改') ||
   !sampleBackupReviewHtml.includes('纸卷快速回填') ||
-  !sampleBackupReviewHtml.includes('全部又错 ✗')
+  !sampleBackupReviewHtml.includes('全部又错 ✗') ||
+  !sampleBackupReviewHtml.includes('practice-batch-progress') ||
+  !sampleBackupReviewHtml.includes('暂不能提交')
 ) {
   throw new Error('Set review backup practice review shell is missing grading metadata or submit action');
 }
