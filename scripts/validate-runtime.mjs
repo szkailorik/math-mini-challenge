@@ -78,6 +78,9 @@ if (!html.includes('buildKnowledgeWeakRows') || !html.includes('buildKnowledgeNe
 if (!html.includes("content: '复'") || !html.includes('followup-review-log')) {
   throw new Error('Black-and-white review markers are missing from review/print styles');
 }
+if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('function buildSetReviewPrintActionGuide') || !html.includes('followup-paper-grade') || !html.includes('followup-print-action-guide')) {
+  throw new Error('Set review print paper-grading and refill guidance is missing');
+}
 if (!html.includes('MathEngine_SetCounters')) {
   throw new Error('Program-aware set counter storage key is missing from runtime script');
 }
@@ -1983,6 +1986,9 @@ const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.
 if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过') || !sampleFollowupPrintHtml.includes('贴合原题')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
+if (!sampleFollowupPrintHtml.includes('纸面批改：□ 已会') || !sampleFollowupPrintHtml.includes('回填：本套报告 → 主变式批改') || !sampleFollowupPrintHtml.includes('回填方法：')) {
+  throw new Error('Set review follow-up print shell should tell parents how to mark paper results and refill the main variant review');
+}
 const sampleFollowupQuestionOnlyPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, false) || '';
 if (!sampleFollowupQuestionOnlyPrintHtml.includes('错题变式训练') || sampleFollowupQuestionOnlyPrintHtml.includes('参考答案')) {
   throw new Error('Set review follow-up question-only print shell should render practice without answers');
@@ -2008,6 +2014,9 @@ if (!sampleBackupBankHtml.includes('备用二刷题库') || !sampleBackupBankHtm
 const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KAI', 106, true) || '';
 if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('备用二刷参考答案') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
+}
+if (!sampleBackupPrintHtml.includes('纸面批改：□ 已会') || !sampleBackupPrintHtml.includes('回填：本套报告 → 备用二刷批改') || !sampleBackupPrintHtml.includes('回填方法：')) {
+  throw new Error('Set review backup print shell should tell parents how to mark paper results and refill backup review');
 }
 if (sampleBackupPrintHtml.indexOf('答案：') < sampleBackupPrintHtml.indexOf('备用二刷参考答案')) {
   throw new Error('Set review backup answer-included print should keep answers in a separate reference section after the questions');

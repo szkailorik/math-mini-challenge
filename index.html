@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.205 (变式闭环)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.206 (纸面回填)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2481,6 +2481,28 @@
             font-weight:700;
             letter-spacing:0.08em;
         }
+        .followup-print-action-guide {
+            display:grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap:6px;
+            margin: 0 0 9px;
+            padding: 6px 8px;
+            border: 1px solid rgba(15, 23, 42, 0.22);
+            border-radius: 6px;
+            color:#334155;
+            font-family:'Songti SC', serif;
+            font-size:10.2px;
+            line-height:1.4;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-action-guide {
+            margin-bottom: 5px;
+            padding: 4px 6px;
+            font-size: 9.4px;
+            line-height: 1.28;
+        }
+        .followup-print-action-guide strong {
+            color:#0f172a;
+        }
         .followup-print-sheet { display:grid; gap:11px; flex:1; align-content:start; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:6px; }
         .followup-print-group {
@@ -2584,6 +2606,25 @@
             letter-spacing:0.02em;
             line-height:1.2;
         }
+        .followup-paper-grade {
+            display:flex;
+            flex-wrap:wrap;
+            gap:6px 10px;
+            margin-top:1px;
+            font-family:'Songti SC', serif;
+            font-size:10.2px;
+            color:#0f172a;
+            letter-spacing:0.02em;
+            line-height:1.28;
+        }
+        .followup-paper-grade span {
+            white-space:nowrap;
+        }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-paper-grade {
+            gap:3px 7px;
+            font-size:9.2px;
+            line-height:1.16;
+        }
         .followup-quality-badge {
             display:inline-block;
             margin-left:6px;
@@ -2674,6 +2715,8 @@
         body.print-set-review-followup-with-answers #print-root .followup-print-item,
         body.print-set-review-followup #print-root .booklet-meta-band,
         body.print-set-review-followup-with-answers #print-root .booklet-meta-band,
+        body.print-set-review-followup #print-root .followup-print-action-guide,
+        body.print-set-review-followup-with-answers #print-root .followup-print-action-guide,
         body.print-set-review-followup #print-root .followup-print-meta,
         body.print-set-review-followup-with-answers #print-root .followup-print-meta,
         body.print-set-review-followup #print-root .followup-print-group-head,
@@ -2689,7 +2732,11 @@
             color: #334155 !important;
         }
         body.print-set-review-followup #print-root .followup-print-group-head,
-        body.print-set-review-followup-with-answers #print-root .followup-print-group-head {
+        body.print-set-review-followup #print-root .followup-print-action-guide,
+        body.print-set-review-followup #print-root .followup-paper-grade,
+        body.print-set-review-followup-with-answers #print-root .followup-print-group-head,
+        body.print-set-review-followup-with-answers #print-root .followup-print-action-guide,
+        body.print-set-review-followup-with-answers #print-root .followup-paper-grade {
             border-bottom-color: rgba(15, 23, 42, 0.2) !important;
         }
         body.print-set-review-followup #print-root .followup-print-group h3,
@@ -2833,7 +2880,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.205</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.206</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -2912,9 +2959,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.205';
-        const APP_RELEASE_LABEL = '变式闭环';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.205 本套变式打印与批改入口重整，主变式和备用二刷都能闭环。';
+        const APP_VERSION = 'v23.206';
+        const APP_RELEASE_LABEL = '纸面回填';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.206 变式训练打印页新增纸面批改栏和回填提示，纸上做完更容易回录到错题本。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -11544,6 +11591,29 @@
         }
         window.buildSetReviewQualityBadge = buildSetReviewQualityBadge;
 
+        function buildSetReviewPaperGradeHTML(lane = 'main') {
+            const laneLabel = lane === 'backup' ? '备用二刷批改' : '主变式批改';
+            return `
+            <div class="followup-paper-grade">
+                <span>纸面批改：□ 已会</span>
+                <span>□ 又错</span>
+                <span>□ 需讲解</span>
+                <span>回填：本套报告 → ${laneLabel}</span>
+            </div>`;
+        }
+        window.buildSetReviewPaperGradeHTML = buildSetReviewPaperGradeHTML;
+
+        function buildSetReviewPrintActionGuide(lane = 'main') {
+            const laneLabel = lane === 'backup' ? '备用二刷' : '今日变式';
+            const reviewLabel = lane === 'backup' ? '备用二刷批改' : '主变式批改';
+            return `
+            <div class="followup-print-action-guide">
+                <span><strong>做题顺序：</strong>${laneLabel}先独立完成，家长只看答案页核对。</span>
+                <span><strong>回填方法：</strong>纸上勾好后回到本套报告，点「${reviewLabel}」录入 ✓ / ⚠️ / ✗。</span>
+            </div>`;
+        }
+        window.buildSetReviewPrintActionGuide = buildSetReviewPrintActionGuide;
+
         function renderSetReviewFollowupGroups(items = [], { forPrint = false } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
@@ -11565,6 +11635,7 @@
                                 <div class="followup-q math-row">${item.q || '-'}${qualityBadge}</div>
                                 ${sourceNote}
                                 ${reviewLog}
+                                ${buildSetReviewPaperGradeHTML('main')}
                             </div>
                         </div>
                     ` : `
@@ -11632,6 +11703,7 @@
                             <div class="followup-q math-row">${item.q}${qualityBadge}</div>
                             ${sourceNote}
                             ${answerLine}
+                            ${includeAnswers ? '' : buildSetReviewPaperGradeHTML('backup')}
                         </div>
                     </div>`
                     : `<div class="followup-item" data-shape="${shape}" data-density="${density}">
@@ -12363,6 +12435,7 @@
                     <span>${compactMetaLeft}</span>
                     <span>${compactMetaRight}</span>
                 </div>
+                ${buildSetReviewPrintActionGuide('main')}
                 ${buildSetReviewFollowupAuditHTML(audit)}
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -12393,6 +12466,7 @@
                     <span><strong>${backups.length} 题</strong> · 对应本套错题备用题库</span>
                     <span>${includeAnswers ? '含参考答案' : '不含答案'}</span>
                 </div>
+                ${buildSetReviewPrintActionGuide('backup')}
                 ${buildSetReviewFollowupAuditHTML(audit)}
                 <div class="followup-print-sheet">${buildSetReviewBackupBankHTML(items, { forPrint: true, includeAnswers: false })}</div>
                 ${answerBlock}
