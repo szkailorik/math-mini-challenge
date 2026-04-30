@@ -1795,7 +1795,7 @@ if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultH
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
 }
 const practiceExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', practiceLog) || '';
-if (!practiceExplainChecklistHtml.includes('机制补练讲解清单') || !practiceExplainChecklistHtml.includes('讲解顺序') || !practiceExplainChecklistHtml.includes('讲解动作') || !practiceExplainChecklistHtml.includes('隔天优先二刷') || !practiceExplainChecklistHtml.includes('0.25')) {
+if (!practiceExplainChecklistHtml.includes('机制补练讲解清单') || !practiceExplainChecklistHtml.includes('讲解顺序') || !practiceExplainChecklistHtml.includes('讲解动作') || !practiceExplainChecklistHtml.includes('讲后记录') || !practiceExplainChecklistHtml.includes('□ 已讲清') || !practiceExplainChecklistHtml.includes('□ 已重做') || !practiceExplainChecklistHtml.includes('□ 仍不会') || !practiceExplainChecklistHtml.includes('隔天优先二刷') || !practiceExplainChecklistHtml.includes('0.25')) {
   throw new Error('Error-book targeted practice explanation checklist is missing actionable review details');
 }
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
@@ -2127,7 +2127,7 @@ if (
   throw new Error('Set review main follow-up grading log is not preserving its result title or scope label');
 }
 const mainFollowupExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', mainFollowupPracticeLog) || '';
-if (!mainFollowupExplainChecklistHtml.includes('主变式讲解清单') || !mainFollowupExplainChecklistHtml.includes('复杂乘法 · 第 3 小题') || !mainFollowupExplainChecklistHtml.includes('让孩子先口述方法')) {
+if (!mainFollowupExplainChecklistHtml.includes('主变式讲解清单') || !mainFollowupExplainChecklistHtml.includes('复杂乘法 · 第 3 小题') || !mainFollowupExplainChecklistHtml.includes('让孩子先口述方法') || !mainFollowupExplainChecklistHtml.includes('讲后记录')) {
   throw new Error('Set review main follow-up explanation checklist is missing source-linked action guidance');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };

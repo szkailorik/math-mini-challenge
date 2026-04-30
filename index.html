@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.211 (讲解清单)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.212 (讲后打勾)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1247,6 +1247,12 @@
             color:#92400e;
             font-weight:800;
             line-height:1.45;
+        }
+        .explain-checklist-follow {
+            color:#0f172a;
+            font-size:12px;
+            line-height:1.55;
+            white-space:nowrap;
         }
 
         .step-box { background: #f8f9fc; border-left: 4px solid #002D72; padding: 6px 10px; margin-bottom: 8px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
@@ -2942,7 +2948,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.211</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.212</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3021,9 +3027,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.211';
-        const APP_RELEASE_LABEL = '讲解清单';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.211 批改结果新增讲解清单打印，只列需讲解和又错题。';
+        const APP_VERSION = 'v23.212';
+        const APP_RELEASE_LABEL = '讲后打勾';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.212 讲解清单新增讲后打勾栏，讲清、重做、仍不会一张纸闭环。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9357,6 +9363,7 @@
                     <td><span style="font-weight:800; color:${item.grade === 'careless' ? '#92400e' : '#991b1b'};">${gradeLabel}</span></td>
                     <td><div class="math-row">${item.info?.a || '-'}</div></td>
                     <td class="explain-checklist-action">${action}</td>
+                    <td class="explain-checklist-follow">□ 已讲清<br>□ 已重做<br>□ 仍不会</td>
                 </tr>`;
             }).join('');
             return `
@@ -9369,10 +9376,10 @@
                     </div>
                 </div>
                 <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid #fed7aa; background:#fff7ed; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
-                    <strong>讲解顺序：</strong>先讲需讲解题，让孩子说方法；再处理又错题，隔天二刷。
+                    <strong>讲解顺序：</strong>先讲需讲解题，让孩子说方法；再处理又错题，隔天二刷。讲完后在右侧勾选，仍不会的题保留到下次优先复练。
                 </div>
                 <table class="archive-table">
-                    <tr><th>#</th><th>对应原错题</th><th>补练题</th><th>状态</th><th>正确答案</th><th>讲解动作</th></tr>
+                    <tr><th>#</th><th>对应原错题</th><th>补练题</th><th>状态</th><th>正确答案</th><th>讲解动作</th><th>讲后记录</th></tr>
                     ${rows}
                 </table>
             </div>`;

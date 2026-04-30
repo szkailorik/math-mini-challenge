@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.212 closes the parent-led explanation loop on paper:
+
+- Explanation checklists include a post-teaching record column.
+- Parents can mark whether an item was explained, retried, or still not understood.
+- Items marked still-not-understood on paper become natural candidates for the next priority review session.
+
 v23.211 adds a focused parent teaching artifact:
 
 - Practice result pages can print an explanation checklist containing only needs-explanation and wrong-again rows.
