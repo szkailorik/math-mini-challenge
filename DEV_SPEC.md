@@ -143,6 +143,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - Targeted review variants now also cover selected KAI decimal-division and equation trap tags, not only Lorik benchmark comparison and division tags.
 - `beautifyMathHTML`: normalizes the visual treatment of operators, equality signs, comparison signs, blanks, and circle choices so math layout stays more balanced across generated HTML strings.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
+- `buildErrorBookPracticeBatchToolsHTML` / `markErrorBookPracticeBatch` / `clearErrorBookPracticeBatch`: provide one-click batch refill for paper-graded targeted practice, main variants, and backup variants while still allowing per-row corrections before submit.
 - `buildSetReviewPaperGradeHTML` / `buildSetReviewPrintActionGuide`: add black-and-white paper grading marks plus refill guidance to same-set variant printouts so paper results can be entered back through the correct review lane.
 - `PROGRAM_STORAGE_KEY`: persists the selected training program in `localStorage`, currently normalized back to `advanced_fluency_v1` if an unavailable program is requested.
 - `showToast`: centralizes transient feedback for grading, error-book actions, and print guidance.

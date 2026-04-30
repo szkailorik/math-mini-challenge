@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.207 reduces friction when entering paper-graded follow-up work:
+
+- Same-set main variants, backup variants, and error-book practice review pages expose batch refill actions.
+- Parents can mark all rows as mastered or wrong-again, then adjust exceptions before submitting.
+- This keeps feedback capture immediate enough to preserve error-book scheduling while respecting paper-first workflows.
+
 v23.206 tightens the paper-to-system loop for same-set variant practice:
 
 - Printed `今日变式跟训` and `备用二刷` question sheets include paper grading marks for `已会 / 又错 / 需讲解`.
