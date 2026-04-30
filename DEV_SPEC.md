@@ -143,6 +143,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - Targeted review variants now also cover selected KAI decimal-division and equation trap tags, not only Lorik benchmark comparison and division tags.
 - `beautifyMathHTML`: normalizes the visual treatment of operators, equality signs, comparison signs, blanks, and circle choices so math layout stays more balanced across generated HTML strings.
 - `APP_VERSION` / `APP_RELEASE_LABEL`: keeps runtime version metadata consistent across the UI, exported backups, and Gist bookkeeping.
+- `summarizeErrorBookPracticeLog` and `buildErrorBookPracticeResultHTML` now separate `careless`/needs-explanation from wrong-again counts in result cards, next-step guidance, and recent practice logs.
 - Paper-refill review pages map the existing `careless` grade to parent-facing `需讲解 / 半会` wording and expose a batch `全部需讲解` action, preserving storage compatibility while matching the printed marks.
 - `getErrorBookPracticeFillStats` / `updateErrorBookPracticeBatchProgress`: track filled-versus-total paper review rows and block targeted-practice submit until all active rows have a grade.
 - `buildErrorBookPracticeBatchToolsHTML` / `markErrorBookPracticeBatch` / `clearErrorBookPracticeBatch`: provide one-click batch refill for paper-graded targeted practice, main variants, and backup variants while still allowing per-row corrections before submit.

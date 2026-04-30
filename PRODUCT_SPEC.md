@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.210 makes paper-refill results more actionable:
+
+- Result summaries separate mastered, needs-explanation, and wrong-again outcomes.
+- Needs-explanation rows trigger a parent-facing next step to explain and ask the learner to verbalize the method before retrying.
+- Recent practice logs keep the middle-state count visible instead of merging it into wrong-again totals.
+
 v23.209 aligns paper grading language with digital refill actions:
 
 - The paper mark `需讲解` now maps to the digital `⚠️` state in targeted review pages.

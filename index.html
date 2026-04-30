@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.209 (需讲解回填)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.210 (讲解报告)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2936,7 +2936,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.209</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.210</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3015,9 +3015,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.209';
-        const APP_RELEASE_LABEL = '需讲解回填';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.209 纸卷回填新增「全部需讲解」并统一 ⚠️ 为需讲解/半会状态。';
+        const APP_VERSION = 'v23.210';
+        const APP_RELEASE_LABEL = '讲解报告';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.210 批改结果单独统计需讲解题，并给家长下一步复盘建议。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9269,8 +9269,10 @@
         function summarizeErrorBookPracticeLog(log = {}) {
             const results = Array.isArray(log.results) ? log.results : [];
             const mastered = results.filter(item => item.grade === 'perfect').length;
-            const wrongAgain = results.filter(item => item.grade && item.grade !== 'perfect').length;
-            return { total: results.length, mastered, wrongAgain };
+            const needsExplain = results.filter(item => item.grade === 'careless').length;
+            const wrongAgain = results.filter(item => item.grade === 'wrong').length;
+            const stillOpen = needsExplain + wrongAgain;
+            return { total: results.length, mastered, needsExplain, wrongAgain, stillOpen };
         }
 
         function getErrorBookPracticeResultTitle(log = {}) {
@@ -9293,7 +9295,7 @@
                 return `
                 <div class="eb-practice-log-row">
                     <span><strong>${log.date || '最近'}</strong> · ${resultTitle} · ${label} · ${summary.total} 题</span>
-                    <span>已会 ${summary.mastered} · <b>又错 ${summary.wrongAgain}</b> <button class="eb-filter-btn" style="padding:3px 7px; margin-left:6px; font-size:11.5px;" onclick="window.openErrorBookPracticeLog('${student}', '${logId}')">查看</button></span>
+                    <span>已会 ${summary.mastered} · 需讲解 ${summary.needsExplain} · <b>又错 ${summary.wrongAgain}</b> <button class="eb-filter-btn" style="padding:3px 7px; margin-left:6px; font-size:11.5px;" onclick="window.openErrorBookPracticeLog('${student}', '${logId}')">查看</button></span>
                 </div>`;
             }).join('');
             return `
@@ -9327,17 +9329,23 @@
                 ${sourceA ? `<div class="math-row" style="margin-top:3px; color:#64748b; font-size:12.5px;">原答案：${sourceA}</div>` : ''}`;
             };
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
-            const wrongItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
+            const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
+            const explainItems = openItems.filter(row => row.item.grade === 'careless');
+            const wrongItems = openItems.filter(row => row.item.grade === 'wrong');
+            const explainText = explainItems.map(row => getPracticeResultSourceLabel(row.item) || `第 ${row.idx + 1} 题`).join('、');
             const wrongText = wrongItems.map(row => getPracticeResultSourceLabel(row.item) || `第 ${row.idx + 1} 题`).join('、');
-            const nextAction = summary.wrongAgain
-                ? `${wrongText} 继续留在错题本。下一次先让孩子口述方法，再做同类变式。`
+            const nextPieces = [];
+            if (explainItems.length) nextPieces.push(`${explainText} 需要先讲解/口述方法，再做一次同类题确认。`);
+            if (wrongItems.length) nextPieces.push(`${wrongText} 继续留在错题本，下一次优先复练。`);
+            const nextAction = summary.stillOpen
+                ? nextPieces.join(' ')
                 : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';
             const returnToSetReviewButton = (log.practiceKind === 'set-review-backup' || log.practiceKind === 'set-review-followup') && Number(log.set)
                 ? `<button class="review-jump-btn no-print" onclick="window.showSetReview(${Number(log.set)}, '${student}')">返回 Set ${Number(log.set)} 本套报告</button>`
                 : '';
             const rows = (log.results || []).map((item, idx) => {
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '需讲解' : '又错');
-                const gradeColor = item.grade === 'perfect' ? '#166534' : '#991b1b';
+                const gradeColor = item.grade === 'perfect' ? '#166534' : (item.grade === 'careless' ? '#92400e' : '#991b1b');
                 const sourceHTML = getPracticeResultSourceHTML(item);
                 return `
                 <tr>
@@ -9360,9 +9368,10 @@
                 <div class="eb-practice-report-summary">
                     <div class="eb-practice-report-card"><span>本次批改</span><b>${summary.total}</b></div>
                     <div class="eb-practice-report-card"><span>已会</span><b>${summary.mastered}</b></div>
-                    <div class="eb-practice-report-card"><span>又错/粗心</span><b>${summary.wrongAgain}</b></div>
+                    <div class="eb-practice-report-card"><span>需讲解</span><b>${summary.needsExplain}</b></div>
+                    <div class="eb-practice-report-card"><span>又错</span><b>${summary.wrongAgain}</b></div>
                 </div>
-                <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid ${summary.wrongAgain ? '#fecaca' : '#bbf7d0'}; background:${summary.wrongAgain ? '#fff7ed' : '#f0fdf4'}; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid ${summary.stillOpen ? '#fed7aa' : '#bbf7d0'}; background:${summary.stillOpen ? '#fff7ed' : '#f0fdf4'}; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
                     <strong>下一步：</strong>${nextAction}
                 </div>
                 <table class="archive-table">
@@ -9370,7 +9379,7 @@
                     ${rows}
                 </table>
                 <div class="answer-progress-note no-print" style="margin:10px 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
-                    已会题会进入已掌握；又错或粗心题会继续留在错题本，并参与后续间隔复练。
+                    已会题会进入已掌握；需讲解和又错题会继续留在错题本，并参与后续间隔复练。
                 </div>
                 <button class="review-jump-btn no-print" onclick="window.printCurrentErrorBookPracticeResult()">打印本次结果</button>
                 ${returnToSetReviewButton}
@@ -9830,8 +9839,9 @@
                 showToast('这次专项批改没有可保存的记录。', { background: '#b45309', duration: 2600 });
                 return;
             }
-            const wrongAgain = records.filter(item => item.grade !== 'perfect').length;
-            showToast(`✅ 专项批改已保存：${records.length} 题，${wrongAgain} 题继续留在错题本。`, { background: '#0f766e', duration: 2800 });
+            const needsExplain = records.filter(item => item.grade === 'careless').length;
+            const wrongAgain = records.filter(item => item.grade === 'wrong').length;
+            showToast(`✅ 专项批改已保存：${records.length} 题，需讲解 ${needsExplain} 题，又错 ${wrongAgain} 题继续留在错题本。`, { background: '#0f766e', duration: 2800 });
             document.getElementById('paper-container').innerHTML = buildErrorBookPracticeResultHTML(student, log);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         };

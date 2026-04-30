@@ -1791,11 +1791,11 @@ if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml
   throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
-if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
+if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
 }
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
-if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
+if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('需讲解 0') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
   throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts');
 }
 const domainPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
@@ -2115,6 +2115,8 @@ if (
   !mainFollowupResultHtml.includes('主变式批改结果') ||
   !mainFollowupResultHtml.includes('Set 106 主变式跟训') ||
   !mainFollowupResultHtml.includes('复杂乘法 · 第 3 小题') ||
+  !mainFollowupResultHtml.includes('需讲解') ||
+  !mainFollowupResultHtml.includes('需要先讲解/口述方法') ||
   !mainFollowupResultHtml.includes('返回 Set 106 本套报告')
 ) {
   throw new Error('Set review main follow-up grading log is not preserving its result title or scope label');
