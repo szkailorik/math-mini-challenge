@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.210 (讲解报告)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.211 (讲解清单)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1242,6 +1242,12 @@
         .practice-batch-btn.careless { color:#92400e; border-color:#fde68a; }
         .practice-batch-btn.wrong { color:#991b1b; border-color:#fecaca; }
         .practice-batch-btn.clear { color:#475569; }
+        .explain-checklist-sheet .archive-table td { vertical-align: top; }
+        .explain-checklist-action {
+            color:#92400e;
+            font-weight:800;
+            line-height:1.45;
+        }
 
         .step-box { background: #f8f9fc; border-left: 4px solid #002D72; padding: 6px 10px; margin-bottom: 8px; font-size: 14.5px; border-radius: 0 6px 6px 0; }
         .step-title { font-weight: bold; color: #002D72; margin-right: 6px; font-family: 'Times New Roman', serif; }
@@ -2936,7 +2942,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.210</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.211</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3015,9 +3021,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.210';
-        const APP_RELEASE_LABEL = '讲解报告';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.210 批改结果单独统计需讲解题，并给家长下一步复盘建议。';
+        const APP_VERSION = 'v23.211';
+        const APP_RELEASE_LABEL = '讲解清单';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.211 批改结果新增讲解清单打印，只列需讲解和又错题。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9305,29 +9311,78 @@
             </div>`;
         }
 
+        function getPracticeResultSourceLabel(item = {}) {
+            const info = item.info || {};
+            if (info.sourceLabel) return info.sourceLabel;
+            if (info.sourceSec || info.sourceNum) {
+                return `${info.sourceSec ? `${info.sourceSec} · ` : ''}${info.sourceNum ? `第 ${info.sourceNum} 小题` : '原错题'}`;
+            }
+            return '';
+        }
+
+        function getPracticeResultSourceHTML(item = {}) {
+            const info = item.info || {};
+            const sourceLabel = getPracticeResultSourceLabel(item);
+            const sourceQ = info.sourceQ || '';
+            const sourceA = info.sourceA || '';
+            if (!sourceLabel && !sourceQ && !sourceA) return '';
+            return `
+            <div>${sourceLabel || '原错题'}</div>
+            ${sourceQ ? `<div class="math-row" style="margin-top:4px; color:#334155;">${sourceQ}</div>` : ''}
+            ${sourceA ? `<div class="math-row" style="margin-top:3px; color:#64748b; font-size:12.5px;">原答案：${sourceA}</div>` : ''}`;
+        }
+
+        function buildErrorBookPracticeExplainChecklistHTML(student, log = {}) {
+            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+            const title = getErrorBookPracticeResultTitle(log).replace('批改结果', '讲解清单');
+            const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
+            if (!openItems.length) {
+                return `
+                <div class="sheet ans-sheet explain-checklist-sheet">
+                    <div class="header"><h1>${student} ${title}</h1></div>
+                    <div class="answer-progress-note" style="border:1px solid #bbf7d0; background:#f0fdf4; color:#166534;">本次没有需讲解或又错题，可以归档。</div>
+                </div>`;
+            }
+            const rows = openItems.map((row, listIdx) => {
+                const item = row.item;
+                const gradeLabel = item.grade === 'careless' ? '需讲解' : '又错';
+                const action = item.grade === 'careless'
+                    ? '让孩子先口述方法；讲关键一步；再做同类确认。'
+                    : '先回看原错因；重做本题；隔天优先二刷。';
+                return `
+                <tr>
+                    <td>${listIdx + 1}</td>
+                    <td>${getPracticeResultSourceHTML(item) || `第 ${row.idx + 1} 题`}</td>
+                    <td><div class="math-row">${item.info?.q || '-'}</div></td>
+                    <td><span style="font-weight:800; color:${item.grade === 'careless' ? '#92400e' : '#991b1b'};">${gradeLabel}</span></td>
+                    <td><div class="math-row">${item.info?.a || '-'}</div></td>
+                    <td class="explain-checklist-action">${action}</td>
+                </tr>`;
+            }).join('');
+            return `
+            <div class="sheet ans-sheet explain-checklist-sheet">
+                <div class="header">
+                    <h1>${student} ${title}</h1>
+                    <div class="info-row" style="font-weight:normal; font-size:14px;">
+                        <span>${log.date || ''}</span>
+                        <span>范围：${label}</span>
+                    </div>
+                </div>
+                <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid #fed7aa; background:#fff7ed; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                    <strong>讲解顺序：</strong>先讲需讲解题，让孩子说方法；再处理又错题，隔天二刷。
+                </div>
+                <table class="archive-table">
+                    <tr><th>#</th><th>对应原错题</th><th>补练题</th><th>状态</th><th>正确答案</th><th>讲解动作</th></tr>
+                    ${rows}
+                </table>
+            </div>`;
+        }
+        window.buildErrorBookPracticeExplainChecklistHTML = buildErrorBookPracticeExplainChecklistHTML;
+
         function buildErrorBookPracticeResultHTML(student, log = {}) {
             const summary = summarizeErrorBookPracticeLog(log);
             const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
             const title = getErrorBookPracticeResultTitle(log);
-            const getPracticeResultSourceLabel = (item = {}) => {
-                const info = item.info || {};
-                if (info.sourceLabel) return info.sourceLabel;
-                if (info.sourceSec || info.sourceNum) {
-                    return `${info.sourceSec ? `${info.sourceSec} · ` : ''}${info.sourceNum ? `第 ${info.sourceNum} 小题` : '原错题'}`;
-                }
-                return '';
-            };
-            const getPracticeResultSourceHTML = (item = {}) => {
-                const info = item.info || {};
-                const sourceLabel = getPracticeResultSourceLabel(item);
-                const sourceQ = info.sourceQ || '';
-                const sourceA = info.sourceA || '';
-                if (!sourceLabel && !sourceQ && !sourceA) return '';
-                return `
-                <div>${sourceLabel || '原错题'}</div>
-                ${sourceQ ? `<div class="math-row" style="margin-top:4px; color:#334155;">${sourceQ}</div>` : ''}
-                ${sourceA ? `<div class="math-row" style="margin-top:3px; color:#64748b; font-size:12.5px;">原答案：${sourceA}</div>` : ''}`;
-            };
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             const explainItems = openItems.filter(row => row.item.grade === 'careless');
@@ -9356,8 +9411,11 @@
                     <td><div class="math-row">${item.info?.a || '-'}</div></td>
                 </tr>`;
             }).join('');
+            const explainPrintButton = summary.stillOpen
+                ? `<button class="review-jump-btn no-print" onclick="window.printCurrentErrorBookExplainChecklist()">打印讲解清单</button>`
+                : '';
             return `
-            <div class="sheet ans-sheet eb-practice-result-sheet">
+            <div class="sheet ans-sheet eb-practice-result-sheet" data-student="${student}" data-log-id="${log.id || ''}">
                 <div class="header">
                     <h1>${student} ${title}</h1>
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
@@ -9382,6 +9440,7 @@
                     已会题会进入已掌握；需讲解和又错题会继续留在错题本，并参与后续间隔复练。
                 </div>
                 <button class="review-jump-btn no-print" onclick="window.printCurrentErrorBookPracticeResult()">打印本次结果</button>
+                ${explainPrintButton}
                 ${returnToSetReviewButton}
                 <button class="review-jump-btn no-print" onclick="window.renderErrorBook()">返回错题本</button>
             </div>`;
@@ -9702,6 +9761,42 @@
             root.innerHTML = current.outerHTML;
             document.body.classList.add('print-sandbox-active');
             showToast('🖨️ 打印提示：将只输出当前专项批改结果。', { background: '#0f766e', duration: 2600 });
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
+            } else {
+                setTimeout(triggerPrint, 220);
+            }
+        };
+
+        window.printCurrentErrorBookExplainChecklist = function() {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const current = document.querySelector('.eb-practice-result-sheet');
+            const root = getPrintRoot();
+            if (!current || !root) {
+                showToast('当前没有可打印的讲解清单。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const student = current.getAttribute('data-student') || 'KAI';
+            const logId = current.getAttribute('data-log-id') || '';
+            const profile = StorageDB.getProfile(student) || {};
+            const log = (profile.errorBookPracticeLog || []).find(item => item?.id === logId);
+            if (!log) {
+                showToast('这条讲解清单还没有同步到本设备。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const html = buildErrorBookPracticeExplainChecklistHTML(student, log);
+            if (!html) {
+                showToast('当前没有需讲解或又错题。', { background: '#0f766e', duration: 2400 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add('print-sandbox-active');
+            showToast('🖨️ 打印提示：将只输出需讲解和又错题清单。', { background: '#0f766e', duration: 2600 });
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();

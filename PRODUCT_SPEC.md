@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.211 adds a focused parent teaching artifact:
+
+- Practice result pages can print an explanation checklist containing only needs-explanation and wrong-again rows.
+- Each row keeps the source mistake, follow-up item, correct answer, and a short teaching action.
+- This reduces review noise after paper grading by hiding mastered rows during parent-led remediation.
+
 v23.210 makes paper-refill results more actionable:
 
 - Result summaries separate mastered, needs-explanation, and wrong-again outcomes.

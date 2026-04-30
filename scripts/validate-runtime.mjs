@@ -48,7 +48,7 @@ if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('wind
 if (!html.includes('buildErrorBookPracticeResultHTML') || !html.includes('buildErrorBookPracticeLogHTML')) {
   throw new Error('Error-book targeted practice reports are missing from runtime script');
 }
-if (!html.includes('window.openErrorBookPracticeLog') || !html.includes('window.printCurrentErrorBookPracticeResult')) {
+if (!html.includes('window.openErrorBookPracticeLog') || !html.includes('window.printCurrentErrorBookPracticeResult') || !html.includes('window.printCurrentErrorBookExplainChecklist') || !html.includes('buildErrorBookPracticeExplainChecklistHTML')) {
   throw new Error('Error-book targeted practice report reopen/print actions are missing from runtime script');
 }
 if (!html.includes('复错优先卷') || !html.includes('priorityOnly')) {
@@ -1791,8 +1791,12 @@ if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml
   throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
-if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案')) {
+if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案') || !practiceResultHtml.includes('打印讲解清单') || !practiceResultHtml.includes('data-log-id=')) {
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
+}
+const practiceExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', practiceLog) || '';
+if (!practiceExplainChecklistHtml.includes('机制补练讲解清单') || !practiceExplainChecklistHtml.includes('讲解顺序') || !practiceExplainChecklistHtml.includes('讲解动作') || !practiceExplainChecklistHtml.includes('隔天优先二刷') || !practiceExplainChecklistHtml.includes('0.25')) {
+  throw new Error('Error-book targeted practice explanation checklist is missing actionable review details');
 }
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
 if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('需讲解 0') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
@@ -2117,9 +2121,14 @@ if (
   !mainFollowupResultHtml.includes('复杂乘法 · 第 3 小题') ||
   !mainFollowupResultHtml.includes('需讲解') ||
   !mainFollowupResultHtml.includes('需要先讲解/口述方法') ||
+  !mainFollowupResultHtml.includes('打印讲解清单') ||
   !mainFollowupResultHtml.includes('返回 Set 106 本套报告')
 ) {
   throw new Error('Set review main follow-up grading log is not preserving its result title or scope label');
+}
+const mainFollowupExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', mainFollowupPracticeLog) || '';
+if (!mainFollowupExplainChecklistHtml.includes('主变式讲解清单') || !mainFollowupExplainChecklistHtml.includes('复杂乘法 · 第 3 小题') || !mainFollowupExplainChecklistHtml.includes('让孩子先口述方法')) {
+  throw new Error('Set review main follow-up explanation checklist is missing source-linked action guidance');
 }
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';
