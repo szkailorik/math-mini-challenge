@@ -2591,6 +2591,25 @@ context.window.currentSetNumber = 12;
 context.window.renderPaper();
 assertClosurePaper(12);
 assertClosurePhase(12, '收束期', '主体收束：表示切换、复杂混合、方法选择一起练');
+const closureSet12AnswerRecords = [1, 2, 3, 4, 5].flatMap(sectionIndex =>
+  extractAnswerRecords(extractAnswerSectionHtml(elements.get('paper-container')?.innerHTML || '', 'kai', sectionIndex))
+);
+const closureSet12Session = {
+  set: 12,
+  programId: 'elementary_closure_v1',
+  details: closureSet12AnswerRecords,
+  allGrades: closureSet12AnswerRecords.map(record => ({ ...record, grade: record.grade || 'wrong' })),
+};
+const closureSet12AnswerAudit = context.window.getSessionAnswerKeyAudit?.(closureSet12Session, 'KAI');
+if (!closureSet12AnswerAudit?.checked || closureSet12AnswerAudit.total !== closureSet12AnswerRecords.length || closureSet12AnswerAudit.aligned !== closureSet12AnswerRecords.length || closureSet12AnswerAudit.mismatches.length !== 0) {
+  throw new Error('Closure set-report answer audit did not align KAI rows back to the closure answer key');
+}
+const driftedClosureSet12Session = JSON.parse(JSON.stringify(closureSet12Session));
+driftedClosureSet12Session.details[0].info.a = 'closure-drift';
+const driftedClosureSet12Audit = context.window.getSessionAnswerKeyAudit?.(driftedClosureSet12Session, 'KAI');
+if (!driftedClosureSet12Audit?.checked || driftedClosureSet12Audit.mismatches.length !== 1 || driftedClosureSet12Audit.aligned !== closureSet12AnswerRecords.length - 1) {
+  throw new Error('Closure set-report answer audit did not detect a drifted answer');
+}
 context.window.currentSetNumber = 26;
 context.window.renderPaper();
 assertClosurePaper(26);

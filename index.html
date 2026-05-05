@@ -12262,6 +12262,23 @@
                 ];
         }
 
+        function getClosureAnswerSectionSpecs(student, data = {}) {
+            const isKai = String(student || '').toUpperCase() === 'KAI';
+            const prefix = isKai ? 'c_k' : 'c_l';
+            const baseSalt = isKai
+                ? { bridge: 401, unit: 402, keep: 403, mix: 404, focus: 405 }
+                : { bridge: 501, unit: 502, keep: 503, mix: 504, focus: 505 };
+            const phaseMeta = data.phaseMeta || getClosurePhaseInfo(window.currentSetNumber);
+            const focusMeta = (isKai ? data.c_k_focusMeta : data.c_l_focusMeta) || getLegacyClosureFocusMeta(phaseMeta);
+            return [
+                { key: `${prefix}_keep`, salt: baseSalt.keep, sec: '核心保温' },
+                { key: `${prefix}_bridge`, salt: baseSalt.bridge, sec: phaseMeta.label },
+                { key: `${prefix}_mix`, salt: baseSalt.mix, sec: '复杂混合' },
+                { key: `${prefix}_unit`, salt: baseSalt.unit, sec: '关系综合' },
+                { key: `${prefix}_focus`, salt: baseSalt.focus, sec: focusMeta.answerLabel },
+            ];
+        }
+
         function getCachedSetDataForAudit(setNum, programId = ADVANCED_PROGRAM_ID) {
             const cacheKey = getSetCacheKey(setNum, programId);
             const legacyKey = programId === ADVANCED_PROGRAM_ID ? getLegacyAdvancedCacheKey(setNum) : '';
@@ -12275,14 +12292,17 @@
         }
 
         function getAnswerKeyRecordsForAudit(setNum, student, programId = ADVANCED_PROGRAM_ID) {
-            if (programId !== ADVANCED_PROGRAM_ID) return { checked: false, reason: 'unsupported-program', records: [] };
+            if (![ADVANCED_PROGRAM_ID, CLOSURE_PROGRAM_ID].includes(programId)) return { checked: false, reason: 'unsupported-program', records: [] };
             const data = getCachedSetDataForAudit(setNum, programId);
             if (!data) return { checked: false, reason: 'missing-cache', records: [] };
             const previousSet = window.currentSetNumber;
             window.currentSetNumber = Number(setNum) || previousSet;
             try {
                 const records = [];
-                getAdvancedAnswerSectionSpecs(student).forEach(({ key, salt, sec }) => {
+                const specs = programId === CLOSURE_PROGRAM_ID
+                    ? getClosureAnswerSectionSpecs(student, data)
+                    : getAdvancedAnswerSectionSpecs(student);
+                specs.forEach(({ key, salt, sec }) => {
                     const rows = sectionShuffle(data[key] || [], salt);
                     rows.forEach((q, index) => {
                         const info = { sec, num: index + 1, q: q?.q || '', a: q?.a || '', step: q?.step || '' };

@@ -31,6 +31,13 @@ Every substantial release should include at least three passes:
 
 ## Current v23.213 Iteration Notes
 
+### Iteration 3
+
+- What I changed: extended answer-key alignment auditing to the Closure program, using its five-section paper structure, dedicated shuffle salts, phase label, and focus answer label.
+- Open questions: old Closure reports without cached set data will still show only record-count integrity until the matching cache exists locally.
+- Risks: Closure section labels are phase-aware, so future label changes must update the audit specs alongside answer rendering.
+- Next steps: keep the runtime validator as the release gate for any report, answer-sheet, or Closure layout change.
+
 ### Iteration 2
 
 - What I changed: added answer-key alignment auditing for set reports, so saved report rows are checked against the cached answer page by row key and the report shows `答案对齐 n/n`.

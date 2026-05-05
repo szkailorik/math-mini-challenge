@@ -33,6 +33,7 @@ v23.213 fixes a Set 86 Lorik answer-key/report integrity edge:
 - Runtime validation now locks Set 86 Lorik section five at 12 answer rows with non-empty answers and steps.
 - The same validation saves those rows into a report session and checks that the report keeps the section-five locations and answer labels.
 - Set reports now show an answer-key alignment count, making it visible when report answers match the original answer page and warning if a saved report drifts.
+- The answer-key alignment check now also covers the second-stage Closure program, where reports use a five-section answer structure instead of the Advanced six-section structure.
 
 v23.212 closes the parent-led explanation loop on paper:
 
