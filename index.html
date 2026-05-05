@@ -12242,7 +12242,92 @@
             }).join('');
         }
 
-        function getSetReviewIntegrity(session = {}) {
+        function getAdvancedAnswerSectionSpecs(student) {
+            return String(student || '').toUpperCase() === 'KAI'
+                ? [
+                    { key: 'k_m', salt: 101, sec: '复杂乘法' },
+                    { key: 'k_d', salt: 102, sec: '复杂除法' },
+                    { key: 'k_s', salt: 103, sec: '大数减法' },
+                    { key: 'k_c', salt: 104, sec: '互化结果' },
+                    { key: 'k_f', salt: 105, sec: '繁分数与方程' },
+                    { key: 'k_o', salt: 106, sec: '奥数混合运算' },
+                ]
+                : [
+                    { key: 'l_m', salt: 201, sec: '进阶乘法' },
+                    { key: 'l_d', salt: 202, sec: '进阶除法' },
+                    { key: 'l_s', salt: 203, sec: '大数减法' },
+                    { key: 'l_c', salt: 204, sec: '互化与比较' },
+                    { key: 'l_f', salt: 205, sec: '分数四则运算' },
+                    { key: 'l_o', salt: 206, sec: '基础简便运算' },
+                ];
+        }
+
+        function getCachedSetDataForAudit(setNum, programId = ADVANCED_PROGRAM_ID) {
+            const cacheKey = getSetCacheKey(setNum, programId);
+            const legacyKey = programId === ADVANCED_PROGRAM_ID ? getLegacyAdvancedCacheKey(setNum) : '';
+            const raw = localStorage.getItem(cacheKey) || (legacyKey ? localStorage.getItem(legacyKey) : null);
+            if (!raw) return null;
+            try {
+                return hydrateProgramSetData(JSON.parse(raw), programId).data;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function getAnswerKeyRecordsForAudit(setNum, student, programId = ADVANCED_PROGRAM_ID) {
+            if (programId !== ADVANCED_PROGRAM_ID) return { checked: false, reason: 'unsupported-program', records: [] };
+            const data = getCachedSetDataForAudit(setNum, programId);
+            if (!data) return { checked: false, reason: 'missing-cache', records: [] };
+            const previousSet = window.currentSetNumber;
+            window.currentSetNumber = Number(setNum) || previousSet;
+            try {
+                const records = [];
+                getAdvancedAnswerSectionSpecs(student).forEach(({ key, salt, sec }) => {
+                    const rows = sectionShuffle(data[key] || [], salt);
+                    rows.forEach((q, index) => {
+                        const info = { sec, num: index + 1, q: q?.q || '', a: q?.a || '', step: q?.step || '' };
+                        records.push({ tag: q?.tag || '', info, rowKey: getAnswerRowKey(q?.tag || '', info) });
+                    });
+                });
+                return { checked: true, reason: '', records };
+            } finally {
+                window.currentSetNumber = previousSet;
+            }
+        }
+
+        function normalizeAuditText(value) {
+            return String(value || '')
+                .replace(/<[^>]*>/g, '')
+                .replace(/&minus;|−|－/g, '-')
+                .replace(/&times;/g, '×')
+                .replace(/&divide;/g, '÷')
+                .replace(/&nbsp;/g, '')
+                .replace(/\s+/g, '');
+        }
+
+        function getSessionAnswerKeyAudit(session = {}, student = '') {
+            const programId = session.programId || getCurrentProgramId();
+            const keyAudit = getAnswerKeyRecordsForAudit(session.set, student, programId);
+            if (!keyAudit.checked) {
+                return { checked: false, reason: keyAudit.reason, total: 0, aligned: 0, mismatches: [] };
+            }
+            const byKey = new Map(keyAudit.records.map(record => [record.rowKey, record]));
+            const details = Array.isArray(session.details) ? session.details : [];
+            const mismatches = details.filter(detail => {
+                const key = detail?.rowKey || getAnswerRowKey(detail?.tag, detail?.info);
+                const expected = key ? byKey.get(key) : null;
+                if (!expected) return true;
+                const actualInfo = detail?.info || {};
+                return normalizeAuditText(actualInfo.q) !== normalizeAuditText(expected.info.q)
+                    || normalizeAuditText(actualInfo.a) !== normalizeAuditText(expected.info.a)
+                    || Number(actualInfo.num) !== Number(expected.info.num)
+                    || String(actualInfo.sec || '') !== String(expected.info.sec || '');
+            });
+            return { checked: true, reason: '', total: details.length, aligned: details.length - mismatches.length, mismatches };
+        }
+        window.getSessionAnswerKeyAudit = getSessionAnswerKeyAudit;
+
+        function getSetReviewIntegrity(session = {}, student = '') {
             const allGrades = Array.isArray(session.allGrades) ? session.allGrades : [];
             const details = Array.isArray(session.details) ? session.details : [];
             const mistakes = allGrades.filter(item => item?.grade && item.grade !== 'perfect');
@@ -12251,51 +12336,63 @@
                 const key = item?.rowKey || item?.uid;
                 return key && !detailKeys.has(key);
             });
-            return { graded: allGrades.length, mistakes: mistakes.length, details: details.length, missing: missing.length };
+            const answerAudit = student ? getSessionAnswerKeyAudit(session, student) : { checked: false, reason: 'student-not-specified', total: 0, aligned: 0, mismatches: [] };
+            return { graded: allGrades.length, mistakes: mistakes.length, details: details.length, missing: missing.length, answerAudit };
         }
 
-        function buildSetReviewIntegrityHTML(session = {}) {
-            const integrity = getSetReviewIntegrity(session);
-            const ok = integrity.missing === 0 && integrity.details >= integrity.mistakes;
+        function buildSetReviewIntegrityHTML(session = {}, student = '') {
+            const integrity = getSetReviewIntegrity(session, student);
+            const answerOk = !integrity.answerAudit.checked || integrity.answerAudit.mismatches.length === 0;
+            const ok = integrity.missing === 0 && integrity.details >= integrity.mistakes && answerOk;
+            const answerText = integrity.answerAudit.checked
+                ? ` · 答案对齐 ${integrity.answerAudit.aligned}/${integrity.answerAudit.total}`
+                : (student ? ' · 答案缓存未核验' : '');
             return `
                 <div style="margin-top:8px; padding:8px 10px; border-radius:8px; background:${ok ? '#ecfdf5' : '#fff7ed'}; color:${ok ? '#047857' : '#b45309'}; font-weight:800;">
                     ${ok ? '✅ 错题记录完整性已核对' : '⚠️ 错题记录仍需复核'}：
                     已批改 ${integrity.graded} 题 · 错题/粗心 ${integrity.mistakes} 条 · 报告列出 ${integrity.details} 条
                     ${integrity.missing ? ` · 待补 ${integrity.missing} 条` : ''}
+                    ${answerText}
                 </div>`;
         }
         window.getSetReviewIntegrity = getSetReviewIntegrity;
         window.buildSetReviewIntegrityHTML = buildSetReviewIntegrityHTML;
 
-        function getSetReportIntegrityAudit(profile = {}) {
+        function getSetReportIntegrityAudit(profile = {}, student = '') {
             const sessions = Array.isArray(profile.history) ? profile.history : [];
             let graded = 0;
             let mistakes = 0;
             let details = 0;
             let missing = 0;
+            let answerAligned = 0;
+            let answerMismatches = 0;
             const issueRows = [];
             sessions.forEach(session => {
-                const item = getSetReviewIntegrity(session);
+                const item = getSetReviewIntegrity(session, student);
                 graded += item.graded;
                 mistakes += item.mistakes;
                 details += item.details;
                 missing += item.missing;
-                if (item.missing > 0 || item.details < item.mistakes) {
+                if (item.answerAudit?.checked) {
+                    answerAligned += item.answerAudit.aligned;
+                    answerMismatches += item.answerAudit.mismatches.length;
+                }
+                if (item.missing > 0 || item.details < item.mistakes || item.answerAudit?.mismatches?.length) {
                     issueRows.push({ session, integrity: item });
                 }
             });
             const activeErrorBook = Object.values(profile.errorBook || {}).filter(entry => entry && !entry.mastered).length;
             const masteredErrorBook = Object.values(profile.errorBook || {}).filter(entry => entry && entry.mastered).length;
-            return { sessions: sessions.length, graded, mistakes, details, missing, issueRows, activeErrorBook, masteredErrorBook };
+            return { sessions: sessions.length, graded, mistakes, details, missing, answerAligned, answerMismatches, issueRows, activeErrorBook, masteredErrorBook };
         }
         window.getSetReportIntegrityAudit = getSetReportIntegrityAudit;
 
         function buildSetReportIntegrityAuditCard(student, profile = {}) {
-            const audit = getSetReportIntegrityAudit(profile);
-            const ok = audit.missing === 0 && audit.details >= audit.mistakes;
+            const audit = getSetReportIntegrityAudit(profile, student);
+            const ok = audit.missing === 0 && audit.details >= audit.mistakes && audit.answerMismatches === 0;
             const issueHtml = audit.issueRows.length ? `
                 <table class="archive-table" style="margin-top:10px;">
-                    <tr><th>卷号</th><th>已批改</th><th>错题/粗心</th><th>报告列出</th><th>待补</th></tr>
+                    <tr><th>卷号</th><th>已批改</th><th>错题/粗心</th><th>报告列出</th><th>待补</th><th>答案漂移</th></tr>
                     ${audit.issueRows.slice(-12).reverse().map(({ session, integrity }) => `
                         <tr>
                             <td><button class="eb-filter-btn" style="padding:4px 8px;" onclick="window.showSetReview(${Number(session.set || 0)}, '${student}')">Set ${session.set || '-'}</button></td>
@@ -12303,6 +12400,7 @@
                             <td>${integrity.mistakes}</td>
                             <td>${integrity.details}</td>
                             <td style="color:#b45309; font-weight:bold;">${integrity.missing}</td>
+                            <td style="color:#b45309; font-weight:bold;">${integrity.answerAudit?.mismatches?.length || 0}</td>
                         </tr>`).join('')}
                 </table>` : `<div style="margin-top:10px; color:#047857; font-weight:800;">没有发现漏题风险。历史报告和错题本覆盖正常。</div>`;
             return `
@@ -12317,10 +12415,10 @@
                         <div class="eb-practice-report-summary">
                             <div class="eb-practice-report-card"><span>报告列出</span><b>${audit.details}</b></div>
                             <div class="eb-practice-report-card"><span>待补风险</span><b style="color:${audit.missing ? '#b45309' : '#047857'};">${audit.missing}</b></div>
-                            <div class="eb-practice-report-card"><span>活跃错题</span><b>${audit.activeErrorBook}</b></div>
+                            <div class="eb-practice-report-card"><span>答案漂移</span><b style="color:${audit.answerMismatches ? '#b45309' : '#047857'};">${audit.answerMismatches}</b></div>
                         </div>
                         <div style="padding:10px 12px; border-radius:8px; background:${ok ? '#ecfdf5' : '#fff7ed'}; color:${ok ? '#047857' : '#b45309'}; font-weight:800;">
-                            ${ok ? '记录一致：本套报告、历史批改和错题本已完成核对。' : '发现风险：建议点击“一键重新修复”，再回到对应套卷复核。'}
+                            ${ok ? '记录一致：本套报告、答案页、历史批改和错题本已完成核对。' : '发现风险：建议点击“一键重新修复”，再回到对应套卷复核。'}
                         </div>
                         ${issueHtml}
                     </div>
@@ -12389,7 +12487,7 @@
             const followupHTML = buildSetReviewFollowupHTML(student, session);
             const sectionCounts = new Map();
             const reviewNavBase = `set-review-${student}-${setNum}`.replace(/[^a-zA-Z0-9_-]/g, '-');
-            const integrityHTML = buildSetReviewIntegrityHTML(session);
+            const integrityHTML = buildSetReviewIntegrityHTML(session, student);
             const answerReturnHTML = `
                 <div class="no-print" style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
                     <button class="review-jump-btn" onclick="window.closeReportModal(); window.focusAnswerSheet('${student}')">回到${student}答案页</button>

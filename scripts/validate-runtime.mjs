@@ -1774,9 +1774,27 @@ const lorikSet86Session = context.window.StorageDB.getProfile('Lorik', 'advanced
 if (!lorikSet86Session || lorikSet86Session.details.length !== 12 || lorikSet86Session.details.some(detail => detail.info.sec !== '分数四则运算' || !detail.info.a)) {
   throw new Error('Set 86 Lorik report persistence did not keep all section-five answer records');
 }
+const lorikSet86AnswerAudit = context.window.getSessionAnswerKeyAudit?.(lorikSet86Session, 'Lorik');
+if (!lorikSet86AnswerAudit?.checked || lorikSet86AnswerAudit.total !== 12 || lorikSet86AnswerAudit.aligned !== 12 || lorikSet86AnswerAudit.mismatches.length !== 0) {
+  throw new Error('Set 86 Lorik report did not align every section-five row back to the cached answer key');
+}
+const lorikSet86IntegrityHtml = context.window.buildSetReviewIntegrityHTML?.(lorikSet86Session, 'Lorik') || '';
+if (!lorikSet86IntegrityHtml.includes('答案对齐 12/12')) {
+  throw new Error('Set 86 Lorik report integrity banner does not show answer-key alignment');
+}
+const driftedSet86Session = JSON.parse(JSON.stringify(lorikSet86Session));
+driftedSet86Session.details[0].info.a = '999';
+const driftedSet86Audit = context.window.getSessionAnswerKeyAudit?.(driftedSet86Session, 'Lorik');
+if (!driftedSet86Audit?.checked || driftedSet86Audit.mismatches.length !== 1 || driftedSet86Audit.aligned !== 11) {
+  throw new Error('Set-review answer-key audit did not detect a drifted report answer');
+}
+const driftedSet86IntegrityHtml = context.window.buildSetReviewIntegrityHTML?.(driftedSet86Session, 'Lorik') || '';
+if (!driftedSet86IntegrityHtml.includes('错题记录仍需复核') || !driftedSet86IntegrityHtml.includes('答案对齐 11/12')) {
+  throw new Error('Set-review integrity banner did not warn about answer drift');
+}
 context.window.showSetReview(86, 'Lorik');
 const lorikSet86ReportHtml = elements.get('report-content-area')?.innerHTML || '';
-if (!lorikSet86ReportHtml.includes('Lorik · Set 86') || !lorikSet86ReportHtml.includes('分数四则运算') || !lorikSet86ReportHtml.includes('第 12 小题') || !lorikSet86ReportHtml.includes('正确答案')) {
+if (!lorikSet86ReportHtml.includes('Lorik · Set 86') || !lorikSet86ReportHtml.includes('分数四则运算') || !lorikSet86ReportHtml.includes('第 12 小题') || !lorikSet86ReportHtml.includes('正确答案') || !lorikSet86ReportHtml.includes('答案对齐 12/12')) {
   throw new Error('Set 86 Lorik report is missing section-five locations or answer labels');
 }
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };

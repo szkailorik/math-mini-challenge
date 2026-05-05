@@ -31,6 +31,13 @@ Every substantial release should include at least three passes:
 
 ## Current v23.213 Iteration Notes
 
+### Iteration 2
+
+- What I changed: added answer-key alignment auditing for set reports, so saved report rows are checked against the cached answer page by row key and the report shows `答案对齐 n/n`.
+- Open questions: whether to extend the same cached-answer audit to the second-stage Closure program after a few real Closure papers are graded.
+- Risks: old reports without local cached set data can only show record-count integrity; they cannot be fully answer-aligned until the matching set cache exists locally.
+- Next steps: run the full runtime validator and deploy the audit if it passes.
+
 ### Iteration 1
 
 - What I changed: reproduced Set 86 Lorik locally and confirmed the generator has all 12 section-five answers, then added answer-print pagination before section five so dense reference sheets cannot visually lose that section.
