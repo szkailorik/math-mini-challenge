@@ -327,6 +327,28 @@ function extractAnswerSheets() {
   return sheets;
 }
 
+function extractAnswerSectionHtml(sourceHtml, studentId, sectionIndex) {
+  const idNeedle = `id="${studentId}-ans-sheet"`;
+  const sheetStart = String(sourceHtml || '').indexOf(idNeedle);
+  if (sheetStart === -1) return '';
+  const nextSheet = String(sourceHtml || '').indexOf('<div class="sheet ans-sheet"', sheetStart + idNeedle.length);
+  const sheetHtml = String(sourceHtml || '').slice(sheetStart, nextSheet === -1 ? String(sourceHtml || '').length : nextSheet);
+  const startNeedle = `<div class="ans-section" data-sec-index="${sectionIndex}"`;
+  const sectionStart = sheetHtml.indexOf(startNeedle);
+  if (sectionStart === -1) return '';
+  const nextNeedle = `<div class="ans-section" data-sec-index="${sectionIndex + 1}"`;
+  const sectionEnd = sheetHtml.indexOf(nextNeedle, sectionStart + startNeedle.length);
+  return sheetHtml.slice(sectionStart, sectionEnd === -1 ? sheetHtml.length : sectionEnd);
+}
+
+function extractAnswerRecords(sectionHtml) {
+  return [...String(sectionHtml || '').matchAll(/<div class="ans-row[^"]*"[^>]*data-tag="([^"]*)"[^>]*data-info="([^"]*)"/g)].map(match => {
+    const tag = match[1] || '';
+    const info = JSON.parse(decodeURIComponent(match[2] || '%7B%7D'));
+    return { tag, info, grade: 'wrong', rowKey: context.window.getAnswerRowKey?.(tag, info) };
+  });
+}
+
 function makeElement(id) {
   const classNames = new Set();
   return {
@@ -710,7 +732,50 @@ function assertPaper(setNumber) {
     throw new Error(`Generated paper for set ${setNumber} contains undefined`);
   }
   assertSetData(setNumber, 'advanced_fluency_v1');
+  assertAdvancedAnswerKeyCoverage(paper, setNumber);
   return sheetCount;
+}
+
+function assertAdvancedAnswerKeyCoverage(paper, setNumber) {
+  const expectations = {
+    kai: [
+      { index: 1, count: 4, sec: '复杂乘法' },
+      { index: 2, count: 4, sec: '复杂除法' },
+      { index: 3, count: 4, sec: '大数减法' },
+      { index: 4, count: 8, sec: '互化结果' },
+      { index: 5, count: 12, sec: '繁分数与方程' },
+      { index: 6, count: 4, sec: '奥数混合运算' },
+    ],
+    lorik: [
+      { index: 1, count: 4, sec: '进阶乘法' },
+      { index: 2, count: 4, sec: '进阶除法' },
+      { index: 3, count: 4, sec: '大数减法' },
+      { index: 4, count: 8, sec: '互化与比较' },
+      { index: 5, count: 12, sec: '分数四则运算' },
+      { index: 6, count: 4, sec: '基础简便运算' },
+    ],
+  };
+
+  Object.entries(expectations).forEach(([studentId, sections]) => {
+    sections.forEach(({ index, count, sec }) => {
+      const sectionHtml = extractAnswerSectionHtml(paper, studentId, index);
+      const records = extractAnswerRecords(sectionHtml);
+      if (records.length !== count) {
+        throw new Error(`Set ${setNumber} ${studentId} answer section ${index} expected ${count} rows, got ${records.length}`);
+      }
+      records.forEach((record, rowIndex) => {
+        if (record.info.sec !== sec) {
+          throw new Error(`Set ${setNumber} ${studentId} answer section ${index} row ${rowIndex + 1} has section ${record.info.sec || '(missing)'}, expected ${sec}`);
+        }
+        if (Number(record.info.num) !== rowIndex + 1) {
+          throw new Error(`Set ${setNumber} ${studentId} answer section ${index} row ${rowIndex + 1} has wrong paper number ${record.info.num}`);
+        }
+        if (!record.tag || !record.info.q || !record.info.a || !record.info.step) {
+          throw new Error(`Set ${setNumber} ${studentId} answer section ${index} row ${rowIndex + 1} is missing tag/question/answer/step`);
+        }
+      });
+    });
+  });
 }
 
 function assertClosurePaper(setNumber) {
@@ -1680,24 +1745,6 @@ context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [],
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 86;
 context.window.renderPaper();
-const extractAnswerSectionHtml = (sourceHtml, studentId, sectionIndex) => {
-  const idNeedle = `id="${studentId}-ans-sheet"`;
-  const sheetStart = sourceHtml.indexOf(idNeedle);
-  if (sheetStart === -1) return '';
-  const nextSheet = sourceHtml.indexOf('<div class="sheet ans-sheet"', sheetStart + idNeedle.length);
-  const sheetHtml = sourceHtml.slice(sheetStart, nextSheet === -1 ? sourceHtml.length : nextSheet);
-  const startNeedle = `<div class="ans-section" data-sec-index="${sectionIndex}"`;
-  const sectionStart = sheetHtml.indexOf(startNeedle);
-  if (sectionStart === -1) return '';
-  const nextNeedle = `<div class="ans-section" data-sec-index="${sectionIndex + 1}"`;
-  const sectionEnd = sheetHtml.indexOf(nextNeedle, sectionStart + startNeedle.length);
-  return sheetHtml.slice(sectionStart, sectionEnd === -1 ? sheetHtml.length : sectionEnd);
-};
-const extractAnswerRecords = sectionHtml => [...sectionHtml.matchAll(/<div class="ans-row[^"]*"[^>]*data-tag="([^"]*)"[^>]*data-info="([^"]*)"/g)].map(match => {
-  const tag = match[1] || '';
-  const info = JSON.parse(decodeURIComponent(match[2] || '%7B%7D'));
-  return { tag, info, grade: 'wrong', rowKey: context.window.getAnswerRowKey?.(tag, info) };
-});
 const lorikSet86SectionHtml = extractAnswerSectionHtml(elements.get('paper-container')?.innerHTML || '', 'lorik', 5);
 const lorikSet86Records = extractAnswerRecords(lorikSet86SectionHtml);
 if (lorikSet86Records.length !== 12) {
