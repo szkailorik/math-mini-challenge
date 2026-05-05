@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.212 (讲后打勾)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.213 (答案分页核验)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -72,6 +72,22 @@
                 max-height: none !important;
                 overflow: visible !important;
                 padding-bottom: 20mm !important;
+            }
+            body.print-sandbox-active #print-root .ans-sheet .ans-section[data-sec-index="5"] {
+                break-before: page !important;
+                page-break-before: always !important;
+                padding-top: 8mm !important;
+            }
+            body.print-sandbox-active #print-root .ans-sheet .ans-row {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                padding: 5px 8px !important;
+                margin-bottom: 4px !important;
+            }
+            body.print-sandbox-active #print-root .ans-sheet .ans-tip {
+                font-size: 11.2px !important;
+                line-height: 1.25 !important;
+                padding: 3px 6px !important;
             }
             body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
             body.ipad-shell.print-sandbox-active #print-root .section {
@@ -2071,6 +2087,43 @@
         .modal-content.quick-review-modal > .modal-btns {
             display: none;
         }
+        .modal-content.print-preview-modal {
+            width: min(1180px, 95vw);
+            max-height: 92vh;
+            background: linear-gradient(180deg, rgba(252,249,242,0.98), rgba(247,243,236,0.98));
+            padding: 20px 22px 18px;
+        }
+        .modal-content.print-preview-modal #modal-title {
+            border-bottom-color: #d8e2ea !important;
+            color: #0f172a !important;
+        }
+        .modal-content.print-preview-modal > .modal-btns {
+            display: none;
+        }
+        .print-preview-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .print-preview-note {
+            margin: 0 0 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .print-preview-body {
+            max-height: calc(92vh - 190px);
+            overflow: auto;
+            padding: 14px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #dbe4ee;
+        }
 
         /* ================= 控制面板 ================= */
         .control-panel {
@@ -2948,7 +3001,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.212</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.213</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3027,9 +3080,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.212';
+        const APP_VERSION = 'v23.213';
         const APP_RELEASE_LABEL = '讲后打勾';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.212 讲解清单新增讲后打勾栏，讲清、重做、仍不会一张纸闭环。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.213 答案打印页在第 5 大题前强制分页，并锁定第 86 套 Lorik 分数四则答案与报告一致。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9653,15 +9706,7 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出当前机制补练和答案参考。' : '🖨️ 打印提示：将只输出当前机制补练页。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printErrorBookDomainPractice = function(student, domainId, includeAnswers = true) {
@@ -9680,15 +9725,7 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出领域专项补练和答案参考。' : '🖨️ 打印提示：将只输出领域专项补练。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printErrorBookPractice = function(student, includeAnswers = false, priorityOnly = false) {
@@ -9708,15 +9745,7 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? (priorityOnly ? '🖨️ 打印提示：将输出复错优先卷和答案参考。' : '🖨️ 打印提示：将输出错题专项卷和答案参考。') : (priorityOnly ? '🖨️ 打印提示：将只输出复错优先卷。' : '🖨️ 打印提示：将只输出错题专项卷。'), { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.openErrorBookPracticeReview = function(student, priorityOnly = false) {
@@ -9768,15 +9797,7 @@
             root.innerHTML = current.outerHTML;
             document.body.classList.add('print-sandbox-active');
             showToast('🖨️ 打印提示：将只输出当前专项批改结果。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printCurrentErrorBookExplainChecklist = function() {
@@ -9804,15 +9825,7 @@
             root.innerHTML = html;
             document.body.classList.add('print-sandbox-active');
             showToast('🖨️ 打印提示：将只输出需讲解和又错题清单。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         function parseErrorBookPracticeRow(row) {
@@ -10319,15 +10332,7 @@
                 </div>`;
             document.body.classList.add('print-sandbox-active');
             showToast(filter ? `🖨️ 打印提示：将只输出${filter}知识地图。` : '🖨️ 打印提示：将输出当前知识地图。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.showCalculationQuickReview = function() {
@@ -10342,6 +10347,7 @@
             const modal = document.getElementById('report-modal');
             const modalContent = document.getElementById('report-modal-content');
             if (modalContent) modalContent.classList.remove('quick-review-modal');
+            if (modalContent) modalContent.classList.remove('print-preview-modal');
             if (modal) modal.style.display = 'none';
         };
 
@@ -12517,15 +12523,7 @@
                 </div>`;
             document.body.classList.add('print-sandbox-active');
             showToast(normalizedFilter ? `🖨️ 打印提示：将只输出${normalizedFilter}本套报告。` : '🖨️ 打印提示：将只输出当前本套报告。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.togglePanel = function() {
@@ -12550,6 +12548,15 @@
             return /iPad/i.test(ua)
                 || (/Macintosh/i.test(ua) && touchPoints > 1)
                 || (platform === 'MacIntel' && touchPoints > 1);
+        }
+
+        function shouldPrintImmediately() {
+            if (isIpadShell()) return true;
+            if (typeof navigator === 'undefined') return false;
+            const ua = navigator.userAgent || '';
+            const vendor = navigator.vendor || '';
+            const isAppleWebKit = /Apple/i.test(vendor) && /Safari/i.test(ua) && !/Chrome|Chromium|CriOS|EdgiOS|FxiOS/i.test(ua);
+            return isAppleWebKit;
         }
 
         function buildPrintSandbox(mode) {
@@ -12597,6 +12604,121 @@
             }
         }
 
+        function flushPrintLayout(root = getPrintRoot()) {
+            if (root && typeof root.offsetHeight === 'number') void root.offsetHeight;
+            if (document.body && typeof document.body.offsetHeight === 'number') void document.body.offsetHeight;
+        }
+
+        function openPrintPreviewFallback(root = getPrintRoot(), title = '打印预览') {
+            if (!root || !root.innerHTML.trim()) return false;
+            const modal = document.getElementById('report-modal');
+            const modalContent = document.getElementById('report-modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const contentArea = document.getElementById('report-content-area');
+            if (!modal || !modalContent || !modalTitle || !contentArea) return false;
+
+            modalContent.classList.remove('quick-review-modal');
+            modalContent.classList.add('print-preview-modal');
+            modalTitle.innerText = `🖨️ ${title}`;
+            contentArea.innerHTML = `
+                <div class="print-preview-toolbar">
+                    <button class="modal-btn" onclick="window.retryCurrentPrintFlow()">再次打印</button>
+                    <button class="modal-btn" onclick="window.closeReportModal()">关闭预览</button>
+                </div>
+                <p class="print-preview-note">浏览器刚刚没有顺利弹出打印窗口，已经切换到预览模式。你可以直接点上方“再次打印”，或者先确认内容无误再打印。</p>
+                <div class="print-preview-body">${root.innerHTML}</div>
+            `;
+            modal.style.display = 'block';
+            return true;
+        }
+
+        function printViaPopup(root = getPrintRoot(), title = document.title || 'Print') {
+            if (!root || !root.innerHTML.trim()) return false;
+            if (typeof window.open !== 'function') return false;
+            const popup = window.open('', '_blank', 'noopener,width=980,height=760');
+            if (!popup) return false;
+
+            const styleHtml = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+                .map(node => node.outerHTML)
+                .join('\n');
+            const bodyClasses = Array.from(document.body.classList)
+                .filter(className => className === 'ipad-shell' || className.startsWith('print-'))
+                .join(' ');
+            const safeTitle = String(title).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            popup.document.open();
+            popup.document.write(`<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${safeTitle}</title>
+${styleHtml}
+</head>
+<body class="${bodyClasses}">
+<div id="${PRINT_ROOT_ID}">${root.innerHTML}</div>
+<script>
+window.addEventListener('load', function () {
+  setTimeout(function () {
+    try { window.focus(); } catch (error) {}
+    window.print();
+  }, 60);
+});
+window.addEventListener('afterprint', function () {
+  setTimeout(function () {
+    try { window.close(); } catch (error) {}
+  }, 80);
+});
+<\/script>
+</body>
+</html>`);
+            popup.document.close();
+            setTimeout(() => {
+                clearPrintMode();
+            }, 180);
+            return true;
+        }
+
+        window.retryCurrentPrintFlow = function() {
+            const root = getPrintRoot();
+            if (!root || !root.innerHTML.trim()) {
+                showToast('当前没有可重试打印的内容。', { background: '#b45309', duration: 2200 });
+                return;
+            }
+            if (printViaPopup(root, document.getElementById('modal-title')?.innerText || document.title || 'Print')) {
+                showToast('🖨️ 已重新打开打印窗口。', { background: '#0f766e', duration: 2200 });
+                return;
+            }
+            schedulePrintCleanupFallback();
+            window.print();
+        };
+
+        function openPrintDialog({ root = getPrintRoot(), delay = 220, title = document.title || 'Print' } = {}) {
+            const triggerPrint = () => {
+                schedulePrintCleanupFallback();
+                window.print();
+            };
+            flushPrintLayout(root);
+            if (shouldPrintImmediately()) {
+                if (printViaPopup(root, title)) return;
+                if (openPrintPreviewFallback(root, title)) {
+                    showToast('浏览器拦截了打印窗口，已切换到打印预览。', { background: '#b45309', duration: 2600 });
+                    return;
+                }
+                triggerPrint();
+                return;
+            }
+            const delayedTrigger = () => {
+                if (delay > 0) setTimeout(triggerPrint, delay);
+                else triggerPrint();
+            };
+            if (typeof window.requestAnimationFrame === 'function') {
+                window.requestAnimationFrame(() => window.requestAnimationFrame(delayedTrigger));
+            } else {
+                delayedTrigger();
+            }
+        }
+
         function runPrintMode(mode) {
             ensurePrintLifecycleHooks();
             clearPrintMode();
@@ -12610,16 +12732,7 @@
                 mode === 'print-questions-only' ? PRINT_HINT_HTML : '🧾 打印答案提示：建议关闭页眉页脚，并确认只打印答案页。',
                 { background: '#0f766e', duration: 2600 }
             );
-            const printDelay = document.body.classList.contains('ipad-shell') ? 420 : 220;
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, printDelay)));
-            } else {
-                setTimeout(triggerPrint, printDelay);
-            }
+            openPrintDialog({ delay: 220 });
         }
 
         window.printQuestionSheets = function() {
@@ -12641,15 +12754,7 @@
             root.innerHTML = `<div class="quick-review-print-shell">${buildCalculationQuickReviewHTML({ forPrint: true })}</div>`;
             document.body.classList.add('print-quick-review', 'print-sandbox-active');
             showToast('📘 打印知识总览提示：建议纵向打印，并关闭页眉页脚。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printCalculationQuickReviewMicroDrillSheet = function() {
@@ -12663,15 +12768,7 @@
             root.innerHTML = buildCalculationQuickReviewMicroDrillSheetHTML();
             document.body.classList.add('print-quick-review', 'print-sandbox-active');
             showToast('📝 打印模型微练提示：将输出题目页和参考答案页。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         function buildSetReviewFollowupPrintHTML(student, setNum, includeAnswers = false) {
@@ -12815,15 +12912,7 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出变式训练和答案参考。' : '🖨️ 打印提示：将只输出变式训练页。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printSetReviewFollowupAnswers = function(student) {
@@ -12843,15 +12932,7 @@
             root.innerHTML = html;
             document.body.classList.add('print-set-review-followup-with-answers', 'print-sandbox-active');
             showToast('🖨️ 打印提示：将只输出主变式参考答案。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printSetReviewBackupFollowup = function(student, includeAnswers = true) {
@@ -12871,15 +12952,7 @@
             root.innerHTML = html;
             document.body.classList.add(includeAnswers ? 'print-set-review-followup-with-answers' : 'print-set-review-followup', 'print-sandbox-active');
             showToast(includeAnswers ? '🖨️ 打印提示：将输出备用二刷题和答案参考。' : '🖨️ 打印提示：将只输出备用二刷题。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.printSetReviewBackupAnswers = function(student) {
@@ -12899,15 +12972,7 @@
             root.innerHTML = html;
             document.body.classList.add('print-set-review-followup-with-answers', 'print-sandbox-active');
             showToast('🖨️ 打印提示：将只输出备用二刷参考答案。', { background: '#0f766e', duration: 2600 });
-            const triggerPrint = () => {
-                schedulePrintCleanupFallback();
-                window.print();
-            };
-            if (typeof window.requestAnimationFrame === 'function') {
-                window.requestAnimationFrame(() => window.requestAnimationFrame(() => setTimeout(triggerPrint, 220)));
-            } else {
-                setTimeout(triggerPrint, 220);
-            }
+            openPrintDialog({ root, delay: 220 });
         };
 
         window.openSetReviewBackupPracticeReview = function(student, setNum = window.currentSetReviewContext?.setNum || window.currentSetNumber) {

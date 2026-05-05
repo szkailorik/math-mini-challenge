@@ -12,6 +12,9 @@ if (!html.includes('id="print-root"')) {
 if (!html.includes('body.print-sandbox-active > *:not(#print-root)')) {
   throw new Error('Print CSS is missing sandbox isolation for the print root');
 }
+if (!html.includes('body.print-sandbox-active #print-root .ans-sheet .ans-section[data-sec-index="5"]') || !html.includes('page-break-before: always')) {
+  throw new Error('Answer print CSS must force a page break before section five');
+}
 if (!html.includes('const PRINT_ROOT_ID = \'print-root\';')) {
   throw new Error('Print sandbox constant is missing from runtime script');
 }
@@ -311,6 +314,19 @@ function extractQuestionSheets() {
   }
   return sheets;
 }
+
+function extractAnswerSheets() {
+  const paper = elements.get('paper-container')?.innerHTML || '';
+  const starts = [...paper.matchAll(/<div class="sheet ans-sheet/g)].map(match => match.index);
+  if (starts.length === 0) return [];
+  starts.push(paper.length);
+  const sheets = [];
+  for (let i = 0; i < starts.length - 1; i += 1) {
+    sheets.push(paper.slice(starts[i], starts[i + 1]));
+  }
+  return sheets;
+}
+
 function makeElement(id) {
   const classNames = new Set();
   return {
@@ -377,10 +393,7 @@ const document = {
       return extractQuestionSheets().map(outerHTML => ({ outerHTML }));
     }
     if (selector === '.sheet.ans-sheet') {
-      const paper = elements.get('paper-container')?.innerHTML || '';
-      return Array.from({ length: (paper.match(/class="sheet ans-sheet/g) || []).length }, () => ({
-        outerHTML: '<div class="sheet ans-sheet"></div>',
-      }));
+      return extractAnswerSheets().map(outerHTML => ({ outerHTML }));
     }
     return [];
   },
@@ -1663,6 +1676,63 @@ if (context.document.body.classList.contains('print-questions-only') || context.
 if ((elements.get('print-root')?.innerHTML || '') !== '') {
   throw new Error('Answer-sheet print sandbox did not clear after afterprint');
 }
+context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
+context.window.currentProgramId = 'advanced_fluency_v1';
+context.window.currentSetNumber = 86;
+context.window.renderPaper();
+const extractAnswerSectionHtml = (sourceHtml, studentId, sectionIndex) => {
+  const idNeedle = `id="${studentId}-ans-sheet"`;
+  const sheetStart = sourceHtml.indexOf(idNeedle);
+  if (sheetStart === -1) return '';
+  const nextSheet = sourceHtml.indexOf('<div class="sheet ans-sheet"', sheetStart + idNeedle.length);
+  const sheetHtml = sourceHtml.slice(sheetStart, nextSheet === -1 ? sourceHtml.length : nextSheet);
+  const startNeedle = `<div class="ans-section" data-sec-index="${sectionIndex}"`;
+  const sectionStart = sheetHtml.indexOf(startNeedle);
+  if (sectionStart === -1) return '';
+  const nextNeedle = `<div class="ans-section" data-sec-index="${sectionIndex + 1}"`;
+  const sectionEnd = sheetHtml.indexOf(nextNeedle, sectionStart + startNeedle.length);
+  return sheetHtml.slice(sectionStart, sectionEnd === -1 ? sheetHtml.length : sectionEnd);
+};
+const extractAnswerRecords = sectionHtml => [...sectionHtml.matchAll(/<div class="ans-row[^"]*"[^>]*data-tag="([^"]*)"[^>]*data-info="([^"]*)"/g)].map(match => {
+  const tag = match[1] || '';
+  const info = JSON.parse(decodeURIComponent(match[2] || '%7B%7D'));
+  return { tag, info, grade: 'wrong', rowKey: context.window.getAnswerRowKey?.(tag, info) };
+});
+const lorikSet86SectionHtml = extractAnswerSectionHtml(elements.get('paper-container')?.innerHTML || '', 'lorik', 5);
+const lorikSet86Records = extractAnswerRecords(lorikSet86SectionHtml);
+if (lorikSet86Records.length !== 12) {
+  throw new Error(`Set 86 Lorik section-five answer key should have 12 rows, got ${lorikSet86Records.length}`);
+}
+if (lorikSet86Records.some(record => record.info.sec !== '分数四则运算' || !record.info.a || !record.info.step)) {
+  throw new Error('Set 86 Lorik section-five answer rows are missing section labels, answers, or steps');
+}
+const set86WholeNumber = lorikSet86Records.find(record => record.tag === 'l_fmix_ofwhole');
+const set86FractionSub = lorikSet86Records.find(record => record.tag === 'l_fmix_sub');
+if (!set86WholeNumber || stripHtml(set86WholeNumber.info.a) !== '40') {
+  throw new Error('Set 86 Lorik fraction-of-whole answer is not preserved as 40');
+}
+if (!set86FractionSub || !/27\s*56/.test(stripHtml(set86FractionSub.info.a))) {
+  throw new Error('Set 86 Lorik fraction subtraction answer is not preserved as 27/56');
+}
+context.window.printAnswerSheets();
+await new Promise(resolve => setTimeout(resolve, 260));
+const lorikSet86PrintSectionHtml = extractAnswerSectionHtml(elements.get('print-root')?.innerHTML || '', 'lorik', 5);
+const lorikSet86PrintRecords = extractAnswerRecords(lorikSet86PrintSectionHtml);
+if (lorikSet86PrintRecords.length !== 12) {
+  throw new Error('Set 86 Lorik printable answer sheet dropped section-five rows');
+}
+emit('afterprint');
+await context.window.StorageDB.saveSession('Lorik', lorikSet86Records, 86, 'advanced_fluency_v1');
+const lorikSet86Session = context.window.StorageDB.getProfile('Lorik', 'advanced_fluency_v1').history.find(session => session.set === 86);
+if (!lorikSet86Session || lorikSet86Session.details.length !== 12 || lorikSet86Session.details.some(detail => detail.info.sec !== '分数四则运算' || !detail.info.a)) {
+  throw new Error('Set 86 Lorik report persistence did not keep all section-five answer records');
+}
+context.window.showSetReview(86, 'Lorik');
+const lorikSet86ReportHtml = elements.get('report-content-area')?.innerHTML || '';
+if (!lorikSet86ReportHtml.includes('Lorik · Set 86') || !lorikSet86ReportHtml.includes('分数四则运算') || !lorikSet86ReportHtml.includes('第 12 小题') || !lorikSet86ReportHtml.includes('正确答案')) {
+  throw new Error('Set 86 Lorik report is missing section-five locations or answer labels');
+}
+context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 if (typeof context.window.setupAutoCloudPull !== 'function' || typeof context.window.StorageDB?.pullRemoteChanges !== 'function') {
   throw new Error('Automatic cloud pull helpers are not available');
 }

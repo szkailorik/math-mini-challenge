@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.213 fixes a Set 86 Lorik answer-key/report integrity edge:
+
+- Printable answer sheets force a new page before section five, so dense answer explanations cannot hide the fifth section during printing.
+- Runtime validation now locks Set 86 Lorik section five at 12 answer rows with non-empty answers and steps.
+- The same validation saves those rows into a report session and checks that the report keeps the section-five locations and answer labels.
+
 v23.212 closes the parent-led explanation loop on paper:
 
 - Explanation checklists include a post-teaching record column.
