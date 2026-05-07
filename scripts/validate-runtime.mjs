@@ -464,6 +464,18 @@ const context = {
   print() {
     context.__printCalls = (context.__printCalls || 0) + 1;
   },
+  open() {
+    context.__popupCalls = (context.__popupCalls || 0) + 1;
+    return {
+      document: {
+        open() {},
+        write() {},
+        close() {},
+      },
+      focus() {},
+      close() {},
+    };
+  },
   alert(message) {
     throw new Error(`Unexpected alert: ${message}`);
   },
@@ -636,6 +648,22 @@ const microDrillPrintRootHtml = String(elements.get('print-root')?.innerHTML || 
 if (!microDrillPrintRootHtml.includes('quick-review-drill-print-shell') || !microDrillPrintRootHtml.includes('16题模型微练卷 · 参考答案') || !microDrillPrintRootHtml.includes('自查：') || !microDrillPrintRootHtml.includes('错法提醒')) {
   throw new Error('Calculation Quick Review micro-drill sheet print sandbox is incomplete');
 }
+emit('afterprint');
+context.__printCalls = 0;
+context.__popupCalls = 0;
+context.navigator.vendor = 'Apple Computer, Inc.';
+context.navigator.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+context.printCalculationQuickReviewMicroDrillSheet();
+await new Promise(resolve => setTimeout(resolve, 260));
+if ((context.__printCalls || 0) < 1) {
+  throw new Error('Safari-style print path should still call same-page window.print');
+}
+if ((context.__popupCalls || 0) !== 0) {
+  throw new Error('Safari-style print path should not open an extra blank popup window');
+}
+emit('afterprint');
+context.navigator.vendor = '';
+context.navigator.userAgent = 'math-mini-challenge-validator';
 context.closeReportModal();
 if (reviewModalContent?.classList?.contains('quick-review-modal')) {
   throw new Error('Closing the report modal should clear quick-review layout mode');

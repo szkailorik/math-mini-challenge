@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.214 fixes a print-window regression:
+
+- All print buttons now use the same-page print sandbox by default instead of opening an automatic `_blank` popup.
+- This removes the extra blank page/window that could appear when printing error-discrimination drills, model micro-drills, and other small print packs.
+- Runtime validation simulates a Safari-style browser and confirms the micro-drill print path calls `window.print` without opening a popup window.
+
 v23.213 fixes a Set 86 Lorik answer-key/report integrity edge:
 
 - Printable answer sheets force a new page before section five, so dense answer explanations cannot hide the fifth section during printing.

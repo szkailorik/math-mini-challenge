@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.213 (答案分页核验)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.214 (同页打印修复)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -3001,7 +3001,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.213</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.214</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3080,9 +3080,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.213';
+        const APP_VERSION = 'v23.214';
         const APP_RELEASE_LABEL = '讲后打勾';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.213 答案打印页在第 5 大题前强制分页，并锁定第 86 套 Lorik 分数四则答案与报告一致。';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.214 打印按钮统一改回同页打印沙盒，避免错题辨识/微练等入口额外弹出空白页。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -12803,21 +12803,17 @@ window.addEventListener('afterprint', function () {
                 showToast('当前没有可重试打印的内容。', { background: '#b45309', duration: 2200 });
                 return;
             }
-            if (printViaPopup(root, document.getElementById('modal-title')?.innerText || document.title || 'Print')) {
-                showToast('🖨️ 已重新打开打印窗口。', { background: '#0f766e', duration: 2200 });
-                return;
-            }
             schedulePrintCleanupFallback();
             window.print();
         };
 
-        function openPrintDialog({ root = getPrintRoot(), delay = 220, title = document.title || 'Print' } = {}) {
+        function openPrintDialog({ root = getPrintRoot(), delay = 220, title = document.title || 'Print', allowPopup = false } = {}) {
             const triggerPrint = () => {
                 schedulePrintCleanupFallback();
                 window.print();
             };
             flushPrintLayout(root);
-            if (shouldPrintImmediately()) {
+            if (allowPopup && shouldPrintImmediately()) {
                 if (printViaPopup(root, title)) return;
                 if (openPrintPreviewFallback(root, title)) {
                     showToast('浏览器拦截了打印窗口，已切换到打印预览。', { background: '#b45309', duration: 2600 });

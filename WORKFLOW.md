@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.214 Iteration Notes
+
+### Iteration 1
+
+- What I changed: traced the extra blank print page to the automatic popup fallback in `openPrintDialog`, then changed normal print buttons back to same-page print-sandbox printing.
+- Open questions: if a future iPad/Safari build truly needs popup printing again, it should be enabled per button with an explicit option instead of globally.
+- Risks: same-page print relies on the browser honoring `window.print()` after the print root is staged; runtime validation now covers the Safari-style path to keep this behavior visible.
+- Next steps: keep blank-popup prevention in the runtime validator for all future print work.
+
 ## Current v23.213 Iteration Notes
 
 ### Iteration 3
