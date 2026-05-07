@@ -27,6 +27,11 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.215 expands blank-popup print protection:
+
+- Safari-style same-page print validation now covers knowledge maps, error-book targeted sheets, mechanism drills, set reports, main variants, and backup second-pass packs.
+- Each tested print path must stage non-empty content in `#print-root`, call `window.print`, and avoid `window.open`.
+
 v23.214 fixes a print-window regression:
 
 - All print buttons now use the same-page print sandbox by default instead of opening an automatic `_blank` popup.

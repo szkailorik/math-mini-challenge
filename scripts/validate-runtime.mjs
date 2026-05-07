@@ -494,6 +494,37 @@ vm.runInContext(match[1], context, { filename: 'index.html' });
 
 await new Promise(resolve => setTimeout(resolve, 25));
 
+async function assertSafariSamePagePrint(label, printFn, expectedText = '') {
+  emit('afterprint');
+  context.__printCalls = 0;
+  context.__popupCalls = 0;
+  const originalVendor = context.navigator.vendor || '';
+  const originalUserAgent = context.navigator.userAgent || '';
+  context.navigator.vendor = 'Apple Computer, Inc.';
+  context.navigator.userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+  try {
+    await printFn();
+    await new Promise(resolve => setTimeout(resolve, 280));
+    const stagedHtml = String(elements.get('print-root')?.innerHTML || '');
+    if ((context.__printCalls || 0) < 1) {
+      throw new Error(`${label} did not call same-page window.print`);
+    }
+    if ((context.__popupCalls || 0) !== 0) {
+      throw new Error(`${label} opened an extra popup/blank page`);
+    }
+    if (!stagedHtml.trim()) {
+      throw new Error(`${label} staged an empty print root`);
+    }
+    if (expectedText && !stagedHtml.includes(expectedText)) {
+      throw new Error(`${label} print root is missing expected content: ${expectedText}`);
+    }
+  } finally {
+    context.navigator.vendor = originalVendor;
+    context.navigator.userAgent = originalUserAgent;
+    emit('afterprint');
+  }
+}
+
 const programSelector = elements.get('program-selector');
 const programTitleLabel = elements.get('program-title-label');
 const stageStatusTitle = elements.get('stage-status-title');
@@ -1515,6 +1546,7 @@ if (!context.document.body.classList.contains('print-sandbox-active') || !knowle
   throw new Error('Knowledge map print sandbox did not stage the filtered learner map');
 }
 emit('afterprint');
+await assertSafariSamePagePrint('Knowledge map print', () => context.window.printCurrentKnowledgeMap?.(), 'KAI 知识点地图');
 context.__printCalls = 0;
 const domainPracticeHtml = context.window.buildErrorBookDomainPrintHTML?.('KAI', 'decimal', true) || '';
 if (!domainPracticeHtml.includes('领域专项补练：小数与位值') || !domainPracticeHtml.includes('参考答案')) {
@@ -1527,6 +1559,8 @@ if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !
 if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('全部需讲解 ⚠️') || !domainPracticeReviewHtml.includes('清空重填') || !domainPracticeReviewHtml.includes('practice-batch-progress') || !domainPracticeReviewHtml.includes('暂不能提交')) {
   throw new Error('Error-book domain practice grading sheet is missing batch refill actions');
 }
+await assertSafariSamePagePrint('Error-book domain practice print', () => context.window.printErrorBookDomainPractice?.('KAI', 'decimal', true), '领域专项补练：小数与位值');
+await assertSafariSamePagePrint('Error-book full practice print', () => context.window.printErrorBookPractice?.('KAI', true), '错题专项卷');
 const sampleHighValueSignal = context.window.getHighValueTrainingSignal?.(
   {
     lastSeen: { k_eq_divisor: 96 },
@@ -1728,6 +1762,8 @@ if (!advancedFractionReplayItems.some(item => item.qualityFamily === 'fraction_o
 if (typeof context.window.printQuestionSheets !== 'function' || typeof context.window.printAnswerSheets !== 'function') {
   throw new Error('Print helper functions are not available');
 }
+context.__printCalls = 0;
+context.__popupCalls = 0;
 context.window.printQuestionSheets();
 await new Promise(resolve => setTimeout(resolve, 260));
 const printRootHtml = elements.get('print-root')?.innerHTML || '';
@@ -1904,6 +1940,7 @@ if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes
 if (mechanismPrintHtml.includes('class="blank math-inline-blank"') || mechanismPrintHtml.includes('<div class="blank"></div>')) {
   throw new Error('Error book mechanism print HTML still contains legacy underline blanks');
 }
+await assertSafariSamePagePrint('Error-book mechanism practice print', () => context.window.printErrorBookMechanismPractice?.('KAI', 'representation-conversion', false), '机制补练');
 const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, {}) || '';
 if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
   throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
@@ -2031,6 +2068,11 @@ if (!singleSetReviewPrintHtml.includes('KAI 单人报告') || !singleSetReviewPr
   throw new Error('Single-student set review print sandbox did not filter to the requested student report');
 }
 emit('afterprint');
+await assertSafariSamePagePrint('Set review report print', () => context.window.printCurrentSetReviewReport?.('KAI'), 'KAI 单人报告');
+await assertSafariSamePagePrint('Set review main follow-up print', () => context.window.printSetReviewFollowup?.('KAI', false), '错题变式训练');
+await assertSafariSamePagePrint('Set review main answer print', () => context.window.printSetReviewFollowupAnswers?.('KAI'), '主变式参考答案');
+await assertSafariSamePagePrint('Set review backup follow-up print', () => context.window.printSetReviewBackupFollowup?.('KAI', false), '备用二刷');
+await assertSafariSamePagePrint('Set review backup answer print', () => context.window.printSetReviewBackupAnswers?.('KAI'), '备用二刷参考答案');
 const sampleFollowupCandidates = context.window.buildSetReviewFollowupCandidates?.(context.window.StorageDB.cache.KAI.history[0]);
 if (!Array.isArray(sampleFollowupCandidates) || sampleFollowupCandidates.length !== 2) {
   throw new Error('Set review follow-up candidates are not being built from current-set details');

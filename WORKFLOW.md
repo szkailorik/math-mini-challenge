@@ -29,6 +29,15 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.215 Iteration Notes
+
+### Iteration 1
+
+- What I changed: expanded the blank-popup print regression test from one micro-drill path to the main small-pack print surfaces: knowledge map, error-book practice, mechanism drill, set report, main variant, and backup second-pass sheets.
+- Open questions: none for the current blank-page issue; future print entry points should be added to the same helper as they are created.
+- Risks: validation simulates Safari behavior at the runtime-helper level, not a full OS print dialog, so real-device checks still matter after major browser updates.
+- Next steps: keep same-page print as the default and require explicit opt-in for any future popup print path.
+
 ## Current v23.214 Iteration Notes
 
 ### Iteration 1
