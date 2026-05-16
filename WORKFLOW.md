@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.224 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added `预览` actions for both `今日变式跟训` and `备用二刷` in the set-review action cards.
+- Open questions: none.
+- Risks: the action cards now have one more button per lane, so labels must stay short.
+- Next steps: keep print actions secondary to preview when judging variant quality.
+
+### Iteration 2
+
+- What I changed: built a larger quick-preview panel that shows each source mistake, generated variant question, answer, and `贴合原题` / `需复核` badge without opening the print sandbox.
+- Open questions: none.
+- Risks: answer visibility is intentional for tutor review, but the preview should not be used as a student worksheet.
+- Next steps: keep printable sheets clean and student-facing.
+
+### Iteration 3
+
+- What I changed: added runtime coverage so the main and backup variant preview builders must render readable content and opening preview must not trigger print mode.
+- Open questions: none.
+- Risks: the test uses a fixed sample set to make variant preview deterministic.
+- Next steps: preserve this fast preview path when the set-review block is reorganized.
+
 ## Current v23.223 Iteration Notes
 
 ### Iteration 1

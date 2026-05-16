@@ -493,6 +493,7 @@ v23.0 integrates the durable error book into regular training:
 - v23.221 makes the due state visible before printing: the error book summary shows due count, wrong-again priority count, and a short next-step message, and hides the due-only print buttons when nothing is due.
 - v23.222 makes daily wrong-book mixing due-aware: due, overdue, and wrong-again entries receive the daily recovery budget, while not-due mistakes are held back to a tiny maintenance cap so the AB paper does not replay errors too soon.
 - v23.223 aligns the knowledge map with the same spacing rule: the Error-Book Bridge table now says whether each active mistake is due today, overdue, priority, or intentionally deferred, using parent-facing labels instead of internal tags.
+- v23.224 adds a fast same-set variant preview before printing: tutors can review main variants or backup second-pass questions in a larger, readable panel with the source mistake, answer, and quality badge, then print only after confirming the questions are suitable.
 - Error-book practice now supports a dedicated printable targeted sheet with answers and an "mastered / wrong again" record line for paper-based follow-up.
 - v23.154 closes the loop after printing: the tutor can enter targeted-sheet grading back into the app, marking items as mastered or wrong again so the durable error book stays aligned with paper practice.
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.

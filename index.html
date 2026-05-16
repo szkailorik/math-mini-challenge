@@ -2460,6 +2460,20 @@
         .set-review-action-card p { margin:0; color:#64748b; font-size:11.5px; line-height:1.45; }
         .set-review-action-buttons { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:7px; }
         .set-review-action-buttons .modal-btn { width:100%; padding:8px 10px; font-size:12px; border-radius:8px; }
+        .set-review-preview-panel { display:grid; gap:12px; }
+        .set-review-preview-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; padding:10px 12px; border:1px solid #dbe4ee; border-radius:8px; background:#f8fafc; }
+        .set-review-preview-head h4 { margin:0; color:#0f172a; font-size:18px; line-height:1.35; }
+        .set-review-preview-head p { margin:4px 0 0; color:#475569; font-size:13px; line-height:1.5; }
+        .set-review-preview-tools { display:flex; gap:8px; flex-wrap:wrap; }
+        .set-review-preview-list { display:grid; gap:10px; }
+        .set-review-preview-row { display:grid; grid-template-columns:46px minmax(0, 1fr); gap:10px; border:1px solid #e2e8f0; border-radius:8px; padding:11px 12px; background:#fff; }
+        .set-review-preview-num { width:38px; height:38px; border-radius:8px; background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; }
+        .set-review-preview-meta { color:#64748b; font-size:12px; line-height:1.45; display:flex; gap:8px; flex-wrap:wrap; margin-bottom:5px; }
+        .set-review-preview-source { color:#475569; font-size:13px; line-height:1.55; margin-bottom:6px; }
+        .set-review-preview-q { font-size:18px; line-height:1.65; color:#0f172a; margin-bottom:6px; }
+        .set-review-preview-answer { color:#334155; font-size:13.5px; line-height:1.55; }
+        .set-review-preview-badge { display:inline-flex; align-items:center; padding:3px 7px; border-radius:8px; border:1px solid #bbf7d0; background:#ecfdf5; color:#047857; font-size:11px; font-weight:800; }
+        .set-review-preview-badge.warn { border-color:#fed7aa; background:#fff7ed; color:#b45309; }
         .set-review-followup-overview {
             border:1px solid #e2e8f0;
             border-radius:14px;
@@ -12453,6 +12467,90 @@
         }
         window.buildSetReviewBackupAnswerHTML = buildSetReviewBackupAnswerHTML;
 
+        function buildSetReviewFollowupPreviewRows(items = [], lane = 'main') {
+            const previewItems = lane === 'backup'
+                ? buildSetReviewBackupItems(items)
+                : items.map(item => ({
+                    sourceLabel: item.followupSourceLabel || '',
+                    sourceQ: item.sourceQ || '',
+                    sourceA: item.sourceA || '',
+                    q: item.q || item.prompt || '',
+                    a: item.a || item.answer || '',
+                    step: item.step || '',
+                    family: item.followupFamily || item.qualityFamily || '',
+                    grade: item.followupGrade || '',
+                    mechanismKey: item.followupMechanismKey || '',
+                    followupQualityWarnings: item.followupQualityWarnings || [],
+                    followupQualityScore: item.followupQualityScore,
+                    followupCandidatePoolSize: item.followupCandidatePoolSize || 0
+                }));
+            return previewItems.map((item, idx) => {
+                const warnings = Array.isArray(item.followupQualityWarnings) ? item.followupQualityWarnings : [];
+                const qualityBadge = warnings.length
+                    ? `<span class="set-review-preview-badge warn">需复核：${warnings.slice(0, 2).join('、')}</span>`
+                    : `<span class="set-review-preview-badge">贴合原题</span>`;
+                const familyLabel = SET_REVIEW_FOLLOWUP_LABELS[item.family] || '同类跟训';
+                const sourceText = item.sourceQ
+                    ? `<span class="math-row">${item.sourceQ}</span>${item.sourceA ? ` · 答案 <span class="math-row">${item.sourceA}</span>` : ''}`
+                    : (item.sourceLabel || '本套错题');
+                return `
+                    <div class="set-review-preview-row" data-lane="${lane}">
+                        <div class="set-review-preview-num">${idx + 1}</div>
+                        <div>
+                            <div class="set-review-preview-meta">
+                                <span>${item.sourceLabel || `错题 ${idx + 1}`}</span>
+                                <span>${familyLabel}</span>
+                                ${qualityBadge}
+                            </div>
+                            <div class="set-review-preview-source">原错题：${sourceText}</div>
+                            <div class="set-review-preview-q math-row">${item.q || '-'}</div>
+                            <div class="set-review-preview-answer">参考答案：<span class="math-row">${item.a || '-'}</span>${item.step ? ` · ${item.step}` : ''}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        window.buildSetReviewFollowupPreviewRows = buildSetReviewFollowupPreviewRows;
+
+        function buildSetReviewFollowupPreviewHTML(student, setNum, lane = 'main') {
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, Number(setNum));
+            if (!session) return '';
+            const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
+            if (!items.length) return '';
+            const laneKey = lane === 'backup' ? 'backup' : 'main';
+            const previewCount = laneKey === 'backup' ? buildSetReviewBackupItems(items).length : items.length;
+            if (!previewCount) return '';
+            const audit = getSetReviewFollowupAudit(session, items);
+            const laneTitle = laneKey === 'backup' ? '备用二刷预览' : '今日变式预览';
+            const switchLane = laneKey === 'backup' ? 'main' : 'backup';
+            const switchText = laneKey === 'backup' ? '看今日变式' : '看备用二刷';
+            const printQuestionCall = laneKey === 'backup'
+                ? `window.printSetReviewBackupFollowup('${student}', false)`
+                : `window.printSetReviewFollowup('${student}', false)`;
+            const printWithAnswerCall = laneKey === 'backup'
+                ? `window.printSetReviewBackupFollowup('${student}', true)`
+                : `window.printSetReviewFollowup('${student}', true)`;
+            return `
+            <div class="set-review-preview-panel" data-student="${student}" data-set="${Number(setNum)}" data-lane="${laneKey}">
+                <div class="set-review-preview-head">
+                    <div>
+                        <h4>${student} Set ${Number(setNum)} ${laneTitle}</h4>
+                        <p>先快速看题面、原错题和贴合度，再决定是否打印。当前 ${previewCount} 题；${audit.ok ? '变式体检通过。' : '有变式需要复核。'}</p>
+                    </div>
+                    <div class="set-review-preview-tools no-print">
+                        <button class="modal-btn" onclick="window.openSetReviewFollowupPreview('${student}', '${switchLane}', ${Number(setNum)})">${switchText}</button>
+                        <button class="modal-btn" onclick="${printQuestionCall}">打印题目</button>
+                        <button class="modal-btn" onclick="${printWithAnswerCall}">打印题目+答案</button>
+                        <button class="modal-btn" onclick="window.showSetReview(${Number(setNum)}, '${student}')">返回本套报告</button>
+                    </div>
+                </div>
+                <div class="set-review-preview-list">
+                    ${buildSetReviewFollowupPreviewRows(items, laneKey)}
+                </div>
+            </div>`;
+        }
+        window.buildSetReviewFollowupPreviewHTML = buildSetReviewFollowupPreviewHTML;
+
         function buildSetReviewBackupPracticeReviewHTML(student, setNum) {
             const profile = StorageDB.getProfile(student) || {};
             const session = findSetSession(profile, setNum);
@@ -12593,6 +12691,7 @@
                             <h5>今日变式跟训</h5>
                             <p>先做这一组，一道错题对应一道主变式。</p>
                             <div class="set-review-action-buttons">
+                                <button class="modal-btn" onclick="window.openSetReviewFollowupPreview('${student}', 'main', ${Number(session.set || window.currentSetNumber)})">👁️ 预览</button>
                                 <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', false)">🖨️ 题目</button>
                                 <button class="modal-btn" onclick="window.printSetReviewFollowupAnswers('${student}')">🧾 答案</button>
                                 <button class="modal-btn" onclick="window.printSetReviewFollowup('${student}', true)">🖨️ 题目+答案</button>
@@ -12603,6 +12702,7 @@
                             <h5>备用二刷</h5>
                             <p>隔天复练或主变式又错时再用。</p>
                             <div class="set-review-action-buttons">
+                                <button class="modal-btn" onclick="window.openSetReviewFollowupPreview('${student}', 'backup', ${Number(session.set || window.currentSetNumber)})">👁️ 预览</button>
                                 <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', false)">🖨️ 题目</button>
                                 <button class="modal-btn" onclick="window.printSetReviewBackupAnswers('${student}')">🧾 答案</button>
                                 <button class="modal-btn" onclick="window.printSetReviewBackupFollowup('${student}', true)">🖨️ 题目+答案</button>
@@ -13422,6 +13522,25 @@ window.addEventListener('afterprint', function () {
             </section>`;
         }
         window.buildSetReviewFollowupAnswerPrintHTML = buildSetReviewFollowupAnswerPrintHTML;
+
+        window.openSetReviewFollowupPreview = function(student, lane = 'main', setNum = window.currentSetReviewContext?.setNum || window.currentSetNumber) {
+            const resolvedSetNum = Number(setNum || window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const laneKey = lane === 'backup' ? 'backup' : 'main';
+            const html = buildSetReviewFollowupPreviewHTML(student, resolvedSetNum, laneKey);
+            if (!html) {
+                showToast(laneKey === 'backup' ? '这位学生本套还没有可预览的备用二刷题。' : '这位学生本套还没有可预览的主变式题。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            const modalContent = document.getElementById('report-modal-content');
+            if (modalContent) {
+                modalContent.classList.remove('quick-review-modal');
+                modalContent.classList.remove('print-preview-modal');
+            }
+            document.getElementById('modal-title').innerText = laneKey === 'backup' ? '备用二刷快速预览' : '今日变式快速预览';
+            document.getElementById('report-content-area').innerHTML = html;
+            document.getElementById('report-modal').style.display = 'block';
+            showToast(laneKey === 'backup' ? '已打开备用二刷预览。' : '已打开今日变式预览。', { background: '#0f766e', duration: 2000 });
+        };
 
         window.printSetReviewFollowup = function(student, includeAnswers = false) {
             ensurePrintLifecycleHooks();
