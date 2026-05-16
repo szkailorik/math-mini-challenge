@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.218 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a learner-specific error-pressure classifier that looks at active wrong-book entries, repeated errors, and recent mistake rates.
+- Open questions: none.
+- Risks: very old sessions without full grade rows use a conservative denominator estimate, so pressure may be slightly approximate for legacy data.
+- Next steps: keep pressure visible to tutors but hidden from student question sheets.
+
+### Iteration 2
+
+- What I changed: connected pressure bands to the whole-paper daily wrong-book budget: light pressure lowers wrong-book intake, standard pressure keeps the planned ratio, and intensive pressure permits a stronger capped recovery dose.
+- Open questions: none.
+- Risks: strict caps can under-use wrong-book items when a student has many active errors, but that is intentional to preserve new retrieval and interleaving.
+- Next steps: watch real usage to see whether the intensive band feels too frequent or just right.
+
+### Iteration 3
+
+- What I changed: extended runtime validation so dense wrong-book data must be classified as intensive, while a single active wrong-book entry must receive a lower light-pressure cap.
+- Open questions: none.
+- Risks: the validator checks policy behavior and generated counts, not a full pedagogical outcome over weeks.
+- Next steps: keep the cap regression tests whenever selection rules change.
+
 ## Current v23.217 Iteration Notes
 
 ### Iteration 1

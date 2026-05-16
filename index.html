@@ -4858,6 +4858,73 @@
             return 36;
         }
 
+        function getDailyErrorPressure(student, programId = getCurrentProgramId()) {
+            const profile = StorageDB?.getProfile?.(student, programId) || {};
+            const activeEntries = Object.values(profile.errorBook || {}).filter(entry => entry && !entry.mastered && entry.tag);
+            const repeatedEntries = activeEntries.filter(entry => Number(entry.count || 0) >= 2 || Number(entry.rewrongCount || 0) > 0);
+            const recentSessions = Array.isArray(profile.history) ? profile.history.slice(-3) : [];
+            let recentTotal = 0;
+            let recentMistakes = 0;
+            let recentWrong = 0;
+            recentSessions.forEach(session => {
+                const allGrades = Array.isArray(session?.allGrades) ? session.allGrades.filter(item => item?.grade) : [];
+                if (allGrades.length) {
+                    recentTotal += allGrades.length;
+                    recentMistakes += allGrades.filter(item => ['wrong', 'careless'].includes(item.grade)).length;
+                    recentWrong += allGrades.filter(item => item.grade === 'wrong').length;
+                    return;
+                }
+                const details = Array.isArray(session?.details) ? session.details.filter(item => item?.grade) : [];
+                if (details.length) {
+                    recentTotal += getDailyPracticeQuestionBudget(programId);
+                    recentMistakes += details.length;
+                    recentWrong += details.filter(item => item.grade === 'wrong').length;
+                }
+            });
+            const recentMistakeRate = recentTotal ? recentMistakes / recentTotal : 0;
+            const recentWrongRate = recentTotal ? recentWrong / recentTotal : 0;
+            const pressureScore = activeEntries.length
+                + repeatedEntries.length * 0.8
+                + recentMistakeRate * 12
+                + recentWrongRate * 18;
+            const band = pressureScore >= 8 || repeatedEntries.length >= 3 || recentWrongRate >= 0.16
+                ? 'intensive'
+                : (pressureScore >= 3 || activeEntries.length >= 2 || recentMistakeRate >= 0.10 ? 'standard' : 'light');
+            return {
+                activeCount: activeEntries.length,
+                repeatedCount: repeatedEntries.length,
+                recentMistakeRate,
+                recentWrongRate,
+                pressureScore,
+                band
+            };
+        }
+
+        function getDailyErrorPressureLabel(pressure = {}) {
+            if (pressure.band === 'intensive') return '强化回收';
+            if (pressure.band === 'standard') return '标准回收';
+            return '轻量回收';
+        }
+
+        function getAdaptiveDailyErrorMixTargets(student, programId, total, policy) {
+            const pressure = getDailyErrorPressure(student, programId);
+            if (!pressure.activeCount) {
+                return {
+                    pressure,
+                    maxErrorLinked: 0,
+                    maxExactReplay: 0,
+                    targetErrorLinkedRatio: 0,
+                    targetExactReplayRatio: 0
+                };
+            }
+            const pressureShift = pressure.band === 'intensive' ? 0.03 : (pressure.band === 'light' ? -0.06 : 0);
+            const targetErrorLinkedRatio = clampNumber(policy.errorLinkedRatio + pressureShift, 0.16, 0.35);
+            const targetExactReplayRatio = clampNumber(policy.exactReplayRatio + pressureShift * 0.45, 0.05, 0.18);
+            const maxErrorLinked = Math.max(1, Math.min(Math.ceil(total * targetErrorLinkedRatio), Math.floor(total * 0.35)));
+            const maxExactReplay = Math.max(1, Math.min(Math.floor(total * targetExactReplayRatio), Math.floor(maxErrorLinked * 0.5)));
+            return { pressure, maxErrorLinked, maxExactReplay, targetErrorLinkedRatio, targetExactReplayRatio };
+        }
+
         function getDailyErrorMixKey(student, programId) {
             return [programId || getCurrentProgramId(), student || 'KAI', window.currentSetNumber || 1].join(':');
         }
@@ -4866,8 +4933,7 @@
             const total = getDailyPracticeQuestionBudget(programId);
             const cycle = Engine?.getCycleState?.() || { code: 1 };
             const policy = getErrorBookPracticePolicy(cycle.code, total);
-            const maxErrorLinked = Math.max(1, Math.min(policy.errorLinkedQuota, Math.floor(total * 0.35)));
-            const maxExactReplay = Math.max(1, Math.min(policy.exactReplayQuota, Math.floor(maxErrorLinked * 0.5)));
+            const targets = getAdaptiveDailyErrorMixTargets(student, programId, total, policy);
             return {
                 key: getDailyErrorMixKey(student, programId),
                 student,
@@ -4875,8 +4941,15 @@
                 total,
                 cycleCode: cycle.code,
                 policyLabel: policy.label,
-                maxErrorLinked,
-                maxExactReplay,
+                maxErrorLinked: targets.maxErrorLinked,
+                maxExactReplay: targets.maxExactReplay,
+                targetErrorLinkedRatio: targets.targetErrorLinkedRatio,
+                targetExactReplayRatio: targets.targetExactReplayRatio,
+                pressureBand: targets.pressure.band,
+                pressureLabel: getDailyErrorPressureLabel(targets.pressure),
+                activeErrorCount: targets.pressure.activeCount,
+                repeatedErrorCount: targets.pressure.repeatedCount,
+                recentMistakeRate: targets.pressure.recentMistakeRate,
                 usedErrorLinked: 0,
                 usedExactReplay: 0
             };
@@ -4923,6 +4996,7 @@
         window.getTrainingFocus = getTrainingFocus;
         window.getErrorBookPracticePolicy = getErrorBookPracticePolicy;
         window.getDailyErrorMixSnapshot = getDailyErrorMixSnapshot;
+        window.getDailyErrorPressure = getDailyErrorPressure;
 
         const Engine = {
             randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
@@ -8664,14 +8738,22 @@
         function buildPracticeMixSummaryHTML(questions = [], student = '', programId = getCurrentProgramId(), { margin = '0 24px 12px' } = {}) {
             const stats = getPracticeMixStats(questions, programId);
             if (!stats.total) return '';
-            const linkedTone = stats.errorLinked > stats.maxErrorLinked ? '#b45309' : '#0f766e';
+            const policy = getErrorBookPracticePolicy(Engine.getCycleState().code, stats.total);
+            const adaptive = student ? getAdaptiveDailyErrorMixTargets(student, programId, stats.total, policy) : null;
+            const maxErrorLinked = adaptive ? adaptive.maxErrorLinked : stats.maxErrorLinked;
+            const maxExactReplay = adaptive ? adaptive.maxExactReplay : stats.maxExactReplay;
+            const pressureText = adaptive
+                ? `错题压力：${getDailyErrorPressureLabel(adaptive.pressure)}（活跃 ${adaptive.pressure.activeCount}，复错 ${adaptive.pressure.repeatedCount}）。`
+                : '';
+            const linkedTone = stats.errorLinked > maxErrorLinked ? '#b45309' : '#0f766e';
             return `
                 <div class="answer-progress-note no-print" data-daily-mix-summary="${student || 'student'}" style="margin:${margin}; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:10px;">
                     <strong>${student ? `${student} · ` : ''}今日训练结构</strong>：
                     错题相关 <strong style="color:${linkedTone};">${stats.errorLinked}/${stats.total}</strong>
                     （原题 ${stats.exactReplay}，变式 ${stats.variant}）；
                     新题/交错 <strong>${stats.fresh}/${stats.total}</strong>。
-                    当前周期「${stats.policyLabel}」建议错题相关不超过 ${stats.maxErrorLinked} 题，原题回炉不超过 ${stats.maxExactReplay} 题。
+                    ${pressureText}
+                    当前周期「${stats.policyLabel}」建议错题相关不超过 ${maxErrorLinked} 题，原题回炉不超过 ${maxExactReplay} 题。
                 </div>`;
         }
         window.getPracticeMixStats = getPracticeMixStats;

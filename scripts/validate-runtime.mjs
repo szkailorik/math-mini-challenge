@@ -2015,11 +2015,25 @@ const denseKaiMixStats = context.window.getPracticeMixStats?.(denseKaiItems, 'ad
 if (
   denseKaiItems.length !== 36 ||
   !denseKaiBudget?.maxErrorLinked ||
+  denseKaiBudget.pressureBand !== 'intensive' ||
   denseKaiLinked !== denseKaiMixStats?.errorLinked ||
   denseKaiLinked > denseKaiBudget.maxErrorLinked ||
   denseKaiMixStats.fresh < 20
 ) {
   throw new Error(`Daily generated practice should keep a mixed new/error ratio, got ${denseKaiLinked}/${denseKaiItems.length} error-linked with cap ${denseKaiBudget?.maxErrorLinked}`);
+}
+context.window._dailyErrorMixState = {};
+context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: buildDenseErrorBook([
+    { tag: 'k_dmul_basic', q: '2 &times; 3 =', a: '6' }
+  ])
+});
+const lightKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1');
+if (lightKaiBudget?.pressureBand !== 'light' || lightKaiBudget.maxErrorLinked >= denseKaiBudget.maxErrorLinked) {
+  throw new Error('Daily error-book mix should lower the cap when active error pressure is light');
 }
 context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
 context.window.StorageDB.cache.Lorik = previousLorikDailyMixRecord;
