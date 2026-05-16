@@ -12708,8 +12708,8 @@
 
         function buildSetReviewFollowupHTML(student, session) {
             const programId = session?.programId || getCurrentProgramId();
-            const items = buildSetReviewFollowupItems(session, student, programId);
-            if (!items.length) {
+            const targets = buildSetReviewFollowupTargets(session);
+            if (!targets.length) {
                 return `
                 <div class="set-review-followup">
                     <div class="set-review-followup-head">
@@ -12721,9 +12721,9 @@
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
             const mistakeCount = wrongCount + carelessCount;
-            const backupCount = items.filter(item => item.followupBackupVariant?.q).length;
-            const audit = getSetReviewFollowupAudit(session, items);
-            const familySummary = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
+            const expectedCount = targets.length;
+            const familySummary = Array.from(new Set(targets.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.family] || '同类跟训'))).join('、');
+            const familyCount = Array.from(new Set(targets.map(item => item.family || 'generic_followup'))).length;
             return `
             <div class="set-review-followup" data-student="${student}">
                 <div class="set-review-followup-head">
@@ -12757,9 +12757,11 @@
                     </div>
                 </div>
                 <div class="set-review-followup-overview">
-                    ${buildSetReviewFollowupAuditHTML(audit)}
+                    <div class="answer-progress-note" style="margin:0 0 10px; padding:9px 12px; border:1px solid #dbe4ee; background:#f8fafc; color:#334155; font-size:13px; line-height:1.55; border-radius:8px; font-weight:800;">
+                        待预览生成：预计 ${expectedCount} 道主变式 + ${expectedCount} 道备用二刷。点“预览”后会生成并体检贴合度；确认合适再打印。
+                    </div>
                     <div class="set-review-followup-summary">
-                        本套错题/粗心 <strong>${mistakeCount}</strong> 条，本次跟训 <strong>${items.length}</strong> 题，备用变式 <strong>${backupCount}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
+                        本套错题/粗心 <strong>${mistakeCount}</strong> 条，预计跟训 <strong>${expectedCount}</strong> 题，备用二刷 <strong>${expectedCount}</strong> 题。先补透本套里的概念错，再做少量粗心保温；主要覆盖 <strong>${familySummary}</strong>。
                     </div>
                     <div class="set-review-followup-compact-note no-print">
                         <strong>报告页不默认展开题目。</strong>先点“预览”快速审题；确认合适后再打印。预览、打印、答案和批改会复用同一套变式，避免看的是一套、打印又变另一套。
@@ -12770,8 +12772,8 @@
                     </div>
                     <div class="set-review-followup-metrics">
                         <div class="followup-metric">
-                            <span class="followup-metric-label">本次题量</span>
-                            <span class="followup-metric-value">${items.length} 题</span>
+                            <span class="followup-metric-label">预计题量</span>
+                            <span class="followup-metric-value">${expectedCount} 题</span>
                         </div>
                         <div class="followup-metric">
                             <span class="followup-metric-label">概念错优先</span>
@@ -12783,11 +12785,11 @@
                         </div>
                         <div class="followup-metric">
                             <span class="followup-metric-label">覆盖家族</span>
-                            <span class="followup-metric-value">${Array.from(new Set(items.map(item => item.followupFamily))).length} 类</span>
+                            <span class="followup-metric-value">${familyCount} 类</span>
                         </div>
                         <div class="followup-metric">
                             <span class="followup-metric-label">备用题库</span>
-                            <span class="followup-metric-value">${backupCount} 题</span>
+                            <span class="followup-metric-value">${expectedCount} 题</span>
                         </div>
                     </div>
                 </div>

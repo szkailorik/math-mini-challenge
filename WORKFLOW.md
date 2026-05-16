@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.227 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed same-set variant generation from the set-report render path; the report now computes expected counts from mistake targets only.
+- Open questions: none.
+- Risks: the report can only show expected variant counts before preview, not the final audited generated count.
+- Next steps: keep the preview panel as the first place where generated questions and quality audit appear.
+
+### Iteration 2
+
+- What I changed: updated the compact follow-up summary to say `待预览生成`, making the workflow explicit instead of pretending generation already happened.
+- Open questions: none.
+- Risks: copy must stay short so the report remains compact.
+- Next steps: keep the print sheet builders responsible for actual worksheet content.
+
+### Iteration 3
+
+- What I changed: added runtime coverage that the set report does not populate the variant cache before preview, print, or grading is requested.
+- Open questions: none.
+- Risks: validation depends on the in-memory cache shape.
+- Next steps: preserve lazy generation if variant generation logic becomes heavier.
+
 ## Current v23.226 Iteration Notes
 
 ### Iteration 1
