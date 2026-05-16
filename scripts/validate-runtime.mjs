@@ -1942,7 +1942,7 @@ if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
 if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
   throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
 }
-if (!mechanismFilteredHtml.includes('打印当前机制错题专项卷') || !mechanismFilteredHtml.includes('打印专项卷+答案') || !mechanismFilteredHtml.includes('批改专项卷')) {
+if (!mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
 const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';
@@ -1956,6 +1956,15 @@ await assertSafariSamePagePrint('Error-book mechanism practice print', () => con
 const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, {}) || '';
 if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
   throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
+}
+context.window.currentSetNumber = 109;
+const dueErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, { dueOnly: true }) || '';
+if (!dueErrorBookPracticeHtml.includes('到期错题复练卷') || !dueErrorBookPracticeHtml.includes('到期复练') || !dueErrorBookPracticeHtml.includes('参考答案')) {
+  throw new Error('Due error-book practice print HTML is missing due-only title or answer reference');
+}
+const dueReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { dueOnly: true }) || '';
+if (!dueReviewHtml.includes('到期错题复练批改') || !dueReviewHtml.includes('data-due-only="true"')) {
+  throw new Error('Due error-book practice grading sheet is missing due-only metadata');
 }
 if (!fullErrorBookPracticeHtml.includes('参考答案') || !fullErrorBookPracticeHtml.includes('复练标记')) {
   throw new Error('Full error-book targeted practice answer sheet is missing answer/reference tracking columns');

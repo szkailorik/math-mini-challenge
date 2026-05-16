@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.220 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a `dueOnly` targeted-practice path that filters error-book practice to due, overdue, and wrong-again priority entries.
+- Open questions: none.
+- Risks: if no items are due, the app now correctly refuses to print a due-only sheet instead of silently printing all active mistakes.
+- Next steps: keep the full all-error sheet available for occasional review sweeps.
+
+### Iteration 2
+
+- What I changed: changed the error-book action area so the primary print/grading buttons are `到期复练卷`, while full all-error sheets remain secondary buttons.
+- Open questions: none.
+- Risks: tutors used to the old first button may need one glance to notice the new wording, but the safer daily default is worth it.
+- Next steps: watch whether the secondary full-sheet buttons feel too crowded on smaller screens.
+
+### Iteration 3
+
+- What I changed: added runtime checks for due-only print titles, answer references, and grading metadata so the due-only flow cannot regress into the old full-sheet flow.
+- Open questions: none.
+- Risks: validation uses deterministic set numbers to make items due; real student data may have no due items on some days.
+- Next steps: keep due-only regression tests whenever error-book print entry points change.
+
 ## Current v23.219 Iteration Notes
 
 ### Iteration 1
