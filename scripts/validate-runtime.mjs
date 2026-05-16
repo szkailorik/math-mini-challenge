@@ -1509,6 +1509,13 @@ const sampleErrorSignal = context.window.getErrorBookSignal?.(
 if (!sampleErrorSignal || sampleErrorSignal.exactCount <= 4 || sampleErrorSignal.rewrongCount < 2 || sampleErrorSignal.score <= 0) {
   throw new Error('Error-book signal scoring is not prioritizing exact active re-wrong errors');
 }
+context.window.currentSetNumber = 120;
+const notDueSpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 119, grade: 'wrong' }, 120);
+const dueSpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 115, grade: 'wrong' }, 120);
+const prioritySpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 120, grade: 'wrong', rewrongCount: 1, lastPracticeGrade: 'wrong' }, 120);
+if (!notDueSpacing || notDueSpacing.due || !dueSpacing?.due || dueSpacing.weight <= notDueSpacing.weight || !prioritySpacing?.priority || prioritySpacing.weight <= dueSpacing.weight) {
+  throw new Error('Error-book spacing state should prioritize due and re-wrong items over just-seen mistakes');
+}
 const sampleKnowledgeRows = context.window.buildKnowledgeWeakRows?.({
   KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
   Lorik: { weights: {}, errorBook: {} }
@@ -1534,7 +1541,6 @@ context.window.StorageDB.cache.KAI = {
   errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88, info: { q: '0.84 ÷ 1.2', a: '0.7' } } },
   programs: {}
 };
-context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.showKnowledgeMap?.();
 const knowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('领域热力') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
@@ -1734,7 +1740,6 @@ context.window.StorageDB.cache.KAI = {
   },
   programs: {}
 };
-context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 107;
 const advancedQualityData = context.window.generateProgramSetData('advanced_fluency_v1');
@@ -1811,6 +1816,7 @@ if (context.document.body.classList.contains('print-questions-only') || context.
 if ((elements.get('print-root')?.innerHTML || '') !== '') {
   throw new Error('Answer-sheet print sandbox did not clear after afterprint');
 }
+context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 86;

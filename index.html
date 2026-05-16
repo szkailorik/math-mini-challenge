@@ -1302,6 +1302,10 @@
         .knowledge-tags { display: flex; flex-wrap: wrap; gap: 5px; }
         .knowledge-tag { font-size: 11px; background: #f1f5f9; color: #334155; border-radius: 4px; padding: 2px 5px; }
         .knowledge-tag.weak { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .spacing-badge { display:inline-block; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:800; background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+        .spacing-badge.not-due { background:#f1f5f9; color:#64748b; border-color:#cbd5e1; }
+        .spacing-badge.overdue { background:#fff7ed; color:#b45309; border-color:#fdba74; }
+        .spacing-badge.priority { background:#fef2f2; color:#b91c1c; border-color:#fca5a5; }
         .quick-review-page {
             width: min(980px, 92vw);
             margin: 0 auto;
@@ -5281,11 +5285,13 @@
                 .map(entry => {
                     const qualityFamily = getQualityFamilyForTag(entry.tag);
                     if (!['decimal_division', 'fraction_operation', 'conversion_bridge', 'equation_method'].includes(qualityFamily)) return null;
-                    const recency = Number(entry.lastSet || entry.firstSet || 0);
+                    const spacing = getErrorEntrySpacingState(entry);
+                    const practicePressure = getErrorEntryPracticePressure(entry);
                     return {
                         ...entry,
                         qualityFamily,
-                        priority: Math.max(1, entry.count || 1) * 4 + recency
+                        spacing,
+                        priority: Math.max(1, entry.count || 1) * 4 + practicePressure * 2 + spacing.weight * 3 + (spacing.due ? 2 : -1)
                     };
                 })
                 .filter(Boolean);
@@ -6292,6 +6298,31 @@
             `;
         }
         window.buildCalculationQuickReviewMicroDrillSheetHTML = buildCalculationQuickReviewMicroDrillSheetHTML;
+        function getErrorEntrySpacingState(entry = {}, currentSet = window.currentSetNumber || 0) {
+            const lastSet = Number(entry.lastSet || entry.firstSet || 0);
+            const setsSince = lastSet ? Math.max(0, Number(currentSet || 0) - lastSet) : 99;
+            const count = Math.max(1, Number(entry.count || 1));
+            const rewrong = Math.max(0, Number(entry.rewrongCount || 0));
+            const lastPracticeWrong = entry.lastPracticeGrade && entry.lastPracticeGrade !== 'perfect';
+            let targetGap = 4;
+            if (rewrong > 0 || lastPracticeWrong) targetGap = 1;
+            else if (count >= 4) targetGap = 2;
+            else if (count >= 2) targetGap = 3;
+            if (entry.grade === 'careless' && !lastPracticeWrong) targetGap += 1;
+            const dueRatio = lastSet ? setsSince / Math.max(1, targetGap) : 1.4;
+            const dueScore = clampNumber(dueRatio, 0, 2.4);
+            const due = !lastSet || setsSince >= targetGap;
+            const priority = rewrong > 0 || lastPracticeWrong;
+            const overdue = due && setsSince >= targetGap + 2;
+            const weight = priority
+                ? 1.55
+                : (due ? 1 + Math.min(0.75, Math.max(0, dueScore - 1) * 0.45) : clampNumber(0.28 + dueScore * 0.42, 0.28, 0.9));
+            const label = priority ? '复错优先' : (overdue ? '逾期复练' : (due ? '到期复练' : `未到期 ${setsSince}/${targetGap}`));
+            const badgeClass = priority ? 'priority' : (overdue ? 'overdue' : (due ? 'due' : 'not-due'));
+            return { lastSet, setsSince, targetGap, dueRatio, dueScore, due, overdue, priority, weight, label, badgeClass };
+        }
+        window.getErrorEntrySpacingState = getErrorEntrySpacingState;
+
         function getErrorEntryPracticePressure(entry = {}) {
             const rewrong = Math.max(0, Number(entry.rewrongCount || 0));
             const practice = Math.max(0, Number(entry.practiceCount || 0));
@@ -6305,12 +6336,12 @@
                 .map(entry => {
                     const count = Math.max(1, entry.count || 1);
                     const severity = entry.grade === 'wrong' ? 2 : 1;
-                    const lastSet = Number(entry.lastSet || 0);
-                    const recency = lastSet ? Math.max(0, 10 - Math.max(0, (window.currentSetNumber || 0) - lastSet)) * 0.15 : 0;
+                    const spacing = getErrorEntrySpacingState(entry);
+                    const spacingBonus = spacing.priority ? 2.4 : (spacing.due ? spacing.dueScore * 1.15 : -1.15 * (1 - spacing.dueScore));
                     const practicePressure = getErrorEntryPracticePressure(entry);
-                    return { ...entry, practicePressure, priority: count * 2 + severity + recency + practicePressure };
+                    return { ...entry, practicePressure, spacing, priority: count * 2 + severity + spacingBonus + practicePressure };
                 })
-                .sort((a, b) => b.priority - a.priority || (b.lastSet || 0) - (a.lastSet || 0));
+                .sort((a, b) => b.priority - a.priority || (b.spacing?.setsSince || 0) - (a.spacing?.setsSince || 0));
         }
         function getErrorBookSignal(profile, tag) {
             const exactEntries = getActiveErrorEntries(profile, tag);
@@ -6325,7 +6356,8 @@
             Object.values(profile?.errorBook || {}).forEach(entry => {
                 if (!entry || entry.mastered || !entry.tag) return;
                 const practicePressure = getErrorEntryPracticePressure(entry);
-                const count = Math.max(1, entry.count || 1) + practicePressure;
+                const spacing = getErrorEntrySpacingState(entry);
+                const count = (Math.max(1, entry.count || 1) + practicePressure) * spacing.weight;
                 rewrongCount += Math.max(0, Number(entry.rewrongCount || 0));
                 if (entry.tag === tag) exactCount += count;
                 else if (entry.mechanismKey && mechanismKey && entry.mechanismKey === mechanismKey) mechanismCount += count;
@@ -7596,11 +7628,12 @@
                 .map(entry => {
                     const count = Math.max(1, entry.count || 1);
                     const severity = entry.grade === 'wrong' ? 2 : 1;
-                    const lastSet = Number(entry.lastSet || 0);
-                    const recency = lastSet ? Math.max(0, 10 - Math.max(0, (window.currentSetNumber || 0) - lastSet)) * 0.15 : 0;
-                    return { ...entry, priority: count * 2 + severity + recency };
+                    const spacing = getErrorEntrySpacingState(entry);
+                    const practicePressure = getErrorEntryPracticePressure(entry);
+                    const spacingBonus = spacing.priority ? 2.4 : (spacing.due ? spacing.dueScore * 1.15 : -1.15 * (1 - spacing.dueScore));
+                    return { ...entry, spacing, priority: count * 2 + severity + practicePressure + spacingBonus };
                 })
-                .sort((a, b) => b.priority - a.priority || (b.lastSet || 0) - (a.lastSet || 0));
+                .sort((a, b) => b.priority - a.priority || (b.spacing?.setsSince || 0) - (a.spacing?.setsSince || 0));
         }
 
         function buildClosureC2Variant(entry, reviewPrefix = '') {
@@ -9376,7 +9409,12 @@
                     const severityB = b.grade === 'wrong' ? 2 : 1;
                     const pressureA = getErrorEntryPracticePressure(a);
                     const pressureB = getErrorEntryPracticePressure(b);
-                    return pressureB - pressureA || severityB - severityA || (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0);
+                    const spacingA = getErrorEntrySpacingState(a);
+                    const spacingB = getErrorEntrySpacingState(b);
+                    return (spacingB.weight + pressureB) - (spacingA.weight + pressureA)
+                        || severityB - severityA
+                        || (b.count || 1) - (a.count || 1)
+                        || spacingB.setsSince - spacingA.setsSince;
                 });
         }
 
@@ -9804,11 +9842,17 @@
             });
             // tag 按组内总错次降序
             let sortedTags = Object.keys(byTag).sort((a, b) => {
-                let sa = byTag[a].reduce((s, x) => s + (x.count || 1) + getErrorEntryPracticePressure(x), 0);
-                let sb = byTag[b].reduce((s, x) => s + (x.count || 1) + getErrorEntryPracticePressure(x), 0);
+                let sa = byTag[a].reduce((s, x) => s + (x.count || 1) * getErrorEntrySpacingState(x).weight + getErrorEntryPracticePressure(x), 0);
+                let sb = byTag[b].reduce((s, x) => s + (x.count || 1) * getErrorEntrySpacingState(x).weight + getErrorEntryPracticePressure(x), 0);
                 return sb - sa;
             });
-            Object.keys(byTag).forEach(t => byTag[t].sort((a, b) => getErrorEntryPracticePressure(b) - getErrorEntryPracticePressure(a) || (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0)));
+            Object.keys(byTag).forEach(t => byTag[t].sort((a, b) => {
+                const spacingA = getErrorEntrySpacingState(a);
+                const spacingB = getErrorEntrySpacingState(b);
+                return (spacingB.weight + getErrorEntryPracticePressure(b)) - (spacingA.weight + getErrorEntryPracticePressure(a))
+                    || (b.count || 1) - (a.count || 1)
+                    || spacingB.setsSince - spacingA.setsSince;
+            }));
 
             // 每页最多 8 张错题卡（每个分组标题占一行 col-span all）
             // 为简化分页：把 [tagHeader, ...cards] 序列化后按 8 卡一页切分
@@ -9850,6 +9894,8 @@
                         let practiceBadge = err.lastPracticeGrade
                             ? `<span class="badge-practice ${err.lastPracticeGrade === 'perfect' ? 'perfect' : 'wrong'}">${err.lastPracticeGrade === 'perfect' ? '专项已会' : '专项又错'}${err.rewrongCount ? ` ${err.rewrongCount} 次` : ''}</span>`
                             : '';
+                        const spacing = getErrorEntrySpacingState(err);
+                        const spacingBadge = `<span class="spacing-badge ${spacing.badgeClass}">${spacing.label}</span>`;
                         let dateRange = err.firstSet === err.lastSet
                             ? `Set ${err.lastSet} · ${err.lastDate}`
                             : `Set ${err.firstSet}→${err.lastSet} · ${err.lastDate}`;
@@ -9858,7 +9904,7 @@
                             ${masterBtn}
                             <div class="error-meta">
                                 <span>[${dateRange}]</span>
-                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge} ${practiceBadge}</span>
+                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge} ${practiceBadge} ${spacingBadge}</span>
                             </div>
                             <div class="error-q math-row">${err.info.q}${suffix}</div>
                         </div>`;

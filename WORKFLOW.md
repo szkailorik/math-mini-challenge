@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.219 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a spacing-state helper for active error-book entries, labeling each item as not due, due, overdue, or wrong-again priority based on last seen set, error count, careless/concept status, and targeted-practice results.
+- Open questions: none.
+- Risks: spacing labels use set numbers, not wall-clock dates, which matches the app's daily-paper rhythm but may feel approximate if multiple sets are generated on one day.
+- Next steps: keep the labels short enough for the error-book cards.
+
+### Iteration 2
+
+- What I changed: replaced the old recent-item boost with due-item priority in regular replay selection, high-value replay injection, Closure focus replay, and targeted practice ordering.
+- Open questions: none.
+- Risks: just-seen mistakes may appear less often immediately after submission unless they are marked as wrong-again; this is intentional spacing behavior.
+- Next steps: monitor whether wrong-again priority catches urgent repair cases clearly enough.
+
+### Iteration 3
+
+- What I changed: exposed spacing badges on error-book cards and added runtime checks that due and wrong-again items outrank just-seen mistakes.
+- Open questions: none.
+- Risks: visual labels are tutor-facing only and should not be moved onto the student question paper.
+- Next steps: keep spacing-state tests with future wrong-book selection changes.
+
 ## Current v23.218 Iteration Notes
 
 ### Iteration 1
