@@ -2166,6 +2166,9 @@ if (!reviewHtml.includes('Set 106') || !reviewHtml.includes('复杂乘法') || !
 if (!reviewHtml.includes('本套错题变式跟训') || !reviewHtml.includes('今日变式跟训') || !reviewHtml.includes('备用二刷') || !reviewHtml.includes("openSetReviewFollowupPreview('KAI', 'main'") || !reviewHtml.includes("openSetReviewFollowupPreview('KAI', 'backup'") || !reviewHtml.includes("printSetReviewFollowup('KAI', false)") || !reviewHtml.includes("printSetReviewFollowupAnswers('KAI')") || !reviewHtml.includes("openSetReviewFollowupPracticeReview('KAI'") || !reviewHtml.includes("printSetReviewBackupFollowup('KAI', false)") || !reviewHtml.includes("printSetReviewBackupAnswers('KAI')") || !reviewHtml.includes("openSetReviewBackupPracticeReview('KAI'")) {
   throw new Error('Set review report is missing the in-report variant follow-up block');
 }
+if (!reviewHtml.includes('报告页不默认展开题目') || !reviewHtml.includes('预览今日变式') || !reviewHtml.includes('预览备用二刷') || reviewHtml.includes('备用二刷题库') || reviewHtml.includes('建议先独立完成上面的变式跟训')) {
+  throw new Error('Set review report should keep variants collapsed and route tutors to quick preview instead of expanding all questions');
+}
 if (!reviewHtml.includes('打印当前报告') || typeof context.window.printCurrentSetReviewReport !== 'function') {
   throw new Error('Set review report is missing the current-report print action');
 }

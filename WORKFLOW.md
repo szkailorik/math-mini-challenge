@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.226 Iteration Notes
+
+### Iteration 1
+
+- What I changed: removed the default expanded variant, backup, and answer blocks from the set-report body.
+- Open questions: none.
+- Risks: tutors who were using the report itself as a variant worksheet must now use preview or print actions.
+- Next steps: keep preview actions prominent in both main and backup lanes.
+
+### Iteration 2
+
+- What I changed: added a compact preview-first note inside the follow-up overview so the report explains that questions are reviewed through preview before printing.
+- Open questions: none.
+- Risks: the note is hidden in print, keeping printed reports shorter.
+- Next steps: keep the report focused on diagnosis, not worksheet content.
+
+### Iteration 3
+
+- What I changed: added runtime coverage to ensure the report remains collapsed and routes tutors to quick preview instead of expanding all questions by default.
+- Open questions: none.
+- Risks: validation checks visible copy, so copy changes need test updates.
+- Next steps: keep the preview/print builders as the source for actual worksheet content.
+
 ## Current v23.225 Iteration Notes
 
 ### Iteration 1
