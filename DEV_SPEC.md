@@ -99,6 +99,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getSetReviewUnitRateStructureProfile` / `buildSourceAwareUnitRateVariant`: preserve fallback unit-relation structures such as speed-rate, speed-distance, total price, unit price, and unit conversion.
 - `pickSetReviewVariant` / `buildSetReviewBackupVariantPayload`: prepare a second same-structure variant for each same-set mistake without doubling the main follow-up count.
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
+- `buildSourceAwareConversionVariant`: now also preserves fraction-to-decimal, fraction-to-percent, and decimal-to-percent fallback directions; conversion signatures inspect normalized text so HTML `<div>` markup is not treated as a greater-than/less-than sign.
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.
 - `getSetReviewFollowupAudit`: now also reports `qualityIssueCount` as `贴合度风险` when a main or backup variant fails the source-fit gate.
 - `buildSetReviewFollowupAuditHTML`: renders concrete quality issue rows with variant number, main/backup lane, source label, and warning reason.

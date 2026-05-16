@@ -2385,6 +2385,61 @@ if (!conversionFollowupItems[0]?.followupBackupVariant?.q || /%/.test(conversion
   throw new Error('Decimal-to-fraction source mistakes should prepare a same-direction backup variant');
 }
 const validatorFrac = (n, d) => `<div class="frac"><span>${n}</span><span class="bottom">${d}</span></div>`;
+const fractionToDecimalSession = {
+  set: 117,
+  details: [
+    {
+      tag: 'custom_fraction_to_decimal',
+      grade: 'wrong',
+      uid: 'conv-frac-dec-source',
+      info: { sec: '分数小数互化', num: 1, q: `${validatorFrac(3, 8)} = (   )`, a: '0.375', step: '把分数化成小数。' }
+    }
+  ]
+};
+const fractionToDecimalTargets = context.window.buildSetReviewFollowupTargets?.(fractionToDecimalSession) || [];
+const fractionToDecimalItems = context.window.buildSetReviewFollowupItems?.(fractionToDecimalSession, 'KAI', 'advanced_fluency_v1') || [];
+const fractionToDecimalItem = fractionToDecimalItems[0] || {};
+const fractionToDecimalSourceSignature = context.window.getSetReviewStructureSignature?.(fractionToDecimalSession.details[0].info.q, 'conversion_bridge');
+const fractionToDecimalCandidateSignature = context.window.getSetReviewStructureSignature?.(fractionToDecimalItem.q || '', 'conversion_bridge');
+if (fractionToDecimalTargets[0]?.family !== 'conversion_bridge' || fractionToDecimalSourceSignature !== 'conversion:fraction-to-decimal' || fractionToDecimalCandidateSignature !== 'conversion:fraction-to-decimal' || fractionToDecimalItem.variantSourceMode !== 'source-aware-conversion' || fractionToDecimalItem.followupQualityWarnings?.length) {
+  throw new Error(`Unknown-tag fraction-to-decimal mistakes should stay in conversion bridge and preserve direction, got family ${fractionToDecimalTargets[0]?.family || '(missing)'} signatures ${fractionToDecimalSourceSignature} -> ${fractionToDecimalCandidateSignature} for ${fractionToDecimalItem.q || '(missing)'}`);
+}
+const fractionToPercentSession = {
+  set: 118,
+  details: [
+    {
+      tag: 'custom_fraction_to_percent',
+      grade: 'wrong',
+      uid: 'conv-frac-percent-source',
+      info: { sec: '分数百分数互化', num: 1, q: `${validatorFrac(3, 20)} = (   )%`, a: '15%', step: '先化成分母100。' }
+    }
+  ]
+};
+const fractionToPercentItems = context.window.buildSetReviewFollowupItems?.(fractionToPercentSession, 'KAI', 'advanced_fluency_v1') || [];
+const fractionToPercentItem = fractionToPercentItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(fractionToPercentSession.details[0].info.q, 'conversion_bridge') !== 'conversion:fraction-to-percent' || context.window.getSetReviewStructureSignature?.(fractionToPercentItem.q || '', 'conversion_bridge') !== 'conversion:fraction-to-percent' || !/%/.test(fractionToPercentItem.q || '') || fractionToPercentItem.followupQualityWarnings?.length) {
+  throw new Error('Fraction-to-percent variants should preserve percent direction');
+}
+const decimalToPercentSession = {
+  set: 119,
+  details: [
+    {
+      tag: 'custom_decimal_to_percent',
+      grade: 'wrong',
+      uid: 'conv-dec-percent-source',
+      info: { sec: '小数百分数互化', num: 1, q: `0.35 = (   )%`, a: '35%', step: '小数化成百分数。' }
+    }
+  ]
+};
+const decimalToPercentItems = context.window.buildSetReviewFollowupItems?.(decimalToPercentSession, 'KAI', 'advanced_fluency_v1') || [];
+const decimalToPercentItem = decimalToPercentItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(decimalToPercentSession.details[0].info.q, 'conversion_bridge') !== 'conversion:decimal-to-percent' || context.window.getSetReviewStructureSignature?.(decimalToPercentItem.q || '', 'conversion_bridge') !== 'conversion:decimal-to-percent' || !/%/.test(decimalToPercentItem.q || '') || decimalToPercentItem.followupQualityWarnings?.length) {
+  throw new Error('Decimal-to-percent variants should preserve percent direction');
+}
+const conversionDriftQuality = context.window.getSetReviewVariantQuality?.(fractionToDecimalTargets[0], { q: `${validatorFrac(3, 20)} = (   )%`, qualityFamily: 'conversion_bridge' });
+if (conversionDriftQuality?.ok || !conversionDriftQuality?.reasons?.some(reason => /骨架|方向/.test(reason))) {
+  throw new Error('Set review quality gate should reject conversion direction drift');
+}
 const fractionAddSession = {
   set: 109,
   details: [

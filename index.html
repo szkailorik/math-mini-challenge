@@ -10982,11 +10982,16 @@
             const rawSource = `${tag || ''} ${info?.q || ''} ${info?.step || ''}`;
             const source = normalizeErrorPrompt(rawSource);
             const hasFractionStructure = /class="frac"|class="mixed"|fraction|frac|分数|带分数|\/\s*\d+/.test(rawSource);
-            if (hasFractionStructure) return 'fraction_operation';
             if (/<i class="var">x<\/i>|\bx\b|未知数|方程|equation|^eq|_eq_/.test(rawSource)) return 'equation_method';
-            if (/conv|percent|compare|互化|百分/.test(source)) return 'conversion_bridge';
             if (/unit|rate|speed|单位|速度|比率|平均|每|单价|总价|路程|千米|km|kg|cm|元/.test(source)) return 'unit_rate_speed';
             if (/ddiv|decimal_division|division|divide|小数除|除数有小数|小数点/.test(`${tag || ''} ${source}`) || (/[÷除]/.test(source) && /\d+\.\d+/.test(source))) return 'decimal_division';
+            const hasConversionCue = /conv|percent|compare|互化|百分|化成|转成|小数|比较|更大|更小|circle-blank|○|%/.test(`${rawSource} ${source}`);
+            const questionText = normalizeErrorPrompt(info?.q || '');
+            const conversionEquationLike = /=/.test(questionText)
+                && /class="frac"|class="mixed"|\/\s*\d+|\d+\.\d+|%/.test(info?.q || '')
+                && !/[+×÷*/−-]/.test(questionText.replace(/[＝=].*$/, ''));
+            if (hasConversionCue || conversionEquationLike) return 'conversion_bridge';
+            if (hasFractionStructure) return 'fraction_operation';
             if (/[×÷*/+\-−]|乘|除|加|减/.test(source)) return 'arithmetic_fluency';
             if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
             return 'generic_followup';
@@ -11923,14 +11928,19 @@
 
         function buildSourceAwareConversionVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            const raw = String(entry.info?.q || '');
             const source = normalizeErrorPrompt(entry.info?.q || '');
+            const sourceContext = `${raw} ${source} ${entry.info?.step || ''}`;
+            const rawHasFraction = /class="frac"|class="mixed"|\/\s*\d+/.test(raw);
             const baseMeta = {
                 tag: entry.tag || '',
                 qualityFamily: 'conversion_bridge',
                 replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
                 isSetReviewFollowup: true,
-                isReviewItem: true
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-conversion'
             };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
             if (/○|比较|更大|更小/.test(source)) {
                 const pool = [
                     { frac: new Frac(1, 2), benchmark: 0.5, values: [0.48, 0.49, 0.51, 0.52] },
@@ -11940,17 +11950,56 @@
                 ];
                 const item = Engine.randChoice(pool);
                 const right = Engine.randChoice(item.values);
-                return attachQualityMetadata({
-                    ...baseMeta,
+                return finish({
                     q: `${item.frac.toHTML()}<span class="circle-blank"></span>${right.toFixed(2)}`,
                     a: item.benchmark > right ? '&gt;' : '&lt;',
                     step: `同形变式：仍然先把分数化成小数 ${formatDecimal(item.benchmark)}，再逐位比较。`
                 });
             }
-            if (/%\s*=|百分/.test(source)) {
+            if (rawHasFraction && /%/.test(sourceContext)) {
+                const den = Engine.randChoice([4, 5, 8, 20, 25]);
+                const numsByDen = {
+                    4: [1, 3],
+                    5: [1, 2, 3, 4],
+                    8: [1, 3, 5, 7],
+                    20: [3, 7, 9, 13, 17],
+                    25: [3, 7, 11, 17, 19]
+                };
+                const num = Engine.randChoice(numsByDen[den]);
+                return finish({
+                    q: `${new Frac(num, den).toHTML()} = (   )%`,
+                    a: `${formatDecimal((num / den) * 100)}%`,
+                    step: '同形变式：仍然先把分母化成 100，再写成百分数。'
+                });
+            }
+            if (rawHasFraction && /=/.test(source)) {
+                const den = Engine.randChoice([4, 5, 8, 10, 20, 25]);
+                const numsByDen = {
+                    4: [1, 3],
+                    5: [1, 2, 3, 4],
+                    8: [1, 3, 5, 7],
+                    10: [1, 3, 7, 9],
+                    20: [3, 7, 9, 13, 17],
+                    25: [3, 7, 11, 17, 19]
+                };
+                const num = Engine.randChoice(numsByDen[den]);
+                return finish({
+                    q: `${new Frac(num, den).toHTML()} = (   )`,
+                    a: formatDecimal(num / den),
+                    step: '同形变式：仍然把分数化成小数，先想分母对应的基准小数或扩成 10/100。'
+                });
+            }
+            if (/^\d*\.?\d+\s*=/.test(source) && /%/.test(sourceContext)) {
+                const decimal = Engine.randChoice([0.125, 0.2, 0.25, 0.35, 0.4, 0.625, 0.75, 0.875]);
+                return finish({
+                    q: `${decimal} = (   )%`,
+                    a: `${formatDecimal(decimal * 100)}%`,
+                    step: '同形变式：仍然把小数化成百分数，小数点向右移两位。'
+                });
+            }
+            if (/%\s*=|^\d*\.?\d+%|百分/.test(source)) {
                 const percent = Engine.randChoice([12.5, 20, 25, 37.5, 40, 62.5, 75]);
-                return attachQualityMetadata({
-                    ...baseMeta,
+                return finish({
                     q: `${percent}% = (   )`,
                     a: new Frac(percent, 100).toHTML(),
                     step: '同形变式：仍然先把百分数写成分母 100 的分数，再约成最简。'
@@ -11958,8 +12007,7 @@
             }
             if (/^\d*\.?\d+\s*=/.test(source) && !/%/.test(source)) {
                 const decimal = Engine.randChoice([0.125, 0.2, 0.25, 0.375, 0.4, 0.625, 0.75, 0.875]);
-                return attachQualityMetadata({
-                    ...baseMeta,
+                return finish({
                     q: `${decimal} = (   )`,
                     a: new Frac(decimal, 1).toHTML(),
                     step: '同形变式：仍然先把小数写成分母 10、100 或 1000 的分数，再约分。'
@@ -12376,10 +12424,19 @@
                 return getSetReviewDecimalDivisionStructureProfile(questionHtml).signature;
             }
             if (family === 'conversion_bridge') {
-                if (/○|比较|更大|更小|circle-blank|>|&gt;|<|&lt;/.test(`${questionHtml} ${normalized}`)) return 'conversion:compare';
-                if (/%\s*=|百分/.test(normalized)) return 'conversion:percent-to-fraction';
+                const raw = String(questionHtml || '');
+                const rawLeft = raw.split(/[＝=]/)[0] || raw;
+                const rawRight = raw.split(/[＝=]/).slice(1).join('=') || '';
+                const normalizedLeft = normalized.split(/[＝=]/)[0] || normalized;
+                const normalizedRight = normalized.split(/[＝=]/).slice(1).join('=') || '';
+                const leftHasFraction = /class="frac"|class="mixed"|\/\s*\d+|分数/.test(`${rawLeft} ${normalizedLeft}`);
+                const rightHasPercent = /%|百分/.test(`${rawRight} ${normalizedRight}`);
+                if (/circle-blank/.test(raw) || /○|比较|更大|更小|>|&gt;|<|&lt;/.test(normalized)) return 'conversion:compare';
+                if (/^\s*\d*\.?\d+%/.test(normalized) || /%\s*=|百分/.test(normalizedLeft)) return 'conversion:percent-to-fraction';
+                if (/^\d*\.?\d+\s*=/.test(normalized) && rightHasPercent) return 'conversion:decimal-to-percent';
                 if (/^\d*\.?\d+\s*=/.test(normalized) && !/%/.test(normalized)) return 'conversion:decimal-to-fraction';
-                if (/frac|分数/.test(`${questionHtml} ${normalized}`) && /=/.test(normalized)) return 'conversion:fraction-to-decimal';
+                if (leftHasFraction && rightHasPercent) return 'conversion:fraction-to-percent';
+                if (leftHasFraction && /=/.test(normalized)) return 'conversion:fraction-to-decimal';
                 return 'conversion:general';
             }
             if (family === 'fraction_operation') {

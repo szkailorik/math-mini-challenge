@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.233 Iteration Notes
+
+### Iteration 1
+
+- What I changed: strengthened source-aware conversion generation for fraction-to-decimal, fraction-to-percent, and decimal-to-percent mistakes.
+- Open questions: none.
+- Risks: ambiguous prompts such as `25% = ( )` still depend on the visible prompt and answer context.
+- Next steps: keep conversion prompts explicit when new item banks are added.
+
+### Iteration 2
+
+- What I changed: moved conversion-family detection ahead of generic fraction operation only when the prompt has real conversion cues, while keeping decimal division and unit-rate protections ahead of conversion.
+- Open questions: none.
+- Risks: classification order is now more nuanced, so regression tests should keep covering boundary cases.
+- Next steps: preserve this order when future topics introduce overlapping words like `小数` or `分数`.
+
+### Iteration 3
+
+- What I changed: fixed conversion comparison signatures so HTML fraction tags are not mistaken for greater-than/less-than signs, and added drift tests for wrong conversion direction.
+- Open questions: none.
+- Risks: the validation suite covers common conversion directions, not every textbook phrasing.
+- Next steps: continue using the preview audit to find rare conversion phrasings that need explicit signatures.
+
 ## Current v23.232 Iteration Notes
 
 ### Iteration 1
