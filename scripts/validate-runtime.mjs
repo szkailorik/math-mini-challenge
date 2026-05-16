@@ -1983,14 +1983,14 @@ if (typeof context.window.getDailyErrorMixSnapshot !== 'function') {
 }
 const previousKaiDailyMixRecord = context.window.StorageDB.cache.KAI;
 const previousLorikDailyMixRecord = context.window.StorageDB.cache.Lorik;
-const buildDenseErrorBook = (entries) => Object.fromEntries(entries.map((entry, index) => [
+const buildDenseErrorBook = (entries, { lastSet = 108 } = {}) => Object.fromEntries(entries.map((entry, index) => [
   `mix-${index}`,
   {
     tag: entry.tag,
     grade: 'wrong',
     count: 5,
     firstSet: 90 + index,
-    lastSet: 108,
+    lastSet: entry.lastSet ?? lastSet,
     mastered: false,
     info: { sec: entry.sec || '每日混合', num: index + 1, q: entry.q, a: entry.a || '1', step: entry.step || '按原结构复练。' }
   }
@@ -2005,7 +2005,7 @@ context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
     { tag: 'k_sub_100k', q: '100000 &minus; 2468 =', a: '97532' },
     { tag: 'k_conv_1', q: '0.25 = (   )', a: '1/4' },
     { tag: 'k_eq_sub', q: '<span class="frac"><span>7</span><span class="bottom">6</span></span> &minus; <i class="var">x</i> = <span class="frac"><span>1</span><span class="bottom">6</span></span>', a: 'x=1' }
-  ])
+  ], { lastSet: 104 })
 });
 context.window.StorageDB.cache.Lorik = context.window.StorageDB.migrateProfile({
   weights: { l_mul_3x20: 6, l_div_decimal_divisor: 6, l_sub_6digit: 6, l_conv_5: 6, l_fmix_sub: 6 },
@@ -2017,7 +2017,7 @@ context.window.StorageDB.cache.Lorik = context.window.StorageDB.migrateProfile({
     { tag: 'l_sub_6digit', q: '654321 &minus; 123456 =', a: '530865' },
     { tag: 'l_conv_5', q: '<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.79', a: '&gt;' },
     { tag: 'l_fmix_sub', q: '<div class="frac"><span>3</span><span class="bottom">4</span></div> &minus; <div class="frac"><span>1</span><span class="bottom">2</span></div> =', a: '1/4' }
-  ])
+  ], { lastSet: 104 })
 });
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 109;
@@ -2032,6 +2032,7 @@ if (
   denseKaiItems.length !== 36 ||
   !denseKaiBudget?.maxErrorLinked ||
   denseKaiBudget.pressureBand !== 'intensive' ||
+  denseKaiBudget.dueReadyCount < 5 ||
   denseKaiLinked !== denseKaiMixStats?.errorLinked ||
   denseKaiLinked > denseKaiBudget.maxErrorLinked ||
   denseKaiMixStats.fresh < 20
@@ -2050,6 +2051,20 @@ context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
 const lightKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1');
 if (lightKaiBudget?.pressureBand !== 'light' || lightKaiBudget.maxErrorLinked >= denseKaiBudget.maxErrorLinked) {
   throw new Error('Daily error-book mix should lower the cap when active error pressure is light');
+}
+context.window._dailyErrorMixState = {};
+context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: buildDenseErrorBook([
+    { tag: 'k_dmul_basic', q: '2 &times; 3 =', a: '6', lastSet: 109 },
+    { tag: 'k_ddiv_shift', q: '4.8 &divide; 0.6 =', a: '8', lastSet: 109 }
+  ], { lastSet: 109 })
+});
+const notDueKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1');
+if (notDueKaiBudget?.dueReadyCount !== 0 || notDueKaiBudget.maxExactReplay !== 0 || notDueKaiBudget.maxErrorLinked > 1) {
+  throw new Error('Daily error-book mix should hold back not-due mistakes instead of replaying them too soon');
 }
 context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
 context.window.StorageDB.cache.Lorik = previousLorikDailyMixRecord;

@@ -4865,9 +4865,21 @@
             return 36;
         }
 
-        function getDailyErrorPressure(student, programId = getCurrentProgramId()) {
+        function getDailyErrorDueMixCounts(student, programId = getCurrentProgramId()) {
             const profile = StorageDB?.getProfile?.(student, programId) || {};
             const activeEntries = Object.values(profile.errorBook || {}).filter(entry => entry && !entry.mastered && entry.tag);
+            const spacingRows = activeEntries.map(entry => ({ entry, spacing: getErrorEntrySpacingState(entry) }));
+            const dueReadyCount = spacingRows.filter(row => row.spacing.due || row.spacing.priority).length;
+            const priorityDueCount = spacingRows.filter(row => row.spacing.priority).length;
+            const overdueCount = spacingRows.filter(row => row.spacing.overdue).length;
+            const waitingCount = Math.max(0, activeEntries.length - dueReadyCount);
+            return { activeEntries, spacingRows, activeCount: activeEntries.length, dueReadyCount, priorityDueCount, overdueCount, waitingCount };
+        }
+
+        function getDailyErrorPressure(student, programId = getCurrentProgramId()) {
+            const profile = StorageDB?.getProfile?.(student, programId) || {};
+            const dueMix = getDailyErrorDueMixCounts(student, programId);
+            const activeEntries = dueMix.activeEntries;
             const repeatedEntries = activeEntries.filter(entry => Number(entry.count || 0) >= 2 || Number(entry.rewrongCount || 0) > 0);
             const recentSessions = Array.isArray(profile.history) ? profile.history.slice(-3) : [];
             let recentTotal = 0;
@@ -4890,16 +4902,23 @@
             });
             const recentMistakeRate = recentTotal ? recentMistakes / recentTotal : 0;
             const recentWrongRate = recentTotal ? recentWrong / recentTotal : 0;
-            const pressureScore = activeEntries.length
-                + repeatedEntries.length * 0.8
+            const pressureScore = dueMix.dueReadyCount * 1.25
+                + dueMix.priorityDueCount * 1.4
+                + dueMix.overdueCount * 0.9
+                + dueMix.waitingCount * 0.25
+                + repeatedEntries.length * 0.45
                 + recentMistakeRate * 12
                 + recentWrongRate * 18;
-            const band = pressureScore >= 8 || repeatedEntries.length >= 3 || recentWrongRate >= 0.16
+            const band = pressureScore >= 8 || dueMix.dueReadyCount >= 4 || dueMix.priorityDueCount >= 2 || recentWrongRate >= 0.16
                 ? 'intensive'
-                : (pressureScore >= 3 || activeEntries.length >= 2 || recentMistakeRate >= 0.10 ? 'standard' : 'light');
+                : (pressureScore >= 3 || dueMix.dueReadyCount >= 1 || recentMistakeRate >= 0.10 ? 'standard' : 'light');
             return {
                 activeCount: activeEntries.length,
                 repeatedCount: repeatedEntries.length,
+                dueReadyCount: dueMix.dueReadyCount,
+                priorityDueCount: dueMix.priorityDueCount,
+                overdueCount: dueMix.overdueCount,
+                waitingCount: dueMix.waitingCount,
                 recentMistakeRate,
                 recentWrongRate,
                 pressureScore,
@@ -4927,8 +4946,16 @@
             const pressureShift = pressure.band === 'intensive' ? 0.03 : (pressure.band === 'light' ? -0.06 : 0);
             const targetErrorLinkedRatio = clampNumber(policy.errorLinkedRatio + pressureShift, 0.16, 0.35);
             const targetExactReplayRatio = clampNumber(policy.exactReplayRatio + pressureShift * 0.45, 0.05, 0.18);
-            const maxErrorLinked = Math.max(1, Math.min(Math.ceil(total * targetErrorLinkedRatio), Math.floor(total * 0.35)));
-            const maxExactReplay = Math.max(1, Math.min(Math.floor(total * targetExactReplayRatio), Math.floor(maxErrorLinked * 0.5)));
+            let maxErrorLinked = Math.max(1, Math.min(Math.ceil(total * targetErrorLinkedRatio), Math.floor(total * 0.35)));
+            let maxExactReplay = Math.max(1, Math.min(Math.floor(total * targetExactReplayRatio), Math.floor(maxErrorLinked * 0.5)));
+            if (!pressure.dueReadyCount) {
+                maxErrorLinked = Math.min(maxErrorLinked, pressure.band === 'intensive' ? 2 : 1);
+                maxExactReplay = 0;
+            } else {
+                const dueWindowCap = Math.max(1, pressure.dueReadyCount + pressure.priorityDueCount + Math.ceil(pressure.overdueCount * 0.5) + (pressure.band === 'intensive' ? 2 : 1));
+                maxErrorLinked = Math.min(maxErrorLinked, dueWindowCap);
+                maxExactReplay = Math.min(maxExactReplay, Math.max(1, Math.ceil(Math.min(pressure.dueReadyCount, maxErrorLinked) * 0.45)));
+            }
             return { pressure, maxErrorLinked, maxExactReplay, targetErrorLinkedRatio, targetExactReplayRatio };
         }
 
@@ -4936,11 +4963,24 @@
             return [programId || getCurrentProgramId(), student || 'KAI', window.currentSetNumber || 1].join(':');
         }
 
+        function hasDailyHighValueErrorCandidate(student, programId = getCurrentProgramId()) {
+            if (programId !== ADVANCED_PROGRAM_ID) return false;
+            const profile = StorageDB?.getProfile?.(student, programId) || {};
+            return Object.values(profile.errorBook || {}).some(entry => {
+                if (!entry || entry.mastered || !entry.tag || !entry.info?.q || !entry.info?.a) return false;
+                if (!['decimal_division', 'fraction_operation', 'conversion_bridge', 'equation_method'].includes(getQualityFamilyForTag(entry.tag))) return false;
+                const spacing = getErrorEntrySpacingState(entry);
+                return spacing.due || spacing.priority;
+            });
+        }
+
         function createDailyErrorMixState(student, programId) {
             const total = getDailyPracticeQuestionBudget(programId);
             const cycle = Engine?.getCycleState?.() || { code: 1 };
             const policy = getErrorBookPracticePolicy(cycle.code, total);
             const targets = getAdaptiveDailyErrorMixTargets(student, programId, total, policy);
+            const reservedHighValueSlots = hasDailyHighValueErrorCandidate(student, programId) ? 1 : 0;
+            const reservedHighValueExactSlots = reservedHighValueSlots && targets.maxExactReplay > 0 ? 1 : 0;
             return {
                 key: getDailyErrorMixKey(student, programId),
                 student,
@@ -4956,7 +4996,13 @@
                 pressureLabel: getDailyErrorPressureLabel(targets.pressure),
                 activeErrorCount: targets.pressure.activeCount,
                 repeatedErrorCount: targets.pressure.repeatedCount,
+                dueReadyCount: targets.pressure.dueReadyCount,
+                priorityDueCount: targets.pressure.priorityDueCount,
+                overdueCount: targets.pressure.overdueCount,
+                waitingCount: targets.pressure.waitingCount,
                 recentMistakeRate: targets.pressure.recentMistakeRate,
+                reservedHighValueSlots,
+                reservedHighValueExactSlots,
                 usedErrorLinked: 0,
                 usedExactReplay: 0
             };
@@ -4971,11 +5017,17 @@
             return window._dailyErrorMixState[key];
         }
 
-        function canReserveDailyErrorMix(student, reason, programId = getCurrentProgramId()) {
+        function canReserveDailyErrorMix(student, reason, programId = getCurrentProgramId(), { includeReserved = false } = {}) {
             if (!['replay', 'variant'].includes(reason)) return true;
             const state = getDailyErrorMixState(student, programId);
-            if (state.usedErrorLinked >= state.maxErrorLinked) return false;
-            if (reason === 'replay' && state.usedExactReplay >= state.maxExactReplay) return false;
+            const linkedLimit = includeReserved
+                ? state.maxErrorLinked
+                : Math.max(0, state.maxErrorLinked - (state.reservedHighValueSlots || 0));
+            if (state.usedErrorLinked >= linkedLimit) return false;
+            const exactLimit = includeReserved
+                ? state.maxExactReplay
+                : Math.max(0, state.maxExactReplay - (state.reservedHighValueExactSlots || 0));
+            if (reason === 'replay' && state.usedExactReplay >= exactLimit) return false;
             return true;
         }
 
@@ -5004,6 +5056,7 @@
         window.getErrorBookPracticePolicy = getErrorBookPracticePolicy;
         window.getDailyErrorMixSnapshot = getDailyErrorMixSnapshot;
         window.getDailyErrorPressure = getDailyErrorPressure;
+        window.getDailyErrorDueMixCounts = getDailyErrorDueMixCounts;
 
         const Engine = {
             randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
@@ -5320,7 +5373,7 @@
             const replacement = buildAdvancedHighValueReplayItem(chosen);
             if (!replacement) return data;
             const replacementReason = replacement.isErrorReplay ? 'replay' : 'variant';
-            if (!canReserveDailyErrorMix(student, replacementReason, ADVANCED_PROGRAM_ID)) return data;
+            if (!canReserveDailyErrorMix(student, replacementReason, ADVANCED_PROGRAM_ID, { includeReserved: true })) return data;
             const replaceIndex = Math.max(0, section.length - 1);
             const baseline = section[replaceIndex] || {};
             const usedInSet = collectSetQuestionFingerprints(data, sectionKey, replaceIndex);
@@ -6529,10 +6582,15 @@
         function pickErrorReplayEntry(entries) {
             const valid = (entries || []).filter(entry => entry?.info?.q && entry?.info?.a);
             if (!valid.length) return null;
-            const total = valid.reduce((sum, entry) => sum + Math.max(1, entry.priority || entry.count || 1), 0);
+            const getEntryWeight = (entry) => {
+                const spacing = entry.spacing || getErrorEntrySpacingState(entry);
+                const timing = spacing.priority ? 2.3 : (spacing.overdue ? 1.9 : (spacing.due ? 1.45 : 0.22));
+                return Math.max(0.25, (entry.priority || entry.count || 1) * timing);
+            };
+            const total = valid.reduce((sum, entry) => sum + getEntryWeight(entry), 0);
             let roll = random() * total;
             for (const entry of valid) {
-                roll -= Math.max(1, entry.priority || entry.count || 1);
+                roll -= getEntryWeight(entry);
                 if (roll <= 0) return entry;
             }
             return valid[0];
@@ -8779,7 +8837,7 @@
             const maxErrorLinked = adaptive ? adaptive.maxErrorLinked : stats.maxErrorLinked;
             const maxExactReplay = adaptive ? adaptive.maxExactReplay : stats.maxExactReplay;
             const pressureText = adaptive
-                ? `错题压力：${getDailyErrorPressureLabel(adaptive.pressure)}（活跃 ${adaptive.pressure.activeCount}，复错 ${adaptive.pressure.repeatedCount}）。`
+                ? `错题压力：${getDailyErrorPressureLabel(adaptive.pressure)}（活跃 ${adaptive.pressure.activeCount}，到期 ${adaptive.pressure.dueReadyCount || 0}，复错 ${adaptive.pressure.repeatedCount}）。`
                 : '';
             const linkedTone = stats.errorLinked > maxErrorLinked ? '#b45309' : '#0f766e';
             return `

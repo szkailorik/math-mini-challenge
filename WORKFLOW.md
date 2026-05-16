@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.222 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added due-aware daily error mix counts so the generator knows how many active mistakes are due, overdue, wrong-again priority, or still waiting.
+- Open questions: none.
+- Risks: a very eager tutor might expect every active error to reappear immediately, but the spacing model intentionally slows not-due items.
+- Next steps: keep the visible summary aligned with these due counts.
+
+### Iteration 2
+
+- What I changed: tightened the daily wrong-book cap so not-due mistakes get at most a tiny maintenance slot and no exact replay, while due/overdue mistakes can use the normal recovery budget.
+- Open questions: none.
+- Risks: low-frequency active mistakes may wait longer before reappearing in the daily AB paper, but they remain available in full error-book practice.
+- Next steps: watch generated papers for a healthy balance of new retrieval and due review.
+
+### Iteration 3
+
+- What I changed: added runtime coverage for both sides of the rule: dense due mistakes still receive an intensive but capped mix, while not-due mistakes are held back.
+- Open questions: none.
+- Risks: the test fixes set numbers to make spacing deterministic.
+- Next steps: preserve this guard when changing daily generation or spacing intervals.
+
 ## Current v23.221 Iteration Notes
 
 ### Iteration 1
