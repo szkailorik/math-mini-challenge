@@ -2465,6 +2465,15 @@
         .set-review-preview-head h4 { margin:0; color:#0f172a; font-size:18px; line-height:1.35; }
         .set-review-preview-head p { margin:4px 0 0; color:#475569; font-size:13px; line-height:1.5; }
         .set-review-preview-tools { display:flex; gap:8px; flex-wrap:wrap; }
+        .set-review-preview-audit { display:grid; gap:7px; border:1px solid #dbe4ee; border-radius:8px; background:#f8fafc; padding:10px 12px; color:#334155; font-size:13px; line-height:1.55; }
+        .set-review-preview-audit.ok { border-color:#bbf7d0; background:#ecfdf5; color:#047857; }
+        .set-review-preview-audit.warn { border-color:#fed7aa; background:#fff7ed; color:#92400e; }
+        .set-review-preview-audit-title { color:#0f172a; font-size:13.5px; font-weight:800; line-height:1.35; }
+        .set-review-preview-audit-tags { display:flex; gap:6px; flex-wrap:wrap; }
+        .set-review-preview-audit-tag { display:inline-flex; align-items:center; min-height:24px; padding:3px 8px; border:1px solid #cbd5e1; border-radius:8px; background:#fff; color:#334155; font-size:11.5px; font-weight:800; }
+        .set-review-preview-audit.ok .set-review-preview-audit-tag { border-color:#86efac; color:#047857; }
+        .set-review-preview-audit.warn .set-review-preview-audit-tag { border-color:#fdba74; color:#92400e; }
+        .set-review-preview-audit-issues { display:grid; gap:3px; color:#92400e; font-weight:700; }
         .set-review-preview-list { display:grid; gap:10px; }
         .set-review-preview-row { display:grid; grid-template-columns:46px minmax(0, 1fr); gap:10px; border:1px solid #e2e8f0; border-radius:8px; padding:11px 12px; background:#fff; }
         .set-review-preview-num { width:38px; height:38px; border-radius:8px; background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; }
@@ -12322,6 +12331,56 @@
         }
         window.buildSetReviewFollowupAuditHTML = buildSetReviewFollowupAuditHTML;
 
+        function buildSetReviewFollowupPreviewAuditHTML(audit = {}, lane = 'main') {
+            const laneKey = lane === 'backup' ? 'backup' : 'main';
+            const laneLabel = laneKey === 'backup' ? '备用二刷' : '今日变式';
+            const laneCount = Number(laneKey === 'backup' ? audit.backupCount : audit.mainCount) || 0;
+            const mistakeCount = Number(audit.mistakeCount || 0);
+            const mainCount = Number(audit.mainCount || 0);
+            const backupCount = Number(audit.backupCount || 0);
+            const sourceCount = Number(audit.sourceCount || 0);
+            const candidatePoolCount = Number(audit.candidatePoolCount || 0);
+            const duplicateCount = Number(audit.duplicateCount || 0);
+            const familyMismatch = Number(audit.familyMismatch || 0);
+            const qualityIssueCount = Number(audit.qualityIssueCount || 0);
+            const issueHints = [];
+            if (mistakeCount !== mainCount) issueHints.push(`主变式缺口 ${Math.max(0, mistakeCount - mainCount)} 题`);
+            if (mistakeCount !== backupCount) issueHints.push(`备用二刷缺口 ${Math.max(0, mistakeCount - backupCount)} 题`);
+            if (sourceCount !== mainCount) issueHints.push('来源标注不完整');
+            if (duplicateCount) issueHints.push(`重复风险 ${duplicateCount} 处`);
+            if (familyMismatch) issueHints.push(`类型偏移 ${familyMismatch} 处`);
+            if (qualityIssueCount) issueHints.push(`贴合度风险 ${qualityIssueCount} 题`);
+            const qualityIssueRows = Array.isArray(audit.qualityIssues) && audit.qualityIssues.length
+                ? `<div class="set-review-preview-audit-issues">
+                    ${audit.qualityIssues.slice(0, 3).map(item => `<span>重点复核：第 ${item.num} 题${item.kind}（${item.sourceLabel || '本套错题'}）${(item.reasons || []).join('、')}</span>`).join('')}
+                </div>`
+                : '';
+            const issueSummary = issueHints.length
+                ? `<div>风险点：${issueHints.slice(0, 4).join('；')}。先看下方「需复核」题，必要时点「重新生成」换一组，再打印。</div>`
+                : `<div>可直接进入打印。建议先做${laneLabel}，保留另一组题做隔天二刷或又错时加练。</div>`;
+            const tags = [
+                `错题 ${mistakeCount}`,
+                `本页 ${laneLabel} ${laneCount}`,
+                `主变式 ${mainCount}`,
+                `备用 ${backupCount}`,
+                `来源 ${sourceCount}`,
+                candidatePoolCount ? `候选池 ${candidatePoolCount}` : '',
+                duplicateCount ? `重复 ${duplicateCount}` : '',
+                familyMismatch ? `类型偏移 ${familyMismatch}` : '',
+                qualityIssueCount ? `贴合度风险 ${qualityIssueCount}` : ''
+            ].filter(Boolean);
+            return `
+                <div class="set-review-preview-audit ${audit.ok ? 'ok' : 'warn'}">
+                    <div class="set-review-preview-audit-title">${audit.ok ? '预览体检通过' : '预览体检需复核'} · ${laneLabel}</div>
+                    <div class="set-review-preview-audit-tags">
+                        ${tags.map(tag => `<span class="set-review-preview-audit-tag">${tag}</span>`).join('')}
+                    </div>
+                    ${issueSummary}
+                    ${qualityIssueRows}
+                </div>`;
+        }
+        window.buildSetReviewFollowupPreviewAuditHTML = buildSetReviewFollowupPreviewAuditHTML;
+
         function buildSetReviewFollowupGroups(items = []) {
             const groups = new Map();
             items.forEach(item => {
@@ -12626,6 +12685,7 @@
                         <button class="modal-btn" onclick="window.showSetReview(${Number(setNum)}, '${student}')">返回本套报告</button>
                     </div>
                 </div>
+                ${buildSetReviewFollowupPreviewAuditHTML(audit, laneKey)}
                 <div class="set-review-preview-list">
                     ${buildSetReviewFollowupPreviewRows(items, laneKey)}
                 </div>

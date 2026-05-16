@@ -2244,11 +2244,11 @@ if (!sampleFollowupItems.every(item => item.followupQualityScore === 100 && (!it
   throw new Error('Set review follow-up items should pass the same-structure quality gate');
 }
 const mainPreviewHtml = context.window.buildSetReviewFollowupPreviewHTML?.('KAI', 106, 'main') || '';
-if (!mainPreviewHtml.includes('今日变式预览') || !mainPreviewHtml.includes('原错题') || !mainPreviewHtml.includes('参考答案') || !mainPreviewHtml.includes('贴合原题') || !mainPreviewHtml.includes('预览、打印、批改会复用同一套题') || !mainPreviewHtml.includes('重新生成') || !mainPreviewHtml.includes('打印题目') || !mainPreviewHtml.includes('返回本套报告')) {
+if (!mainPreviewHtml.includes('今日变式预览') || !mainPreviewHtml.includes('预览体检通过') || !mainPreviewHtml.includes('候选池') || !mainPreviewHtml.includes('可直接进入打印') || !mainPreviewHtml.includes('原错题') || !mainPreviewHtml.includes('参考答案') || !mainPreviewHtml.includes('贴合原题') || !mainPreviewHtml.includes('预览、打印、批改会复用同一套题') || !mainPreviewHtml.includes('重新生成') || !mainPreviewHtml.includes('打印题目') || !mainPreviewHtml.includes('返回本套报告')) {
   throw new Error('Set review main follow-up preview is missing readable question review content or actions');
 }
 const backupPreviewHtml = context.window.buildSetReviewFollowupPreviewHTML?.('KAI', 106, 'backup') || '';
-if (!backupPreviewHtml.includes('备用二刷预览') || !backupPreviewHtml.includes('看今日变式') || !backupPreviewHtml.includes('原错题') || !backupPreviewHtml.includes('参考答案')) {
+if (!backupPreviewHtml.includes('备用二刷预览') || !backupPreviewHtml.includes('预览体检通过') || !backupPreviewHtml.includes('看今日变式') || !backupPreviewHtml.includes('原错题') || !backupPreviewHtml.includes('参考答案')) {
   throw new Error('Set review backup follow-up preview is missing readable backup review content');
 }
 context.window.openSetReviewFollowupPreview?.('KAI', 'main', 106);
@@ -2283,6 +2283,21 @@ if (qualityBrokenAudit?.ok || qualityBrokenAudit?.qualityIssueCount !== 1) {
 const qualityBrokenAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(qualityBrokenAudit) || '';
 if (!qualityBrokenAuditHtml.includes('第 1 题主变式') || !qualityBrokenAuditHtml.includes('运算结构不一致') || !qualityBrokenAuditHtml.includes('使用建议')) {
   throw new Error('Set review follow-up audit should render concrete quality issue details');
+}
+const warningPreviewAuditHtml = context.window.buildSetReviewFollowupPreviewAuditHTML?.({
+  ok: false,
+  mistakeCount: 2,
+  mainCount: 1,
+  backupCount: 2,
+  sourceCount: 1,
+  candidatePoolCount: 3,
+  duplicateCount: 1,
+  familyMismatch: 0,
+  qualityIssueCount: 1,
+  qualityIssues: [{ num: 1, kind: '主变式', sourceLabel: '复杂乘法 · 第 2 小题', reasons: ['题型骨架不一致'] }]
+}, 'main') || '';
+if (!warningPreviewAuditHtml.includes('预览体检需复核') || !warningPreviewAuditHtml.includes('候选池 3') || !warningPreviewAuditHtml.includes('主变式缺口 1 题') || !warningPreviewAuditHtml.includes('重点复核') || !warningPreviewAuditHtml.includes('题型骨架不一致') || !warningPreviewAuditHtml.includes('重新生成')) {
+  throw new Error('Set review preview audit should summarize risk before printing');
 }
 const healthyAuditHtml = context.window.buildSetReviewFollowupAuditHTML?.(sampleFollowupAudit) || '';
 if (!healthyAuditHtml.includes('可直接作为今日错题变式跟训') || !healthyAuditHtml.includes('候选池')) {

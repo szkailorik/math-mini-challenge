@@ -498,6 +498,7 @@ v23.0 integrates the durable error book into regular training:
 - v23.226 makes the set report preview-first: the report no longer expands all variant questions, backup questions, and answer references by default; it keeps a compact summary and routes tutors to quick preview before printing.
 - v23.227 makes that preview-first report truly lazy: opening a set report no longer generates the variant pack; generation and quality audit happen only when the tutor asks to preview, print, or grade.
 - v23.228 persists generated variant packs onto the set history after first preview/print/grading, so refreshes, later printing, and cloud sync can reuse the same reviewed questions until the tutor explicitly regenerates them.
+- v23.229 adds a preview audit summary before printing: the main and backup preview pages now show whether the pack is ready to print, how many source mistakes/main variants/backup variants were matched, how large the candidate pool was, and whether any duplicate, drift, or fit risks need review.
 - Error-book practice now supports a dedicated printable targeted sheet with answers and an "mastered / wrong again" record line for paper-based follow-up.
 - v23.154 closes the loop after printing: the tutor can enter targeted-sheet grading back into the app, marking items as mastered or wrong again so the durable error book stays aligned with paper practice.
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.

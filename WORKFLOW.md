@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.229 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a compact preview audit panel to the same-set main and backup variant preview pages before the question list.
+- Open questions: none.
+- Risks: the audit must stay short enough not to recreate the heavy report page inside preview.
+- Next steps: keep the preview page focused on print/no-print decisions.
+
+### Iteration 2
+
+- What I changed: surfaced print readiness, source mistake count, main/backup counts, source-label coverage, candidate-pool size, duplicate risk, family drift, and fit risk in parent-facing language.
+- Open questions: none.
+- Risks: quality warnings depend on the variant selector metadata; future generators should keep returning warning reasons.
+- Next steps: expand family-specific generators when the audit repeatedly flags the same topic.
+
+### Iteration 3
+
+- What I changed: added runtime validation for both a healthy preview audit and a failing preview audit with concrete review guidance and regenerate advice.
+- Open questions: none.
+- Risks: validation uses a synthetic risk case, so live tutor review still matters for new topic families.
+- Next steps: use preview audit results to decide which variant pools need deeper custom question writers.
+
 ## Current v23.228 Iteration Notes
 
 ### Iteration 1
