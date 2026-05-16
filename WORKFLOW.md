@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.217 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a tutor-facing daily practice mix summary to answer pages, showing wrong-book-linked items, exact replays, variants, and new/interleaved items for each learner.
+- Open questions: none.
+- Risks: the summary is intentionally hidden from the student question sheets so it does not add clutter to printable practice pages.
+- Next steps: keep the summary wording short if more adaptive categories are added.
+
+### Iteration 2
+
+- What I changed: reused the same mix-summary helper in the knowledge map so the `错题联合训练计划` explains the actual current set, not only the abstract policy ratio.
+- Open questions: none.
+- Risks: cached older sets can only summarize the item metadata they already contain; newly generated sets carry the strongest signal.
+- Next steps: keep cached-set summaries based on generated item data rather than recomputing from current profile state.
+
+### Iteration 3
+
+- What I changed: extended runtime validation so generated answer sheets must include the visible daily mix summary, and dense wrong-book test data must agree with the new summary counts.
+- Open questions: none.
+- Risks: validation remains a DOM/runtime smoke test rather than a visual browser print preview.
+- Next steps: continue using real-device print checks after major worksheet layout changes.
+
 ## Current v23.216 Iteration Notes
 
 ### Iteration 1

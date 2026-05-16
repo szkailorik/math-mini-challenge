@@ -61,6 +61,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, spacing bonus, the phase-aware error-book practice policy, and a whole-paper daily error mix budget so exact replay does not crowd out new retrieval.
 - `getErrorBookPracticePolicy`: caps exact replay and total error-linked practice by training cycle, keeping regular papers mixed while still spacing wrong-book items back into practice.
 - `getDailyErrorMixSnapshot` / daily error mix helpers: track used exact replay and used error-linked slots across the entire generated paper for each learner, preventing section-by-section caps from accumulating into an all-wrong-book daily sheet.
+- `getPracticeMixStats` / `buildPracticeMixSummaryHTML`: derive the visible tutor-facing daily mix summary from the generated questions, so cached sets still explain their actual wrong-book/new-question balance.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.

@@ -8614,6 +8614,70 @@
             return Object.values(data || {}).filter(Array.isArray).flat();
         }
 
+        function getStudentPaperSectionKeys(programId = getCurrentProgramId(), student = 'KAI') {
+            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            if (programId === CLOSURE_PROGRAM_ID) {
+                const prefix = normalized === 'KAI' ? 'c_k' : 'c_l';
+                return [`${prefix}_keep`, `${prefix}_bridge`, `${prefix}_mix`, `${prefix}_unit`, `${prefix}_focus`];
+            }
+            return normalized === 'KAI'
+                ? ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']
+                : ['l_m', 'l_d', 'l_s', 'l_c', 'l_f', 'l_o'];
+        }
+
+        function isDailyErrorLinkedItem(item = {}) {
+            return ['replay', 'variant'].includes(item.reason) || item.isErrorReplay || item.isErrorVariant || item.isAdvancedHighValueReplay;
+        }
+
+        function isDailyExactReplayItem(item = {}) {
+            return item.reason === 'replay' || item.isErrorReplay;
+        }
+
+        function getPracticeMixStats(questions = [], programId = getCurrentProgramId()) {
+            const items = Array.isArray(questions) ? questions.filter(Boolean) : [];
+            const total = items.length;
+            const policy = getErrorBookPracticePolicy(Engine.getCycleState().code, total || getDailyPracticeQuestionBudget(programId));
+            const exactReplay = items.filter(isDailyExactReplayItem).length;
+            const errorLinked = items.filter(isDailyErrorLinkedItem).length;
+            const variant = Math.max(0, errorLinked - exactReplay);
+            const fresh = Math.max(0, total - errorLinked);
+            const maxErrorLinked = total ? Math.max(1, Math.min(policy.errorLinkedQuota, Math.floor(total * 0.35))) : 0;
+            const maxExactReplay = total ? Math.max(1, Math.min(policy.exactReplayQuota, Math.floor(maxErrorLinked * 0.5))) : 0;
+            return {
+                total,
+                exactReplay,
+                variant,
+                errorLinked,
+                fresh,
+                maxErrorLinked,
+                maxExactReplay,
+                errorLinkedRatio: total ? errorLinked / total : 0,
+                freshRatio: total ? fresh / total : 0,
+                policyLabel: policy.label
+            };
+        }
+
+        function getPracticeMixStatsForStudent(data, student, programId = getCurrentProgramId()) {
+            return getPracticeMixStats(flattenPaperSections(data, getStudentPaperSectionKeys(programId, student)), programId);
+        }
+
+        function buildPracticeMixSummaryHTML(questions = [], student = '', programId = getCurrentProgramId(), { margin = '0 24px 12px' } = {}) {
+            const stats = getPracticeMixStats(questions, programId);
+            if (!stats.total) return '';
+            const linkedTone = stats.errorLinked > stats.maxErrorLinked ? '#b45309' : '#0f766e';
+            return `
+                <div class="answer-progress-note no-print" data-daily-mix-summary="${student || 'student'}" style="margin:${margin}; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:10px;">
+                    <strong>${student ? `${student} · ` : ''}今日训练结构</strong>：
+                    错题相关 <strong style="color:${linkedTone};">${stats.errorLinked}/${stats.total}</strong>
+                    （原题 ${stats.exactReplay}，变式 ${stats.variant}）；
+                    新题/交错 <strong>${stats.fresh}/${stats.total}</strong>。
+                    当前周期「${stats.policyLabel}」建议错题相关不超过 ${stats.maxErrorLinked} 题，原题回炉不超过 ${stats.maxExactReplay} 题。
+                </div>`;
+        }
+        window.getPracticeMixStats = getPracticeMixStats;
+        window.getPracticeMixStatsForStudent = getPracticeMixStatsForStudent;
+        window.buildPracticeMixSummaryHTML = buildPracticeMixSummaryHTML;
+
         const buildAnsRow = (q, i, student, secName, sessionData) => {
             let infoObj = { sec: secName, num: i + 1, q: q.q, a: q.a, step: q.step || '' };
             let encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
@@ -8979,8 +9043,10 @@
                     { title: '四、单位 / 率 / 关系综合', questions: data.c_l_unit },
                     { title: `五、${lFocusMeta.answerTitle}`, questions: data.c_l_focus }
                 ];
-                const closureKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureKaiQuestions, closureKaiSession), true, 'KAI', getAnswerSectionPendingSummary(closureKaiSections, closureKaiSession));
-                const closureLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureLorikQuestions, closureLorikSession), true, 'Lorik', getAnswerSectionPendingSummary(closureLorikSections, closureLorikSession));
+                const closureKaiProgressHtml = buildPracticeMixSummaryHTML(closureKaiQuestions, 'KAI', CLOSURE_PROGRAM_ID)
+                    + buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureKaiQuestions, closureKaiSession), true, 'KAI', getAnswerSectionPendingSummary(closureKaiSections, closureKaiSession));
+                const closureLorikProgressHtml = buildPracticeMixSummaryHTML(closureLorikQuestions, 'Lorik', CLOSURE_PROGRAM_ID)
+                    + buildAnswerSubmissionSummary(getAnswerSubmissionProgress(closureLorikQuestions, closureLorikSession), true, 'Lorik', getAnswerSectionPendingSummary(closureLorikSections, closureLorikSession));
 
                 const closureScore = 8 + 8 + 8 + 8 + 8;
                 let k_p1 = buildQSection(`一、 ${phaseMeta.keepTitle}`, `I. Core Keep-Warm`, `(${phaseMeta.keepHint})`, data.c_k_keep, 'h-mixed', 2) +
@@ -9085,8 +9151,10 @@
                 { title: '五、分数四则运算', questions: data.l_f },
                 { title: '六、基础简便运算', questions: data.l_o }
             ];
-            const advancedKaiProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedKaiQuestions, kaiSession), false, 'KAI', getAnswerSectionPendingSummary(advancedKaiSections, kaiSession));
-            const advancedLorikProgressHtml = buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedLorikQuestions, lorikSession), false, 'Lorik', getAnswerSectionPendingSummary(advancedLorikSections, lorikSession));
+            const advancedKaiProgressHtml = buildPracticeMixSummaryHTML(advancedKaiQuestions, 'KAI', ADVANCED_PROGRAM_ID)
+                + buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedKaiQuestions, kaiSession), false, 'KAI', getAnswerSectionPendingSummary(advancedKaiSections, kaiSession));
+            const advancedLorikProgressHtml = buildPracticeMixSummaryHTML(advancedLorikQuestions, 'Lorik', ADVANCED_PROGRAM_ID)
+                + buildAnswerSubmissionSummary(getAnswerSubmissionProgress(advancedLorikQuestions, lorikSession), false, 'Lorik', getAnswerSectionPendingSummary(advancedLorikSections, lorikSession));
             let stampKAI = kaiSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
             let stampLorik = lorikSession ? `<div class="completed-stamp">✅ 已批改归档<br><span style="font-size:16px;">Graded & Archived</span></div>` : '';
 
@@ -10351,7 +10419,14 @@
                     </tr>`;
                 }).join('')
                 : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
-            const currentPolicy = getErrorBookPracticePolicy(Engine.getCycleState().code, 24);
+            const currentProgramId = getCurrentProgramId();
+            const currentPolicy = getErrorBookPracticePolicy(Engine.getCycleState().code, getDailyPracticeQuestionBudget(currentProgramId));
+            const dailyMixHtml = selectedStudents.map(student => buildPracticeMixSummaryHTML(
+                flattenPaperSections(currentData, getStudentPaperSectionKeys(currentProgramId, student)),
+                student,
+                currentProgramId,
+                { margin: '0 0 8px' }
+            )).join('');
             const filterActions = `
                 <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px;">
                     <button class="eb-filter-btn ${!normalizedFilter ? 'active' : ''}" style="padding:8px 12px; border-radius:8px;" onclick="window.showKnowledgeMap()">全部</button>
@@ -10361,6 +10436,7 @@
                 </div>`;
             const policyHtml = `
                 <div style="margin:0 0 10px; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#334155; font-size:13px; line-height:1.55;">
+                    ${dailyMixHtml}
                     今日错题混入策略：<strong>${currentPolicy.label}</strong>。原题回炉约控制在 <strong>${Math.round(currentPolicy.exactReplayRatio * 100)}%</strong> 内，
                     错题相关训练（原题+变式）约控制在 <strong>${Math.round(currentPolicy.errorLinkedRatio * 100)}%</strong> 内，剩余题量继续做新提取和交错训练，避免整套卷变成“死刷错题”。
                 </div>`;

@@ -39,6 +39,9 @@ if (!html.includes('检查重复题')) {
 if (!html.includes('function getErrorBookPracticePolicy')) {
   throw new Error('Phase-aware error-book practice policy is missing from runtime script');
 }
+if (!html.includes('function getPracticeMixStats') || !html.includes('今日训练结构')) {
+  throw new Error('Visible daily practice mix summary is missing from runtime script');
+}
 if (!html.includes('window.printErrorBookPractice')) {
   throw new Error('Full error-book targeted practice printer is missing from runtime script');
 }
@@ -776,6 +779,9 @@ function assertPaper(setNumber) {
   }
   if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Detailed Solutions')) {
     throw new Error(`Generated paper for set ${setNumber} is missing challenge or answer sections`);
+  }
+  if (!paper.includes('今日训练结构') || !paper.includes('错题相关') || !paper.includes('新题/交错')) {
+    throw new Error(`Generated answer sheets for set ${setNumber} are missing the daily practice mix summary`);
   }
   const questionOnly = paper.split('class="sheet ans-sheet"')[0] || paper;
   if (questionOnly.includes('focus-strip') || questionOnly.includes('engine-status')) {
@@ -2005,7 +2011,14 @@ const denseMixSet = context.window.generateProgramSetData?.('advanced_fluency_v1
 const denseKaiItems = context.window.flattenPaperSections?.(denseMixSet, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']) || [];
 const denseKaiLinked = denseKaiItems.filter(item => ['replay', 'variant'].includes(item?.reason) || item?.isErrorReplay || item?.isErrorVariant || item?.isAdvancedHighValueReplay).length;
 const denseKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1');
-if (denseKaiItems.length !== 36 || !denseKaiBudget?.maxErrorLinked || denseKaiLinked > denseKaiBudget.maxErrorLinked || denseKaiItems.length - denseKaiLinked < 20) {
+const denseKaiMixStats = context.window.getPracticeMixStats?.(denseKaiItems, 'advanced_fluency_v1');
+if (
+  denseKaiItems.length !== 36 ||
+  !denseKaiBudget?.maxErrorLinked ||
+  denseKaiLinked !== denseKaiMixStats?.errorLinked ||
+  denseKaiLinked > denseKaiBudget.maxErrorLinked ||
+  denseKaiMixStats.fresh < 20
+) {
   throw new Error(`Daily generated practice should keep a mixed new/error ratio, got ${denseKaiLinked}/${denseKaiItems.length} error-linked with cap ${denseKaiBudget?.maxErrorLinked}`);
 }
 context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
