@@ -2345,6 +2345,49 @@ if (conversionSignature !== 'conversion:decimal-to-fraction') {
 if (!conversionFollowupItems[0]?.followupBackupVariant?.q || /%/.test(conversionFollowupItems[0].followupBackupVariant.q)) {
   throw new Error('Decimal-to-fraction source mistakes should prepare a same-direction backup variant');
 }
+const validatorFrac = (n, d) => `<div class="frac"><span>${n}</span><span class="bottom">${d}</span></div>`;
+const fractionAddSession = {
+  set: 109,
+  details: [
+    {
+      tag: 'custom_fraction_add',
+      grade: 'wrong',
+      uid: 'frac-source-add',
+      info: { sec: '分数加法', num: 1, q: `${validatorFrac(1, 6)} + ${validatorFrac(1, 12)} =`, a: validatorFrac(1, 4), step: '异分母分数先通分再加。' }
+    }
+  ]
+};
+const fractionAddTargets = context.window.buildSetReviewFollowupTargets?.(fractionAddSession) || [];
+const fractionAddItems = context.window.buildSetReviewFollowupItems?.(fractionAddSession, 'KAI', 'advanced_fluency_v1') || [];
+const fractionAddItem = fractionAddItems[0] || {};
+const fractionAddSourceSignature = context.window.getSetReviewStructureSignature?.(fractionAddSession.details[0].info.q, 'fraction_operation');
+const fractionAddCandidateSignature = context.window.getSetReviewStructureSignature?.(fractionAddItem.q || '', 'fraction_operation');
+if (fractionAddSourceSignature !== 'fraction:+' || fractionAddCandidateSignature !== 'fraction:+') {
+  throw new Error(`Source-aware fraction variants should preserve add/sub/mul/div operation skeletons, got ${fractionAddSourceSignature} -> ${fractionAddCandidateSignature} for ${fractionAddItem.q || '(missing)'}`);
+}
+if (fractionAddItem.variantSourceMode !== 'source-aware-fraction' || /&minus;|&divide;|&times;/.test(fractionAddItem.q || '') || fractionAddItem.followupQualityWarnings?.length) {
+  throw new Error('Unknown-tag fraction addition mistakes should generate close same-operation variants');
+}
+const fractionDriftQuality = context.window.getSetReviewVariantQuality?.(fractionAddTargets[0], { q: `${validatorFrac(5, 6)} &minus; ${validatorFrac(1, 4)} =`, qualityFamily: 'fraction_operation' });
+if (fractionDriftQuality?.ok || !fractionDriftQuality?.reasons?.some(reason => /骨架|运算/.test(reason))) {
+  throw new Error('Set review quality gate should reject fraction operation drift');
+}
+const fractionParenSession = {
+  set: 110,
+  details: [
+    {
+      tag: 'custom_fraction_paren',
+      grade: 'wrong',
+      uid: 'frac-source-paren',
+      info: { sec: '分数括号', num: 1, q: `${validatorFrac(3, 4)} &times; <span class="paren-l"></span>${validatorFrac(1, 6)} + ${validatorFrac(1, 3)}<span class="paren-r"></span> =`, a: validatorFrac(3, 8), step: '括号内先加，再乘外面的分数。' }
+    }
+  ]
+};
+const fractionParenItems = context.window.buildSetReviewFollowupItems?.(fractionParenSession, 'KAI', 'advanced_fluency_v1') || [];
+const fractionParenItem = fractionParenItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(fractionParenSession.details[0].info.q, 'fraction_operation') !== 'fraction:×+' || context.window.getSetReviewStructureSignature?.(fractionParenItem.q || '', 'fraction_operation') !== 'fraction:×+' || !/paren-l/.test(fractionParenItem.q || '') || fractionParenItem.followupQualityWarnings?.length) {
+  throw new Error('Source-aware fraction variants should preserve parenthesized fraction operation structure');
+}
 const bulkFollowupSession = {
   set: 107,
   details: Array.from({ length: 11 }, (_, idx) => ({

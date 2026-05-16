@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.230 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a source-aware fallback generator for fraction mistakes so unknown-tag fraction errors still produce same-structure variants.
+- Open questions: none.
+- Risks: the generator intentionally covers the common structures first, not every possible symbolic fraction expression.
+- Next steps: extend the same source-aware approach to any topic family that preview audits repeatedly flag.
+
+### Iteration 2
+
+- What I changed: corrected set-review family detection so HTML fraction markup is no longer misread as division because of `<div class="frac">`.
+- Open questions: none.
+- Risks: unknown division-looking items still need tag metadata when they are not really decimal division.
+- Next steps: keep using quality signatures to catch family drift before printing.
+
+### Iteration 3
+
+- What I changed: updated fraction structure signatures and runtime validation for addition and parenthesized fraction variants, including a failing drift case.
+- Open questions: none.
+- Risks: validation checks representative structures, while live item-bank review should continue for rarer fraction formats.
+- Next steps: review preview-audit warnings after several real graded sets to choose the next generator family to deepen.
+
 ## Current v23.229 Iteration Notes
 
 ### Iteration 1
