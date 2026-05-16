@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.221 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added an error-book due summary that counts due items, overdue items, and wrong-again priority items for the currently visible scope.
+- Open questions: none.
+- Risks: counts follow the current mechanism filter, so a filtered view can show fewer due items than the full active error book.
+- Next steps: keep the copy explicit when filters are active.
+
+### Iteration 2
+
+- What I changed: made the primary due-only print/grading buttons appear only when there are due items; otherwise the page shows a compact “暂无到期复练卷” note and leaves full-sheet buttons available.
+- Open questions: none.
+- Risks: a tutor who wants to force extra review must use the secondary full-sheet buttons, which is intentional.
+- Next steps: watch whether the secondary buttons are still easy enough to find.
+
+### Iteration 3
+
+- What I changed: added runtime coverage so a due-ready error-book view must show the due summary and due-only print/grading actions.
+- Open questions: none.
+- Risks: the smoke test uses a fixed set number to make due status deterministic.
+- Next steps: keep this coverage when error-book action buttons are reorganized.
+
 ## Current v23.220 Iteration Notes
 
 ### Iteration 1

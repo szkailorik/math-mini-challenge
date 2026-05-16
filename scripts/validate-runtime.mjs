@@ -1926,6 +1926,7 @@ context.window.StorageDB.cache.KAI = {
   },
 };
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
+context.window.currentSetNumber = 109;
 context.window.renderErrorBook();
 const errorBookHtml = elements.get('paper-container')?.innerHTML || '';
 if (!errorBookHtml.includes('高频机制') || !errorBookHtml.includes('representation-conversion')) {
@@ -1942,7 +1943,7 @@ if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
 if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
   throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
 }
-if (!mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
+if (!mechanismFilteredHtml.includes('到期复练') || !mechanismFilteredHtml.includes('今天建议先做') || !mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
 const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';

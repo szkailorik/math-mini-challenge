@@ -490,6 +490,7 @@ v23.0 integrates the durable error book into regular training:
 - v23.218 makes the daily wrong-book budget learner-sensitive: light error pressure lowers wrong-book intake, while repeated errors or a high recent mistake rate allow a stronger but still capped recovery dose.
 - v23.219 adds spacing-aware wrong-book priority: just-seen mistakes cool down, due or overdue mistakes move up, and repeated wrong-again items can break the waiting interval for immediate repair.
 - v23.220 turns spacing into action: the error book now defaults to printable `到期错题复练卷` and matching grading flow, while still keeping full all-error and wrong-again-only sheets available.
+- v23.221 makes the due state visible before printing: the error book summary shows due count, wrong-again priority count, and a short next-step message, and hides the due-only print buttons when nothing is due.
 - Error-book practice now supports a dedicated printable targeted sheet with answers and an "mastered / wrong again" record line for paper-based follow-up.
 - v23.154 closes the loop after printing: the tutor can enter targeted-sheet grading back into the app, marking items as mastered or wrong again so the durable error book stays aligned with paper practice.
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.

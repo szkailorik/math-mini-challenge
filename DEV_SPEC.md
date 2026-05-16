@@ -65,6 +65,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getDailyErrorPressure`: classifies each learner as light, standard, or intensive wrong-book pressure using active errors, repeated errors, and recent mistake rates; the daily mix helpers use this band to adjust the cap without exceeding the whole-paper safety ceiling.
 - `getErrorEntrySpacingState`: computes due/overdue/not-due/priority status for each active error-book entry and feeds that spacing weight into daily replay selection, high-value replay injection, closure focus replay, targeted practice order, and the visible error-book card badges.
 - `dueOnly` targeted-practice mode: filters printable error-book practice and grading rows to only due/overdue/priority entries, records the mode on the practice log, and leaves full all-error sheets available as a secondary option.
+- `getErrorBookDueSummary`: summarizes visible due-only readiness for the error-book page, including due count, wrong-again count, overdue count, and the next expected due interval when no item is ready.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.

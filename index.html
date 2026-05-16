@@ -1306,6 +1306,8 @@
         .spacing-badge.not-due { background:#f1f5f9; color:#64748b; border-color:#cbd5e1; }
         .spacing-badge.overdue { background:#fff7ed; color:#b45309; border-color:#fdba74; }
         .spacing-badge.priority { background:#fef2f2; color:#b91c1c; border-color:#fca5a5; }
+        .spacing-summary-note { margin-top:8px; padding:8px 10px; border:1px dashed #cbd5e1; border-radius:8px; background:#f8fafc; color:#334155; font-size:12.5px; line-height:1.5; }
+        .spacing-summary-note.ready { border-color:#a7f3d0; background:#ecfdf5; color:#065f46; }
         .quick-review-page {
             width: min(980px, 92vw);
             margin: 0 auto;
@@ -9399,6 +9401,21 @@
             return spacing.due || spacing.priority;
         }
 
+        function getErrorBookDueSummary(entries = []) {
+            const active = (entries || []).filter(entry => entry && !entry.mastered);
+            const dueRows = active.map(entry => ({ entry, spacing: getErrorEntrySpacingState(entry) }));
+            const dueCount = dueRows.filter(row => row.spacing.due || row.spacing.priority).length;
+            const priorityCount = dueRows.filter(row => row.spacing.priority).length;
+            const overdueCount = dueRows.filter(row => row.spacing.overdue).length;
+            const nextDueIn = dueRows
+                .filter(row => !row.spacing.due && !row.spacing.priority)
+                .reduce((min, row) => Math.min(min, Math.max(1, row.spacing.targetGap - row.spacing.setsSince)), Infinity);
+            const message = dueCount
+                ? `今天建议先做 ${dueCount} 题到期复练${priorityCount ? `，其中 ${priorityCount} 题是复错优先` : ''}${overdueCount ? `，${overdueCount} 题已经逾期` : ''}。`
+                : (Number.isFinite(nextDueIn) ? `今天暂无到期错题，下一批预计再隔 ${nextDueIn} 套复练；日常先做新题和交错训练。` : '今天暂无到期错题，保持每日交错训练即可。');
+            return { dueCount, priorityCount, overdueCount, nextDueIn: Number.isFinite(nextDueIn) ? nextDueIn : null, message };
+        }
+
         function getErrorBookPracticeEntries(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, domainId = '' } = {}) {
             const profile = StorageDB.getProfile(student) || {};
             const entries = Object.entries(profile.errorBook || {}).map(([uid, value]) => ({ uid, ...value }));
@@ -9820,7 +9837,12 @@
                     return key === activeMechanism;
                 });
             }
+            const activeDueScopeEntries = activeMechanism
+                ? activeEntries.filter(entry => (entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info)) === activeMechanism)
+                : activeEntries;
+            const dueScopeEntries = filter === 'mastered' ? activeDueScopeEntries : entries;
             const priorityPracticeCount = entries.filter(entry => !entry.mastered && isErrorBookPriorityPracticeEntry(entry)).length;
+            const dueSummary = getErrorBookDueSummary(dueScopeEntries);
 
             let filterTitle = filter === 'mastered'
                 ? `🏆 ${name} 已掌握错题（Mastered Archive）`
@@ -9924,17 +9946,19 @@
                     <div class="eb-summary">
                         <div class="eb-stat">
                             <span><b>${activeEntries.length}</b> 待攻克</span>
+                            <span><b>${dueSummary.dueCount}</b> 到期复练</span>
                             <span><b>${masteredEntries.length}</b> 已掌握</span>
-                            <span><b>${activeEntries.filter(e => Number(e.rewrongCount || 0) > 0).length}</b> 复错优先</span>
+                            <span><b>${dueSummary.priorityCount}</b> 复错优先</span>
                             <span><b>${allEntries.reduce((s,x)=>s+x.count,0)}</b> 累计错次</span>
                         </div>
+                        <div class="spacing-summary-note ${dueSummary.dueCount ? 'ready' : ''}">${dueSummary.message}</div>
                         <div style="display:flex; gap:8px;">
                             <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                             <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
                         </div>
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
-                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false, false, true)">🖨️ 打印到期复练卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, false, true)">🧾 到期卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', false, true)">📝 批改到期卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px; background:#64748b; border-color:#64748b;" onclick="window.printErrorBookPractice('${name}', false)">打印${activeMechanism ? '当前机制' : '全部'}错题卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">全部卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">批改全部卷</button></div>` : ''}
+                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">${dueSummary.dueCount ? `<button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false, false, true)">🖨️ 打印到期复练卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, false, true)">🧾 到期卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', false, true)">📝 批改到期卷</button>` : `<span class="spacing-badge not-due">暂无到期复练卷</span>`}<button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px; background:#64748b; border-color:#64748b;" onclick="window.printErrorBookPractice('${name}', false)">打印${activeMechanism ? '当前机制' : '全部'}错题卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">全部卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">批改全部卷</button></div>` : ''}
                         ${filter === 'active' && priorityPracticeCount > 0 ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px; background:#991b1b; border-color:#991b1b;" onclick="window.printErrorBookPractice('${name}', false, true)">🔥 打印复错优先卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, true)">🧾 打印复错优先卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', true)">📝 批改复错优先卷</button></div>` : ''}
                         ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
                         ${practiceLogHtml}
