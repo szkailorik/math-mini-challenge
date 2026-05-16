@@ -10983,11 +10983,11 @@
             const source = normalizeErrorPrompt(rawSource);
             const hasFractionStructure = /class="frac"|class="mixed"|fraction|frac|分数|带分数|\/\s*\d+/.test(rawSource);
             if (hasFractionStructure) return 'fraction_operation';
-            if (/ddiv|decimal_division|division|divide|÷|除/.test(`${tag || ''} ${source}`)) return 'decimal_division';
+            if (/<i class="var">x<\/i>|\bx\b|未知数|方程|equation|^eq|_eq_/.test(rawSource)) return 'equation_method';
             if (/conv|percent|compare|互化|百分/.test(source)) return 'conversion_bridge';
+            if (/unit|rate|speed|单位|速度|比率|平均|每|单价|总价|路程|千米|km|kg|cm|元/.test(source)) return 'unit_rate_speed';
+            if (/ddiv|decimal_division|division|divide|÷|除/.test(`${tag || ''} ${source}`)) return 'decimal_division';
             if (/[×÷*/+\-−]|乘|除|加|减/.test(source)) return 'arithmetic_fluency';
-            if (/unit|rate|speed|单位|速度|比率/.test(source)) return 'unit_rate_speed';
-            if (/eq|equation|方程/.test(source)) return 'equation_method';
             if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
             return 'generic_followup';
         }
@@ -11968,6 +11968,108 @@
             return null;
         }
 
+        function getSetReviewEquationStructureProfile(questionHtml = '') {
+            const raw = String(questionHtml || '');
+            const source = normalizeErrorPrompt(raw).replace(/[＝=].*$/, '').trim();
+            const hasX = /<i class="var">x<\/i>|\bx\b/.test(`${raw} ${source}`);
+            if (!hasX) return { signature: 'equation:general' };
+            if (/÷\s*x|&divide;\s*<i class="var">x<\/i>/.test(`${source} ${raw}`)) return { signature: 'equation:divisor' };
+            if (/-\s*x|&minus;\s*<i class="var">x<\/i>/.test(`${source} ${raw}`)) return { signature: 'equation:subtrahend' };
+            if (/x\s*÷|<i class="var">x<\/i>\s*&divide;/.test(`${source} ${raw}`)) {
+                if (/[+]|-|\&minus;/.test(source.replace(/^.*?x\s*÷\s*[^+\-]+/, '')) || /<\/i>\s*&divide;[^=]*(&minus;|\+)/.test(raw)) {
+                    return { signature: 'equation:two-step-div' };
+                }
+                return { signature: 'equation:dividend' };
+            }
+            if (/x\s*[-]|<i class="var">x<\/i>\s*&minus;/.test(`${source} ${raw}`)) return { signature: 'equation:x-minus' };
+            if (/x\s*\+|<i class="var">x<\/i>\s*\+/.test(`${source} ${raw}`)) return { signature: 'equation:x-plus' };
+            if (/(^|\s)\d+(?:\.\d+)?\s*x|(^|\s)\d+(?:\.\d+)?\s*<i class="var">x<\/i>|<div class="frac"[\s\S]*?<\/div>\s*<i class="var">x<\/i>/.test(raw)) return { signature: 'equation:coefficient' };
+            return { signature: 'equation:general' };
+        }
+        window.getSetReviewEquationStructureProfile = getSetReviewEquationStructureProfile;
+
+        function buildSourceAwareEquationVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const raw = `${entry.info?.q || ''} ${entry.info?.step || ''}`;
+            if (!/<i class="var">x<\/i>|\bx\b|未知数|方程/.test(raw)) return null;
+            const profile = getSetReviewEquationStructureProfile(entry.info?.q || '');
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'equation_method',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-equation'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'equation:divisor') {
+                const lhs = Engine.randChoice([24, 36, 48]);
+                const rhs = Engine.randChoice([3, 4, 6]);
+                return finish({
+                    q: `${lhs} &divide; <i class="var">x</i> = ${rhs}`,
+                    a: `<i class="var">x</i> = ${lhs / rhs}`,
+                    step: '同形变式：未知数仍然在除数位置，用“除数 = 被除数 ÷ 商”，不能直接移到右边相乘。'
+                });
+            }
+            if (profile.signature === 'equation:subtrahend') {
+                const lhs = Engine.randChoice([18, 24, 35]);
+                const rhs = Engine.randChoice([7, 9, 12]);
+                return finish({
+                    q: `${lhs} &minus; <i class="var">x</i> = ${rhs}`,
+                    a: `<i class="var">x</i> = ${lhs - rhs}`,
+                    step: '同形变式：未知数仍然是减数，用“减数 = 被减数 − 差”，不要顺手相加。'
+                });
+            }
+            if (profile.signature === 'equation:two-step-div') {
+                const div = Engine.randChoice([3, 4, 5]);
+                const add = Engine.randChoice([2, 3, 4]);
+                const base = Engine.randChoice([6, 8, 9]);
+                return finish({
+                    q: `<i class="var">x</i> &divide; ${div} + ${add} = ${base + add}`,
+                    a: `<i class="var">x</i> = ${base * div}`,
+                    step: `同形变式：仍然先减去 ${add}，再乘 ${div}，每一步只做一个逆运算。`
+                });
+            }
+            if (profile.signature === 'equation:dividend') {
+                const div = Engine.randChoice([4, 5, 6]);
+                const quotient = Engine.randChoice([3, 7, 9]);
+                return finish({
+                    q: `<i class="var">x</i> &divide; ${div} = ${quotient}`,
+                    a: `<i class="var">x</i> = ${div * quotient}`,
+                    step: '同形变式：未知数仍然是被除数，用“被除数 = 商 × 除数”回推。'
+                });
+            }
+            if (profile.signature === 'equation:x-minus') {
+                const sub = Engine.randChoice([6, 8, 15]);
+                const rhs = Engine.randChoice([7, 12, 18]);
+                return finish({
+                    q: `<i class="var">x</i> &minus; ${sub} = ${rhs}`,
+                    a: `<i class="var">x</i> = ${rhs + sub}`,
+                    step: '同形变式：未知数仍然在被减数位置，用加法逆运算把减去的数补回去。'
+                });
+            }
+            if (profile.signature === 'equation:x-plus') {
+                const add = Engine.randChoice([6, 8, 12]);
+                const xValue = Engine.randChoice([9, 14, 18]);
+                return finish({
+                    q: `<i class="var">x</i> + ${add} = ${xValue + add}`,
+                    a: `<i class="var">x</i> = ${xValue}`,
+                    step: '同形变式：未知数仍然在加数位置，用减法逆运算先去掉已知加数。'
+                });
+            }
+            if (profile.signature === 'equation:coefficient') {
+                const coefficient = Engine.randChoice([3, 4, 6]);
+                const xValue = Engine.randChoice([5, 7, 9]);
+                return finish({
+                    q: `${coefficient}<i class="var">x</i> = ${coefficient * xValue}`,
+                    a: `<i class="var">x</i> = ${xValue}`,
+                    step: '同形变式：未知数仍然带系数，用等式两边同除以系数来回推。'
+                });
+            }
+            return null;
+        }
+        window.buildSourceAwareEquationVariant = buildSourceAwareEquationVariant;
+
         function buildSetReviewEquationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             if (/^c2_eq_/.test(entry.tag || '')) {
@@ -11984,6 +12086,8 @@
                     });
                 }
             }
+            const sourceAware = buildSourceAwareEquationVariant(target);
+            if (sourceAware && !/^k_eq_/.test(entry.tag || '')) return sourceAware;
             const built = buildKaiEquationVariant(entry.tag || 'k_eq_twostep', '[本套变式 Follow-up] ');
             return built
                 ? attachQualityMetadata({
@@ -12012,6 +12116,8 @@
                     });
                 }
             }
+            const sourceAware = buildSourceAwareUnitRateVariant(target);
+            if (sourceAware) return sourceAware;
             const pool = [
                 { q: `2.4 km = (   ) m`, a: '2400', step: '规则提醒：先统一单位，再开始算。' },
                 { q: `每本 12 元，买 5 本，一共 (   ) 元`, a: '60', step: '方法提醒：先找单价和数量，再求总价。' },
@@ -12027,6 +12133,82 @@
                 isReviewItem: true
             });
         }
+
+        function getSetReviewUnitRateStructureProfile(questionHtml = '') {
+            const source = normalizeErrorPrompt(questionHtml || '');
+            if (/平均每|平均速度|每时|每小时|速度|路程\s*÷\s*时间/.test(source)) return { signature: 'unit:speed-rate' };
+            if (/km\/h|千米\/时|速度.*时间|路程|共行|行驶|飞行/.test(source) && !/平均/.test(source)) return { signature: 'unit:speed-distance' };
+            if (/共|一共|总价/.test(source) && /每本\s*___|每支\s*___|每个\s*___|每.*___.*元/.test(source)) return { signature: 'unit:price-unit' };
+            if (/每.*元|单价/.test(source) && /一共|总价|共/.test(source)) return { signature: 'unit:price-total' };
+            if (/一共|总价|共/.test(source) && /每本|每支|单价|每个/.test(source)) return { signature: 'unit:price-total' };
+            if (/每本|每支|每个/.test(source) && /求|多少|几/.test(source) && !/一共|总价/.test(source)) return { signature: 'unit:price-unit' };
+            if (/km|千米|m|米|cm|kg|g|单位/.test(source)) return { signature: 'unit:conversion' };
+            return { signature: 'unit:general' };
+        }
+        window.getSetReviewUnitRateStructureProfile = getSetReviewUnitRateStructureProfile;
+
+        function buildSourceAwareUnitRateVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const raw = `${entry.info?.q || ''} ${entry.info?.step || ''}`;
+            if (!/unit|rate|speed|单位|速度|比率|平均|每|单价|总价|路程|千米|km|kg|cm|元/.test(normalizeErrorPrompt(raw))) return null;
+            const profile = getSetReviewUnitRateStructureProfile(entry.info?.q || '');
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'unit_rate_speed',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-unit-rate'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'unit:speed-rate') {
+                const hours = Engine.randChoice([1.5, 2.4, 2.5, 3]);
+                const speed = Engine.randChoice([48, 60, 72, 80]);
+                const distance = hours * speed;
+                return finish({
+                    q: `一辆车 ${hours} 时行 ${formatDecimal(distance)} 千米，平均每时行<div class="blank"></div>千米`,
+                    a: `${speed}`,
+                    step: '同形变式：仍然求平均速度，用路程 ÷ 时间，先分清问的是“每时多少”。'
+                });
+            }
+            if (profile.signature === 'unit:speed-distance') {
+                const speed = Engine.randChoice([60, 72, 80, 96]);
+                const hours = Engine.randChoice([1.5, 2, 2.5]);
+                return finish({
+                    q: `${speed} km/h 行 ${hours} h，路程是<div class="blank"></div>km`,
+                    a: `${formatDecimal(speed * hours)}`,
+                    step: '同形变式：仍然求路程，用速度 × 时间，最后检查单位是 km。'
+                });
+            }
+            if (profile.signature === 'unit:price-total') {
+                const price = Engine.randChoice([6.5, 7.5, 12, 18]);
+                const count = Engine.randChoice([4, 5, 6]);
+                return finish({
+                    q: `每本 ${price} 元，买 ${count} 本，一共<div class="blank"></div>元`,
+                    a: `${formatDecimal(price * count)}`,
+                    step: '同形变式：仍然求总价，用单价 × 数量，不要把数量和单价换反。'
+                });
+            }
+            if (profile.signature === 'unit:price-unit') {
+                const count = Engine.randChoice([4, 5, 6]);
+                const price = Engine.randChoice([8, 12, 15]);
+                return finish({
+                    q: `${count} 本共 ${count * price} 元，每本<div class="blank"></div>元`,
+                    a: `${price}`,
+                    step: '同形变式：仍然求单价，用总价 ÷ 数量，先确认问的是“每本”。'
+                });
+            }
+            if (profile.signature === 'unit:conversion') {
+                const km = Engine.randChoice([1.8, 2.4, 3.6, 4.5]);
+                return finish({
+                    q: `${km} km = (   ) m`,
+                    a: `${formatDecimal(km * 1000)}`,
+                    step: '同形变式：仍然先统一单位，千米化米要乘 1000。'
+                });
+            }
+            return null;
+        }
+        window.buildSourceAwareUnitRateVariant = buildSourceAwareUnitRateVariant;
 
         function buildSetReviewValidationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
@@ -12104,16 +12286,10 @@
                 return `arith:${arithmetic.op}:${decimalMode}`;
             }
             if (family === 'equation_method') {
-                if (/÷|&divide;|\//.test(questionHtml)) return 'equation:division';
-                if (/×|&times;|\*/.test(questionHtml)) return 'equation:multiplication';
-                if (/\+/.test(questionHtml)) return 'equation:addition';
-                if (/−|&minus;|-/.test(questionHtml)) return 'equation:subtraction';
-                return 'equation:general';
+                return getSetReviewEquationStructureProfile(questionHtml).signature;
             }
             if (family === 'unit_rate_speed') {
-                if (/km\/h|速度|路程|speed|h\b/.test(`${questionHtml} ${normalized}`)) return 'unit:speed';
-                if (/每|单价|元/.test(`${questionHtml} ${normalized}`)) return 'unit:price';
-                return 'unit:conversion';
+                return getSetReviewUnitRateStructureProfile(questionHtml).signature;
             }
             return family ? `${family}:general` : 'generic';
         }

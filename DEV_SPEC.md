@@ -94,6 +94,8 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `collectSetReviewVariantCandidates` / `getSetReviewVariantSelectionScore`: build and rank a candidate pool for each main/backup same-day variant before selecting the strongest non-duplicate item.
 - `buildSetReviewArithmeticVariant`: creates source-aware same-operation variants for basic multiplication, division, addition, and subtraction mistakes.
 - `getSetReviewFractionStructureProfile` / `buildSourceAwareFractionVariant`: preserve fallback fraction mistake structures across add/subtract/multiply/divide, three-term chains, parenthesized expressions, and mixed numbers before using broader fraction banks.
+- `getSetReviewEquationStructureProfile` / `buildSourceAwareEquationVariant`: preserve fallback equation structures such as unknown divisor, unknown subtrahend, dividend division, and two-step inverse equations.
+- `getSetReviewUnitRateStructureProfile` / `buildSourceAwareUnitRateVariant`: preserve fallback unit-relation structures such as speed-rate, speed-distance, total price, unit price, and unit conversion.
 - `pickSetReviewVariant` / `buildSetReviewBackupVariantPayload`: prepare a second same-structure variant for each same-set mistake without doubling the main follow-up count.
 - `buildSourceAwareConversionVariant`: preserves the original conversion direction for decimal/fraction/percent comparison mistakes before falling back to tag-level conversion pools.
 - `getSetReviewFollowupAudit` / `buildSetReviewFollowupAuditHTML`: verify follow-up packs have matching main/backup counts, source labels, no duplicate fingerprints, and no family drift before display or print.

@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.231 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added source-aware fallback generation for equation mistakes so unknown-number position is preserved.
+- Open questions: none.
+- Risks: the equation parser focuses on common primary-school forms, not symbolic algebra generally.
+- Next steps: add more equation forms only when real reports reveal them.
+
+### Iteration 2
+
+- What I changed: added source-aware fallback generation for unit-rate mistakes so speed, distance, price, unit price, and unit conversion do not collapse into one generic pool.
+- Open questions: none.
+- Risks: word-problem wording can vary; the preview audit remains the guardrail for unusual phrasing.
+- Next steps: keep relation signatures visible through quality checks before printing.
+
+### Iteration 3
+
+- What I changed: tightened same-set family detection order and added runtime tests for equation-position drift and unit-relation drift.
+- Open questions: none.
+- Risks: stricter signatures may flag rare but acceptable transfer variants; for same-day remediation that is a good bias.
+- Next steps: continue from relation structures into decimal division source-shape variants if preview audits expose drift there.
+
 ## Current v23.230 Iteration Notes
 
 ### Iteration 1

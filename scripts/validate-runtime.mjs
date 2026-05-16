@@ -2388,6 +2388,82 @@ const fractionParenItem = fractionParenItems[0] || {};
 if (context.window.getSetReviewStructureSignature?.(fractionParenSession.details[0].info.q, 'fraction_operation') !== 'fraction:×+' || context.window.getSetReviewStructureSignature?.(fractionParenItem.q || '', 'fraction_operation') !== 'fraction:×+' || !/paren-l/.test(fractionParenItem.q || '') || fractionParenItem.followupQualityWarnings?.length) {
   throw new Error('Source-aware fraction variants should preserve parenthesized fraction operation structure');
 }
+const equationDivisorSession = {
+  set: 111,
+  details: [
+    {
+      tag: 'custom_eq_divisor',
+      grade: 'wrong',
+      uid: 'eq-source-divisor',
+      info: { sec: '方程逆运算', num: 1, q: `36 &divide; <i class="var">x</i> = 4`, a: `<i class="var">x</i> = 9`, step: '未知数在除数位置，用被除数除以商。' }
+    }
+  ]
+};
+const equationDivisorTargets = context.window.buildSetReviewFollowupTargets?.(equationDivisorSession) || [];
+const equationDivisorItems = context.window.buildSetReviewFollowupItems?.(equationDivisorSession, 'KAI', 'advanced_fluency_v1') || [];
+const equationDivisorItem = equationDivisorItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(equationDivisorSession.details[0].info.q, 'equation_method') !== 'equation:divisor' || context.window.getSetReviewStructureSignature?.(equationDivisorItem.q || '', 'equation_method') !== 'equation:divisor' || equationDivisorItem.variantSourceMode !== 'source-aware-equation' || !/&divide; <i class="var">x<\/i>/.test(equationDivisorItem.q || '') || equationDivisorItem.followupQualityWarnings?.length) {
+  throw new Error('Unknown-tag equation divisor mistakes should generate same-position equation variants');
+}
+const equationDriftQuality = context.window.getSetReviewVariantQuality?.(equationDivisorTargets[0], { q: `<i class="var">x</i> &divide; 4 + 2 = 8`, qualityFamily: 'equation_method' });
+if (equationDriftQuality?.ok || !equationDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject equation unknown-position drift');
+}
+const equationCoeffSession = {
+  set: 113,
+  details: [
+    {
+      tag: 'custom_eq_coeff',
+      grade: 'wrong',
+      uid: 'eq-source-coeff',
+      info: { sec: '方程系数', num: 1, q: `3<i class="var">x</i> = 18`, a: `<i class="var">x</i> = 6`, step: '等式两边同除以 3。' }
+    }
+  ]
+};
+const equationCoeffItems = context.window.buildSetReviewFollowupItems?.(equationCoeffSession, 'KAI', 'advanced_fluency_v1') || [];
+const equationCoeffItem = equationCoeffItems[0] || {};
+const equationCoeffSourceSignature = context.window.getSetReviewStructureSignature?.(equationCoeffSession.details[0].info.q, 'equation_method');
+const equationCoeffCandidateSignature = context.window.getSetReviewStructureSignature?.(equationCoeffItem.q || '', 'equation_method');
+if (equationCoeffSourceSignature !== 'equation:coefficient' || equationCoeffCandidateSignature !== 'equation:coefficient' || equationCoeffItem.variantSourceMode !== 'source-aware-equation' || equationCoeffItem.followupQualityWarnings?.length) {
+  throw new Error(`Unknown-tag coefficient equations should preserve coefficient structure, got ${equationCoeffSourceSignature} -> ${equationCoeffCandidateSignature} for ${equationCoeffItem.q || '(missing)'}`);
+}
+const speedRateSession = {
+  set: 112,
+  details: [
+    {
+      tag: 'custom_speed_rate',
+      grade: 'wrong',
+      uid: 'unit-source-speed-rate',
+      info: { sec: '速度关系', num: 1, q: `一辆车 2.5 时行 175 千米，平均每时行<div class="blank"></div>千米`, a: '70', step: '平均速度 = 路程 ÷ 时间。' }
+    }
+  ]
+};
+const speedRateTargets = context.window.buildSetReviewFollowupTargets?.(speedRateSession) || [];
+const speedRateItems = context.window.buildSetReviewFollowupItems?.(speedRateSession, 'KAI', 'advanced_fluency_v1') || [];
+const speedRateItem = speedRateItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(speedRateSession.details[0].info.q, 'unit_rate_speed') !== 'unit:speed-rate' || context.window.getSetReviewStructureSignature?.(speedRateItem.q || '', 'unit_rate_speed') !== 'unit:speed-rate' || speedRateItem.variantSourceMode !== 'source-aware-unit-rate' || !/平均每时/.test(speedRateItem.q || '') || speedRateItem.followupQualityWarnings?.length) {
+  throw new Error('Unknown-tag speed-rate mistakes should generate same-relation unit-rate variants');
+}
+const speedDriftQuality = context.window.getSetReviewVariantQuality?.(speedRateTargets[0], { q: `每本 12 元，买 5 本，一共<div class="blank"></div>元`, qualityFamily: 'unit_rate_speed' });
+if (speedDriftQuality?.ok || !speedDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject unit-rate relation drift');
+}
+const priceUnitSession = {
+  set: 114,
+  details: [
+    {
+      tag: 'custom_price_unit',
+      grade: 'wrong',
+      uid: 'unit-source-price-unit',
+      info: { sec: '单价关系', num: 1, q: `5 本共 60 元，每本<div class="blank"></div>元`, a: '12', step: '单价 = 总价 ÷ 数量。' }
+    }
+  ]
+};
+const priceUnitItems = context.window.buildSetReviewFollowupItems?.(priceUnitSession, 'KAI', 'advanced_fluency_v1') || [];
+const priceUnitItem = priceUnitItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(priceUnitSession.details[0].info.q, 'unit_rate_speed') !== 'unit:price-unit' || context.window.getSetReviewStructureSignature?.(priceUnitItem.q || '', 'unit_rate_speed') !== 'unit:price-unit' || priceUnitItem.variantSourceMode !== 'source-aware-unit-rate' || priceUnitItem.followupQualityWarnings?.length) {
+  throw new Error('Unknown-tag unit-price mistakes should generate same-relation unit-rate variants');
+}
 const bulkFollowupSession = {
   set: 107,
   details: Array.from({ length: 11 }, (_, idx) => ({
