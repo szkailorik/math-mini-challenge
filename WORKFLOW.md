@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.232 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added source-aware fallback generation for decimal division mistakes when the item lacks a known high-quality tag.
+- Open questions: none.
+- Risks: the generator focuses on common decimal-placement forms, not every long-division edge case.
+- Next steps: keep specialized tag builders preferred when they exist.
+
+### Iteration 2
+
+- What I changed: added decimal-division signatures that preserve left/right decimal placement and quotient-size bands, especially `商小于 1`.
+- Open questions: none.
+- Risks: stricter quotient-band matching may reject some broader transfer variants, which is acceptable for same-day remediation.
+- Next steps: use transfer-style variants later only after the same-shape repair is stable.
+
+### Iteration 3
+
+- What I changed: added runtime tests for both ordinary decimal-divisor recovery and quotient-less-than-one recovery, plus a drift case that strips decimal place value.
+- Open questions: none.
+- Risks: validation covers representative decimal-division shapes, while live preview should still catch unusual phrasing.
+- Next steps: continue deepening any remaining preview-audit risk family.
+
 ## Current v23.231 Iteration Notes
 
 ### Iteration 1

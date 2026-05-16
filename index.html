@@ -10986,7 +10986,7 @@
             if (/<i class="var">x<\/i>|\bx\b|未知数|方程|equation|^eq|_eq_/.test(rawSource)) return 'equation_method';
             if (/conv|percent|compare|互化|百分/.test(source)) return 'conversion_bridge';
             if (/unit|rate|speed|单位|速度|比率|平均|每|单价|总价|路程|千米|km|kg|cm|元/.test(source)) return 'unit_rate_speed';
-            if (/ddiv|decimal_division|division|divide|÷|除/.test(`${tag || ''} ${source}`)) return 'decimal_division';
+            if (/ddiv|decimal_division|division|divide|小数除|除数有小数|小数点/.test(`${tag || ''} ${source}`) || (/[÷除]/.test(source) && /\d+\.\d+/.test(source))) return 'decimal_division';
             if (/[×÷*/+\-−]|乘|除|加|减/.test(source)) return 'arithmetic_fluency';
             if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
             return 'generic_followup';
@@ -12241,11 +12241,114 @@
             });
         }
 
+        function getSetReviewDecimalDivisionStructureProfile(questionHtml = '') {
+            const parsed = parseSimpleArithmeticPrompt(questionHtml);
+            if (!parsed || parsed.op !== '÷' || !Number.isFinite(parsed.right) || parsed.right === 0) {
+                return { signature: 'decimal-div:general' };
+            }
+            const leftMode = parsed.leftPlaces > 0 ? 'left-dec' : 'left-int';
+            const rightMode = parsed.rightPlaces > 0 ? 'right-dec' : 'right-int';
+            const quotient = Math.abs(parsed.left / parsed.right);
+            const quotientBand = quotient < 1 ? 'q-lt1' : (quotient >= 10 ? 'q-ge10' : 'q-1to9');
+            return {
+                signature: `decimal-div:${leftMode}:${rightMode}:${quotientBand}`,
+                leftMode,
+                rightMode,
+                quotientBand,
+                quotient,
+                leftPlaces: parsed.leftPlaces,
+                rightPlaces: parsed.rightPlaces
+            };
+        }
+        window.getSetReviewDecimalDivisionStructureProfile = getSetReviewDecimalDivisionStructureProfile;
+
+        function buildSourceAwareDecimalDivisionVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const parsed = parseSimpleArithmeticPrompt(entry.info?.q || '');
+            if (!parsed || parsed.op !== '÷' || !Number.isFinite(parsed.right) || parsed.right === 0) return null;
+            const profile = getSetReviewDecimalDivisionStructureProfile(entry.info?.q || '');
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'decimal_division',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-decimal-division'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            let choices = [];
+            if (profile.leftMode === 'left-dec' && profile.rightMode === 'right-dec') {
+                choices = profile.quotientBand === 'q-lt1'
+                    ? [
+                        { divisor: 0.24, quotient: 0.35, scale: 100 },
+                        { divisor: 0.36, quotient: 0.48, scale: 100 },
+                        { divisor: 0.18, quotient: 0.75, scale: 100 },
+                        { divisor: 1.25, quotient: 0.68, scale: 100 }
+                    ]
+                    : [
+                        { divisor: 0.6, quotient: 8, scale: 10 },
+                        { divisor: 0.8, quotient: 8, scale: 10 },
+                        { divisor: 1.2, quotient: 4, scale: 10 },
+                        { divisor: 0.25, quotient: 12, scale: 100 }
+                    ];
+            } else if (profile.leftMode === 'left-int' && profile.rightMode === 'right-dec') {
+                choices = profile.quotientBand === 'q-ge10'
+                    ? [
+                        { divisor: 0.5, quotient: 24, scale: 10 },
+                        { divisor: 0.25, quotient: 48, scale: 100 },
+                        { divisor: 0.4, quotient: 30, scale: 10 },
+                        { divisor: 0.75, quotient: 16, scale: 100 }
+                    ]
+                    : [
+                        { divisor: 1.5, quotient: 8, scale: 10 },
+                        { divisor: 2.5, quotient: 6, scale: 10 },
+                        { divisor: 0.8, quotient: 9, scale: 10 }
+                    ];
+            } else if (profile.leftMode === 'left-dec' && profile.rightMode === 'right-int') {
+                choices = profile.quotientBand === 'q-lt1'
+                    ? [
+                        { divisor: 3, quotient: 0.6, scale: 1 },
+                        { divisor: 5, quotient: 0.8, scale: 1 },
+                        { divisor: 6, quotient: 0.45, scale: 1 }
+                    ]
+                    : [
+                        { divisor: 3, quotient: 2.4, scale: 1 },
+                        { divisor: 4, quotient: 1.8, scale: 1 },
+                        { divisor: 6, quotient: 1.2, scale: 1 }
+                    ];
+            } else {
+                choices = [
+                    { divisor: 6, quotient: 8, scale: 1 },
+                    { divisor: 8, quotient: 7, scale: 1 },
+                    { divisor: 12, quotient: 6, scale: 1 }
+                ];
+            }
+            const selected = Engine.randChoice(choices);
+            const dividend = selected.divisor * selected.quotient;
+            const dividendPlaces = profile.leftMode === 'left-dec'
+                ? Math.max(1, getDecimalPlacesFromText(formatDecimal(dividend, 4)))
+                : 0;
+            const divisorPlaces = profile.rightMode === 'right-dec'
+                ? Math.max(1, getDecimalPlacesFromText(formatDecimal(selected.divisor, 4)))
+                : 0;
+            const scaleText = selected.scale && selected.scale > 1
+                ? `先把被除数和除数同时乘 ${selected.scale}，再按整数除法算。`
+                : '先看商的大小，再用乘法回查。';
+            return finish({
+                q: `${formatVariantNumber(dividend, dividendPlaces)} &divide; ${formatVariantNumber(selected.divisor, divisorPlaces)} =`,
+                a: formatDecimal(selected.quotient),
+                step: `同形变式：仍然保留原题的小数位置和商的大小判断。${scaleText}`
+            });
+        }
+        window.buildSourceAwareDecimalDivisionVariant = buildSourceAwareDecimalDivisionVariant;
+
         function buildSetReviewVariantQuestion(target, student, programId) {
             const entry = target?.sourceItems?.[0] || {};
             if (target.family === 'decimal_division') {
                 const built = buildErrorVariantItem({ ...entry, count: Math.max(2, target?.sourceItems?.length || 2) });
                 if (built) return { ...built, isSetReviewFollowup: true };
+                const sourceAware = buildSourceAwareDecimalDivisionVariant(target);
+                if (sourceAware) return sourceAware;
                 const kaiBuilt = buildKaiDecimalDivisionVariant(entry.tag || 'k_ddiv_shift', '[本套变式 Follow-up] ');
                 if (kaiBuilt) {
                     return attachQualityMetadata({
@@ -12269,6 +12372,9 @@
 
         function getSetReviewStructureSignature(questionHtml = '', family = '') {
             const normalized = normalizeErrorPrompt(questionHtml || '');
+            if (family === 'decimal_division') {
+                return getSetReviewDecimalDivisionStructureProfile(questionHtml).signature;
+            }
             if (family === 'conversion_bridge') {
                 if (/○|比较|更大|更小|circle-blank|>|&gt;|<|&lt;/.test(`${questionHtml} ${normalized}`)) return 'conversion:compare';
                 if (/%\s*=|百分/.test(normalized)) return 'conversion:percent-to-fraction';

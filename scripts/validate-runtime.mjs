@@ -2319,6 +2319,45 @@ if (arithmeticDriftQuality?.ok || !arithmeticDriftQuality?.reasons?.some(reason 
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
   throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
 }
+const decimalDivisionSession = {
+  set: 115,
+  details: [
+    {
+      tag: 'custom_decimal_division',
+      grade: 'wrong',
+      uid: 'decimal-div-source',
+      info: { sec: '小数除法', num: 1, q: '4.8 &divide; 0.6 =', a: '8', step: '除数是小数，先同乘10变成整数除法。' }
+    }
+  ]
+};
+const decimalDivisionTargets = context.window.buildSetReviewFollowupTargets?.(decimalDivisionSession) || [];
+const decimalDivisionItems = context.window.buildSetReviewFollowupItems?.(decimalDivisionSession, 'KAI', 'advanced_fluency_v1') || [];
+const decimalDivisionItem = decimalDivisionItems[0] || {};
+const decimalDivisionSourceSignature = context.window.getSetReviewStructureSignature?.(decimalDivisionSession.details[0].info.q, 'decimal_division');
+const decimalDivisionCandidateSignature = context.window.getSetReviewStructureSignature?.(decimalDivisionItem.q || '', 'decimal_division');
+if (decimalDivisionSourceSignature !== 'decimal-div:left-dec:right-dec:q-1to9' || decimalDivisionCandidateSignature !== 'decimal-div:left-dec:right-dec:q-1to9' || decimalDivisionItem.variantSourceMode !== 'source-aware-decimal-division' || decimalDivisionItem.followupQualityWarnings?.length) {
+  throw new Error(`Unknown-tag decimal division variants should preserve decimal position and quotient band, got ${decimalDivisionSourceSignature} -> ${decimalDivisionCandidateSignature} for ${decimalDivisionItem.q || '(missing)'}`);
+}
+const decimalSmallQuotientSession = {
+  set: 116,
+  details: [
+    {
+      tag: 'custom_decimal_smallq',
+      grade: 'wrong',
+      uid: 'decimal-div-smallq',
+      info: { sec: '小数除法', num: 1, q: '0.084 &divide; 0.24 =', a: '0.35', step: '先判断商小于1，再同乘100。' }
+    }
+  ]
+};
+const decimalSmallQuotientItems = context.window.buildSetReviewFollowupItems?.(decimalSmallQuotientSession, 'KAI', 'advanced_fluency_v1') || [];
+const decimalSmallQuotientItem = decimalSmallQuotientItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(decimalSmallQuotientSession.details[0].info.q, 'decimal_division') !== 'decimal-div:left-dec:right-dec:q-lt1' || context.window.getSetReviewStructureSignature?.(decimalSmallQuotientItem.q || '', 'decimal_division') !== 'decimal-div:left-dec:right-dec:q-lt1' || decimalSmallQuotientItem.followupQualityWarnings?.length) {
+  throw new Error('Decimal division variants should preserve quotient-less-than-one training point');
+}
+const decimalDivisionDriftQuality = context.window.getSetReviewVariantQuality?.(decimalDivisionTargets[0], { q: '48 &divide; 6 =', qualityFamily: 'decimal_division' });
+if (decimalDivisionDriftQuality?.ok || !decimalDivisionDriftQuality?.reasons?.some(reason => /骨架|小数/.test(reason))) {
+  throw new Error('Set review quality gate should reject decimal-division place-value drift');
+}
 const conversionFollowupSession = {
   set: 108,
   details: [
