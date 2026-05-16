@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.216 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a whole-paper daily error mix budget so regular AB generation caps exact replay and total wrong-book-linked items across the full learner paper, not only inside each small section.
+- Open questions: none for the current ratio decision; the current target keeps wrong-book-linked work near one quarter to one third of the paper depending on the training cycle.
+- Risks: very small or very sparse error books may under-fill the wrong-book budget, which is acceptable because new/interleaved retrieval should remain the default.
+- Next steps: keep the daily mix cap in runtime validation whenever generator pools or section counts change.
+
+### Iteration 2
+
+- What I changed: tightened same-set variant selection by increasing candidate attempts and rejecting variants that drift in operation, decimal placement, fraction count, mixed-number structure, or parentheses structure.
+- Open questions: none.
+- Risks: stricter quality gates rely on each generator family having enough close variants; fallback coverage should be watched as new tags are added.
+- Next steps: add tag-specific variant builders for any future family that repeatedly falls back to generic variants.
+
+### Iteration 3
+
+- What I changed: simplified printable `今日变式跟训` and `备用二刷` sheets into worksheet-style pages: question rows, numbered sections, compact paper marks, and separate answer references without audit banners or report-refill instructions.
+- Open questions: none.
+- Risks: screen reports still carry the richer audit information, so future print changes should avoid moving tutor-only guidance back onto learner-facing paper.
+- Next steps: spot-check real printer output after any density or font-size change.
+
 ## Current v23.215 Iteration Notes
 
 ### Iteration 1

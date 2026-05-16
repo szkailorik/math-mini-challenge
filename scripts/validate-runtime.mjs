@@ -1956,6 +1956,60 @@ const phaseThreePolicy = context.window.getErrorBookPracticePolicy?.(3, 24);
 if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= phaseThreePolicy.exactReplayQuota || phaseThreePolicy.errorLinkedQuota > 10) {
   throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
 }
+if (typeof context.window.getDailyErrorMixSnapshot !== 'function') {
+  throw new Error('Daily error-book mix budget helper is not exposed');
+}
+const previousKaiDailyMixRecord = context.window.StorageDB.cache.KAI;
+const previousLorikDailyMixRecord = context.window.StorageDB.cache.Lorik;
+const buildDenseErrorBook = (entries) => Object.fromEntries(entries.map((entry, index) => [
+  `mix-${index}`,
+  {
+    tag: entry.tag,
+    grade: 'wrong',
+    count: 5,
+    firstSet: 90 + index,
+    lastSet: 108,
+    mastered: false,
+    info: { sec: entry.sec || '每日混合', num: index + 1, q: entry.q, a: entry.a || '1', step: entry.step || '按原结构复练。' }
+  }
+]));
+context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
+  weights: { k_dmul_basic: 6, k_ddiv_shift: 6, k_sub_100k: 6, k_conv_1: 6, k_eq_sub: 6 },
+  lastSeen: {},
+  history: [],
+  errorBook: buildDenseErrorBook([
+    { tag: 'k_dmul_basic', q: '2 &times; 3 =', a: '6' },
+    { tag: 'k_ddiv_shift', q: '4.8 &divide; 0.6 =', a: '8' },
+    { tag: 'k_sub_100k', q: '100000 &minus; 2468 =', a: '97532' },
+    { tag: 'k_conv_1', q: '0.25 = (   )', a: '1/4' },
+    { tag: 'k_eq_sub', q: '<span class="frac"><span>7</span><span class="bottom">6</span></span> &minus; <i class="var">x</i> = <span class="frac"><span>1</span><span class="bottom">6</span></span>', a: 'x=1' }
+  ])
+});
+context.window.StorageDB.cache.Lorik = context.window.StorageDB.migrateProfile({
+  weights: { l_mul_3x20: 6, l_div_decimal_divisor: 6, l_sub_6digit: 6, l_conv_5: 6, l_fmix_sub: 6 },
+  lastSeen: {},
+  history: [],
+  errorBook: buildDenseErrorBook([
+    { tag: 'l_mul_3x20', q: '23 &times; 40 =', a: '920' },
+    { tag: 'l_div_decimal_divisor', q: '4.8 &divide; 0.6', a: '8' },
+    { tag: 'l_sub_6digit', q: '654321 &minus; 123456 =', a: '530865' },
+    { tag: 'l_conv_5', q: '<div class="frac"><span>4</span><span class="bottom">5</span></div><span class="circle-blank"></span>0.79', a: '&gt;' },
+    { tag: 'l_fmix_sub', q: '<div class="frac"><span>3</span><span class="bottom">4</span></div> &minus; <div class="frac"><span>1</span><span class="bottom">2</span></div> =', a: '1/4' }
+  ])
+});
+context.window.currentProgramId = 'advanced_fluency_v1';
+context.window.currentSetNumber = 109;
+context.window._recentQuestions = new Set();
+context.window._paperQuestions = new Set();
+const denseMixSet = context.window.generateProgramSetData?.('advanced_fluency_v1');
+const denseKaiItems = context.window.flattenPaperSections?.(denseMixSet, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']) || [];
+const denseKaiLinked = denseKaiItems.filter(item => ['replay', 'variant'].includes(item?.reason) || item?.isErrorReplay || item?.isErrorVariant || item?.isAdvancedHighValueReplay).length;
+const denseKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1');
+if (denseKaiItems.length !== 36 || !denseKaiBudget?.maxErrorLinked || denseKaiLinked > denseKaiBudget.maxErrorLinked || denseKaiItems.length - denseKaiLinked < 20) {
+  throw new Error(`Daily generated practice should keep a mixed new/error ratio, got ${denseKaiLinked}/${denseKaiItems.length} error-linked with cap ${denseKaiBudget?.maxErrorLinked}`);
+}
+context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
+context.window.StorageDB.cache.Lorik = previousLorikDailyMixRecord;
 const reviewHtmlForPractice = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { mechanismKey: 'representation-conversion' }) || '';
 if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部需讲解 ⚠️') || !reviewHtmlForPractice.includes('全部又错 ✗') || !reviewHtmlForPractice.includes('还差')) {
   throw new Error('Error-book targeted practice grading sheet is missing review rows or submit action');
@@ -2201,11 +2255,11 @@ if (!normalizedUidA || normalizedUidA !== normalizedUidB) {
   throw new Error('Error UID normalization does not treat equivalent math markup as the same prompt');
 }
 const sampleFollowupPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, true) || '';
-if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('变式体检通过') || !sampleFollowupPrintHtml.includes('贴合原题')) {
+if (!sampleFollowupPrintHtml.includes('错题变式训练') || !sampleFollowupPrintHtml.includes('参考答案') || !sampleFollowupPrintHtml.includes('□ 已会') || !sampleFollowupPrintHtml.includes('□ 又错')) {
   throw new Error('Set review follow-up print shell is missing the training or answer sections');
 }
-if (!sampleFollowupPrintHtml.includes('纸面批改：□ 已会') || !sampleFollowupPrintHtml.includes('回填：本套报告 → 主变式批改') || !sampleFollowupPrintHtml.includes('回填方法：')) {
-  throw new Error('Set review follow-up print shell should tell parents how to mark paper results and refill the main variant review');
+if (sampleFollowupPrintHtml.includes('变式体检通过') || sampleFollowupPrintHtml.includes('贴合原题') || sampleFollowupPrintHtml.includes('回填方法：') || sampleFollowupPrintHtml.includes('对应原错题：')) {
+  throw new Error('Set review follow-up print shell should stay worksheet-clean without audit badges or report guidance');
 }
 const sampleFollowupQuestionOnlyPrintHtml = context.window.buildSetReviewFollowupPrintHTML?.('KAI', 106, false) || '';
 if (!sampleFollowupQuestionOnlyPrintHtml.includes('错题变式训练') || sampleFollowupQuestionOnlyPrintHtml.includes('参考答案')) {
@@ -2233,8 +2287,8 @@ const sampleBackupPrintHtml = context.window.buildSetReviewBackupPrintHTML?.('KA
 if (!sampleBackupPrintHtml.includes('备用二刷变式') || !sampleBackupPrintHtml.includes('备用二刷题库') || !sampleBackupPrintHtml.includes('备用二刷参考答案') || !sampleBackupPrintHtml.includes('答案：')) {
   throw new Error('Set review backup print shell is missing backup practice or answers');
 }
-if (!sampleBackupPrintHtml.includes('纸面批改：□ 已会') || !sampleBackupPrintHtml.includes('回填：本套报告 → 备用二刷批改') || !sampleBackupPrintHtml.includes('回填方法：')) {
-  throw new Error('Set review backup print shell should tell parents how to mark paper results and refill backup review');
+if (!sampleBackupPrintHtml.includes('□ 已会') || !sampleBackupPrintHtml.includes('□ 又错') || sampleBackupPrintHtml.includes('回填方法：') || sampleBackupPrintHtml.includes('对应原错题：')) {
+  throw new Error('Set review backup print shell should keep compact paper marks without report guidance');
 }
 if (sampleBackupPrintHtml.indexOf('答案：') < sampleBackupPrintHtml.indexOf('备用二刷参考答案')) {
   throw new Error('Set review backup answer-included print should keep answers in a separate reference section after the questions');

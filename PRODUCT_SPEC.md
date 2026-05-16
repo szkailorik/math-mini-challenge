@@ -484,7 +484,8 @@ v23.0 integrates the durable error book into regular training:
 - Exact replay is capped per section so review is deliberate without crowding out new retrieval practice.
 - Same-tag variation is labeled on the paper, making it clear when a generated item is connected to an active mistake.
 - The knowledge map includes an Error-Book Bridge plan that explains how each active error will re-enter training.
-- v23.153 refines the bridge with a phase-aware policy: exact replay stays around 12%-22% by cycle type, while total error-linked practice stays around 28%-38%. This preserves retrieval and interleaving while still giving mistakes spaced reappearance.
+- v23.153 refines the bridge with a phase-aware policy: exact replay stays around 8%-16% by cycle type, while total error-linked practice stays around 24%-34%. This preserves retrieval and interleaving while still giving mistakes spaced reappearance.
+- v23.216 adds a whole-paper wrong-book budget on top of per-section caps: even when many tags are active in the error book, a daily AB paper keeps at least half the work as new or interleaved retrieval instead of becoming an all-wrong-book sheet.
 - Error-book practice now supports a dedicated printable targeted sheet with answers and an "mastered / wrong again" record line for paper-based follow-up.
 - v23.154 closes the loop after printing: the tutor can enter targeted-sheet grading back into the app, marking items as mastered or wrong again so the durable error book stays aligned with paper practice.
 - v23.155 adds a targeted-practice result report and recent practice summary, making paper follow-up auditable at the student level instead of only mutating hidden state.

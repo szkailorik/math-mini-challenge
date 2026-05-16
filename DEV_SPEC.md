@@ -58,8 +58,9 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `attachExplanationMetadata`: normalizes rollout-family items so their `step` text is wrapped in structured reminder language before answer-sheet rendering.
 - `QUALITY_FAMILY_RULES`: now also maps `k_fcalc_*` into `fraction_operation` and `c2_eq_*` into `equation_method`, so both stages feed more consistently into replay and explanation logic.
 - `buildClosureBoundaryReplayItem`: supplies dedicated `L3` boundary-style reinforcement questions for closure method, validation, speed, and stability families instead of reusing only the generic same-family variant path.
-- `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, spacing bonus, and the phase-aware error-book practice policy so exact replay does not crowd out new retrieval.
+- `Engine.weightedSelect`: selects problem tags using randomness, weak-topic weights, spacing bonus, the phase-aware error-book practice policy, and a whole-paper daily error mix budget so exact replay does not crowd out new retrieval.
 - `getErrorBookPracticePolicy`: caps exact replay and total error-linked practice by training cycle, keeping regular papers mixed while still spacing wrong-book items back into practice.
+- `getDailyErrorMixSnapshot` / daily error mix helpers: track used exact replay and used error-linked slots across the entire generated paper for each learner, preventing section-by-section caps from accumulating into an all-wrong-book daily sheet.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.
@@ -220,6 +221,7 @@ python3 -m http.server 8080
 - After creating a clear second-stage weak point, confirm that matching section-V focus lane contains one `错题回炉` or `同类变式` item from that same gap family.
 - Try image export after `html2canvas` has loaded.
 - Open print preview for `打印AB四页` and confirm only four question pages appear without interleaved blank pages.
+- Print `今日变式跟训` and `备用二刷` and confirm the question sheets are worksheet-clean: no audit banner, no source-note explanation, no report-refill paragraph, and answers remain in the separate reference section.
 - Confirm the print preview no longer alternates content pages with blank pages; the AB set should appear as 4 consecutive populated pages, not 8 pages with empty even-numbered sheets.
 - Confirm the live app content is hidden during print and the dedicated print sandbox is the only printable root.
 - Confirm print buttons show the short print hint before the system print dialog opens.

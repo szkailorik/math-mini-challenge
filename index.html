@@ -2624,8 +2624,8 @@
         .followup-print-action-guide strong {
             color:#0f172a;
         }
-        .followup-print-sheet { display:grid; gap:11px; flex:1; align-content:start; }
-        .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:6px; }
+        .followup-print-sheet { display:grid; gap:14px; flex:1; align-content:start; }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:10px; }
         .followup-print-group {
             page-break-inside:avoid;
             break-inside:avoid;
@@ -2668,8 +2668,8 @@
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-kicker {
             font-size: 9px;
         }
-        .followup-print-list { display:grid; gap:7px; }
-        .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:3px; }
+        .followup-print-list { display:grid; gap:9px; }
+        .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:6px; }
         .followup-print-item {
             display:grid;
             grid-template-columns: 24px minmax(0, 1fr);
@@ -2677,13 +2677,14 @@
             align-items:flex-start;
             font-size:15px;
             line-height:1.52;
-            min-height: 13mm;
-            padding: 2mm 0;
+            min-height: 16mm;
+            padding: 2.5mm 0;
+            border-bottom: 1px dashed rgba(15, 23, 42, 0.22);
             page-break-inside:avoid;
         }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item {
-            min-height: 0;
-            padding: 0;
+            min-height: 12mm;
+            padding: 1.2mm 0;
         }
         .followup-print-item[data-density="dense"] {
             font-size:13.4px;
@@ -2717,7 +2718,7 @@
         }
         .followup-print-body {
             display:grid;
-            gap:2px;
+            gap:4px;
             min-width:0;
         }
         .followup-review-log {
@@ -2767,7 +2768,7 @@
         }
         .followup-print-item .followup-num,
         .followup-print-item .followup-q {
-            color:#b91c1c;
+            color:#111827;
         }
         .followup-print-item .followup-num::after {
             content:'复';
@@ -4837,10 +4838,10 @@
 
         function getErrorBookPracticePolicy(cycleCode, count = 1) {
             const table = {
-                1: { exactReplayRatio: 0.12, errorLinkedRatio: 0.28, weakRatio: 0.40, lightReplayChance: 0.16, repeatReplayChance: 0.28, priorityReplayChance: 0.46, forgettingReplayChance: 0.54, variantChance: 0.54, label: '新知日少量提取' },
-                2: { exactReplayRatio: 0.18, errorLinkedRatio: 0.36, weakRatio: 0.44, lightReplayChance: 0.22, repeatReplayChance: 0.42, priorityReplayChance: 0.58, forgettingReplayChance: 0.64, variantChance: 0.64, label: '陷阱日提高变式' },
-                3: { exactReplayRatio: 0.22, errorLinkedRatio: 0.38, weakRatio: 0.46, lightReplayChance: 0.24, repeatReplayChance: 0.50, priorityReplayChance: 0.66, forgettingReplayChance: 0.76, variantChance: 0.68, label: '遗忘日加强唤醒' },
-                4: { exactReplayRatio: 0.14, errorLinkedRatio: 0.30, weakRatio: 0.42, lightReplayChance: 0.14, repeatReplayChance: 0.30, priorityReplayChance: 0.50, forgettingReplayChance: 0.56, variantChance: 0.56, label: '挑战日保持迁移' }
+                1: { exactReplayRatio: 0.08, errorLinkedRatio: 0.24, weakRatio: 0.36, lightReplayChance: 0.12, repeatReplayChance: 0.22, priorityReplayChance: 0.40, forgettingReplayChance: 0.48, variantChance: 0.50, label: '新知日少量提取' },
+                2: { exactReplayRatio: 0.14, errorLinkedRatio: 0.32, weakRatio: 0.40, lightReplayChance: 0.18, repeatReplayChance: 0.36, priorityReplayChance: 0.54, forgettingReplayChance: 0.60, variantChance: 0.62, label: '陷阱日提高变式' },
+                3: { exactReplayRatio: 0.16, errorLinkedRatio: 0.34, weakRatio: 0.42, lightReplayChance: 0.20, repeatReplayChance: 0.42, priorityReplayChance: 0.60, forgettingReplayChance: 0.70, variantChance: 0.66, label: '遗忘日加强唤醒' },
+                4: { exactReplayRatio: 0.10, errorLinkedRatio: 0.26, weakRatio: 0.36, lightReplayChance: 0.12, repeatReplayChance: 0.26, priorityReplayChance: 0.46, forgettingReplayChance: 0.52, variantChance: 0.54, label: '挑战日保持迁移' }
             };
             const policy = table[cycleCode] || table[1];
             const size = Math.max(1, Number(count) || 1);
@@ -4852,11 +4853,76 @@
             };
         }
 
+        function getDailyPracticeQuestionBudget(programId) {
+            if (programId === CLOSURE_PROGRAM_ID) return 30;
+            return 36;
+        }
+
+        function getDailyErrorMixKey(student, programId) {
+            return [programId || getCurrentProgramId(), student || 'KAI', window.currentSetNumber || 1].join(':');
+        }
+
+        function createDailyErrorMixState(student, programId) {
+            const total = getDailyPracticeQuestionBudget(programId);
+            const cycle = Engine?.getCycleState?.() || { code: 1 };
+            const policy = getErrorBookPracticePolicy(cycle.code, total);
+            const maxErrorLinked = Math.max(1, Math.min(policy.errorLinkedQuota, Math.floor(total * 0.35)));
+            const maxExactReplay = Math.max(1, Math.min(policy.exactReplayQuota, Math.floor(maxErrorLinked * 0.5)));
+            return {
+                key: getDailyErrorMixKey(student, programId),
+                student,
+                programId,
+                total,
+                cycleCode: cycle.code,
+                policyLabel: policy.label,
+                maxErrorLinked,
+                maxExactReplay,
+                usedErrorLinked: 0,
+                usedExactReplay: 0
+            };
+        }
+
+        function getDailyErrorMixState(student, programId = getCurrentProgramId()) {
+            window._dailyErrorMixState = window._dailyErrorMixState || {};
+            const key = getDailyErrorMixKey(student, programId);
+            if (!window._dailyErrorMixState[key]) {
+                window._dailyErrorMixState[key] = createDailyErrorMixState(student, programId);
+            }
+            return window._dailyErrorMixState[key];
+        }
+
+        function canReserveDailyErrorMix(student, reason, programId = getCurrentProgramId()) {
+            if (!['replay', 'variant'].includes(reason)) return true;
+            const state = getDailyErrorMixState(student, programId);
+            if (state.usedErrorLinked >= state.maxErrorLinked) return false;
+            if (reason === 'replay' && state.usedExactReplay >= state.maxExactReplay) return false;
+            return true;
+        }
+
+        function normalizeSelectReasonForDailyMix(student, reason, programId = getCurrentProgramId()) {
+            if (!['replay', 'variant'].includes(reason)) return reason;
+            if (canReserveDailyErrorMix(student, reason, programId)) return reason;
+            if (reason === 'replay' && canReserveDailyErrorMix(student, 'variant', programId)) return 'variant';
+            return '';
+        }
+
+        function reserveDailyErrorMix(student, reason, programId = getCurrentProgramId()) {
+            if (!['replay', 'variant'].includes(reason)) return;
+            const state = getDailyErrorMixState(student, programId);
+            state.usedErrorLinked += 1;
+            if (reason === 'replay') state.usedExactReplay += 1;
+        }
+
+        function getDailyErrorMixSnapshot(student, programId = getCurrentProgramId()) {
+            return { ...getDailyErrorMixState(student, programId) };
+        }
+
         window.TRAINING_LEVELS = TRAINING_LEVELS;
         window.TRAINING_FOCUS_PLAN = TRAINING_FOCUS_PLAN;
         window.inferDifficulty = inferDifficulty;
         window.getTrainingFocus = getTrainingFocus;
         window.getErrorBookPracticePolicy = getErrorBookPracticePolicy;
+        window.getDailyErrorMixSnapshot = getDailyErrorMixSnapshot;
 
         const Engine = {
             randInt: (min, max) => Math.floor(random() * (max - min + 1)) + min,
@@ -4887,6 +4953,7 @@
                 let profile = StorageDB.getProfile(student);
                 let currentSet = window.currentSetNumber;
                 let cycle = Engine.getCycleState();
+                const programId = getCurrentProgramId();
                 let errorPolicy = getErrorBookPracticePolicy(cycle.code, count);
                 let recent = window._recentQuestions || new Set();
                 let usedThisPaper = window._paperQuestions || new Set();
@@ -4953,20 +5020,43 @@
                 for (let p of scoredPool) {
                     if (selected.length >= count) break;
                     if (p.selectReason === 'replay' && replayCount >= maxReplay) p.selectReason = 'variant';
+                    const dailyReason = normalizeSelectReasonForDailyMix(student, p.selectReason, programId);
+                    if (!dailyReason) p.selectReason = p.weight > 0 ? 'weak' : 'random';
+                    else p.selectReason = dailyReason;
                     const isWeak = p.weight > 0;
                     const isChallenge = p.level >= 4;
                     const isErrorLinked = ['replay', 'variant'].includes(p.selectReason);
-                    if (isErrorLinked && errorLinkedCount >= maxErrorLinked && !p.highValueSignal?.priority) continue;
+                    if (isErrorLinked && errorLinkedCount >= maxErrorLinked) continue;
                     if (isWeak && weakCount >= maxWeak) continue;
                     if (isChallenge && challengeCount >= maxChallenge && p.weight < 3) continue;
                     selected.push(p);
                     if (p.selectReason === 'replay') replayCount++;
-                    if (isErrorLinked) errorLinkedCount++;
+                    if (isErrorLinked) {
+                        errorLinkedCount++;
+                        reserveDailyErrorMix(student, p.selectReason, programId);
+                    }
                     if (isWeak) weakCount++;
                     if (isChallenge) challengeCount++;
                 }
                 if (selected.length < count) {
-                    for (let p of scoredPool) { if (selected.length >= count) break; if (!selected.includes(p)) selected.push(p); }
+                    for (let p of scoredPool) {
+                        if (selected.length >= count) break;
+                        if (selected.includes(p)) continue;
+                        if (p.selectReason === 'replay' && replayCount >= maxReplay) p.selectReason = 'variant';
+                        const dailyReason = normalizeSelectReasonForDailyMix(student, p.selectReason, programId);
+                        if (!dailyReason || (['replay', 'variant'].includes(dailyReason) && errorLinkedCount >= maxErrorLinked)) {
+                            p.selectReason = p.weight > 0 ? 'weak' : 'random';
+                        } else {
+                            p.selectReason = dailyReason;
+                        }
+                        const isErrorLinked = ['replay', 'variant'].includes(p.selectReason);
+                        selected.push(p);
+                        if (p.selectReason === 'replay') replayCount++;
+                        if (isErrorLinked) {
+                            errorLinkedCount++;
+                            reserveDailyErrorMix(student, p.selectReason, programId);
+                        }
+                    }
                 }
 
                 // 生成阶段：优先避开同日重复；若本题型连续撞题，则跨池换题兜底
@@ -5007,7 +5097,7 @@
                         }
                     }
                     if (!genItem) genItem = lastFallback || x.item.gen();
-                    genItem.reason = genItem.isErrorReplay ? 'replay' : (genItem.isErrorVariant ? 'variant' : x.selectReason);
+                    genItem.reason = genItem.isErrorReplay ? 'replay' : (genItem.isErrorVariant ? 'variant' : (['replay', 'variant'].includes(x.selectReason) ? 'focus' : x.selectReason));
                     genItem.level = x.level;
                     genItem.levelName = TRAINING_LEVELS[x.level]?.name || `L${x.level}`;
                     genItem = attachQualityMetadata(genItem);
@@ -5146,6 +5236,8 @@
             if (!section?.length) return data;
             const replacement = buildAdvancedHighValueReplayItem(chosen);
             if (!replacement) return data;
+            const replacementReason = replacement.isErrorReplay ? 'replay' : 'variant';
+            if (!canReserveDailyErrorMix(student, replacementReason, ADVANCED_PROGRAM_ID)) return data;
             const replaceIndex = Math.max(0, section.length - 1);
             const baseline = section[replaceIndex] || {};
             const usedInSet = collectSetQuestionFingerprints(data, sectionKey, replaceIndex);
@@ -5168,6 +5260,7 @@
                         })
                         : item
                     );
+                    reserveDailyErrorMix(student, replacementReason, ADVANCED_PROGRAM_ID);
                     claimed = true;
                 });
                 return claimed ? nextData : data;
@@ -5179,6 +5272,7 @@
                 levelName: replacement.levelName || baseline.levelName || TRAINING_LEVELS[level]?.name || `L${level}`,
                 reason: replacement.reason || (replacement.isErrorReplay ? 'replay' : 'variant')
             };
+            reserveDailyErrorMix(student, replacementReason, ADVANCED_PROGRAM_ID);
             const usedThisPaper = window._paperQuestions || new Set();
             rememberQuestion(section[replaceIndex], usedThisPaper);
             window._paperQuestions = usedThisPaper;
@@ -8393,6 +8487,7 @@
         }
 
         function generateProgramSetData(programId = getCurrentProgramId()) {
+            window._dailyErrorMixState = {};
             if (programId === 'elementary_closure_v1') return buildClosureProgramSet();
             const state = Engine.getCycleState();
             return injectAdvancedHighValueReplay({
@@ -11534,6 +11629,18 @@
         }
         window.getSetReviewStructureSignature = getSetReviewStructureSignature;
 
+        function getSetReviewStructureMarkers(questionHtml = '') {
+            const source = String(questionHtml || '');
+            const normalized = normalizeErrorPrompt(source);
+            return {
+                fracCount: (source.match(/class="frac"/g) || []).length,
+                hasMixed: /class="mixed"|带分数|\d+\s+\d+\s*\/\s*\d+/.test(`${source} ${normalized}`),
+                hasParenGroup: /math-paren-group|\(|（/.test(`${source} ${normalized}`),
+                hasComparison: /circle-blank|○|>|&gt;|<|&lt;|比较|更大|更小/.test(`${source} ${normalized}`),
+                hasPercent: /%|百分/.test(`${source} ${normalized}`)
+            };
+        }
+
         function getSetReviewVariantQuality(target = {}, candidate = {}) {
             const entry = target.sourceItems?.[0] || {};
             const sourceQ = entry.info?.q || '';
@@ -11556,6 +11663,8 @@
             }
             const sourceText = normalizeErrorPrompt(sourceQ);
             const candidateText = normalizeErrorPrompt(candidateQ);
+            const sourceMarkers = getSetReviewStructureMarkers(sourceQ);
+            const candidateMarkers = getSetReviewStructureMarkers(candidateQ);
             const sourceArithmetic = parseSimpleArithmeticPrompt(sourceQ);
             const candidateArithmetic = parseSimpleArithmeticPrompt(candidateQ);
             if (sourceArithmetic) {
@@ -11563,6 +11672,14 @@
                     reasons.push('运算结构不一致');
                 } else if ((sourceArithmetic.leftPlaces + sourceArithmetic.rightPlaces > 0) !== (candidateArithmetic.leftPlaces + candidateArithmetic.rightPlaces > 0)) {
                     reasons.push('小数位值训练点不一致');
+                } else {
+                    const sourceLeftDecimal = sourceArithmetic.leftPlaces > 0;
+                    const sourceRightDecimal = sourceArithmetic.rightPlaces > 0;
+                    const candidateLeftDecimal = candidateArithmetic.leftPlaces > 0;
+                    const candidateRightDecimal = candidateArithmetic.rightPlaces > 0;
+                    if (sourceLeftDecimal !== candidateLeftDecimal || sourceRightDecimal !== candidateRightDecimal) {
+                        reasons.push('小数出现位置不一致');
+                    }
                 }
             }
             if (sourceFamily === 'conversion_bridge') {
@@ -11578,6 +11695,11 @@
             }
             if (sourceFamily === 'fraction_operation' && /frac|分数/.test(`${sourceQ} ${entry.info?.step || ''}`) && !/frac|分数/.test(candidateQ)) {
                 reasons.push('分数结构缺失');
+            }
+            if (sourceFamily === 'fraction_operation') {
+                if (sourceMarkers.hasMixed && !candidateMarkers.hasMixed) reasons.push('带分数结构缺失');
+                if (sourceMarkers.fracCount >= 2 && candidateMarkers.fracCount < 2) reasons.push('分数数量不足');
+                if (sourceMarkers.hasParenGroup && !candidateMarkers.hasParenGroup) reasons.push('括号结构缺失');
             }
             if (sourceFamily === 'equation_method' && !/<i class="var">x<\/i>|x/.test(candidateQ)) {
                 reasons.push('方程未知数结构缺失');
@@ -11614,7 +11736,7 @@
         }
         window.getSetReviewVariantSelectionScore = getSetReviewVariantSelectionScore;
 
-        function collectSetReviewVariantCandidates(target, student, programId, usedFingerprints = new Set(), maxAttempts = 12) {
+        function collectSetReviewVariantCandidates(target, student, programId, usedFingerprints = new Set(), maxAttempts = 24) {
             const candidates = [];
             const localSeen = new Set();
             for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
@@ -11641,7 +11763,7 @@
         }
         window.collectSetReviewVariantCandidates = collectSetReviewVariantCandidates;
 
-        function pickSetReviewVariant(target, student, programId, usedFingerprints = new Set(), maxAttempts = 8) {
+        function pickSetReviewVariant(target, student, programId, usedFingerprints = new Set(), maxAttempts = 18) {
             const candidateRows = collectSetReviewVariantCandidates(target, student, programId, usedFingerprints, maxAttempts);
             const selected = candidateRows.find(row => !row.isUsed);
             if (selected) {
@@ -11656,7 +11778,7 @@
         }
 
         function buildSetReviewBackupVariantPayload(target, student, programId, usedFingerprints) {
-            const backup = pickSetReviewVariant(target, student, programId, usedFingerprints, 10);
+            const backup = pickSetReviewVariant(target, student, programId, usedFingerprints, 20);
             if (!backup) return null;
             return {
                 tag: backup.tag || target.tag || '',
@@ -11676,7 +11798,7 @@
             const items = [];
             const usedFingerprints = new Set();
             targets.forEach(target => {
-                const selected = pickSetReviewVariant(target, student, programId, usedFingerprints, 8);
+                const selected = pickSetReviewVariant(target, student, programId, usedFingerprints, 18);
                 if (selected) {
                     const backupVariant = buildSetReviewBackupVariantPayload(target, student, programId, usedFingerprints);
                     const sourceInfo = getSetReviewSourceInfo(target);
@@ -11867,13 +11989,11 @@
         window.buildSetReviewQualityBadge = buildSetReviewQualityBadge;
 
         function buildSetReviewPaperGradeHTML(lane = 'main') {
-            const laneLabel = lane === 'backup' ? '备用二刷批改' : '主变式批改';
             return `
             <div class="followup-paper-grade">
-                <span>纸面批改：□ 已会</span>
+                <span>□ 已会</span>
                 <span>□ 又错</span>
-                <span>□ 需讲解</span>
-                <span>回填：本套报告 → ${laneLabel}</span>
+                <span>□ 需讲</span>
             </div>`;
         }
         window.buildSetReviewPaperGradeHTML = buildSetReviewPaperGradeHTML;
@@ -11907,8 +12027,7 @@
                         <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                             <span class="followup-num">${number}.</span>
                             <div class="followup-print-body">
-                                <div class="followup-q math-row">${item.q || '-'}${qualityBadge}</div>
-                                ${sourceNote}
+                                <div class="followup-q math-row">${item.q || '-'}</div>
                                 ${reviewLog}
                                 ${buildSetReviewPaperGradeHTML('main')}
                             </div>
@@ -11925,9 +12044,8 @@
                     <section class="followup-print-group">
                         <div class="followup-print-group-head">
                             <h3>${getSetReviewFollowupPrintSectionTitle(groupIndex, label)}</h3>
-                            <span class="followup-print-kicker">${group.grade === 'wrong' ? '概念错优先' : '粗心保温'}</span>
+                            <span class="followup-print-kicker">${group.items.length} 题</span>
                         </div>
-                        ${mechanismLabel ? `<div class="followup-print-group-note">${mechanismLabel}</div>` : ''}
                         <div class="followup-print-list">${rows}</div>
                     </section>`;
                 }
@@ -11975,9 +12093,7 @@
                     <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
                         <span class="followup-num">${idx + 1}.</span>
                         <div class="followup-print-body">
-                            <div class="followup-q math-row">${item.q}${qualityBadge}</div>
-                            ${sourceNote}
-                            ${answerLine}
+                            <div class="followup-q math-row">${item.q}</div>
                             ${includeAnswers ? '' : buildSetReviewPaperGradeHTML('backup')}
                         </div>
                     </div>`
@@ -11991,9 +12107,8 @@
                 <section class="followup-print-group">
                     <div class="followup-print-group-head">
                         <h3>备用二刷题库</h3>
-                        <span class="followup-print-kicker">隔天复练</span>
+                        <span class="followup-print-kicker">${backups.length} 题</span>
                     </div>
-                    <div class="followup-print-group-note">主变式稳定后再做；如果主变式又错，优先打印这一组。</div>
                     <div class="followup-print-list">${rows}</div>
                 </section>`;
             }
@@ -12893,7 +13008,6 @@ window.addEventListener('afterprint', function () {
             if (!items.length) return '';
             const wrongCount = (session.details || []).filter(item => item.grade === 'wrong').length;
             const carelessCount = (session.details || []).filter(item => item.grade === 'careless').length;
-            const audit = getSetReviewFollowupAudit(session, items);
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const compactMetaLeft = printPack === 'compact'
@@ -12917,8 +13031,6 @@ window.addEventListener('afterprint', function () {
                     <span>${compactMetaLeft}</span>
                     <span>${compactMetaRight}</span>
                 </div>
-                ${buildSetReviewPrintActionGuide('main')}
-                ${buildSetReviewFollowupAuditHTML(audit)}
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
             </section>`;
@@ -12931,7 +13043,6 @@ window.addEventListener('afterprint', function () {
             const items = buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId());
             const backups = buildSetReviewBackupItems(items);
             if (!backups.length) return '';
-            const audit = getSetReviewFollowupAudit(session, items);
             const printPack = getSetReviewFollowupPrintPack(backups);
             const answerBlock = includeAnswers ? buildSetReviewBackupAnswerHTML(backups, { forPrint: true }) : '';
             return `
@@ -12948,8 +13059,6 @@ window.addEventListener('afterprint', function () {
                     <span><strong>${backups.length} 题</strong> · 对应本套错题备用题库</span>
                     <span>${includeAnswers ? '含参考答案' : '不含答案'}</span>
                 </div>
-                ${buildSetReviewPrintActionGuide('backup')}
-                ${buildSetReviewFollowupAuditHTML(audit)}
                 <div class="followup-print-sheet">${buildSetReviewBackupBankHTML(items, { forPrint: true, includeAnswers: false })}</div>
                 ${answerBlock}
             </section>`;
