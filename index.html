@@ -12134,9 +12134,40 @@
             return window._setReviewFollowupItemCache;
         }
 
+        function getStoredSetReviewFollowupPack(session = {}, student = '', programId = getCurrentProgramId()) {
+            const key = getSetReviewFollowupCacheKey(session, student, programId);
+            const pack = session?.setReviewFollowupPack;
+            if (!pack || pack.key !== key || !Array.isArray(pack.items)) return null;
+            return pack;
+        }
+
+        function persistSetReviewFollowupPack(session = {}, student = '', programId = getCurrentProgramId(), items = []) {
+            if (!session || !student || !Array.isArray(items) || !items.length) return;
+            const key = getSetReviewFollowupCacheKey(session, student, programId);
+            session.setReviewFollowupPack = {
+                key,
+                version: APP_VERSION,
+                programId,
+                student,
+                set: Number(session.set || 0),
+                createdAt: Date.now(),
+                items
+            };
+            session.ts = Math.max(Number(session.ts || 0), Date.now());
+            const profile = StorageDB.getProfile(student, programId);
+            if (profile?.history?.some(item => item === session || item.set === session.set)) {
+                StorageDB.forceSave(student).catch(e => console.warn('保存变式预览包失败:', e));
+            }
+        }
+
         function clearSetReviewFollowupCache(session = {}, student = '', programId = getCurrentProgramId()) {
             const key = getSetReviewFollowupCacheKey(session, student, programId);
             delete getSetReviewFollowupCache()[key];
+            if (session?.setReviewFollowupPack?.key === key) {
+                delete session.setReviewFollowupPack;
+                session.ts = Math.max(Number(session.ts || 0), Date.now());
+                StorageDB.forceSave(student).catch(e => console.warn('清除变式预览包失败:', e));
+            }
         }
         window.clearSetReviewFollowupCache = clearSetReviewFollowupCache;
 
@@ -12168,8 +12199,14 @@
             const key = getSetReviewFollowupCacheKey(session, student, programId);
             const cache = getSetReviewFollowupCache();
             if (!refresh && cache[key]) return cache[key].items;
+            const storedPack = !refresh ? getStoredSetReviewFollowupPack(session, student, programId) : null;
+            if (storedPack) {
+                cache[key] = { items: storedPack.items, ts: storedPack.createdAt || Date.now(), persisted: true };
+                return storedPack.items;
+            }
             const items = buildSetReviewFollowupItemsFresh(session, student, programId);
             cache[key] = { items, ts: Date.now() };
+            persistSetReviewFollowupPack(session, student, programId, items);
             const keys = Object.keys(cache);
             if (keys.length > 12) {
                 keys

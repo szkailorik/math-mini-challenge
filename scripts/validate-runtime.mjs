@@ -2213,9 +2213,17 @@ const sampleFollowupItems = context.window.buildSetReviewFollowupItems?.(context
 if (!Array.isArray(sampleFollowupItems) || sampleFollowupItems.length !== context.window.StorageDB.cache.KAI.history[0].details.length) {
   throw new Error('Set review follow-up item builder is not producing one variant for each current-set mistake');
 }
+if (!context.window.StorageDB.cache.KAI.history[0].setReviewFollowupPack?.items?.length) {
+  throw new Error('Set review follow-up items should persist the generated variant pack onto the set session');
+}
 const sampleFollowupItemsCached = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
 if (sampleFollowupItemsCached !== sampleFollowupItems) {
   throw new Error('Set review follow-up items should be cached so preview, print, and grading use the same variants');
+}
+context.window._setReviewFollowupItemCache = {};
+const sampleFollowupItemsPersisted = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
+if (sampleFollowupItemsPersisted !== context.window.StorageDB.cache.KAI.history[0].setReviewFollowupPack.items) {
+  throw new Error('Set review follow-up items should reload from the persisted set-session variant pack after memory cache is cleared');
 }
 if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
   throw new Error('Set review follow-up items are missing review metadata');

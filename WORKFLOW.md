@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.228 Iteration Notes
+
+### Iteration 1
+
+- What I changed: persisted generated same-set variant packs onto the set history as `setReviewFollowupPack` after first preview, print, or grading request.
+- Open questions: none.
+- Risks: stored packs make the history record larger, but only one compact pack is stored per set session.
+- Next steps: keep the pack keyed by mistake signature so edited sessions invalidate stale variants.
+
+### Iteration 2
+
+- What I changed: made memory cache reload from the persisted set-session pack before generating new variants.
+- Open questions: none.
+- Risks: a tutor who wants a different pack must use `重新生成`, which now clears both persisted and memory copies.
+- Next steps: keep the regenerate action visible in preview.
+
+### Iteration 3
+
+- What I changed: added runtime coverage that generated packs persist to the session and can be reloaded after the in-memory cache is cleared.
+- Open questions: none.
+- Risks: validation uses the local session object directly, matching the app's local-first storage model.
+- Next steps: preserve this behavior when adding cross-device sync refinements.
+
 ## Current v23.227 Iteration Notes
 
 ### Iteration 1
