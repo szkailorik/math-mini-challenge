@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.225 Iteration Notes
+
+### Iteration 1
+
+- What I changed: cached generated same-set variant packs by student, set, program, and mistake signature.
+- Open questions: none.
+- Risks: an intentionally refreshed pack must clear the cache first.
+- Next steps: keep cache keys tied to mistake details so corrected reports do not reuse stale variants.
+
+### Iteration 2
+
+- What I changed: made preview, print, answer-only print, and grading reuse the cached pack so the tutor never previews one set of variants and prints another.
+- Open questions: none.
+- Risks: cached items are in-memory only; reloading the page can generate a new pack, which is acceptable for local workflow.
+- Next steps: consider persisted packs only if parents need exact replay across browser restarts.
+
+### Iteration 3
+
+- What I changed: added `重新生成` in the preview panel and runtime checks that cache reuse and explicit refresh both work.
+- Open questions: none.
+- Risks: repeated regeneration can still produce similar-looking arithmetic items when the source family is narrow.
+- Next steps: keep improving family-specific candidate pools where preview reveals weak variants.
+
 ## Current v23.224 Iteration Notes
 
 ### Iteration 1

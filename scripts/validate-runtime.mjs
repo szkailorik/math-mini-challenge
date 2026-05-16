@@ -183,7 +183,7 @@ if (!html.includes('function buildSetReviewFollowupAnswerHTML')) {
 if (!html.includes('function buildSetReviewFollowupPrintHTML')) {
   throw new Error('Set Review follow-up print shell is missing from runtime script');
 }
-if (!html.includes('function buildSetReviewFollowupPreviewHTML') || !html.includes('window.openSetReviewFollowupPreview') || !html.includes('今日变式快速预览')) {
+if (!html.includes('function buildSetReviewFollowupPreviewHTML') || !html.includes('window.openSetReviewFollowupPreview') || !html.includes('window.regenerateSetReviewFollowupPreview') || !html.includes('预览、打印、批改会复用同一套题') || !html.includes('今日变式快速预览')) {
   throw new Error('Set Review follow-up quick preview workflow is missing from runtime script');
 }
 if (!html.includes('window.printSetReviewFollowup = function(')) {
@@ -2206,6 +2206,10 @@ const sampleFollowupItems = context.window.buildSetReviewFollowupItems?.(context
 if (!Array.isArray(sampleFollowupItems) || sampleFollowupItems.length !== context.window.StorageDB.cache.KAI.history[0].details.length) {
   throw new Error('Set review follow-up item builder is not producing one variant for each current-set mistake');
 }
+const sampleFollowupItemsCached = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
+if (sampleFollowupItemsCached !== sampleFollowupItems) {
+  throw new Error('Set review follow-up items should be cached so preview, print, and grading use the same variants');
+}
 if (!sampleFollowupItems.every(item => item.isSetReviewFollowup && item.isReviewItem)) {
   throw new Error('Set review follow-up items are missing review metadata');
 }
@@ -2225,7 +2229,7 @@ if (!sampleFollowupItems.every(item => item.followupQualityScore === 100 && (!it
   throw new Error('Set review follow-up items should pass the same-structure quality gate');
 }
 const mainPreviewHtml = context.window.buildSetReviewFollowupPreviewHTML?.('KAI', 106, 'main') || '';
-if (!mainPreviewHtml.includes('今日变式预览') || !mainPreviewHtml.includes('原错题') || !mainPreviewHtml.includes('参考答案') || !mainPreviewHtml.includes('贴合原题') || !mainPreviewHtml.includes('打印题目') || !mainPreviewHtml.includes('返回本套报告')) {
+if (!mainPreviewHtml.includes('今日变式预览') || !mainPreviewHtml.includes('原错题') || !mainPreviewHtml.includes('参考答案') || !mainPreviewHtml.includes('贴合原题') || !mainPreviewHtml.includes('预览、打印、批改会复用同一套题') || !mainPreviewHtml.includes('重新生成') || !mainPreviewHtml.includes('打印题目') || !mainPreviewHtml.includes('返回本套报告')) {
   throw new Error('Set review main follow-up preview is missing readable question review content or actions');
 }
 const backupPreviewHtml = context.window.buildSetReviewFollowupPreviewHTML?.('KAI', 106, 'backup') || '';
@@ -2236,6 +2240,11 @@ context.window.openSetReviewFollowupPreview?.('KAI', 'main', 106);
 const stagedPreviewHtml = elements.get('report-content-area')?.innerHTML || '';
 if (!stagedPreviewHtml.includes('KAI Set 106 今日变式预览') || context.document.body.classList.contains('print-sandbox-active')) {
   throw new Error('Set review quick preview should stage inside the report modal without entering print mode');
+}
+context.window.regenerateSetReviewFollowupPreview?.('KAI', 'main', 106);
+const regeneratedFollowupItems = context.window.buildSetReviewFollowupItems?.(context.window.StorageDB.cache.KAI.history[0], 'KAI', 'advanced_fluency_v1');
+if (regeneratedFollowupItems === sampleFollowupItems) {
+  throw new Error('Set review follow-up regenerate action should refresh the cached variant pack');
 }
 const sampleFollowupAudit = context.window.getSetReviewFollowupAudit?.(context.window.StorageDB.cache.KAI.history[0], sampleFollowupItems);
 if (!sampleFollowupAudit?.ok || sampleFollowupAudit.mistakeCount !== 2 || sampleFollowupAudit.mainCount !== 2 || sampleFollowupAudit.backupCount !== 2 || sampleFollowupAudit.qualityIssueCount !== 0 || sampleFollowupAudit.candidatePoolCount < 4) {

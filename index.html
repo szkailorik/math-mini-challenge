@@ -12112,7 +12112,32 @@
             };
         }
 
-        function buildSetReviewFollowupItems(session, student, programId) {
+        function getSetReviewFollowupCacheKey(session = {}, student = '', programId = getCurrentProgramId()) {
+            const details = (session.details || []).map(detail => ({
+                tag: detail.tag || '',
+                grade: detail.grade || '',
+                uid: detail.uid || '',
+                rowKey: detail.rowKey || '',
+                sec: detail.info?.sec || '',
+                num: detail.info?.num || '',
+                q: detail.info?.q || '',
+                a: detail.info?.a || ''
+            }));
+            return `${APP_VERSION}|${programId}|${student}|${session.set || ''}|${hashString(JSON.stringify(details))}`;
+        }
+
+        function getSetReviewFollowupCache() {
+            window._setReviewFollowupItemCache = window._setReviewFollowupItemCache || {};
+            return window._setReviewFollowupItemCache;
+        }
+
+        function clearSetReviewFollowupCache(session = {}, student = '', programId = getCurrentProgramId()) {
+            const key = getSetReviewFollowupCacheKey(session, student, programId);
+            delete getSetReviewFollowupCache()[key];
+        }
+        window.clearSetReviewFollowupCache = clearSetReviewFollowupCache;
+
+        function buildSetReviewFollowupItemsFresh(session, student, programId) {
             const targets = buildSetReviewFollowupTargets(session);
             const items = [];
             const usedFingerprints = new Set();
@@ -12133,6 +12158,22 @@
                     });
                 }
             });
+            return items;
+        }
+
+        function buildSetReviewFollowupItems(session, student, programId, { refresh = false } = {}) {
+            const key = getSetReviewFollowupCacheKey(session, student, programId);
+            const cache = getSetReviewFollowupCache();
+            if (!refresh && cache[key]) return cache[key].items;
+            const items = buildSetReviewFollowupItemsFresh(session, student, programId);
+            cache[key] = { items, ts: Date.now() };
+            const keys = Object.keys(cache);
+            if (keys.length > 12) {
+                keys
+                    .sort((a, b) => (cache[a].ts || 0) - (cache[b].ts || 0))
+                    .slice(0, keys.length - 12)
+                    .forEach(oldKey => delete cache[oldKey]);
+            }
             return items;
         }
 
@@ -12535,10 +12576,11 @@
                 <div class="set-review-preview-head">
                     <div>
                         <h4>${student} Set ${Number(setNum)} ${laneTitle}</h4>
-                        <p>先快速看题面、原错题和贴合度，再决定是否打印。当前 ${previewCount} 题；${audit.ok ? '变式体检通过。' : '有变式需要复核。'}</p>
+                        <p>先快速看题面、原错题和贴合度，再决定是否打印。预览、打印、批改会复用同一套题。当前 ${previewCount} 题；${audit.ok ? '变式体检通过。' : '有变式需要复核。'}</p>
                     </div>
                     <div class="set-review-preview-tools no-print">
                         <button class="modal-btn" onclick="window.openSetReviewFollowupPreview('${student}', '${switchLane}', ${Number(setNum)})">${switchText}</button>
+                        <button class="modal-btn" onclick="window.regenerateSetReviewFollowupPreview('${student}', '${laneKey}', ${Number(setNum)})">重新生成</button>
                         <button class="modal-btn" onclick="${printQuestionCall}">打印题目</button>
                         <button class="modal-btn" onclick="${printWithAnswerCall}">打印题目+答案</button>
                         <button class="modal-btn" onclick="window.showSetReview(${Number(setNum)}, '${student}')">返回本套报告</button>
@@ -13540,6 +13582,20 @@ window.addEventListener('afterprint', function () {
             document.getElementById('report-content-area').innerHTML = html;
             document.getElementById('report-modal').style.display = 'block';
             showToast(laneKey === 'backup' ? '已打开备用二刷预览。' : '已打开今日变式预览。', { background: '#0f766e', duration: 2000 });
+        };
+
+        window.regenerateSetReviewFollowupPreview = function(student, lane = 'main', setNum = window.currentSetReviewContext?.setNum || window.currentSetNumber) {
+            const resolvedSetNum = Number(setNum || window.currentSetReviewContext?.setNum || window.currentSetNumber);
+            const profile = StorageDB.getProfile(student) || {};
+            const session = findSetSession(profile, resolvedSetNum);
+            if (!session) {
+                showToast('没有找到这套报告，暂不能重新生成变式。', { background: '#b45309', duration: 2400 });
+                return;
+            }
+            clearSetReviewFollowupCache(session, student, session.programId || getCurrentProgramId());
+            buildSetReviewFollowupItems(session, student, session.programId || getCurrentProgramId(), { refresh: true });
+            window.openSetReviewFollowupPreview(student, lane, resolvedSetNum);
+            showToast('已重新生成本套变式。预览、打印、批改会使用这组新题。', { background: '#0f766e', duration: 2600 });
         };
 
         window.printSetReviewFollowup = function(student, includeAnswers = false) {
