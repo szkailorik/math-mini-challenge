@@ -10618,27 +10618,36 @@
             const activeErrorEntries = Object.entries(profiles).flatMap(([student, profile]) =>
                 Object.entries(profile.errorBook || {})
                     .filter(([, entry]) => entry && !entry.mastered && entry.tag)
-                    .map(([uid, entry]) => ({ student, uid, ...entry }))
-            ).sort((a, b) => (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0));
+                    .map(([uid, entry]) => ({ student, uid, ...entry, spacing: getErrorEntrySpacingState(entry) }))
+            ).sort((a, b) => (b.spacing?.weight || 0) - (a.spacing?.weight || 0) || (b.count || 1) - (a.count || 1) || (b.lastSet || 0) - (a.lastSet || 0));
             const bridgeHtml = activeErrorEntries.length
                 ? activeErrorEntries.slice(0, 16).map(entry => {
                     const domain = getKnowledgeDomain(entry.tag);
                     const display = getKnowledgeDisplay(entry.tag);
                     const profile = profiles[entry.student] || {};
                     const signal = getErrorBookSignal(profile, entry.tag);
-                    const mode = (entry.count || 1) >= 2 ? "原题回炉 + 同类变式" : "同类变式 + 领域迁移";
-                    const pressure = signal.score >= 6 ? "高优先级" : signal.score >= 3 ? "中优先级" : "低优先级";
+                    const spacing = entry.spacing || getErrorEntrySpacingState(entry);
+                    const ready = spacing.due || spacing.priority;
+                    const timing = spacing.priority ? "今天优先"
+                        : (spacing.overdue ? "逾期补练" : (spacing.due ? "今天到期" : `暂缓 ${spacing.setsSince}/${spacing.targetGap}`));
+                    const mode = ready
+                        ? ((entry.count || 1) >= 2 ? "原题回炉 + 同类变式" : "同类变式 + 领域迁移")
+                        : "先做新题交错，暂不强刷";
+                    const pressure = spacing.priority ? "复错优先"
+                        : (spacing.overdue ? "逾期高优先" : (ready ? "到期处理" : (signal.score >= 6 ? "观察保温" : "暂缓保温")));
+                    const timingColor = ready ? "#b45309" : "#15803d";
                     return `<tr>
                         <td>${entry.student}</td>
                         <td>${display.name}</td>
                         <td>${domain ? domain.name : "综合"}</td>
                         <td>${entry.count || 1}</td>
                         <td>Set ${entry.lastSet || "-"}</td>
+                        <td style="color:${timingColor}; font-weight:bold;">${timing}</td>
                         <td>${mode}</td>
                         <td>${pressure}</td>
                     </tr>`;
                 }).join('')
-                : `<tr><td colspan="7" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
+                : `<tr><td colspan="8" style="color:#10b981; font-weight:bold;">当前没有活跃错题。正常保持交错练习即可。</td></tr>`;
             const currentProgramId = getCurrentProgramId();
             const currentPolicy = getErrorBookPracticePolicy(Engine.getCycleState().code, getDailyPracticeQuestionBudget(currentProgramId));
             const dailyMixHtml = selectedStudents.map(student => buildPracticeMixSummaryHTML(
@@ -10676,7 +10685,7 @@
                     <div style="padding:15px; max-height:260px; overflow:auto;">
                         ${policyHtml}
                         <table class="archive-table">
-                            <tr><th>学生</th><th>知识点</th><th>领域</th><th>错次</th><th>最近</th><th>进入训练方式</th><th>优先级</th></tr>
+                            <tr><th>学生</th><th>知识点</th><th>领域</th><th>错次</th><th>最近</th><th>复练时机</th><th>进入训练方式</th><th>优先级</th></tr>
                             ${bridgeHtml}
                         </table>
                     </div>

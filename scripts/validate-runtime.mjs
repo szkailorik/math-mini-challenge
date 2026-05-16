@@ -1538,12 +1538,15 @@ context.window.StorageDB.cache.KAI = {
   weights: { k_ddiv_shift: 3 },
   lastSeen: {},
   history: [],
-  errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88, info: { q: '0.84 ÷ 1.2', a: '0.7' } } },
+  errorBook: {
+    e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88, info: { q: '0.84 ÷ 1.2', a: '0.7' } },
+    e5: { tag: 'k_dmul_basic', count: 1, mastered: false, lastSet: 119, info: { q: '2.4 × 3', a: '7.2' } }
+  },
   programs: {}
 };
 context.window.showKnowledgeMap?.();
 const knowledgeMapHtml = elements.get('report-content-area')?.innerHTML || '';
-if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('领域热力') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift')) {
+if (!knowledgeMapHtml.includes('今日先练') || !knowledgeMapHtml.includes('领域热力') || !knowledgeMapHtml.includes('知识点') || !knowledgeMapHtml.includes('小数除法') || !knowledgeMapHtml.includes('复练时机') || !knowledgeMapHtml.includes('逾期补练') || !knowledgeMapHtml.includes('暂缓') || !knowledgeMapHtml.includes('先做新题交错') || knowledgeMapHtml.includes('<th>Tag</th>') || knowledgeMapHtml.includes('k_ddiv_shift') || knowledgeMapHtml.includes('k_dmul_basic')) {
   throw new Error('Knowledge map is not rendering as a parent-facing Chinese diagnostic view');
 }
 context.window.showKnowledgeMap?.('KAI');

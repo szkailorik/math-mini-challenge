@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.223 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a `复练时机` column to the knowledge-map Error-Book Bridge so each active mistake is labeled as due today, overdue, priority, or deferred.
+- Open questions: none.
+- Risks: the bridge table now carries one more column, so the text must stay short for printing.
+- Next steps: keep labels parent-facing and avoid exposing raw tag codes.
+
+### Iteration 2
+
+- What I changed: changed the bridge sort order to follow spacing priority before raw mistake count, so urgent recovery items appear first and not-due mistakes are visibly marked as `暂缓`.
+- Open questions: none.
+- Risks: high-count but just-seen mistakes may move below lower-count due items, which matches the spacing model.
+- Next steps: keep the dedicated full error-book sheet available for tutors who want extra review.
+
+### Iteration 3
+
+- What I changed: extended runtime validation so the knowledge map must show due/overdue timing, not-due deferral, and no internal code tags.
+- Open questions: none.
+- Risks: the test uses fixed set numbers to make spacing labels deterministic.
+- Next steps: preserve this parent-facing diagnostic layer when reorganizing the knowledge map.
+
 ## Current v23.222 Iteration Notes
 
 ### Iteration 1

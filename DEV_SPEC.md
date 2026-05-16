@@ -122,7 +122,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `getKnowledgeDisplay` / `buildKnowledgeWeakRows`: convert internal adaptive tags into parent-facing Chinese concept labels, priority rows, and training advice for the knowledge map.
 - `buildKnowledgeNextStepCards`: adds learner-specific `今日先练` recommendations to the knowledge map and links to error-book practice printing.
 - `buildKnowledgeDomainHeatmap`: renders learner-specific domain heat cards from `summarizeDomainSignals` for quick curriculum-level triage.
-- `showKnowledgeMap(studentFilter)` / `printCurrentKnowledgeMap`: filter the knowledge map by learner and print the current map through the print sandbox.
+- `showKnowledgeMap(studentFilter)` / `printCurrentKnowledgeMap`: filter the knowledge map by learner, show spacing-aware Error-Book Bridge timing (`今天到期`, `逾期补练`, `暂缓`), and print the current map through the print sandbox.
 - `buildErrorBookDomainPrintHTML` / `printErrorBookDomainPractice`: build and print active error-book remediation packs filtered by curriculum domain.
 - `openErrorBookDomainPracticeReview`: opens a domain-scoped grading sheet that preserves `domainId` in the practice log and updates the durable error book through the existing targeted-practice pipeline.
 - `KnowledgeDomains` / `getKnowledgeDomain`: groups generated tags into curriculum domains for higher-level coverage and weak-point reporting.
