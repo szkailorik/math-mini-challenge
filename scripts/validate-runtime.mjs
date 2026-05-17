@@ -2493,6 +2493,75 @@ const conversionDriftQuality = context.window.getSetReviewVariantQuality?.(fract
 if (conversionDriftQuality?.ok || !conversionDriftQuality?.reasons?.some(reason => /骨架|方向/.test(reason))) {
   throw new Error('Set review quality gate should reject conversion direction drift');
 }
+const ratioToDecimalBridgeSession = {
+  set: 136,
+  details: [
+    {
+      tag: 'c2_bridge_ratio_frac',
+      grade: 'wrong',
+      uid: 'bridge-ratio-dec-source',
+      info: { sec: '跨表示桥接', num: 1, q: `3 : 4 =<div class="blank"></div>`, a: '0.75', step: '把 3:4 看成 3÷4。' }
+    }
+  ]
+};
+const ratioToDecimalBridgeItems = context.window.buildSetReviewFollowupItems?.(ratioToDecimalBridgeSession, 'KAI', 'elementary_closure_v1') || [];
+const ratioToDecimalBridgeItem = ratioToDecimalBridgeItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(ratioToDecimalBridgeSession.details[0].info.q, 'conversion_bridge') !== 'conversion:ratio-to-decimal' || context.window.getSetReviewStructureSignature?.(ratioToDecimalBridgeItem.q || '', 'conversion_bridge') !== 'conversion:ratio-to-decimal' || ratioToDecimalBridgeItem.variantSourceMode !== 'source-aware-conversion' || ratioToDecimalBridgeItem.followupQualityWarnings?.length) {
+  throw new Error(`Ratio-to-decimal bridge variants should preserve direct ratio conversion, got ${ratioToDecimalBridgeItem.q || '(missing)'}`);
+}
+const fractionToRatioBridgeSession = {
+  set: 137,
+  details: [
+    {
+      tag: 'c2_bridge_ratio_frac',
+      grade: 'wrong',
+      uid: 'bridge-frac-ratio-source',
+      info: { sec: '跨表示桥接', num: 1, q: `${validatorFrac(3, 5)} = 3 :<div class="blank"></div>`, a: '5', step: '分数 a/b 可以看成 a:b。' }
+    }
+  ]
+};
+const fractionToRatioBridgeItems = context.window.buildSetReviewFollowupItems?.(fractionToRatioBridgeSession, 'KAI', 'elementary_closure_v1') || [];
+const fractionToRatioBridgeItem = fractionToRatioBridgeItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(fractionToRatioBridgeSession.details[0].info.q, 'conversion_bridge') !== 'conversion:fraction-to-ratio' || context.window.getSetReviewStructureSignature?.(fractionToRatioBridgeItem.q || '', 'conversion_bridge') !== 'conversion:fraction-to-ratio' || fractionToRatioBridgeItem.variantSourceMode !== 'source-aware-conversion' || fractionToRatioBridgeItem.followupQualityWarnings?.length) {
+  throw new Error(`Fraction-to-ratio bridge variants should preserve ratio-fill structure, got ${fractionToRatioBridgeItem.q || '(missing)'}`);
+}
+const bridgeChoiceSession = {
+  set: 138,
+  details: [
+    {
+      tag: 'c2_bridge_ratio_frac',
+      grade: 'wrong',
+      uid: 'bridge-choice-source',
+      info: { sec: '跨表示桥接', num: 1, q: `比较 3:5 和 0.7 时，先把 3:5 化成<div class="blank"></div>更快`, a: '0.6', step: '先选更方便的表示。' }
+    }
+  ]
+};
+const bridgeChoiceTargets = context.window.buildSetReviewFollowupTargets?.(bridgeChoiceSession) || [];
+const bridgeChoiceItems = context.window.buildSetReviewFollowupItems?.(bridgeChoiceSession, 'KAI', 'elementary_closure_v1') || [];
+const bridgeChoiceItem = bridgeChoiceItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(bridgeChoiceSession.details[0].info.q, 'conversion_bridge') !== 'conversion:bridge-choice' || context.window.getSetReviewStructureSignature?.(bridgeChoiceItem.q || '', 'conversion_bridge') !== 'conversion:bridge-choice' || bridgeChoiceItem.variantSourceMode !== 'source-aware-conversion' || bridgeChoiceItem.followupQualityWarnings?.length) {
+  throw new Error(`Representation-choice bridge variants should preserve method-choice structure, got ${bridgeChoiceItem.q || '(missing)'}`);
+}
+const bridgePostUseSession = {
+  set: 139,
+  details: [
+    {
+      tag: 'c2_bridge_ratio_frac',
+      grade: 'wrong',
+      uid: 'bridge-post-use-source',
+      info: { sec: '跨表示桥接', num: 1, q: `把 3:4 先化成小数后，再和 0.5 比较，较大的是<div class="blank"></div>`, a: '3:4', step: '先转换，再用转换结果比较。' }
+    }
+  ]
+};
+const bridgePostUseItems = context.window.buildSetReviewFollowupItems?.(bridgePostUseSession, 'KAI', 'elementary_closure_v1') || [];
+const bridgePostUseItem = bridgePostUseItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(bridgePostUseSession.details[0].info.q, 'conversion_bridge') !== 'conversion:bridge-post-use' || context.window.getSetReviewStructureSignature?.(bridgePostUseItem.q || '', 'conversion_bridge') !== 'conversion:bridge-post-use' || bridgePostUseItem.variantSourceMode !== 'source-aware-conversion' || bridgePostUseItem.followupQualityWarnings?.length) {
+  throw new Error(`Post-conversion-use bridge variants should preserve convert-then-use structure, got ${bridgePostUseItem.q || '(missing)'}`);
+}
+const bridgeLaneDriftQuality = context.window.getSetReviewVariantQuality?.(bridgeChoiceTargets[0], { q: `5 : 8 =<div class="blank"></div>`, qualityFamily: 'conversion_bridge' });
+if (bridgeLaneDriftQuality?.ok || !bridgeLaneDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject bridge-lane drift between method choice and direct conversion');
+}
 const fractionAddSession = {
   set: 109,
   details: [

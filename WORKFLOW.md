@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.239 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added Closure bridge signatures for ratio-to-decimal, fraction-to-ratio, baseline-comparison, representation-choice, and post-conversion-use prompts.
+- Open questions: none.
+- Risks: rare bridge wording may still fall back to the broader conversion signature until preview exposes it.
+- Next steps: extend signatures only from real preview warnings so the bridge detector stays precise.
+
+### Iteration 2
+
+- What I changed: added source-aware bridge variants that preserve the original bridge action, including direct ratio conversion, choosing the efficient representation, and converting before using the result.
+- Open questions: none.
+- Risks: same-day remediation is intentionally close to the original mistake, so broader transfer should stay in delayed mixed review.
+- Next steps: keep immediate repair focused on the missed bridge action.
+
+### Iteration 3
+
+- What I changed: added runtime checks for ratio-to-decimal, fraction-to-ratio, representation-choice, post-conversion-use, and bridge-lane drift rejection.
+- Open questions: none.
+- Risks: validation covers representative bridge traps first.
+- Next steps: add tests when a new bridge prompt shape is marked `需复核` in preview.
+
 ## Current v23.238 Iteration Notes
 
 ### Iteration 1

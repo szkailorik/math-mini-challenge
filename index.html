@@ -12336,12 +12336,42 @@
             });
         }
 
+        function getSetReviewBridgeStructureProfile(questionHtml = '') {
+            const raw = String(questionHtml || '');
+            const normalized = normalizeErrorPrompt(raw || '');
+            const context = `${raw} ${normalized}`.replace(/\s+/g, ' ');
+            if (/把.+?(先统一表示后|先化成同一种表示|先统一表示)|再和|它们的(和|差)|较大的是|相差|结果(是|更接近)/.test(context)) {
+                return { signature: 'conversion:bridge-post-use', bridgeLane: 'post_conversion_use' };
+            }
+            if (/在.+?里.+?最接近|哪个更接近/.test(context)) {
+                return { signature: 'conversion:bridge-baseline', bridgeLane: 'baseline_comparison' };
+            }
+            if (/更方便|更快|更顺|最省力|直接判断|先把.+?化成|先统一成/.test(context) && /算|比较|比 /.test(context)) {
+                return { signature: 'conversion:bridge-choice', bridgeLane: 'representation_choice' };
+            }
+            if (/\d+\s*:\s*\d+\s*[＝=]/.test(context)) {
+                return { signature: 'conversion:ratio-to-decimal', bridgeLane: 'representation_conversion' };
+            }
+            if (/[＝=]\s*\d+\s*:\s*(?:<div class="blank"><\/div>|\(?\s*\)|_{2,})/.test(context)) {
+                if (/^\s*\d*\.?\d+\s*[＝=]/.test(normalized)) {
+                    return { signature: 'conversion:decimal-to-ratio', bridgeLane: 'representation_conversion' };
+                }
+                if (/class="frac"|class="mixed"|\/\s*\d+|分数/.test(context)) {
+                    return { signature: 'conversion:fraction-to-ratio', bridgeLane: 'representation_conversion' };
+                }
+                return { signature: 'conversion:to-ratio', bridgeLane: 'representation_conversion' };
+            }
+            return { signature: 'conversion:general', bridgeLane: '' };
+        }
+        window.getSetReviewBridgeStructureProfile = getSetReviewBridgeStructureProfile;
+
         function buildSourceAwareConversionVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             const raw = String(entry.info?.q || '');
             const source = normalizeErrorPrompt(entry.info?.q || '');
             const sourceContext = `${raw} ${source} ${entry.info?.step || ''}`;
             const rawHasFraction = /class="frac"|class="mixed"|\/\s*\d+/.test(raw);
+            const bridgeProfile = getSetReviewBridgeStructureProfile(raw);
             const baseMeta = {
                 tag: entry.tag || '',
                 qualityFamily: 'conversion_bridge',
@@ -12351,6 +12381,84 @@
                 variantSourceMode: 'source-aware-conversion'
             };
             const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (bridgeProfile.signature === 'conversion:ratio-to-decimal') {
+                const item = Engine.randChoice([
+                    { left: 5, right: 8, decimal: '0.625' },
+                    { left: 3, right: 4, decimal: '0.75' },
+                    { left: 2, right: 5, decimal: '0.4' },
+                    { left: 7, right: 10, decimal: '0.7' }
+                ]);
+                return finish({
+                    bridgeLane: 'representation_conversion',
+                    q: `${item.left} : ${item.right} =<div class="blank"></div>`,
+                    a: item.decimal,
+                    step: `同形变式：仍然把比看成前项 ÷ 后项，${item.left}:${item.right} = ${item.left}÷${item.right}。`
+                });
+            }
+            if (bridgeProfile.signature === 'conversion:fraction-to-ratio') {
+                const item = Engine.randChoice([
+                    { n: 3, d: 5 },
+                    { n: 4, d: 5 },
+                    { n: 5, d: 8 },
+                    { n: 7, d: 10 }
+                ]);
+                return finish({
+                    bridgeLane: 'representation_conversion',
+                    q: `${new Frac(item.n, item.d).toHTML()} = ${item.n} :<div class="blank"></div>`,
+                    a: `${item.d}`,
+                    step: `同形变式：仍然把分数 a/b 看成 a:b，所以 ${item.n}/${item.d} 对应 ${item.n}:${item.d}。`
+                });
+            }
+            if (bridgeProfile.signature === 'conversion:decimal-to-ratio') {
+                const item = Engine.randChoice([
+                    { decimal: '0.75', n: 3, d: 4 },
+                    { decimal: '0.625', n: 5, d: 8 },
+                    { decimal: '0.4', n: 2, d: 5 },
+                    { decimal: '1.25', n: 5, d: 4 }
+                ]);
+                return finish({
+                    bridgeLane: 'representation_conversion',
+                    q: `${item.decimal} = ${item.n} :<div class="blank"></div>`,
+                    a: `${item.d}`,
+                    step: `同形变式：仍然先把小数看成分数 ${item.n}/${item.d}，再写成 ${item.n}:${item.d}。`
+                });
+            }
+            if (bridgeProfile.signature === 'conversion:bridge-baseline') {
+                const item = Engine.randChoice([
+                    { q: `在 1:4、20%、0.3 里，最接近 ${new Frac(1, 4).toHTML()} 的是<div class="blank"></div>`, a: '1:4', step: `1:4 = 0.25，20% = 0.2，0.3 = 0.3，离 ${new Frac(1, 4).toHTML()} 最近的是 1:4。` },
+                    { q: `在 3:8、0.4、${new Frac(1, 2).toHTML()} 里，最接近 0.4 的是<div class="blank"></div>`, a: '0.4', step: `3:8 = 0.375，${new Frac(1, 2).toHTML()} = 0.5，最接近 0.4 的是 0.4。` },
+                    { q: `在 25%、0.3、${new Frac(1, 8).toHTML()} 里，最接近 0 的是<div class="blank"></div>`, a: new Frac(1, 8).toHTML(), step: `先统一成小数：0.25、0.3、0.125，更接近 0 的是 ${new Frac(1, 8).toHTML()}。` }
+                ]);
+                return finish({
+                    bridgeLane: 'baseline_comparison',
+                    ...item,
+                    step: `同形变式：仍然先统一表示，再看离基准数的距离。${item.step}`
+                });
+            }
+            if (bridgeProfile.signature === 'conversion:bridge-choice') {
+                const item = Engine.randChoice([
+                    { q: `比较 3:5 和 0.7 时，先把 3:5 化成<div class="blank"></div>更快`, a: '0.6', step: '3:5 = 0.6，再和 0.7 比大小。' },
+                    { q: `算 ${new Frac(4, 5).toHTML()} + 0.1 时，先把 ${new Frac(4, 5).toHTML()} 化成<div class="blank"></div>更方便`, a: '0.8', step: '题里已有小数 0.1，所以先把 4/5 化成 0.8。' },
+                    { q: `比 62.5% 和 ${new Frac(5, 8).toHTML()} 时，直接判断成<div class="blank"></div>更快`, a: '相等', step: `62.5% 和 ${new Frac(5, 8).toHTML()} 都是 0.625。` }
+                ]);
+                return finish({
+                    bridgeLane: 'representation_choice',
+                    ...item,
+                    step: `同形变式：仍然训练“先选哪种表示更省力”。${item.step}`
+                });
+            }
+            if (bridgeProfile.signature === 'conversion:bridge-post-use') {
+                const item = Engine.randChoice([
+                    { q: `把 3:4 先化成小数后，再和 0.5 比较，较大的是<div class="blank"></div>`, a: '3:4', step: '3:4 = 0.75，0.75 比 0.5 大。' },
+                    { q: `把 1:4 和 12.5% 先化成同一种表示更方便，结果是<div class="blank"></div>`, a: '0.375', step: '1:4 = 0.25，12.5% = 0.125，和是 0.375。' },
+                    { q: `把 62.5% 和 ${new Frac(1, 8).toHTML()} 先统一表示后，再相加，结果更接近<div class="blank"></div>`, a: '0.75', step: `62.5% = 0.625，${new Frac(1, 8).toHTML()} = 0.125，和是 0.75。` }
+                ]);
+                return finish({
+                    bridgeLane: 'post_conversion_use',
+                    ...item,
+                    step: `同形变式：仍然先转换，再把转换结果用于比较或计算。${item.step}`
+                });
+            }
             if (/○|比较|更大|更小/.test(source)) {
                 const pool = [
                     { frac: new Frac(1, 2), benchmark: 0.5, values: [0.48, 0.49, 0.51, 0.52] },
@@ -13140,6 +13248,8 @@
             }
             if (family === 'conversion_bridge') {
                 const raw = String(questionHtml || '');
+                const bridgeProfile = getSetReviewBridgeStructureProfile(questionHtml);
+                if (bridgeProfile.signature && bridgeProfile.signature !== 'conversion:general') return bridgeProfile.signature;
                 const rawLeft = raw.split(/[＝=]/)[0] || raw;
                 const rawRight = raw.split(/[＝=]/).slice(1).join('=') || '';
                 const normalizedLeft = normalized.split(/[＝=]/)[0] || normalized;
