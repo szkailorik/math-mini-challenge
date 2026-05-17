@@ -12401,6 +12401,8 @@
 
         function buildSetReviewUnitRateVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            const sourceAware = buildSourceAwareUnitRateVariant(target);
+            if (sourceAware) return sourceAware;
             if (/^(c2_unit_|c2_rate_|c2_speed_)/.test(entry.tag || '')) {
                 const built = target.grade === 'wrong'
                     ? buildClosureBoundaryReplayItem(entry)
@@ -12415,8 +12417,6 @@
                     });
                 }
             }
-            const sourceAware = buildSourceAwareUnitRateVariant(target);
-            if (sourceAware) return sourceAware;
             const pool = [
                 { q: `2.4 km = (   ) m`, a: '2400', step: '规则提醒：先统一单位，再开始算。' },
                 { q: `每本 12 元，买 5 本，一共 (   ) 元`, a: '60', step: '方法提醒：先找单价和数量，再求总价。' },
@@ -12441,6 +12441,33 @@
             if (/每.*元|单价/.test(source) && /一共|总价|共/.test(source)) return { signature: 'unit:price-total' };
             if (/一共|总价|共/.test(source) && /每本|每支|单价|每个/.test(source)) return { signature: 'unit:price-total' };
             if (/每本|每支|每个/.test(source) && /求|多少|几/.test(source) && !/一共|总价/.test(source)) return { signature: 'unit:price-unit' };
+            const parts = source.split(/[＝=]/);
+            const left = parts[0] || source;
+            const right = parts.slice(1).join('=') || '';
+            const unitToken = text => {
+                const match = String(text || '').match(/千米|厘米|米|千克|克|吨|km|cm|kg|g|t|\bm\b/i);
+                if (!match) return '';
+                const unit = match[0].toLowerCase();
+                const map = { '千米': 'km', '厘米': 'cm', '米': 'm', '千克': 'kg', '克': 'g', '吨': 't' };
+                return map[unit] || unit;
+            };
+            const targetUnit = unitToken(right);
+            const hasLengthUnit = /千米|厘米|米|km|cm|\bm\b/i.test(source);
+            const hasMassUnit = /千克|克|吨|kg|g|t/i.test(source);
+            const hasUnitOperation = /[+\-−]/.test(left);
+            if (hasUnitOperation && hasLengthUnit && targetUnit) return { signature: `unit:conversion:length-op-to-${targetUnit}` };
+            if (hasUnitOperation && hasMassUnit && targetUnit) return { signature: `unit:conversion:mass-op-to-${targetUnit}` };
+            if (targetUnit && hasLengthUnit) {
+                if (/km|千米/i.test(left)) return { signature: `unit:conversion:length-km-to-${targetUnit}` };
+                if (/cm|厘米/i.test(left)) return { signature: `unit:conversion:length-cm-to-${targetUnit}` };
+                if (/\bm\b|米/.test(left)) return { signature: `unit:conversion:length-m-to-${targetUnit}` };
+            }
+            if (targetUnit && hasMassUnit) {
+                if (/kg|千克/i.test(left) && /g|克/i.test(left.replace(/kg|千克/i, ''))) return { signature: `unit:conversion:mass-kg-g-to-${targetUnit}` };
+                if (/t|吨/i.test(left)) return { signature: `unit:conversion:mass-t-to-${targetUnit}` };
+                if (/kg|千克/i.test(left)) return { signature: `unit:conversion:mass-kg-to-${targetUnit}` };
+                if (/\bg\b|克/.test(left)) return { signature: `unit:conversion:mass-g-to-${targetUnit}` };
+            }
             if (/km|千米|m|米|cm|kg|g|单位/.test(source)) return { signature: 'unit:conversion' };
             return { signature: 'unit:general' };
         }
@@ -12460,6 +12487,135 @@
                 variantSourceMode: 'source-aware-unit-rate'
             };
             const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'unit:conversion:length-km-to-m') {
+                const km = Engine.randChoice([0.85, 1.25, 2.4, 3.6]);
+                return finish({
+                    q: `${km} km =<div class="blank"></div> m`,
+                    a: `${formatDecimal(km * 1000)}`,
+                    step: '同形变式：仍然是千米化米，方向是大单位到小单位，要乘 1000。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-km-to-cm') {
+                const km = Engine.randChoice([0.035, 0.12, 0.45, 2.5]);
+                return finish({
+                    q: `${km} km =<div class="blank"></div> cm`,
+                    a: `${formatDecimal(km * 100000)}`,
+                    step: '同形变式：仍然先 km 化 m，再 m 化 cm，连续乘 1000 和 100。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-m-to-cm') {
+                const meters = Engine.randChoice([1.6, 2.4, 3.2, 4.5]);
+                return finish({
+                    q: `${meters} m =<div class="blank"></div> cm`,
+                    a: `${formatDecimal(meters * 100)}`,
+                    step: '同形变式：仍然是米化厘米，方向是大单位到小单位，要乘 100。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-cm-to-m') {
+                const cm = Engine.randChoice([420, 650, 1250, 2750]);
+                return finish({
+                    q: `${cm} cm =<div class="blank"></div> m`,
+                    a: `${formatDecimal(cm / 100)}`,
+                    step: '同形变式：仍然是厘米化米，方向是小单位到大单位，要除以 100。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-kg-to-g') {
+                const kg = Engine.randChoice([0.75, 1.25, 3.6, 6.08]);
+                return finish({
+                    q: `${kg} kg =<div class="blank"></div> g`,
+                    a: `${formatDecimal(kg * 1000)}`,
+                    step: '同形变式：仍然是千克化克，方向是大单位到小单位，要乘 1000。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-g-to-kg') {
+                const grams = Engine.randChoice([1250, 1600, 2750, 4050]);
+                return finish({
+                    q: `${grams} g =<div class="blank"></div> kg`,
+                    a: `${formatDecimal(grams / 1000)}`,
+                    step: '同形变式：仍然是克化千克，方向是小单位到大单位，要除以 1000。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-kg-g-to-g') {
+                const kg = Engine.randChoice([1, 2, 3, 4]);
+                const grams = Engine.randChoice([40, 80, 250, 350]);
+                return finish({
+                    q: `${kg} kg ${grams} g =<div class="blank"></div> g`,
+                    a: `${kg * 1000 + grams}`,
+                    step: '同形变式：仍然先把千克化成克，再把零散的克加上。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-kg-g-to-kg') {
+                const kg = Engine.randChoice([1, 2, 3, 4]);
+                const grams = Engine.randChoice([80, 250, 350, 600]);
+                return finish({
+                    q: `${kg} kg ${grams} g =<div class="blank"></div> kg`,
+                    a: `${formatDecimal(kg + grams / 1000)}`,
+                    step: '同形变式：仍然先把克化成千克的小数部分，再和整千克合并。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-t-to-kg') {
+                const tons = Engine.randChoice([1.2, 1.8, 2.5, 4.5]);
+                return finish({
+                    q: `${tons} t =<div class="blank"></div> kg`,
+                    a: `${formatDecimal(tons * 1000)}`,
+                    step: '同形变式：仍然是吨化千克，方向是大单位到小单位，要乘 1000。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-op-to-cm') {
+                const meters = Engine.randChoice([2.8, 3.2, 4.5]);
+                const cm = Engine.randChoice([45, 75, 90]);
+                return finish({
+                    q: `${meters} m + ${cm} cm =<div class="blank"></div> cm`,
+                    a: `${formatDecimal(meters * 100 + cm)}`,
+                    step: '同形变式：仍然先把米化成厘米，再和厘米相加。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-op-to-km') {
+                const km = Engine.randChoice([1.25, 1.8, 2.4]);
+                const meters = Engine.randChoice([450, 600, 750]);
+                return finish({
+                    q: `${km} km + ${meters} m =<div class="blank"></div> km`,
+                    a: `${formatDecimal(km + meters / 1000)}`,
+                    step: '同形变式：仍然先把米化成千米，再和千米相加。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:length-op-to-m') {
+                const meters = Engine.randChoice([3, 4, 5]);
+                const cm = Engine.randChoice([6, 25, 40]);
+                const sub = Engine.randChoice([0.45, 0.75, 1.2]);
+                return finish({
+                    q: `${meters} m ${cm} cm &minus; ${sub} m =<div class="blank"></div> m`,
+                    a: `${formatDecimal(meters + cm / 100 - sub)}`,
+                    step: '同形变式：仍然先把复名数化成米，再按米作减法。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-op-to-g') {
+                const kg = Engine.randChoice([0.75, 1.25, 2.5]);
+                const grams = Engine.randChoice([280, 380, 450]);
+                return finish({
+                    q: `${kg} kg + ${grams} g =<div class="blank"></div> g`,
+                    a: `${formatDecimal(kg * 1000 + grams)}`,
+                    step: '同形变式：仍然先把千克化成克，再和克相加。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-op-to-kg') {
+                const kg = Engine.randChoice([1.8, 2.5, 3.2]);
+                const grams = Engine.randChoice([350, 450, 600]);
+                return finish({
+                    q: `${kg} kg + ${grams} g =<div class="blank"></div> kg`,
+                    a: `${formatDecimal(kg + grams / 1000)}`,
+                    step: '同形变式：仍然先把克化成千克，再和千克相加。'
+                });
+            }
+            if (profile.signature === 'unit:conversion:mass-op-to-t') {
+                const tons = Engine.randChoice([1.8, 2.4, 3.5]);
+                const kg = Engine.randChoice([350, 450, 750]);
+                return finish({
+                    q: `${tons} t &minus; ${kg} kg =<div class="blank"></div> t`,
+                    a: `${formatDecimal(tons - kg / 1000)}`,
+                    step: '同形变式：仍然先把千克化成吨，再按吨作减法。'
+                });
+            }
             if (profile.signature === 'unit:speed-rate') {
                 const hours = Engine.randChoice([1.5, 2.4, 2.5, 3]);
                 const speed = Engine.randChoice([48, 60, 72, 80]);

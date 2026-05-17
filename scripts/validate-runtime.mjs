@@ -2558,6 +2558,59 @@ const priceUnitItem = priceUnitItems[0] || {};
 if (context.window.getSetReviewStructureSignature?.(priceUnitSession.details[0].info.q, 'unit_rate_speed') !== 'unit:price-unit' || context.window.getSetReviewStructureSignature?.(priceUnitItem.q || '', 'unit_rate_speed') !== 'unit:price-unit' || priceUnitItem.variantSourceMode !== 'source-aware-unit-rate' || priceUnitItem.followupQualityWarnings?.length) {
   throw new Error('Unknown-tag unit-price mistakes should generate same-relation unit-rate variants');
 }
+const unitCmToMSession = {
+  set: 127,
+  details: [
+    {
+      tag: 'c2_unit_length',
+      grade: 'wrong',
+      uid: 'unit-cm-m-source',
+      info: { sec: '单位换算', num: 1, q: `650 cm =<div class="blank"></div> m`, a: '6.5', step: '厘米化米要除以 100。' }
+    }
+  ]
+};
+const unitCmToMTargets = context.window.buildSetReviewFollowupTargets?.(unitCmToMSession) || [];
+const unitCmToMItems = context.window.buildSetReviewFollowupItems?.(unitCmToMSession, 'KAI', 'advanced_fluency_v1') || [];
+const unitCmToMItem = unitCmToMItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(unitCmToMSession.details[0].info.q, 'unit_rate_speed') !== 'unit:conversion:length-cm-to-m' || context.window.getSetReviewStructureSignature?.(unitCmToMItem.q || '', 'unit_rate_speed') !== 'unit:conversion:length-cm-to-m' || unitCmToMItem.variantSourceMode !== 'source-aware-unit-rate' || /km/.test(unitCmToMItem.q || '') || unitCmToMItem.followupQualityWarnings?.length) {
+  throw new Error(`Centimeter-to-meter mistakes should preserve conversion direction, got ${unitCmToMItem.q || '(missing)'}`);
+}
+const unitConversionDriftQuality = context.window.getSetReviewVariantQuality?.(unitCmToMTargets[0], { q: `2.4 km =<div class="blank"></div> m`, qualityFamily: 'unit_rate_speed' });
+if (unitConversionDriftQuality?.ok || !unitConversionDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject unit conversion direction drift');
+}
+const unitKgGToGSession = {
+  set: 128,
+  details: [
+    {
+      tag: 'custom_unit_kg_g',
+      grade: 'wrong',
+      uid: 'unit-kg-g-source',
+      info: { sec: '质量换算', num: 1, q: `3 kg 80 g =<div class="blank"></div> g`, a: '3080', step: '先把 kg 化成 g，再加 80 g。' }
+    }
+  ]
+};
+const unitKgGToGItems = context.window.buildSetReviewFollowupItems?.(unitKgGToGSession, 'KAI', 'advanced_fluency_v1') || [];
+const unitKgGToGItem = unitKgGToGItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(unitKgGToGSession.details[0].info.q, 'unit_rate_speed') !== 'unit:conversion:mass-kg-g-to-g' || context.window.getSetReviewStructureSignature?.(unitKgGToGItem.q || '', 'unit_rate_speed') !== 'unit:conversion:mass-kg-g-to-g' || unitKgGToGItem.variantSourceMode !== 'source-aware-unit-rate' || unitKgGToGItem.followupQualityWarnings?.length) {
+  throw new Error('Mixed kg-and-g conversion variants should preserve kg+g to g structure');
+}
+const unitLengthOpSession = {
+  set: 129,
+  details: [
+    {
+      tag: 'custom_unit_length_op',
+      grade: 'wrong',
+      uid: 'unit-length-op-source',
+      info: { sec: '单位运算', num: 1, q: `1.25 km + 750 m =<div class="blank"></div> km`, a: '2', step: '先把 750 m 化成 0.75 km，再相加。' }
+    }
+  ]
+};
+const unitLengthOpItems = context.window.buildSetReviewFollowupItems?.(unitLengthOpSession, 'KAI', 'advanced_fluency_v1') || [];
+const unitLengthOpItem = unitLengthOpItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(unitLengthOpSession.details[0].info.q, 'unit_rate_speed') !== 'unit:conversion:length-op-to-km' || context.window.getSetReviewStructureSignature?.(unitLengthOpItem.q || '', 'unit_rate_speed') !== 'unit:conversion:length-op-to-km' || unitLengthOpItem.variantSourceMode !== 'source-aware-unit-rate' || unitLengthOpItem.followupQualityWarnings?.length) {
+  throw new Error('Length-unit operation variants should preserve the target output unit');
+}
 const validationQuotientSession = {
   set: 124,
   details: [

@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.236 Iteration Notes
+
+### Iteration 1
+
+- What I changed: split unit-conversion signatures by direction and target unit, including length, mass, compound kg/g forms, and mixed-unit operation prompts.
+- Open questions: none.
+- Risks: rare textbook phrasings may still fall back to `unit:conversion` until preview exposes them.
+- Next steps: add signatures when preview shows a unit item marked `需复核`.
+
+### Iteration 2
+
+- What I changed: added source-aware unit-conversion variants for cm-to-m, km-to-m, km-to-cm, m-to-cm, kg-to-g, g-to-kg, kg+g-to-g/kg, and length/mass operation-to-target-unit prompts.
+- Open questions: none.
+- Risks: same-day variants are now stricter about direction, so broader transfer should stay in delayed review rather than immediate correction.
+- Next steps: keep target-unit preservation as the default for wrong-set follow-up.
+
+### Iteration 3
+
+- What I changed: added runtime checks for cm-to-m, kg+g-to-g, and length-operation-to-km variants, plus a drift case that rejects km-to-m as a replacement for cm-to-m.
+- Open questions: none.
+- Risks: the suite covers common length and mass forms first.
+- Next steps: extend to additional unit families only when they enter the paper generator.
+
 ## Current v23.235 Iteration Notes
 
 ### Iteration 1
