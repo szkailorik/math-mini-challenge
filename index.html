@@ -5279,11 +5279,11 @@
             { family: 'decimal_division', test: tag => /^(k_ddiv_|l_div_decimal_)/.test(tag) },
             { family: 'fraction_operation', test: tag => /^(k_fcalc_|l_fmix_)/.test(tag) },
             { family: 'conversion_bridge', test: tag => /^(k_conv_|l_conv_|c2_bridge_)/.test(tag) },
+            { family: 'validation_estimation', test: tag => /^(c2_est_|c2_mix_judgement)/.test(tag) },
             { family: 'complex_mixed', test: tag => /^(c2_mix_|k_oly_|l_bmix_)/.test(tag) },
             { family: 'arithmetic_fluency', test: tag => /^(k_dmul_|l_mul_|k_sub_|l_sub_|l_div_)/.test(tag) },
             { family: 'unit_rate_speed', test: tag => /^c2_(unit|rate|speed)_/.test(tag) },
             { family: 'equation_method', test: tag => /^(k_eq_|c2_eq_|c2_rate_eq)/.test(tag) },
-            { family: 'validation_estimation', test: tag => /^c2_est_/.test(tag) },
         ];
         function getQualityFamilyForTag(tag = '') {
             const value = String(tag || '');
@@ -10981,16 +10981,19 @@
             if (qualityFamily) return qualityFamily;
             const rawSource = `${tag || ''} ${info?.q || ''} ${info?.step || ''}`;
             const source = normalizeErrorPrompt(rawSource);
+            const questionText = normalizeErrorPrompt(info?.q || '');
+            const validationCue = /(^|_)est|验算|估算|检验|合理|更接近|接近|范围|会不会|应该比|比\s*1|大于\s*1|小于\s*1/.test(`${tag || ''} ${questionText}`);
+            const conversionCue = /conv|percent|compare|互化|百分|化成|转成|小数|比较|更大|更小|circle-blank|○|%/.test(`${rawSource} ${source}`);
+            const validationConversionBlock = /conv|percent|互化|百分|化成|转成|circle-blank|○|%/.test(`${tag || ''} ${questionText}`);
             const hasFractionStructure = /class="frac"|class="mixed"|fraction|frac|分数|带分数|\/\s*\d+/.test(rawSource);
             if (/<i class="var">x<\/i>|\bx\b|未知数|方程|equation|^eq|_eq_/.test(rawSource)) return 'equation_method';
+            if (validationCue && !validationConversionBlock) return 'validation_estimation';
             if (/unit|rate|speed|单位|速度|比率|平均|每|单价|总价|路程|千米|km|kg|cm|元/.test(source)) return 'unit_rate_speed';
             if (/ddiv|decimal_division|division|divide|小数除|除数有小数|小数点/.test(`${tag || ''} ${source}`) || (/[÷除]/.test(source) && /\d+\.\d+/.test(source))) return 'decimal_division';
-            const hasConversionCue = /conv|percent|compare|互化|百分|化成|转成|小数|比较|更大|更小|circle-blank|○|%/.test(`${rawSource} ${source}`);
-            const questionText = normalizeErrorPrompt(info?.q || '');
             const conversionEquationLike = /=/.test(questionText)
                 && /class="frac"|class="mixed"|\/\s*\d+|\d+\.\d+|%/.test(info?.q || '')
                 && !/[+×÷*/−-]/.test(questionText.replace(/[＝=].*$/, ''));
-            if (hasConversionCue || conversionEquationLike) return 'conversion_bridge';
+            if (conversionCue || conversionEquationLike) return 'conversion_bridge';
             if (hasFractionStructure) return 'fraction_operation';
             if (/[×÷*/+\-−]|乘|除|加|减/.test(source)) return 'arithmetic_fluency';
             if (/est|验算|估算|合理/.test(source)) return 'validation_estimation';
@@ -12506,6 +12509,123 @@
         }
         window.buildSourceAwareUnitRateVariant = buildSourceAwareUnitRateVariant;
 
+        function getSetReviewValidationStructureProfile(questionHtml = '') {
+            const raw = String(questionHtml || '');
+            const source = normalizeErrorPrompt(raw)
+                .replace(/[＝=].*$/, '')
+                .replace(/−/g, '-')
+                .trim();
+            const parsed = parseSimpleArithmeticPrompt(raw);
+            const op = parsed?.op || '';
+            const decimalMode = parsed && parsed.leftPlaces + parsed.rightPlaces > 0 ? 'decimal' : 'integer';
+            const text = `${raw} ${source}`;
+            if (/更接近|接近|估算|约|大约|范围/.test(text) && op) {
+                return { signature: `validation:estimate:${op}:${decimalMode}`, op, decimalMode };
+            }
+            if (/商|除/.test(text) && /比\s*1|大于\s*1|小于\s*1|大还是小|会不会.*1|应该比\s*1/.test(text)) {
+                return { signature: 'validation:quotient-vs-one', op: '÷', decimalMode };
+            }
+            if (/积|乘|结果/.test(text) && /比\s*1|大于\s*1|小于\s*1|大还是小|会不会.*1|应该比\s*1/.test(text)) {
+                return { signature: 'validation:product-vs-one', op: '×', decimalMode };
+            }
+            if (/合理|检验|验算|对不对|是否/.test(text) && op) {
+                return { signature: `validation:reasonableness:${op}:${decimalMode}`, op, decimalMode };
+            }
+            if (op && /结果|判断/.test(text)) {
+                return { signature: `validation:operation-check:${op}:${decimalMode}`, op, decimalMode };
+            }
+            return { signature: 'validation:general', op, decimalMode };
+        }
+        window.getSetReviewValidationStructureProfile = getSetReviewValidationStructureProfile;
+
+        function buildSourceAwareValidationVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const profile = getSetReviewValidationStructureProfile(entry.info?.q || '');
+            if (!profile.signature || profile.signature === 'validation:general') return null;
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'validation_estimation',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-validation'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'validation:quotient-vs-one') {
+                const pool = [
+                    { left: 0.48, right: 0.6, answer: '小于 1', compare: '小于' },
+                    { left: 0.75, right: 0.5, answer: '大于 1', compare: '大于' },
+                    { left: 1.2, right: 1.5, answer: '小于 1', compare: '小于' },
+                    { left: 2.4, right: 0.8, answer: '大于 1', compare: '大于' }
+                ];
+                const picked = Engine.randChoice(pool);
+                return finish({
+                    q: `${picked.left} &divide; ${picked.right} 的商应该比 1 大还是小？`,
+                    a: picked.answer,
+                    step: `同形变式：仍然先比较被除数和除数，被除数${picked.compare}除数，所以商${picked.compare} 1。`
+                });
+            }
+            if (profile.signature === 'validation:product-vs-one') {
+                const pool = [
+                    { left: 0.25, right: 0.4, answer: '不会，大约 0.1', compare: '都小于 1' },
+                    { left: 0.6, right: 0.8, answer: '不会，大约 0.48', compare: '都小于 1' },
+                    { left: 1.2, right: 0.7, answer: '不会，大约 0.84', compare: '一个数刚过 1，另一个明显小于 1' }
+                ];
+                const picked = Engine.randChoice(pool);
+                return finish({
+                    q: `${picked.left} &times; ${picked.right} 的结果会不会大于 1？`,
+                    a: picked.answer,
+                    step: `同形变式：仍然先看因数的大小关系，${picked.compare}，所以结果要先做数量级判断。`
+                });
+            }
+            if (profile.signature.startsWith('validation:estimate:×')) {
+                const pool = profile.decimalMode === 'decimal'
+                    ? [
+                        { q: `7.9 &times; 5.1 的结果更接近<div class="blank"></div>`, a: '40', step: '7.9 约看成 8，5.1 约看成 5，结果接近 40。' },
+                        { q: `12.4 &times; 8.1 的结果更接近<div class="blank"></div>`, a: '100', step: '12.4 约看成 12，8.1 约看成 8，结果约 96，接近 100。' },
+                        { q: `0.49 &times; 198 的结果更接近<div class="blank"></div>`, a: '100', step: '0.49 约看成 0.5，198 约看成 200，结果接近 100。' }
+                    ]
+                    : [
+                        { q: `39 &times; 21 的结果更接近<div class="blank"></div>`, a: '800', step: '39 约看成 40，21 约看成 20，结果接近 800。' },
+                        { q: `61 &times; 19 的结果更接近<div class="blank"></div>`, a: '1200', step: '61 约看成 60，19 约看成 20，结果接近 1200。' }
+                    ];
+                const picked = Engine.randChoice(pool);
+                return finish({
+                    ...picked,
+                    step: `同形变式：仍然先取接近又好算的数估范围。${picked.step}`
+                });
+            }
+            if (profile.signature.startsWith('validation:estimate:÷')) {
+                const pool = profile.decimalMode === 'decimal'
+                    ? [
+                        { q: `49.8 &divide; 5 的结果更接近<div class="blank"></div>`, a: '10', step: '49.8 约看成 50，50÷5 = 10。' },
+                        { q: `6.2 &divide; 0.31 的结果更接近<div class="blank"></div>`, a: '20', step: '6.2÷0.31 大约相当于 620÷31，接近 20。' }
+                    ]
+                    : [
+                        { q: `605 &divide; 6 的结果更接近<div class="blank"></div>`, a: '100', step: '605 约看成 600，600÷6 = 100。' },
+                        { q: `398 &divide; 8 的结果更接近<div class="blank"></div>`, a: '50', step: '398 约看成 400，400÷8 = 50。' }
+                    ];
+                const picked = Engine.randChoice(pool);
+                return finish({
+                    ...picked,
+                    step: `同形变式：仍然先估商的范围，再判断接近哪个整十或整百。${picked.step}`
+                });
+            }
+            if (profile.signature.startsWith('validation:reasonableness')) {
+                const op = profile.op === '÷' ? '&divide;' : '&times;';
+                const q = profile.op === '÷'
+                    ? `小明算 49.8 ${op} 5 = 99.6，这个结果合理吗？`
+                    : `小明算 7.9 ${op} 5.1 = 402.9，这个结果合理吗？`;
+                const a = profile.op === '÷' ? '不合理，应该接近 10' : '不合理，应该接近 40';
+                const step = profile.op === '÷'
+                    ? '同形变式：仍然先用 50÷5 估到 10 左右，再判断精算结果是否离谱。'
+                    : '同形变式：仍然先用 8×5 估到 40 左右，再判断小数点是否错位。';
+                return finish({ q, a, step });
+            }
+            return null;
+        }
+        window.buildSourceAwareValidationVariant = buildSourceAwareValidationVariant;
+
         function buildSetReviewValidationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             if (/^c2_est_/.test(entry.tag || '')) {
@@ -12522,6 +12642,8 @@
                     });
                 }
             }
+            const sourceAware = buildSourceAwareValidationVariant(target);
+            if (sourceAware) return sourceAware;
             const pool = [
                 { q: `4.8 ÷ 0.6 的商应该比 1 大还是小？`, a: '大于 1', step: '检验提醒：先判断数量级，再看结果合不合理。' },
                 { q: `0.25 × 0.4 的结果会不会大于 1？`, a: '不会', step: '检验提醒：两个都小于 1，相乘结果通常更小。' }
@@ -12693,6 +12815,9 @@
             }
             if (family === 'complex_mixed') {
                 return getSetReviewComplexStructureProfile(questionHtml).signature;
+            }
+            if (family === 'validation_estimation') {
+                return getSetReviewValidationStructureProfile(questionHtml).signature;
             }
             const arithmetic = parseSimpleArithmeticPrompt(questionHtml);
             if (arithmetic) {

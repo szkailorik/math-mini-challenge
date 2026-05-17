@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.235 Iteration Notes
+
+### Iteration 1
+
+- What I changed: moved estimation and validation cues ahead of generic arithmetic classification when the prompt itself asks for judgement, reasonableness, or nearest-result estimation.
+- Open questions: none.
+- Risks: prompts that mix unit language and reasonableness language should intentionally become validation tasks when the question asks "is it reasonable".
+- Next steps: keep prompt wording explicit so validation items do not look like ordinary calculation.
+
+### Iteration 2
+
+- What I changed: added source-aware validation variant generation for quotient-vs-one, product-vs-one, nearest-result estimation, and reasonableness-check prompts.
+- Open questions: none.
+- Risks: the validation templates train judgement first; exact calculation practice remains in the arithmetic and decimal-division lanes.
+- Next steps: add more templates if preview shows repeated `validation:general` items.
+
+### Iteration 3
+
+- What I changed: added runtime checks that unknown validation prompts stay in `validation_estimation`, reject ordinary-calculation drift, and route `c2_mix_judgement` into validation instead of complex mixed practice.
+- Open questions: none.
+- Risks: validation signatures cover high-frequency judgement shapes first.
+- Next steps: use set-review preview warnings to extend signatures for rare validation wording.
+
 ## Current v23.234 Iteration Notes
 
 ### Iteration 1

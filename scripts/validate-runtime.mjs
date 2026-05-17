@@ -2558,6 +2558,58 @@ const priceUnitItem = priceUnitItems[0] || {};
 if (context.window.getSetReviewStructureSignature?.(priceUnitSession.details[0].info.q, 'unit_rate_speed') !== 'unit:price-unit' || context.window.getSetReviewStructureSignature?.(priceUnitItem.q || '', 'unit_rate_speed') !== 'unit:price-unit' || priceUnitItem.variantSourceMode !== 'source-aware-unit-rate' || priceUnitItem.followupQualityWarnings?.length) {
   throw new Error('Unknown-tag unit-price mistakes should generate same-relation unit-rate variants');
 }
+const validationQuotientSession = {
+  set: 124,
+  details: [
+    {
+      tag: 'custom_validation_quotient',
+      grade: 'wrong',
+      uid: 'validation-quotient-source',
+      info: { sec: '结果检验', num: 1, q: `0.48 &divide; 0.6 的商应该比 1 大还是小？`, a: '小于 1', step: '先比较被除数和除数，不急着精算。' }
+    }
+  ]
+};
+const validationQuotientTargets = context.window.buildSetReviewFollowupTargets?.(validationQuotientSession) || [];
+const validationQuotientItems = context.window.buildSetReviewFollowupItems?.(validationQuotientSession, 'KAI', 'advanced_fluency_v1') || [];
+const validationQuotientItem = validationQuotientItems[0] || {};
+if (validationQuotientTargets[0]?.family !== 'validation_estimation' || context.window.getSetReviewStructureSignature?.(validationQuotientSession.details[0].info.q, 'validation_estimation') !== 'validation:quotient-vs-one' || context.window.getSetReviewStructureSignature?.(validationQuotientItem.q || '', 'validation_estimation') !== 'validation:quotient-vs-one' || validationQuotientItem.variantSourceMode !== 'source-aware-validation' || validationQuotientItem.followupQualityWarnings?.length) {
+  throw new Error(`Quotient reasonableness variants should preserve comparison-to-one structure, got family ${validationQuotientTargets[0]?.family || '(missing)'} for ${validationQuotientItem.q || '(missing)'}`);
+}
+const validationDriftQuality = context.window.getSetReviewVariantQuality?.(validationQuotientTargets[0], { q: `4.8 &divide; 0.6 =`, qualityFamily: 'validation_estimation' });
+if (validationDriftQuality?.ok || !validationDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject validation judgement drifting into ordinary calculation');
+}
+const validationEstimateSession = {
+  set: 125,
+  details: [
+    {
+      tag: 'custom_validation_estimate',
+      grade: 'wrong',
+      uid: 'validation-estimate-source',
+      info: { sec: '估算检验', num: 1, q: `7.9 &times; 5.1 的结果更接近<div class="blank"></div>`, a: '40', step: '先约成 8×5，再选接近值。' }
+    }
+  ]
+};
+const validationEstimateItems = context.window.buildSetReviewFollowupItems?.(validationEstimateSession, 'KAI', 'advanced_fluency_v1') || [];
+const validationEstimateItem = validationEstimateItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(validationEstimateSession.details[0].info.q, 'validation_estimation') !== 'validation:estimate:×:decimal' || context.window.getSetReviewStructureSignature?.(validationEstimateItem.q || '', 'validation_estimation') !== 'validation:estimate:×:decimal' || validationEstimateItem.variantSourceMode !== 'source-aware-validation' || validationEstimateItem.followupQualityWarnings?.length) {
+  throw new Error('Estimate-product variants should preserve estimate-not-exact-calculation structure');
+}
+const c2JudgementSession = {
+  set: 126,
+  details: [
+    {
+      tag: 'c2_mix_judgement',
+      grade: 'wrong',
+      uid: 'validation-c2-judgement-source',
+      info: { sec: '结果判断', num: 1, q: `0.45 &divide; 0.9 的结果比 1<div class="blank"></div>`, a: '小', step: '被除数比除数小，所以结果应小于 1。' }
+    }
+  ]
+};
+const c2JudgementTargets = context.window.buildSetReviewFollowupTargets?.(c2JudgementSession) || [];
+if (c2JudgementTargets[0]?.family !== 'validation_estimation') {
+  throw new Error(`c2_mix_judgement should route to validation_estimation, got ${c2JudgementTargets[0]?.family || '(missing)'}`);
+}
 const complexNearSession = {
   set: 120,
   details: [
