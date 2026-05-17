@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.237 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added arithmetic structure signatures for continuous-zero borrowing, jump-zero borrowing, ordinary borrowing, scale-by-10 division, divide-by-25, middle/end-zero quotients, near-100 multiplication, friendly-25 multiplication, and trailing-zero multiplication.
+- Open questions: none.
+- Risks: the signatures focus on high-frequency paper traps rather than every possible vertical-algorithm edge.
+- Next steps: add new signatures only when preview shows a repeated arithmetic `需复核` pattern.
+
+### Iteration 2
+
+- What I changed: added source-aware arithmetic variants so same-set remediation keeps the specific integer pitfall rather than only the operation sign.
+- Open questions: none.
+- Risks: same-day remediation is intentionally narrower than later transfer practice.
+- Next steps: keep transfer variants separate from immediate wrong-set repair.
+
+### Iteration 3
+
+- What I changed: added runtime checks for continuous-zero subtraction, scale-by-10 division, and middle-zero quotient variants, plus a drift case that rejects ordinary borrow subtraction for a continuous-zero source.
+- Open questions: none.
+- Risks: validation covers representative integer traps first.
+- Next steps: extend tests when new arithmetic trap families are introduced.
+
 ## Current v23.236 Iteration Notes
 
 ### Iteration 1

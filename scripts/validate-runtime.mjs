@@ -2319,6 +2319,59 @@ if (arithmeticDriftQuality?.ok || !arithmeticDriftQuality?.reasons?.some(reason 
 if (!sampleFollowupItems.every(item => item.followupFamily === 'arithmetic_fluency') || sampleFollowupItems.some(item => /0\.6 \+|frac/.test(item.q || ''))) {
   throw new Error('Basic arithmetic set-review variants are not staying close to the original operation');
 }
+const zeroBorrowSession = {
+  set: 130,
+  details: [
+    {
+      tag: 'l_sub_all0',
+      grade: 'wrong',
+      uid: 'arith-zero-borrow-source',
+      info: { sec: '连续退位', num: 1, q: `60000 &minus; 25876 =`, a: '34124', step: '整万数减法要从最高位连续借位。' }
+    }
+  ]
+};
+const zeroBorrowTargets = context.window.buildSetReviewFollowupTargets?.(zeroBorrowSession) || [];
+const zeroBorrowItems = context.window.buildSetReviewFollowupItems?.(zeroBorrowSession, 'Lorik', 'advanced_fluency_v1') || [];
+const zeroBorrowItem = zeroBorrowItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(zeroBorrowSession.details[0].info.q, 'arithmetic_fluency') !== 'arith:-:zero-chain' || context.window.getSetReviewStructureSignature?.(zeroBorrowItem.q || '', 'arithmetic_fluency') !== 'arith:-:zero-chain' || zeroBorrowItem.variantSourceMode !== 'source-aware-arithmetic' || zeroBorrowItem.followupQualityWarnings?.length) {
+  throw new Error(`Zero-chain subtraction variants should preserve continuous-borrow structure, got ${zeroBorrowItem.q || '(missing)'}`);
+}
+const zeroBorrowDriftQuality = context.window.getSetReviewVariantQuality?.(zeroBorrowTargets[0], { q: `654321 &minus; 123456 =`, qualityFamily: 'arithmetic_fluency' });
+if (zeroBorrowDriftQuality?.ok || !zeroBorrowDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject continuous-borrow subtraction drifting into ordinary borrow');
+}
+const divisionScaleSession = {
+  set: 131,
+  details: [
+    {
+      tag: 'l_div_scale10',
+      grade: 'wrong',
+      uid: 'arith-div-scale-source',
+      info: { sec: '除法缩放', num: 1, q: `5600 &divide; 70 =`, a: '80', step: '被除数和除数同时去掉一个 0。' }
+    }
+  ]
+};
+const divisionScaleItems = context.window.buildSetReviewFollowupItems?.(divisionScaleSession, 'Lorik', 'advanced_fluency_v1') || [];
+const divisionScaleItem = divisionScaleItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(divisionScaleSession.details[0].info.q, 'arithmetic_fluency') !== 'arith:÷:scale10' || context.window.getSetReviewStructureSignature?.(divisionScaleItem.q || '', 'arithmetic_fluency') !== 'arith:÷:scale10' || divisionScaleItem.variantSourceMode !== 'source-aware-arithmetic' || divisionScaleItem.followupQualityWarnings?.length) {
+  throw new Error('Scale-by-10 division variants should preserve common-zero reduction structure');
+}
+const divisionMidZeroSession = {
+  set: 132,
+  details: [
+    {
+      tag: 'l_div_mid0',
+      grade: 'wrong',
+      uid: 'arith-div-mid0-source',
+      info: { sec: '商中间0', num: 1, q: `828 &divide; 4 =`, a: '207', step: '商中间遇到不够除的位要写 0 占位。' }
+    }
+  ]
+};
+const divisionMidZeroItems = context.window.buildSetReviewFollowupItems?.(divisionMidZeroSession, 'Lorik', 'advanced_fluency_v1') || [];
+const divisionMidZeroItem = divisionMidZeroItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(divisionMidZeroSession.details[0].info.q, 'arithmetic_fluency') !== 'arith:÷:quotient-mid0' || context.window.getSetReviewStructureSignature?.(divisionMidZeroItem.q || '', 'arithmetic_fluency') !== 'arith:÷:quotient-mid0' || divisionMidZeroItem.variantSourceMode !== 'source-aware-arithmetic' || divisionMidZeroItem.followupQualityWarnings?.length) {
+  throw new Error('Middle-zero quotient variants should preserve quotient-zero placeholder structure');
+}
 const decimalDivisionSession = {
   set: 115,
   details: [

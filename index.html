@@ -11086,8 +11086,167 @@
             };
         }
 
+        function getSetReviewArithmeticStructureProfile(questionHtml = '') {
+            const parsed = parseSimpleArithmeticPrompt(questionHtml);
+            if (!parsed || !Number.isFinite(parsed.left) || !Number.isFinite(parsed.right)) {
+                return { signature: 'arith:general' };
+            }
+            const decimalMode = parsed.leftPlaces + parsed.rightPlaces > 0 ? 'decimal' : 'integer';
+            if (decimalMode === 'decimal') return { signature: `arith:${parsed.op}:decimal`, ...parsed, decimalMode };
+            const leftText = String(Math.abs(Math.round(parsed.left)));
+            const rightText = String(Math.abs(Math.round(parsed.right)));
+            if (parsed.op === '-') {
+                const leftHasLongZeroTail = /^[1-9]0{3,}$/.test(leftText);
+                const leftHasInnerZero = /0/.test(leftText.replace(/0+$/, ''));
+                if (leftHasLongZeroTail) return { signature: 'arith:-:zero-chain', ...parsed, decimalMode };
+                if (leftHasInnerZero) return { signature: 'arith:-:jump-zero-borrow', ...parsed, decimalMode };
+                const borrowNeeded = (() => {
+                    const a = leftText.split('').reverse();
+                    const b = rightText.split('').reverse();
+                    for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+                        if (Number(a[i] || 0) < Number(b[i] || 0)) return true;
+                    }
+                    return false;
+                })();
+                if (borrowNeeded) return { signature: 'arith:-:borrow', ...parsed, decimalMode };
+            }
+            if (parsed.op === '÷') {
+                const quotient = parsed.right ? parsed.left / parsed.right : NaN;
+                const quotientText = Number.isInteger(quotient) ? String(Math.abs(Math.round(quotient))) : '';
+                if (/0$/.test(leftText) && /0$/.test(rightText)) return { signature: 'arith:÷:scale10', ...parsed, decimalMode };
+                if (Math.abs(parsed.right) === 25) return { signature: 'arith:÷:divide25', ...parsed, decimalMode };
+                if (/^\d+0\d+$/.test(quotientText)) return { signature: 'arith:÷:quotient-mid0', ...parsed, decimalMode };
+                if (/0$/.test(quotientText) && quotientText.length > 1) return { signature: 'arith:÷:quotient-end0', ...parsed, decimalMode };
+            }
+            if (parsed.op === '×') {
+                if ([98, 99, 101, 102].includes(Math.abs(Math.round(parsed.left))) || [98, 99, 101, 102].includes(Math.abs(Math.round(parsed.right)))) {
+                    return { signature: 'arith:×:near100', ...parsed, decimalMode };
+                }
+                if (Math.abs(Math.round(parsed.left)) === 25 || Math.abs(Math.round(parsed.right)) === 25) {
+                    return { signature: 'arith:×:friendly25', ...parsed, decimalMode };
+                }
+                if (/0$/.test(leftText) || /0$/.test(rightText)) return { signature: 'arith:×:trailing-zero', ...parsed, decimalMode };
+            }
+            return { signature: `arith:${parsed.op}:integer`, ...parsed, decimalMode };
+        }
+        window.getSetReviewArithmeticStructureProfile = getSetReviewArithmeticStructureProfile;
+
+        function buildSourceAwareArithmeticVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const profile = getSetReviewArithmeticStructureProfile(entry.info?.q || '');
+            if (!profile.signature || ['arith:general', `arith:${profile.op}:integer`, `arith:${profile.op}:decimal`].includes(profile.signature)) return null;
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'arithmetic_fluency',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-arithmetic'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'arith:-:zero-chain') {
+                const left = Engine.randChoice([50000, 60000, 70000, 100000]);
+                const right = Engine.randChoice([21876, 25876, 37468, 48273]);
+                return finish({
+                    q: `${left} &minus; ${right} =`,
+                    a: `${left - right}`,
+                    step: '同形变式：仍然是整万/整十万连续借位，中间的 0 要一层一层变成 9。'
+                });
+            }
+            if (profile.signature === 'arith:-:jump-zero-borrow') {
+                const pair = Engine.randChoice([
+                    [7004, 2867],
+                    [8003, 2956],
+                    [9005, 4678],
+                    [6032, 2785]
+                ]);
+                return finish({
+                    q: `${pair[0]} &minus; ${pair[1]} =`,
+                    a: `${pair[0] - pair[1]}`,
+                    step: '同形变式：仍然要跳过中间的 0 找最近的非 0 位借位，经过的 0 都要改成 9。'
+                });
+            }
+            if (profile.signature === 'arith:-:borrow') {
+                const pair = Engine.randChoice([
+                    [654321, 123456],
+                    [783542, 294768],
+                    [562413, 178956]
+                ]);
+                return finish({
+                    q: `${pair[0]} &minus; ${pair[1]} =`,
+                    a: `${pair[0] - pair[1]}`,
+                    step: '同形变式：仍然是多位退位减法，逐位写清借位后再用加法反查。'
+                });
+            }
+            if (profile.signature === 'arith:÷:scale10') {
+                const divisor = Engine.randChoice([20, 30, 40, 70, 80]);
+                const quotient = Engine.randChoice([24, 36, 50, 80]);
+                return finish({
+                    q: `${divisor * quotient} &divide; ${divisor} =`,
+                    a: `${quotient}`,
+                    step: '同形变式：仍然先同步去掉被除数和除数共有的 0，再看商末尾 0 的位值有没有保住。'
+                });
+            }
+            if (profile.signature === 'arith:÷:divide25') {
+                const quotient = Engine.randChoice([48, 64, 96, 128]);
+                return finish({
+                    q: `${quotient * 25} &divide; 25 =`,
+                    a: `${quotient}`,
+                    step: '同形变式：仍然用 25×4=100，可以先乘 4 再除以 100，最后反推检查。'
+                });
+            }
+            if (profile.signature === 'arith:÷:quotient-mid0') {
+                const divisor = Engine.randChoice([3, 4, 6, 8]);
+                const quotient = Engine.randChoice([203, 204, 305, 407]);
+                return finish({
+                    q: `${divisor * quotient} &divide; ${divisor} =`,
+                    a: `${quotient}`,
+                    step: '同形变式：仍然要保住商中间的 0，占位不能漏。'
+                });
+            }
+            if (profile.signature === 'arith:÷:quotient-end0') {
+                const divisor = Engine.randChoice([6, 8, 12, 15]);
+                const quotient = Engine.randChoice([120, 240, 350, 480]);
+                return finish({
+                    q: `${divisor * quotient} &divide; ${divisor} =`,
+                    a: `${quotient}`,
+                    step: '同形变式：仍然要先算准前面的商，再保住末尾 0 的位值。'
+                });
+            }
+            if (profile.signature === 'arith:×:near100') {
+                const near = Engine.randChoice([98, 99, 101, 102]);
+                const value = Engine.randChoice([26, 38, 47, 64]);
+                return finish({
+                    q: `${near} &times; ${value} =`,
+                    a: `${near * value}`,
+                    step: `同形变式：仍然把 ${near} 看成接近 100 的数，先算整百倍再补偿。`
+                });
+            }
+            if (profile.signature === 'arith:×:friendly25') {
+                const value = Engine.randChoice([36, 48, 64, 96]);
+                return finish({
+                    q: `25 &times; ${value} =`,
+                    a: `${25 * value}`,
+                    step: '同形变式：仍然先从另一个因数里拆出 4，让 25×4 先凑成 100。'
+                });
+            }
+            if (profile.signature === 'arith:×:trailing-zero') {
+                const left = Engine.randChoice([240, 360, 480, 620]);
+                const right = Engine.randChoice([25, 35, 42]);
+                return finish({
+                    q: `${left} &times; ${right} =`,
+                    a: `${left * right}`,
+                    step: '同形变式：仍然先算非 0 部分，再把原来因数里的 0 和位值带回结果。'
+                });
+            }
+            return null;
+        }
+        window.buildSourceAwareArithmeticVariant = buildSourceAwareArithmeticVariant;
+
         function buildSetReviewArithmeticVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            const sourceAware = buildSourceAwareArithmeticVariant(target);
+            if (sourceAware) return sourceAware;
             const parsed = parseSimpleArithmeticPrompt(entry.info?.q || '');
             if (!parsed || !Number.isFinite(parsed.left) || !Number.isFinite(parsed.right)) {
                 return buildGenericSetReviewVariant(target);
@@ -12974,6 +13133,9 @@
             }
             if (family === 'validation_estimation') {
                 return getSetReviewValidationStructureProfile(questionHtml).signature;
+            }
+            if (family === 'arithmetic_fluency') {
+                return getSetReviewArithmeticStructureProfile(questionHtml).signature;
             }
             const arithmetic = parseSimpleArithmeticPrompt(questionHtml);
             if (arithmetic) {
