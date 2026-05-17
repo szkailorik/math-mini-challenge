@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.238 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added percent-equation signatures that separate direct percent equations from "比...多/少" offset equations, and made same-day equation repair prefer source-aware variants before broader boundary transfer.
+- Open questions: none.
+- Risks: uncommon percent-equation wording may still fall back to the general equation signature until preview exposes it.
+- Next steps: add signatures for repeated preview warnings rather than widening the same-day generator too much.
+
+### Iteration 2
+
+- What I changed: added source-aware percent-equation variants and kept known inverse-equation tags tied to the original unknown position.
+- Open questions: none.
+- Risks: immediate remediation is intentionally narrow; later mixed transfer should still carry broader equation practice.
+- Next steps: keep direct correction and delayed transfer as separate learning jobs.
+
+### Iteration 3
+
+- What I changed: added runtime checks for known divisor equations, direct percent equations, offset percent equations, and drift rejection between direct and offset percent forms.
+- Open questions: none.
+- Risks: validation covers representative equation traps first.
+- Next steps: extend tests when new equation mistake families appear in the set report.
+
 ## Current v23.237 Iteration Notes
 
 ### Iteration 1

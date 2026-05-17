@@ -2574,6 +2574,59 @@ const equationCoeffCandidateSignature = context.window.getSetReviewStructureSign
 if (equationCoeffSourceSignature !== 'equation:coefficient' || equationCoeffCandidateSignature !== 'equation:coefficient' || equationCoeffItem.variantSourceMode !== 'source-aware-equation' || equationCoeffItem.followupQualityWarnings?.length) {
   throw new Error(`Unknown-tag coefficient equations should preserve coefficient structure, got ${equationCoeffSourceSignature} -> ${equationCoeffCandidateSignature} for ${equationCoeffItem.q || '(missing)'}`);
 }
+const knownEquationDivisorSession = {
+  set: 133,
+  details: [
+    {
+      tag: 'k_eq_divisor',
+      grade: 'wrong',
+      uid: 'eq-known-divisor-source',
+      info: { sec: '方程逆运算', num: 1, q: `36 &divide; <i class="var">x</i> = 4`, a: `<i class="var">x</i> = 9`, step: '未知数在除数位置。' }
+    }
+  ]
+};
+const knownEquationDivisorItems = context.window.buildSetReviewFollowupItems?.(knownEquationDivisorSession, 'KAI', 'advanced_fluency_v1') || [];
+const knownEquationDivisorItem = knownEquationDivisorItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(knownEquationDivisorSession.details[0].info.q, 'equation_method') !== 'equation:divisor' || context.window.getSetReviewStructureSignature?.(knownEquationDivisorItem.q || '', 'equation_method') !== 'equation:divisor' || knownEquationDivisorItem.variantSourceMode !== 'source-aware-equation' || !/&divide; <i class="var">x<\/i>/.test(knownEquationDivisorItem.q || '') || knownEquationDivisorItem.followupQualityWarnings?.length) {
+  throw new Error('Known equation divisor tags should still prefer same-position source-aware variants');
+}
+const percentDirectEquationSession = {
+  set: 134,
+  details: [
+    {
+      tag: 'c2_eq_percent',
+      grade: 'wrong',
+      uid: 'eq-percent-direct-source',
+      info: { sec: '百分数方程', num: 1, q: `<i class="var">x</i> &times; 25% = 16，<i class="var">x</i> =<div class="blank"></div>`, a: '64', step: '整体×百分率=部分。' }
+    }
+  ]
+};
+const percentDirectEquationTargets = context.window.buildSetReviewFollowupTargets?.(percentDirectEquationSession) || [];
+const percentDirectEquationItems = context.window.buildSetReviewFollowupItems?.(percentDirectEquationSession, 'KAI', 'advanced_fluency_v1') || [];
+const percentDirectEquationItem = percentDirectEquationItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(percentDirectEquationSession.details[0].info.q, 'equation_method') !== 'equation:percent-direct' || context.window.getSetReviewStructureSignature?.(percentDirectEquationItem.q || '', 'equation_method') !== 'equation:percent-direct' || percentDirectEquationItem.variantSourceMode !== 'source-aware-equation' || percentDirectEquationItem.followupQualityWarnings?.length) {
+  throw new Error(`Percent direct equation mistakes should preserve direct percent-equation structure, got ${percentDirectEquationItem.q || '(missing)'}`);
+}
+const percentOffsetEquationSession = {
+  set: 135,
+  details: [
+    {
+      tag: 'c2_eq_percent',
+      grade: 'wrong',
+      uid: 'eq-percent-offset-source',
+      info: { sec: '百分数方程', num: 1, q: `<i class="var">x</i> 的 40% 比 18 多 6，<i class="var">x</i> =<div class="blank"></div>`, a: '60', step: '先得百分率对应量。' }
+    }
+  ]
+};
+const percentOffsetEquationItems = context.window.buildSetReviewFollowupItems?.(percentOffsetEquationSession, 'KAI', 'advanced_fluency_v1') || [];
+const percentOffsetEquationItem = percentOffsetEquationItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(percentOffsetEquationSession.details[0].info.q, 'equation_method') !== 'equation:percent-offset' || context.window.getSetReviewStructureSignature?.(percentOffsetEquationItem.q || '', 'equation_method') !== 'equation:percent-offset' || percentOffsetEquationItem.variantSourceMode !== 'source-aware-equation' || percentOffsetEquationItem.followupQualityWarnings?.length) {
+  throw new Error(`Percent offset equation mistakes should preserve compare-offset percent-equation structure, got ${percentOffsetEquationItem.q || '(missing)'}`);
+}
+const percentEquationDriftQuality = context.window.getSetReviewVariantQuality?.(percentDirectEquationTargets[0], { q: `<i class="var">x</i> 的 40% 比 18 多 6，<i class="var">x</i> =<div class="blank"></div>`, qualityFamily: 'equation_method' });
+if (percentEquationDriftQuality?.ok || !percentEquationDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject direct-vs-offset percent equation drift');
+}
 const speedRateSession = {
   set: 112,
   details: [

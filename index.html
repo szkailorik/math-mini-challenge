@@ -12429,8 +12429,11 @@
         function getSetReviewEquationStructureProfile(questionHtml = '') {
             const raw = String(questionHtml || '');
             const source = normalizeErrorPrompt(raw).replace(/[＝=].*$/, '').trim();
-            const hasX = /<i class="var">x<\/i>|\bx\b/.test(`${raw} ${source}`);
+            const context = `${raw} ${source}`;
+            const hasX = /<i class="var">x<\/i>|\bx\b/.test(context);
             if (!hasX) return { signature: 'equation:general' };
+            if (/%|百分/.test(context) && /比[^，,。]*(多|少)|(多|少)\s*\d/.test(context)) return { signature: 'equation:percent-offset' };
+            if (/%|百分/.test(context) && /(×|的|是|=)/.test(context)) return { signature: 'equation:percent-direct' };
             if (/÷\s*x|&divide;\s*<i class="var">x<\/i>/.test(`${source} ${raw}`)) return { signature: 'equation:divisor' };
             if (/-\s*x|&minus;\s*<i class="var">x<\/i>/.test(`${source} ${raw}`)) return { signature: 'equation:subtrahend' };
             if (/x\s*÷|<i class="var">x<\/i>\s*&divide;/.test(`${source} ${raw}`)) {
@@ -12460,6 +12463,33 @@
                 variantSourceMode: 'source-aware-equation'
             };
             const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'equation:percent-direct') {
+                const item = Engine.randChoice([
+                    { percent: 20, part: 18, whole: 90 },
+                    { percent: 25, part: 16, whole: 64 },
+                    { percent: 40, part: 28, whole: 70 },
+                    { percent: 50, part: 36, whole: 72 },
+                    { percent: 62.5, part: 25, whole: 40 }
+                ]);
+                return finish({
+                    q: `<i class="var">x</i> &times; ${item.percent}% = ${item.part}，<i class="var">x</i> =<div class="blank"></div>`,
+                    a: `${item.whole}`,
+                    step: `同形变式：仍然是“整体 × 百分率 = 部分”，先把 ${item.percent}% 化成小数，再用部分 ÷ 百分率求整体。`
+                });
+            }
+            if (profile.signature === 'equation:percent-offset') {
+                const item = Engine.randChoice([
+                    { percent: 40, base: 18, relation: '多', delta: 6, amount: 24, whole: 60 },
+                    { percent: 25, base: 18, relation: '少', delta: 8, amount: 10, whole: 40 },
+                    { percent: 30, base: 12, relation: '多', delta: 9, amount: 21, whole: 70 },
+                    { percent: 20, base: 30, relation: '少', delta: 6, amount: 24, whole: 120 }
+                ]);
+                return finish({
+                    q: `<i class="var">x</i> 的 ${item.percent}% 比 ${item.base} ${item.relation} ${item.delta}，<i class="var">x</i> =<div class="blank"></div>`,
+                    a: `${item.whole}`,
+                    step: `同形变式：仍然先把“比 ${item.base} ${item.relation} ${item.delta}”转成百分率对应的量 ${item.amount}，再用 ${item.amount} ÷ ${item.percent}% 求整体。`
+                });
+            }
             if (profile.signature === 'equation:divisor') {
                 const lhs = Engine.randChoice([24, 36, 48]);
                 const rhs = Engine.randChoice([3, 4, 6]);
@@ -12530,6 +12560,8 @@
 
         function buildSetReviewEquationVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
+            const sourceAware = buildSourceAwareEquationVariant(target);
+            if (sourceAware) return sourceAware;
             if (/^c2_eq_/.test(entry.tag || '')) {
                 const built = target.grade === 'wrong'
                     ? buildClosureBoundaryReplayItem(entry)
@@ -12544,8 +12576,6 @@
                     });
                 }
             }
-            const sourceAware = buildSourceAwareEquationVariant(target);
-            if (sourceAware && !/^k_eq_/.test(entry.tag || '')) return sourceAware;
             const built = buildKaiEquationVariant(entry.tag || 'k_eq_twostep', '[本套变式 Follow-up] ');
             return built
                 ? attachQualityMetadata({
