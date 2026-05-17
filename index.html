@@ -11216,6 +11216,252 @@
             });
         }
 
+        function getSetReviewComplexStructureProfile(questionHtml = '') {
+            const raw = String(questionHtml || '');
+            const normalized = normalizeErrorPrompt(raw)
+                .replace(/[＝=].*$/, '')
+                .replace(/−/g, '-')
+                .trim();
+            const compact = normalized.replace(/\s+/g, ' ');
+            const rawContext = `${raw} ${compact}`;
+            const fracCount = (raw.match(/class="frac"/g) || []).length + (compact.match(/\d+\s*\/\s*\d+/g) || []).length;
+            const hasParen = /paren-l|paren-r|math-paren-group|\[|\]|\(|\)|（|）/.test(rawContext);
+            if (/bottom">\d+\s*&times;\s*\d+/.test(raw) && /\+/.test(compact)) {
+                return { signature: 'complex:telescoping-fraction' };
+            }
+            if (fracCount >= 3 && /×/.test(compact) && /\+/.test(compact) && /÷/.test(compact)) {
+                return { signature: 'complex:fraction-common-factor-div' };
+            }
+            if (fracCount >= 1 && /\b\d+(?:\.\d+)?\s*-\s*\d+(?:\.\d+)?\s*×/.test(compact)) {
+                return { signature: 'complex:fraction-remainder-of-whole' };
+            }
+            if (fracCount >= 2 && /×/.test(compact) && /\+/.test(compact)) {
+                return { signature: 'complex:fraction-complement-distribution' };
+            }
+            if (/\b(?:99|101|999)\s*×\s*(\d+(?:\.\d+)?)\s*[+-]\s*\1\b/.test(compact)) {
+                return { signature: 'complex:near-base-compensation' };
+            }
+            if (/\d+\.\d+\s*×\s*\d+(?:\.\d+)?\s*\+\s*(\d+)\s*×\s*\d+(?:\.\d+)?/.test(compact)) {
+                const scaled = compact.match(/(\d+)\.(\d+)\s*×[\s\S]*?\+\s*\1\2\s*×/);
+                if (scaled) return { signature: 'complex:scaled-common-factor-add' };
+            }
+            const sameLeft = compact.match(/(\d+(?:\.\d+)?)\s*×\s*\d+(?:\.\d+)?\s*([+-])\s*\1\s*×/);
+            const sameRight = compact.match(/\d+(?:\.\d+)?\s*×\s*(\d+(?:\.\d+)?)\s*([+-])\s*\d+(?:\.\d+)?\s*×\s*\1/);
+            if (sameLeft || sameRight) {
+                const op = (sameLeft || sameRight)[2] === '-' ? 'sub' : 'add';
+                return { signature: `complex:common-factor-${op}` };
+            }
+            if (/÷/.test(compact) && /可以先看成|同步|同时|扩大|缩小/.test(compact)) {
+                return { signature: 'complex:division-rescale-choice' };
+            }
+            if (/更适合先把|可以先把|看成/.test(compact) && /\d+\.\d+/.test(compact)) {
+                return { signature: 'complex:representation-choice' };
+            }
+            if (hasParen && /×/.test(compact) && /-/.test(compact)) {
+                return { signature: 'complex:paren-mul-sub' };
+            }
+            if (hasParen && /×/.test(compact)) {
+                return { signature: 'complex:paren-mul' };
+            }
+            if (/(12\.5|125|1\.25|0\.25|25)/.test(compact) && /×/.test(compact) && /-/.test(compact)) {
+                return { signature: 'complex:friendly-factor-offset' };
+            }
+            if (/(12\.5|125|1\.25|0\.25|25)/.test(compact) && /×/.test(compact)) {
+                return { signature: 'complex:friendly-factor-chain' };
+            }
+            if (fracCount >= 1 && /\d+\.\d+/.test(compact) && /\+/.test(compact) && /×/.test(compact)) {
+                return { signature: 'complex:frac-decimal-order' };
+            }
+            if (/\+/.test(compact) && /×/.test(compact)) {
+                return { signature: 'complex:priority-add-mul' };
+            }
+            if (/\b(?:98|99|101|102|999)\s*×\s*\d+(?:\.\d+)?\b/.test(compact)) {
+                return { signature: 'complex:near-base-product' };
+            }
+            return { signature: 'complex:general' };
+        }
+        window.getSetReviewComplexStructureProfile = getSetReviewComplexStructureProfile;
+
+        function buildSourceAwareComplexMixedVariant(target) {
+            const entry = target?.sourceItems?.[0] || {};
+            const raw = String(entry.info?.q || '');
+            const source = normalizeErrorPrompt(raw);
+            const profile = getSetReviewComplexStructureProfile(raw);
+            if (!profile.signature || profile.signature === 'complex:general') return null;
+            const baseMeta = {
+                tag: entry.tag || '',
+                qualityFamily: 'complex_mixed',
+                replayLevel: target.grade === 'wrong' ? 'L2' : 'L1',
+                isSetReviewFollowup: true,
+                isReviewItem: true,
+                variantSourceMode: 'source-aware-complex'
+            };
+            const finish = item => attachQualityMetadata({ ...baseMeta, ...item });
+            if (profile.signature === 'complex:telescoping-fraction') {
+                const start = Engine.randChoice([2, 3, 4, 5]);
+                const count = Engine.randChoice([3, 4, 5]);
+                const terms = Array.from({ length: count }, (_, idx) => {
+                    const n = start + idx;
+                    return `<div class="frac"><span>1</span><span class="bottom">${n}&times;${n + 1}</span></div>`;
+                });
+                const ans = new Frac(1, start).sub(new Frac(1, start + count));
+                return finish({
+                    q: `${terms.join(' + ')} =`,
+                    a: ans.toHTML(),
+                    step: '同形变式：仍然把每一项裂成两个单位分数相减，中间项相消，只留首尾。'
+                });
+            }
+            if (profile.signature === 'complex:fraction-common-factor-div') {
+                const outer = new Frac(Engine.randChoice([4, 5, 7]), Engine.randChoice([13, 17, 19]));
+                const d = Engine.randChoice([7, 8, 9, 12]);
+                const nearWhole = new Frac(d - 1, d);
+                return finish({
+                    q: `${outer.toHTML()} &times; ${nearWhole.toHTML()} + ${outer.toHTML()} &divide; <div class="frac"><span>${d}</span><span class="bottom">1</span></div> =`,
+                    a: outer.toHTML(),
+                    step: '同形变式：仍然先把除法改成乘 1/d，再提取相同分数，括号里合成 1。'
+                });
+            }
+            if (profile.signature === 'complex:fraction-remainder-of-whole') {
+                const den = Engine.randChoice([6, 8, 9, 12]);
+                const num = Engine.randChoice([2, 3, 5]);
+                const unit = Engine.randChoice([8, 10, 12, 15]);
+                const total = den * unit;
+                return finish({
+                    q: `${total} &minus; ${total} &times; ${new Frac(num, den).toHTML()} =`,
+                    a: `${total - unit * num}`,
+                    step: '同形变式：仍然先求出总量的几分之几，再用总量减去已取走的部分。'
+                });
+            }
+            if (profile.signature === 'complex:fraction-complement-distribution') {
+                const den = Engine.randChoice([11, 13, 17, 19]);
+                const num = Engine.randChoice([2, 3, 5, 7]);
+                const whole = Engine.randChoice([24, 30, 36, 42]);
+                return finish({
+                    q: `${new Frac(num, den).toHTML()} &times; ${whole} + ${new Frac(den - num, den).toHTML()} &times; ${whole} =`,
+                    a: `${whole}`,
+                    step: '同形变式：仍然逆用分配律，两个互补分数先合成 1，再乘同一个数。'
+                });
+            }
+            if (profile.signature === 'complex:near-base-compensation') {
+                const value = Engine.randChoice([24, 36, 48, 57]);
+                const mode = Engine.randChoice([99, 101, 999]);
+                const op = mode === 101 ? '&minus;' : '+';
+                return finish({
+                    q: `${mode} &times; ${value} ${op} ${value} =`,
+                    a: `${(mode === 999 ? 1000 : 100) * value}`,
+                    step: `同形变式：仍然把 ${mode} 个和这 1 个补成整百或整千个，再一次算出总数。`
+                });
+            }
+            if (profile.signature === 'complex:scaled-common-factor-add') {
+                const a = Engine.randChoice([3, 4, 5, 6, 7]);
+                const b = 10 - a;
+                const leftFactor = `${a}.${b}`;
+                const common = Number(`${a}${b}`);
+                const first = Engine.randChoice([65, 75, 85]);
+                const second = (100 - first) / 10;
+                return finish({
+                    q: `${leftFactor} &times; ${first} + ${common} &times; ${formatDecimal(second)} =`,
+                    a: `${common * 10}`,
+                    step: '同形变式：仍然先用积不变把第一项移成同一个公因数，再提取公因数。'
+                });
+            }
+            if (profile.signature === 'complex:common-factor-add' || profile.signature === 'complex:common-factor-sub') {
+                const factor = Engine.randChoice([24, 36, 48, 64]);
+                const a = Engine.randChoice([12, 18, 25, 37]);
+                const b = profile.signature.endsWith('sub') ? Engine.randChoice([3, 5, 8]) : Engine.randChoice([41, 55, 68]);
+                const op = profile.signature.endsWith('sub') ? '&minus;' : '+';
+                return finish({
+                    q: `${factor} &times; ${a} ${op} ${factor} &times; ${b} =`,
+                    a: `${profile.signature.endsWith('sub') ? factor * (a - b) : factor * (a + b)}`,
+                    step: `同形变式：仍然先提取相同因数 ${factor}，再算括号里的${profile.signature.endsWith('sub') ? '差' : '和'}。`
+                });
+            }
+            if (profile.signature === 'complex:division-rescale-choice') {
+                const divisor = Engine.randChoice([0.4, 0.6, 0.8]);
+                const quotient = Engine.randChoice([6, 8, 9]);
+                const dividend = divisor * quotient;
+                return finish({
+                    q: `${formatDecimal(dividend)} &divide; ${divisor} 可以先看成<div class="blank"></div>`,
+                    a: `${formatDecimal(dividend * 10)} &divide; ${formatDecimal(divisor * 10)}`,
+                    step: '同形变式：仍然把被除数和除数同时扩大相同倍数，先变成更熟的整数除法。'
+                });
+            }
+            if (profile.signature === 'complex:representation-choice') {
+                const choices = [
+                    { decimal: 0.125, whole: 64, frac: new Frac(1, 8) },
+                    { decimal: 0.375, whole: 16, frac: new Frac(3, 8) },
+                    { decimal: 0.625, whole: 24, frac: new Frac(5, 8) },
+                    { decimal: 0.75, whole: 28, frac: new Frac(3, 4) }
+                ];
+                const picked = Engine.randChoice(choices);
+                return finish({
+                    q: `${picked.decimal} &times; ${picked.whole} 更适合先把 ${picked.decimal} 看成<div class="blank"></div>`,
+                    a: picked.frac.toHTML(),
+                    step: '同形变式：仍然先认出小数对应的分数，再看整数能不能和分母先约。'
+                });
+            }
+            if (profile.signature === 'complex:paren-mul-sub' || profile.signature === 'complex:paren-mul') {
+                const a = Engine.randChoice([18, 24, 32]);
+                const b = Engine.randChoice([12, 16, 25]);
+                const c = Engine.randChoice([3, 4, 5]);
+                const d = Engine.randChoice([17, 28, 39]);
+                const withSub = profile.signature === 'complex:paren-mul-sub';
+                return finish({
+                    q: `<span class="paren-l"></span>${a} + ${b}<span class="paren-r"></span> &times; ${c}${withSub ? ` &minus; ${d}` : ''} =`,
+                    a: `${(a + b) * c - (withSub ? d : 0)}`,
+                    step: `同形变式：仍然先算括号里的和，再乘外面的数${withSub ? '，最后再减' : ''}。`
+                });
+            }
+            if (profile.signature === 'complex:friendly-factor-offset') {
+                const multiple = Engine.randChoice([32, 40, 56, 72]);
+                const minus = Engine.randChoice([3.6, 4.8, 7.5]);
+                return finish({
+                    q: `1.25 &times; ${multiple} &minus; ${minus} =`,
+                    a: formatDecimal(1.25 * multiple - minus),
+                    step: '同形变式：仍然先从另一个因数里拆出 8，让 1.25×8 先凑成 10，再减。'
+                });
+            }
+            if (profile.signature === 'complex:friendly-factor-chain') {
+                if (/0\.25/.test(source)) {
+                    const k = Engine.randChoice([5, 7, 9, 12]);
+                    return finish({
+                        q: `12.5 &times; ${k * 8} &times; 0.25 =`,
+                        a: `${formatDecimal(25 * k)}`,
+                        step: '同形变式：仍然先把中间因数拆出 8，让 12.5×8 先凑成 100。'
+                    });
+                }
+                const middle = Engine.randChoice([3.6, 4.8, 6.4, 7.5]);
+                return finish({
+                    q: `8 &times; ${middle} &times; 12.5 =`,
+                    a: `${formatDecimal(middle * 100)}`,
+                    step: '同形变式：仍然先交换结合，把 8×12.5 凑成 100，再乘剩下的数。'
+                });
+            }
+            if (profile.signature === 'complex:frac-decimal-order') {
+                const left = Engine.randChoice([new Frac(1, 4), new Frac(2, 5), new Frac(3, 4)]);
+                const decimal = Engine.randChoice([1.2, 1.5, 2.4]);
+                const right = Engine.randChoice([new Frac(1, 2), new Frac(2, 3), new Frac(3, 5)]);
+                const ans = left.add(new Frac(decimal * 10, 10).mul(right));
+                return finish({
+                    q: `${left.toHTML()} + ${decimal} &times; ${right.toHTML()} =`,
+                    a: ans.toMixedHTML(),
+                    step: '同形变式：仍然先算乘法，再把小数和分数统一成一种表示后相加。'
+                });
+            }
+            if (profile.signature === 'complex:priority-add-mul') {
+                const add = Engine.randChoice([36, 48, 57, 69]);
+                const factor = Engine.randChoice([12, 14, 16]);
+                const times = Engine.randChoice([4, 5, 7]);
+                return finish({
+                    q: `${add} + ${factor} &times; ${times} =`,
+                    a: `${add + factor * times}`,
+                    step: '同形变式：仍然先乘后加，不能从左到右顺手先加。'
+                });
+            }
+            return null;
+        }
+        window.buildSourceAwareComplexMixedVariant = buildSourceAwareComplexMixedVariant;
+
         function buildSetReviewComplexMixedVariant(target) {
             const entry = target?.sourceItems?.[0] || {};
             if (/^c2_mix_/.test(entry.tag || '')) {
@@ -11232,6 +11478,8 @@
                     });
                 }
             }
+            const sourceAware = buildSourceAwareComplexMixedVariant(target);
+            if (sourceAware) return sourceAware;
             if (/^k_oly_/.test(entry.tag || '')) {
                 let built = null;
                 switch (entry.tag) {
@@ -12442,6 +12690,9 @@
             if (family === 'fraction_operation') {
                 const profile = getSetReviewFractionStructureProfile(questionHtml);
                 return `fraction:${profile.sequence || 'general'}`;
+            }
+            if (family === 'complex_mixed') {
+                return getSetReviewComplexStructureProfile(questionHtml).signature;
             }
             const arithmetic = parseSimpleArithmeticPrompt(questionHtml);
             if (arithmetic) {

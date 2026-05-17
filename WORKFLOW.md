@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.234 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added complex-mixed structure signatures for near-100 compensation, common-factor/distribution shortcuts, operation order, parentheses, friendly-number chains, telescoping fractions, and fraction-of-total remainder prompts.
+- Open questions: none.
+- Risks: new complex structures are intentionally stricter, so truly transfer-style variants should be added as separate delayed-practice lanes rather than same-day remediation.
+- Next steps: keep same-day variants close to the original error mechanism.
+
+### Iteration 2
+
+- What I changed: added source-aware complex-mixed variant generation so those structures no longer fall back to generic mixed-practice lookalikes.
+- Open questions: none.
+- Risks: each structure uses a focused template pool, so later item-bank expansion should add templates before widening the selector.
+- Next steps: watch preview audit results for any complex tag that still lands in `complex:general`.
+
+### Iteration 3
+
+- What I changed: added runtime tests for near-100 compensation, operation order, fraction-of-total remainder, and fraction-complement distribution, including a failing drift case for plain near-100 multiplication.
+- Open questions: none.
+- Risks: validation covers high-frequency complex structures first, not every olympiad-style expression.
+- Next steps: extend signatures for any rare complex expression that preview shows as `需复核`.
+
 ## Current v23.233 Iteration Notes
 
 ### Iteration 1

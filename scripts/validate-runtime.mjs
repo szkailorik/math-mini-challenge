@@ -2558,6 +2558,75 @@ const priceUnitItem = priceUnitItems[0] || {};
 if (context.window.getSetReviewStructureSignature?.(priceUnitSession.details[0].info.q, 'unit_rate_speed') !== 'unit:price-unit' || context.window.getSetReviewStructureSignature?.(priceUnitItem.q || '', 'unit_rate_speed') !== 'unit:price-unit' || priceUnitItem.variantSourceMode !== 'source-aware-unit-rate' || priceUnitItem.followupQualityWarnings?.length) {
   throw new Error('Unknown-tag unit-price mistakes should generate same-relation unit-rate variants');
 }
+const complexNearSession = {
+  set: 120,
+  details: [
+    {
+      tag: 'l_bmix_near100',
+      grade: 'wrong',
+      uid: 'complex-near-comp-source',
+      info: { sec: '简算补偿', num: 1, q: `99 &times; 34 + 34`, a: '3400', step: '把 99 个 34 和 1 个 34 合成 100 个 34。' }
+    }
+  ]
+};
+const complexNearTargets = context.window.buildSetReviewFollowupTargets?.(complexNearSession) || [];
+const complexNearItems = context.window.buildSetReviewFollowupItems?.(complexNearSession, 'Lorik', 'advanced_fluency_v1') || [];
+const complexNearItem = complexNearItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(complexNearSession.details[0].info.q, 'complex_mixed') !== 'complex:near-base-compensation' || context.window.getSetReviewStructureSignature?.(complexNearItem.q || '', 'complex_mixed') !== 'complex:near-base-compensation' || complexNearItem.variantSourceMode !== 'source-aware-complex' || complexNearItem.followupQualityWarnings?.length) {
+  throw new Error(`Near-100 compensation variants should preserve the compensation structure, got ${complexNearItem.q || '(missing)'}`);
+}
+const nearProductDriftQuality = context.window.getSetReviewVariantQuality?.(complexNearTargets[0], { q: `99 &times; 47 =`, qualityFamily: 'complex_mixed' });
+if (nearProductDriftQuality?.ok || !nearProductDriftQuality?.reasons?.some(reason => /骨架/.test(reason))) {
+  throw new Error('Set review quality gate should reject near-100 compensation drifting into plain near-100 multiplication');
+}
+const complexOrderSession = {
+  set: 121,
+  details: [
+    {
+      tag: 'l_bmix_order',
+      grade: 'wrong',
+      uid: 'complex-order-source',
+      info: { sec: '运算顺序', num: 1, q: `42 + 14 &times; 6`, a: '126', step: '先乘除后加减，不能从左往右先加。' }
+    }
+  ]
+};
+const complexOrderItems = context.window.buildSetReviewFollowupItems?.(complexOrderSession, 'Lorik', 'advanced_fluency_v1') || [];
+const complexOrderItem = complexOrderItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(complexOrderSession.details[0].info.q, 'complex_mixed') !== 'complex:priority-add-mul' || context.window.getSetReviewStructureSignature?.(complexOrderItem.q || '', 'complex_mixed') !== 'complex:priority-add-mul' || complexOrderItem.variantSourceMode !== 'source-aware-complex' || complexOrderItem.followupQualityWarnings?.length) {
+  throw new Error('Order-of-operations variants should preserve add-then-multiply structure');
+}
+const complexRemainSession = {
+  set: 122,
+  details: [
+    {
+      tag: 'k_oly_unit_fraction',
+      grade: 'wrong',
+      uid: 'complex-remain-source',
+      info: { sec: '分数应用', num: 1, q: `48 &minus; 48 &times; ${validatorFrac(3, 8)}`, a: '30', step: '先求总量的 3/8，再用总量相减。' }
+    }
+  ]
+};
+const complexRemainItems = context.window.buildSetReviewFollowupItems?.(complexRemainSession, 'KAI', 'advanced_fluency_v1') || [];
+const complexRemainItem = complexRemainItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(complexRemainSession.details[0].info.q, 'complex_mixed') !== 'complex:fraction-remainder-of-whole' || context.window.getSetReviewStructureSignature?.(complexRemainItem.q || '', 'complex_mixed') !== 'complex:fraction-remainder-of-whole' || complexRemainItem.variantSourceMode !== 'source-aware-complex' || !/&minus;/.test(complexRemainItem.q || '') || complexRemainItem.followupQualityWarnings?.length) {
+  throw new Error('Fraction remainder variants should preserve total-minus-fraction-of-total structure');
+}
+const complexDistSession = {
+  set: 123,
+  details: [
+    {
+      tag: 'l_bmix_dist',
+      grade: 'wrong',
+      uid: 'complex-fraction-dist-source',
+      info: { sec: '逆用分配律', num: 1, q: `${validatorFrac(3, 13)} &times; 39 + ${validatorFrac(10, 13)} &times; 39`, a: '39', step: '两个互补分数都乘同一个数，先合成 1。' }
+    }
+  ]
+};
+const complexDistItems = context.window.buildSetReviewFollowupItems?.(complexDistSession, 'Lorik', 'advanced_fluency_v1') || [];
+const complexDistItem = complexDistItems[0] || {};
+if (context.window.getSetReviewStructureSignature?.(complexDistSession.details[0].info.q, 'complex_mixed') !== 'complex:fraction-complement-distribution' || context.window.getSetReviewStructureSignature?.(complexDistItem.q || '', 'complex_mixed') !== 'complex:fraction-complement-distribution' || complexDistItem.variantSourceMode !== 'source-aware-complex' || complexDistItem.followupQualityWarnings?.length) {
+  throw new Error('Fraction complement distribution variants should preserve the same distributive-law mechanism');
+}
 const bulkFollowupSession = {
   set: 107,
   details: Array.from({ length: 11 }, (_, idx) => ({
