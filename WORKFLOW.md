@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.241 Iteration Notes
+
+### Iteration 1
+
+- What I changed: compressed the daily mix note into a single-line answer-key status strip while preserving wrong-book and new-question counts.
+- Open questions: none.
+- Risks: the strip now carries less explanatory detail, so deeper policy wording should stay in reports rather than the answer key.
+- Next steps: keep the answer key optimized for fast parent checking.
+
+### Iteration 2
+
+- What I changed: compressed submission progress and section navigation into inline actions, preserving pending-row jumps and pending-only filtering without a full paragraph block.
+- Open questions: none.
+- Risks: if many sections are pending, only the highest-priority section shortcuts should remain visible.
+- Next steps: keep answer-page controls short and action-oriented.
+
+### Iteration 3
+
+- What I changed: shortened post-submit actions and Closure write-back guidance into compact strips so answer rows remain the primary visual content.
+- Open questions: none.
+- Risks: validation checks that the actions still exist, not exact visual density.
+- Next steps: review a printed and on-screen answer sheet after a real grading session.
+
 ## Current v23.240 Iteration Notes
 
 ### Iteration 1

@@ -1122,6 +1122,9 @@
         .ans-sheet { font-size: 14.5px; }
         .ans-sheet .header h1 { font-size: 22px; margin-bottom: 8px; }
         .ans-sheet .sheet-meta-band { margin-bottom: 14px; }
+        .ans-sheet .answer-progress-note { padding: 6px 10px !important; margin-bottom: 6px !important; font-size: 12.5px !important; line-height: 1.35 !important; border-radius: 6px !important; }
+        .ans-sheet .answer-progress-note .answer-note-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; margin-left: 8px; vertical-align: middle; }
+        .ans-sheet .answer-progress-note .review-jump-btn { padding: 3px 7px; font-size: 12px; border-radius: 6px; }
         .ans-grid-block { margin-bottom: 12px; }
         .ans-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fc; border-left: 3px solid #002D72; padding: 8px 10px; margin-bottom: 6px; border-radius: 0 4px 4px 0; transition: background 0.2s;}
         .ans-section { margin-bottom: 14px; }
@@ -8861,19 +8864,13 @@
             const policy = getErrorBookPracticePolicy(Engine.getCycleState().code, stats.total);
             const adaptive = student ? getAdaptiveDailyErrorMixTargets(student, programId, stats.total, policy) : null;
             const maxErrorLinked = adaptive ? adaptive.maxErrorLinked : stats.maxErrorLinked;
-            const maxExactReplay = adaptive ? adaptive.maxExactReplay : stats.maxExactReplay;
-            const pressureText = adaptive
-                ? `错题压力：${getDailyErrorPressureLabel(adaptive.pressure)}（活跃 ${adaptive.pressure.activeCount}，到期 ${adaptive.pressure.dueReadyCount || 0}，复错 ${adaptive.pressure.repeatedCount}）。`
-                : '';
             const linkedTone = stats.errorLinked > maxErrorLinked ? '#b45309' : '#0f766e';
             return `
-                <div class="answer-progress-note no-print" data-daily-mix-summary="${student || 'student'}" style="margin:${margin}; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:10px;">
+                <div class="answer-progress-note no-print answer-key-mix-note" data-daily-mix-summary="${student || 'student'}" style="margin:${margin}; border:1px solid #cbd5e1; background:#f8fafc; color:#334155;">
                     <strong>${student ? `${student} · ` : ''}今日训练结构</strong>：
                     错题相关 <strong style="color:${linkedTone};">${stats.errorLinked}/${stats.total}</strong>
-                    （原题 ${stats.exactReplay}，变式 ${stats.variant}）；
-                    新题/交错 <strong>${stats.fresh}/${stats.total}</strong>。
-                    ${pressureText}
-                    当前周期「${stats.policyLabel}」建议错题相关不超过 ${maxErrorLinked} 题，原题回炉不超过 ${maxExactReplay} 题。
+                    <span style="color:#64748b;">原题 ${stats.exactReplay} · 变式 ${stats.variant}</span>
+                    ｜新题/交错 <strong>${stats.fresh}/${stats.total}</strong>
                 </div>`;
         }
         window.getPracticeMixStats = getPracticeMixStats;
@@ -9059,26 +9056,21 @@
             const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
             const pendingOnly = !!window.answerPendingOnlyState?.[normalized];
             const sectionNav = sectionPendingSummary.length > 0
-                ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
-                    ${sectionPendingSummary.map(section => `<button type="button" class="review-jump-btn" onclick="window.scrollToAnswerSection('${student}', ${section.index})">第${section.index}大题 还剩 ${section.pending} 题</button>`).join('')}
-                   </div>`
+                ? sectionPendingSummary.slice(0, 3).map(section => `<button type="button" class="review-jump-btn" onclick="window.scrollToAnswerSection('${student}', ${section.index})">第${section.index}大题 还剩 ${section.pending} 题</button>`).join('')
                 : '';
             const lead = progress.pending > 0
-                ? `当前还剩 ${progress.pending} 题未提交`
-                : `这套题的答案已经全部提交`;
-            const follow = isClosure
-                ? `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并写入第二阶段画像。`
-                : `已提交 ${progress.submitted}/${progress.total} 题；未提交题可以继续补交并记入本套报告与错题本。`;
+                ? `已提交 ${progress.submitted}/${progress.total}，待补 ${progress.pending}`
+                : `已提交 ${progress.submitted}/${progress.total}，全部完成`;
             const actions = progress.pending > 0
-                ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                ? `<span class="answer-note-actions">
                         <button type="button" class="review-jump-btn" onclick="window.scrollToFirstPendingAnswer('${student}')">定位到第一道待补交题</button>
                         <button type="button" class="review-jump-btn" onclick="window.toggleAnswerPendingOnly('${student}')">${pendingOnly ? '显示全部答案' : '只看待补交题'}</button>
-                   </div>`
+                        ${sectionNav}
+                   </span>`
                 : '';
             return `
-                <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid ${border}; background:${bg}; color:${tone}; font-size:13.5px; line-height:1.6; border-radius:10px;">
-                    <strong>${lead}</strong><br>${follow}
-                    ${sectionNav}
+                <div class="answer-progress-note no-print answer-key-submit-note" style="margin:0 24px 12px; border:1px solid ${border}; background:${bg}; color:${tone};">
+                    <strong>${student} 批改状态</strong>：${lead}${isClosure ? ' · 第二阶段画像' : ' · 本套报告/错题本'}
                     ${actions}
                 </div>`;
         }
@@ -9095,13 +9087,13 @@
                 <button type="button" class="review-jump-btn" onclick="window.printSetReviewFollowup('${normalized}', true)">打印变式+答案</button>
             ` : '';
             return `
-                <div class="answer-progress-note no-print" style="margin:0 24px 12px; padding:10px 14px; border:1px solid #bfdbfe; background:#eff6ff; color:#1e3a8a; font-size:13.5px; line-height:1.6; border-radius:10px;">
-                    <strong>提交后对照</strong>：本套已记录 ${mistakeCount} 条错题/粗心，其中概念错 ${wrongCount} 条、粗心 ${carelessCount} 条。
-                    <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+                <div class="answer-progress-note no-print answer-key-action-note" style="margin:0 24px 12px; border:1px solid #bfdbfe; background:#eff6ff; color:#1e3a8a;">
+                    <strong>提交后对照</strong>：错题/粗心 ${mistakeCount}（错 ${wrongCount}，粗 ${carelessCount}）
+                    <span class="answer-note-actions">
                         <button type="button" class="review-jump-btn" onclick="window.showSetReview(${Number(sessionData.set || window.currentSetNumber)}, '${normalized}')">查看${normalized}本套报告</button>
                         <button type="button" class="review-jump-btn" onclick="window.showSetReportIntegrityAudit()">错题体检</button>
                         ${followupButtons}
-                    </div>
+                    </span>
                 </div>`;
         }
         window.buildSubmittedAnswerActionsHTML = buildSubmittedAnswerActionsHTML;
@@ -9212,8 +9204,8 @@
                         <h1>【第二阶段参考答案 Closure Answers】 - ${name} (Set ${window.currentSetNumber})</h1>
                     </div>
                     ${buildSheetMetaBand(meta)}
-                    <div style="margin:0 24px 12px; padding:12px 14px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59; font-size:13.5px; line-height:1.6;">
-                        第二阶段现在已经开放批改写回：这一套重点看<strong>总收束 + 旧知保温</strong>是否同时命中。提交后会写入第二阶段独立画像，不会污染第一阶段。
+                    <div class="answer-progress-note no-print" style="margin:0 24px 12px; border:1px dashed #0f766e; background:#ecfeff; color:#115e59;">
+                        第二阶段批改写回：独立画像，不影响第一阶段。
                     </div>
                     ${progressHtml}
                     ${buildSubmittedAnswerActionsHTML(name, sessionData)}

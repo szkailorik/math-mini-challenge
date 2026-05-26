@@ -870,7 +870,7 @@ function assertClosurePaper(setNumber) {
   if (!paper.includes('收束') || !paper.includes('保温')) {
     throw new Error(`Closure paper for set ${setNumber} is missing closure or maintenance guidance`);
   }
-  if (!paper.includes('第二阶段') || !paper.includes('写入第二阶段独立画像')) {
+  if (!paper.includes('第二阶段批改写回') || !paper.includes('独立画像')) {
     throw new Error(`Closure answer sheet for set ${setNumber} is missing active grading messaging`);
   }
   if (!closureQuestionOnly.includes('综合') && !closureQuestionOnly.includes('桥接')) {
