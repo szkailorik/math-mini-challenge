@@ -780,8 +780,14 @@ function assertPaper(setNumber) {
   if (questionSheetCount !== 4 || !paper.includes('print-last-question')) {
     throw new Error(`Expected exactly 4 printable question sheets for set ${setNumber}, got ${questionSheetCount}`);
   }
-  if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Detailed Solutions')) {
+  if (!paper.includes('Mini Challenge Advanced') || !paper.includes('Quick Answers')) {
     throw new Error(`Generated paper for set ${setNumber} is missing challenge or answer sections`);
+  }
+  if (paper.includes('Detailed Solutions') || paper.includes('解析 Steps') || paper.includes('易错点 Tip')) {
+    throw new Error(`Generated answer sheets for set ${setNumber} still show long solution-page labels`);
+  }
+  if (!paper.includes('核对点：')) {
+    throw new Error(`Generated answer sheets for set ${setNumber} are missing compact answer-check hints`);
   }
   if (!paper.includes('今日训练结构') || !paper.includes('错题相关') || !paper.includes('新题/交错')) {
     throw new Error(`Generated answer sheets for set ${setNumber} are missing the daily practice mix summary`);

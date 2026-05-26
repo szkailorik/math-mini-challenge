@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.240 Iteration Notes
+
+### Iteration 1
+
+- What I changed: changed main and Closure answer pages from detailed-solution wording to quick-answer wording, with final answers shown before any hint.
+- Open questions: none.
+- Risks: parents who want full worked derivations may need to use reports or teaching checklists instead of the fast answer key.
+- Next steps: keep the answer key focused on checking speed, not instruction.
+
+### Iteration 2
+
+- What I changed: added compact answer-check hints and reused them in follow-up, backup, and error-book answer references instead of printing full calculation steps inline.
+- Open questions: none.
+- Risks: compact hints must stay short enough not to recreate the old clutter.
+- Next steps: keep full `step` data stored for reports and audits while keeping the visible answer page concise.
+
+### Iteration 3
+
+- What I changed: added runtime checks that generated answer sheets use `Quick Answers`, include compact `核对点`, and no longer show old long-solution labels.
+- Open questions: none.
+- Risks: validation checks the label and hint contract, not every possible printed layout.
+- Next steps: watch real printed answer sheets for any remaining high-noise row.
+
 ## Current v23.239 Iteration Notes
 
 ### Iteration 1
