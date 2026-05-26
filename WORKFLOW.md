@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.242 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added answer-only quick-scan state and a `答案速查` action on answer sheets.
+- Open questions: none.
+- Risks: parents may still need the full row when matching a confusing item, so the mode is reversible.
+- Next steps: keep the fast path focused on final answer checking.
+
+### Iteration 2
+
+- What I changed: answer-only mode hides question text and compact hints while keeping row numbers and grading buttons visible.
+- Open questions: none.
+- Risks: visual density improves only if answer numbers remain stable beside each final answer.
+- Next steps: preserve one-to-one alignment with the printed worksheet section numbers.
+
+### Iteration 3
+
+- What I changed: answer-sheet printing now uses the same number-plus-answer scan layout by CSS, and runtime validation checks that the quick-scan contract remains present.
+- Open questions: none.
+- Risks: print CSS is validated by staged markup and contract checks, not by a real printer driver.
+- Next steps: compare one physical answer printout against a completed AB paper.
+
 ## Current v23.241 Iteration Notes
 
 ### Iteration 1

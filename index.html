@@ -89,6 +89,18 @@
                 line-height: 1.25 !important;
                 padding: 3px 6px !important;
             }
+            body.print-answers-only #print-root .ans-sheet .ans-q-line,
+            body.print-answers-only #print-root .ans-sheet .ans-tip {
+                display: none !important;
+            }
+            body.print-answers-only #print-root .ans-sheet .ans-a-line {
+                margin-left: 0 !important;
+                font-size: 16px !important;
+                line-height: 1.25 !important;
+            }
+            body.print-answers-only #print-root .ans-sheet .ans-answer-num {
+                display: inline-flex !important;
+            }
             body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
             body.ipad-shell.print-sandbox-active #print-root .section {
                 margin-bottom: 9px !important;
@@ -1127,6 +1139,7 @@
         .ans-sheet .answer-progress-note .review-jump-btn { padding: 3px 7px; font-size: 12px; border-radius: 6px; }
         .ans-grid-block { margin-bottom: 12px; }
         .ans-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fc; border-left: 3px solid #002D72; padding: 8px 10px; margin-bottom: 6px; border-radius: 0 4px 4px 0; transition: background 0.2s;}
+        .ans-sheet.answer-only-mode .ans-row { padding: 6px 8px; margin-bottom: 4px; }
         .ans-section { margin-bottom: 14px; }
         .ans-section-title {
             display: flex;
@@ -1152,6 +1165,11 @@
         .ans-content { display: flex; flex-direction: column; flex: 1; padding-right: 15px; gap: 4px;}
         .ans-q-line { font-size: 14px; color: #555; display: flex; align-items: center; }
         .ans-a-line { font-size: 16px; color: #002D72; margin-left: 25px; font-weight: 800; }
+        .ans-answer-num { display: none; min-width: 25px; margin-right: 2px; color: #002D72; font-family: 'Times New Roman', serif; font-weight: 900; }
+        .ans-sheet.answer-only-mode .ans-q-line,
+        .ans-sheet.answer-only-mode .ans-tip { display: none; }
+        .ans-sheet.answer-only-mode .ans-a-line { margin-left: 0; line-height: 1.25; }
+        .ans-sheet.answer-only-mode .ans-answer-num { display: inline-flex; }
         .ans-tip { margin-left: 25px; font-size: 12px; line-height: 1.3; color: #475569; background: #f8fafc; border-left: 3px solid #94a3b8; padding: 3px 7px; border-radius: 0 4px 4px 0; font-family: 'KaiTi','楷体',sans-serif; }
         .ans-num { font-weight: bold; color: #002D72; width: 25px; flex-shrink: 0; font-family: 'Times New Roman', serif;}
         .highlight { color: #d32f2f; font-weight: bold; margin: 0 4px; }
@@ -8930,7 +8948,7 @@
             <div class="ans-row${reviewAnswerClass}${isSubmitted ? ' submitted-answer' : ' pending-answer'}" style="${bgStyle}" data-student="${student}" data-tag="${q.tag || ''}" data-info="${encodedInfo}" data-grade="${gradeType}" data-submitted="${isSubmitted ? 'true' : 'false'}">
                 <div class="ans-content">
                     <div class="ans-q-line"><span class="ans-num">${i+1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif; ${qColor}">[原题] <span class="math-row">${renderedQuestion}</span></span> ${levelBadge} ${reasonBadge}</div>
-                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
+                    <div class="ans-a-line" style="font-family:'Times New Roman',serif;"><span class="ans-answer-num">${i+1}.</span>[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
                     <div class="ans-tip">${compactHint}</div>
                 </div>
                 <div class="grade-area no-print">
@@ -9005,6 +9023,55 @@
         }
         window.scrollToAnswerSection = scrollToAnswerSection;
 
+        function normalizeAnswerStudentName(student = '') {
+            return String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+        }
+        window.normalizeAnswerStudentName = normalizeAnswerStudentName;
+
+        window.answerQuickModeState = window.answerQuickModeState || { KAI: false, Lorik: false };
+        function isAnswerQuickMode(student = '') {
+            const normalized = normalizeAnswerStudentName(student);
+            return !!window.answerQuickModeState?.[normalized];
+        }
+        window.isAnswerQuickMode = isAnswerQuickMode;
+
+        function refreshAnswerQuickModeButtons(sheet, active) {
+            if (!sheet || typeof sheet.querySelectorAll !== 'function') return;
+            sheet.querySelectorAll('.answer-quick-toggle').forEach(btn => {
+                btn.textContent = active ? '显示题面+核对点' : '答案速查';
+            });
+        }
+        window.refreshAnswerQuickModeButtons = refreshAnswerQuickModeButtons;
+
+        function setAnswerQuickMode(student, quickMode) {
+            const normalized = normalizeAnswerStudentName(student);
+            const active = !!quickMode;
+            window.answerQuickModeState[normalized] = active;
+            const sheet = document.getElementById(`${normalized.toLowerCase()}-ans-sheet`);
+            if (!sheet) return;
+            if (sheet.classList?.toggle) {
+                sheet.classList.toggle('answer-only-mode', active);
+            } else {
+                const classNames = new Set(String(sheet.className || '').split(/\s+/).filter(Boolean));
+                if (active) classNames.add('answer-only-mode');
+                else classNames.delete('answer-only-mode');
+                sheet.className = Array.from(classNames).join(' ');
+            }
+            refreshAnswerQuickModeButtons(sheet, active);
+        }
+        window.setAnswerQuickMode = setAnswerQuickMode;
+
+        function toggleAnswerQuickMode(student) {
+            const normalized = normalizeAnswerStudentName(student);
+            setAnswerQuickMode(normalized, !isAnswerQuickMode(normalized));
+        }
+        window.toggleAnswerQuickMode = toggleAnswerQuickMode;
+
+        function getAnswerSheetModeClass(student = '') {
+            return isAnswerQuickMode(student) ? ' answer-only-mode' : '';
+        }
+        window.getAnswerSheetModeClass = getAnswerSheetModeClass;
+
         window.answerPendingOnlyState = window.answerPendingOnlyState || { KAI: false, Lorik: false };
 
         function refreshAnswerPendingSections(sheet) {
@@ -9024,7 +9091,7 @@
         window.refreshAnswerPendingSections = refreshAnswerPendingSections;
 
         function setAnswerPendingOnly(student, pendingOnly) {
-            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const normalized = normalizeAnswerStudentName(student);
             const sheet = document.getElementById(`${normalized.toLowerCase()}-ans-sheet`);
             if (!sheet) return;
             const hasPending = !!sheet.querySelector('.ans-row[data-submitted="false"]');
@@ -9043,7 +9110,7 @@
         window.setAnswerPendingOnly = setAnswerPendingOnly;
 
         function toggleAnswerPendingOnly(student) {
-            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const normalized = normalizeAnswerStudentName(student);
             setAnswerPendingOnly(normalized, !window.answerPendingOnlyState[normalized]);
         }
         window.toggleAnswerPendingOnly = toggleAnswerPendingOnly;
@@ -9053,21 +9120,22 @@
             const tone = progress.pending > 0 ? '#b45309' : '#0f766e';
             const bg = progress.pending > 0 ? '#fff7ed' : '#ecfdf5';
             const border = progress.pending > 0 ? '#fdba74' : '#6ee7b7';
-            const normalized = String(student || '').toUpperCase() === 'KAI' ? 'KAI' : 'Lorik';
+            const normalized = normalizeAnswerStudentName(student);
             const pendingOnly = !!window.answerPendingOnlyState?.[normalized];
+            const quickMode = isAnswerQuickMode(normalized);
             const sectionNav = sectionPendingSummary.length > 0
                 ? sectionPendingSummary.slice(0, 3).map(section => `<button type="button" class="review-jump-btn" onclick="window.scrollToAnswerSection('${student}', ${section.index})">第${section.index}大题 还剩 ${section.pending} 题</button>`).join('')
                 : '';
             const lead = progress.pending > 0
                 ? `已提交 ${progress.submitted}/${progress.total}，待补 ${progress.pending}`
                 : `已提交 ${progress.submitted}/${progress.total}，全部完成`;
-            const actions = progress.pending > 0
-                ? `<span class="answer-note-actions">
-                        <button type="button" class="review-jump-btn" onclick="window.scrollToFirstPendingAnswer('${student}')">定位到第一道待补交题</button>
-                        <button type="button" class="review-jump-btn" onclick="window.toggleAnswerPendingOnly('${student}')">${pendingOnly ? '显示全部答案' : '只看待补交题'}</button>
-                        ${sectionNav}
-                   </span>`
+            const quickButton = `<button type="button" class="review-jump-btn answer-quick-toggle" onclick="window.toggleAnswerQuickMode('${normalized}')">${quickMode ? '显示题面+核对点' : '答案速查'}</button>`;
+            const pendingActions = progress.pending > 0
+                ? `<button type="button" class="review-jump-btn" onclick="window.scrollToFirstPendingAnswer('${student}')">定位到第一道待补交题</button>
+                   <button type="button" class="review-jump-btn" onclick="window.toggleAnswerPendingOnly('${student}')">${pendingOnly ? '显示全部答案' : '只看待补交题'}</button>
+                   ${sectionNav}`
                 : '';
+            const actions = `<span class="answer-note-actions">${quickButton}${pendingActions}</span>`;
             return `
                 <div class="answer-progress-note no-print answer-key-submit-note" style="margin:0 24px 12px; border:1px solid ${border}; background:${bg}; color:${tone};">
                     <strong>${student} 批改状态</strong>：${lead}${isClosure ? ' · 第二阶段画像' : ' · 本套报告/错题本'}
@@ -9175,7 +9243,7 @@
                 let btnStyle = isCompleted ? `background: #4caf50;` : ``;
                 const submittedActions = buildSubmittedAnswerActionsHTML(name, sessionData);
                 return `
-                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
+                <div class="sheet ans-sheet${getAnswerSheetModeClass(name)}" id="${name.toLowerCase()}-ans-sheet">
                     ${ansStamp}
                     <div class="header">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:'Arial Narrow','Helvetica Neue',sans-serif; font-size:10px; letter-spacing:0.18em; color:#64748b; text-transform:uppercase;">
@@ -9194,7 +9262,7 @@
             };
 
             const getClosureAnsSheetHTML = (name, content, isCompleted, meta = [], paperCode = 'CAK', progressHtml = '', sessionData = null) => `
-                <div class="sheet ans-sheet" id="${name.toLowerCase()}-ans-sheet">
+                <div class="sheet ans-sheet${getAnswerSheetModeClass(name)}" id="${name.toLowerCase()}-ans-sheet">
                     ${isCompleted ? `<div class="completed-stamp" style="top:20px; right:30px; font-size:28px;">✅ 第二阶段已批改<br><span style="font-size:12px;">Closure Graded</span></div>` : ''}
                     <div class="header">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:'Arial Narrow','Helvetica Neue',sans-serif; font-size:10px; letter-spacing:0.18em; color:#64748b; text-transform:uppercase;">

@@ -72,6 +72,9 @@ if (!html.includes('showSetReportIntegrityAudit') || !html.includes('错题体�
 if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交后对照')) {
   throw new Error('Post-submit set review actions are missing from answer sheets');
 }
+if (!html.includes('function toggleAnswerQuickMode') || !html.includes('answer-only-mode') || !html.includes('答案速查') || !html.includes('ans-answer-num')) {
+  throw new Error('Answer-key quick-scan mode is missing from runtime script or styles');
+}
 if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
   throw new Error('Post-submit automatic report navigation is missing from runtime script');
 }
@@ -788,6 +791,9 @@ function assertPaper(setNumber) {
   }
   if (!paper.includes('核对点：')) {
     throw new Error(`Generated answer sheets for set ${setNumber} are missing compact answer-check hints`);
+  }
+  if (!paper.includes('答案速查') || !paper.includes('ans-answer-num')) {
+    throw new Error(`Generated answer sheets for set ${setNumber} are missing quick-scan controls or answer numbers`);
   }
   if (!paper.includes('今日训练结构') || !paper.includes('错题相关') || !paper.includes('新题/交错')) {
     throw new Error(`Generated answer sheets for set ${setNumber} are missing the daily practice mix summary`);
@@ -1821,6 +1827,9 @@ if ((answerPrintRootHtml.match(/class="sheet ans-sheet/g) || []).length !== 2) {
 if (answerPrintRootHtml.includes('class="blank math-inline-blank"') || answerPrintRootHtml.includes('<div class="blank"></div>')) {
   throw new Error('Answer-sheet print sandbox still contains legacy underline blanks');
 }
+if (!answerPrintRootHtml.includes('ans-answer-num')) {
+  throw new Error('Answer-sheet print sandbox is missing quick-scan answer numbers');
+}
 emit('afterprint');
 if (context.document.body.classList.contains('print-questions-only') || context.document.body.classList.contains('print-answers-only')) {
   throw new Error('Answer-sheet print mode did not clear after afterprint');
@@ -1832,6 +1841,13 @@ context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], e
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';
 context.window.currentSetNumber = 86;
+context.window.renderPaper();
+context.window.answerQuickModeState.KAI = true;
+context.window.renderPaper();
+if (!String(elements.get('paper-container')?.innerHTML || '').includes('class="sheet ans-sheet answer-only-mode" id="kai-ans-sheet"')) {
+  throw new Error('KAI answer sheet did not render answer-only quick-scan mode when enabled');
+}
+context.window.answerQuickModeState.KAI = false;
 context.window.renderPaper();
 const lorikSet86SectionHtml = extractAnswerSectionHtml(elements.get('paper-container')?.innerHTML || '', 'lorik', 5);
 const lorikSet86Records = extractAnswerRecords(lorikSet86SectionHtml);
