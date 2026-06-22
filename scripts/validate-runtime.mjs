@@ -93,8 +93,11 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
+}
+if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(980px, calc(100vw - 28px))')) {
+  throw new Error('Initial page toolbar layout should avoid floating over the worksheet');
 }
 if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
   throw new Error('Error-book practice complete-refill guard is missing');
@@ -1531,8 +1534,12 @@ context.window.currentSetNumber = 120;
 const notDueSpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 119, grade: 'wrong' }, 120);
 const dueSpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 115, grade: 'wrong' }, 120);
 const prioritySpacing = context.window.getErrorEntrySpacingState?.({ tag: 'k_dmul_basic', count: 1, lastSet: 120, grade: 'wrong', rewrongCount: 1, lastPracticeGrade: 'wrong' }, 120);
-if (!notDueSpacing || notDueSpacing.due || !dueSpacing?.due || dueSpacing.weight <= notDueSpacing.weight || !prioritySpacing?.priority || prioritySpacing.weight <= dueSpacing.weight) {
+if (!notDueSpacing || notDueSpacing.due || notDueSpacing.nextDueSet !== 123 || !notDueSpacing.nextLabel.includes('Set 123') || !dueSpacing?.due || dueSpacing.nextDueSet !== 119 || dueSpacing.weight <= notDueSpacing.weight || !prioritySpacing?.priority || prioritySpacing.nextDueSet !== 121 || prioritySpacing.weight <= dueSpacing.weight) {
   throw new Error('Error-book spacing state should prioritize due and re-wrong items over just-seen mistakes');
+}
+const scheduledEntry = context.window.refreshErrorBookEntrySchedule?.({ tag: 'k_dmul_basic', count: 1, lastSet: 119, grade: 'wrong', mastered: false }, 120);
+if (!scheduledEntry || scheduledEntry.nextPracticeSet !== 123 || scheduledEntry.practiceGap !== 4 || scheduledEntry.practiceState !== 'not-due') {
+  throw new Error('Error-book schedule metadata should persist the next practice set and gap');
 }
 const sampleKnowledgeRows = context.window.buildKnowledgeWeakRows?.({
   KAI: { weights: { k_ddiv_shift: 3 }, errorBook: { e4: { tag: 'k_ddiv_decimal_q', count: 2, mastered: false, lastSet: 88 } } },
@@ -1969,6 +1976,9 @@ const errorBookHtml = elements.get('paper-container')?.innerHTML || '';
 if (!errorBookHtml.includes('高频机制') || !errorBookHtml.includes('representation-conversion')) {
   throw new Error('Error book did not render clickable mechanism summary chips');
 }
+if (!errorBookHtml.includes('今天可练') || !errorBookHtml.includes('复错优先') || !errorBookHtml.includes('暂缓') || !errorBookHtml.includes('现在可进入短卷')) {
+  throw new Error('Error book should render a visible spaced-review queue with next-set timing');
+}
 context.window.setEbMechanism('representation-conversion');
 const mechanismFilteredHtml = elements.get('paper-container')?.innerHTML || '';
 if (!mechanismFilteredHtml.includes('当前只看') || !mechanismFilteredHtml.includes('0.25 =')) {
@@ -1983,7 +1993,7 @@ if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
 if (!mechanismFilteredHtml.includes('到期复练') || !mechanismFilteredHtml.includes('今天建议先做') || !mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
-if (!mechanismFilteredHtml.includes('今日10题（推荐）') || !mechanismFilteredHtml.includes('加量20题') || !mechanismFilteredHtml.includes('第二天安排')) {
+if (!mechanismFilteredHtml.includes('今日10题（推荐）') || !mechanismFilteredHtml.includes('加量20题') || !mechanismFilteredHtml.includes('第二天安排') || !mechanismFilteredHtml.includes('现在可进入短卷')) {
   throw new Error('Error book should make 10/20-item print choices and next-day plan visible');
 }
 if (mechanismFilteredHtml.includes('解析 (Solutions)') || mechanismFilteredHtml.includes('攻克建议')) {
@@ -2141,12 +2151,12 @@ const practiceLog = await context.window.StorageDB.saveErrorBookPractice('KAI', 
   }
 ], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion' });
 const practicedProfile = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1');
-if (!practiceLog?.results?.length || practicedProfile.errorBook.eb1.lastPracticeGrade !== 'wrong' || !practicedProfile.errorBook.eb1.rewrongCount) {
+if (!practiceLog?.results?.length || practiceLog.results[0].nextPracticeSet !== 110 || practicedProfile.errorBook.eb1.lastPracticeGrade !== 'wrong' || !practicedProfile.errorBook.eb1.rewrongCount || practicedProfile.errorBook.eb1.nextPracticeSet !== 110 || practicedProfile.errorBook.eb1.practiceGap !== 1) {
   throw new Error('Error-book targeted practice did not record wrong-again status');
 }
 context.window.renderErrorBook();
 const rewrongErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
-if (!rewrongErrorBookHtml.includes('复错优先') || !rewrongErrorBookHtml.includes('专项又错') || !rewrongErrorBookHtml.includes('打印复错优先卷') || !rewrongErrorBookHtml.includes('打印复错优先卷+答案')) {
+if (!rewrongErrorBookHtml.includes('复错优先') || !rewrongErrorBookHtml.includes('专项又错') || !rewrongErrorBookHtml.includes('Set 110 复错优先') || !rewrongErrorBookHtml.includes('打印复错优先卷') || !rewrongErrorBookHtml.includes('打印复错优先卷+答案')) {
   throw new Error('Error book is not surfacing wrong-again priority markers');
 }
 const priorityPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { priorityOnly: true }) || '';
@@ -2162,7 +2172,7 @@ if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml
   throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
-if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第二天') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案') || !practiceResultHtml.includes('打印讲解清单') || !practiceResultHtml.includes('data-log-id=')) {
+if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第二天') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案') || !practiceResultHtml.includes('下次') || !practiceResultHtml.includes('Set 110 再练') || !practiceResultHtml.includes('打印讲解清单') || !practiceResultHtml.includes('data-log-id=')) {
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
 }
 const practiceExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', practiceLog) || '';

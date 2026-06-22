@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.246 Iteration Notes
+
+### Iteration 1
+
+- What I changed: moved the opening controls into a sticky top toolbar, hid the floating image-export button, and reduced the visual weight of sync and stage controls.
+- Open questions: none.
+- Risks: the toolbar still contains many tutor tools, so future work may group secondary tools behind a menu.
+- Next steps: keep the first screen focused on set navigation, printing, answers, and error-book entry.
+
+### Iteration 2
+
+- What I changed: added `nextPracticeSet`, `practiceGap`, and `practiceState` scheduling metadata whenever errors are created or updated from normal grading and targeted practice grading.
+- Open questions: none.
+- Risks: the schedule is set-based, not calendar-day based, so families who skip days should treat the next set number as the source of truth.
+- Next steps: keep all daily error-book selection tied to due/priority state instead of full-book replay.
+
+### Iteration 3
+
+- What I changed: added a visible error-book review queue, next-set labels on error cards, next-practice columns in targeted-practice results, and runtime checks for the new scheduling contract.
+- Open questions: none.
+- Risks: small error books can still have empty waiting queues because every item is already due.
+- Next steps: test with a large real error book where ready, priority, and waiting states coexist.
+
 ## Current v23.245 Iteration Notes
 
 ### Iteration 1

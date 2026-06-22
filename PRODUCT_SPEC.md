@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.246 improves first-screen clarity and error-book scheduling:
+
+- The opening toolbar now sits above the worksheet instead of floating over it, with the image-export shortcut hidden from the default view.
+- Each active error now carries a visible spaced-review plan, including whether it is ready today, wrong-again priority, waiting, or due in a later set.
+- Error-book practice results record the next practice set for each non-mastered item, so a large error book can be trained in short scheduled packs instead of all at once.
+
 v23.245 adds visible lock codes to error-book packs:
 
 - Error-book question sheets, answer references, and grading pages now show the same short lock code for the selected scope.

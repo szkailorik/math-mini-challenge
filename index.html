@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.215 (打印入口体检)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.246 (错题复练队列)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1110,6 +1110,13 @@
         .badge-practice { background: #f1f5f9; color: #334155; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; font-family: sans-serif; border: 1px solid #cbd5e1; }
         .badge-practice.wrong { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
         .badge-practice.perfect { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .spacing-next { color: #475569; font-size: 12px; font-weight: 800; }
+        .eb-review-queue { margin-top: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; }
+        .eb-review-queue-card { border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; padding: 9px 10px; color: #334155; }
+        .eb-review-queue-card strong { display: block; color: #0f172a; font-size: 13px; margin-bottom: 4px; }
+        .eb-review-queue-card span { display: block; color: #64748b; font-size: 12px; line-height: 1.35; }
+        .eb-review-queue-card.ready { border-color: #86efac; background: #f0fdf4; }
+        .eb-review-queue-card.priority { border-color: #fca5a5; background: #fff7f7; }
         .eb-practice-log { margin-top: 10px; padding: 10px 12px; border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; width: 100%; box-sizing: border-box; }
         .eb-practice-log-title { font-size: 12px; color: #475569; font-weight: 800; margin-bottom: 6px; letter-spacing: 0.04em; }
         .eb-practice-log-list { display: grid; gap: 6px; }
@@ -1138,8 +1145,8 @@
         .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
         .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
         .eb-tag-header .tag-count { background: rgba(255,255,255,0.25); padding: 2px 10px; border-radius: 10px; font-size: 13px; }
-        .eb-summary { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-family: sans-serif; font-size: 14px; }
-        .eb-summary .eb-stat { display: flex; gap: 18px; align-items: center; }
+        .eb-summary { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 10px; font-family: sans-serif; font-size: 14px; }
+        .eb-summary .eb-stat { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
         .eb-summary .eb-stat b { font-size: 20px; color: #002D72; margin-right: 4px; }
         .eb-filter-btn { background: #fff; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.15s; font-family: sans-serif;}
         .eb-filter-btn:hover { background: #002D72; color: white; border-color: #002D72;}
@@ -2168,23 +2175,23 @@
 
         /* ================= 控制面板 ================= */
         .control-panel {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+            position: sticky;
+            top: 10px;
+            margin: 0 auto 14px;
             background: linear-gradient(180deg, rgba(252, 248, 241, 0.98), rgba(245, 238, 227, 0.98));
             color: var(--desk-ink);
-            padding: 12px 14px;
-            border-radius: 18px;
+            padding: 10px 12px;
+            border-radius: 12px;
             border: 1px solid rgba(16, 35, 63, 0.12);
-            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.13);
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 7px;
             font-family: 'Georgia', 'Baskerville', serif;
             backdrop-filter: blur(10px);
-            width: 340px;
-            max-height: calc(100vh - 28px);
+            width: min(980px, calc(100vw - 28px));
+            max-height: calc(100vh - 16px);
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
@@ -2211,10 +2218,23 @@
         }
         .toggle-btn { background: none; border: none; color: #475569; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
         .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: var(--desk-accent);}
+        #cloud-status {
+            padding: 3px 8px !important;
+            font-size: 11.5px !important;
+            line-height: 1.25 !important;
+            min-height: 0 !important;
+        }
+        #cloud-connect-shortcut {
+            width: auto !important;
+            min-height: 28px !important;
+            padding: 5px 10px !important;
+            font-size: 12px !important;
+            box-shadow: none !important;
+        }
         .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 6px;}
         .ctrl-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 6px;
             margin-top: 6px;
         }
@@ -2253,7 +2273,7 @@
             flex-direction: column;
             gap: 5px;
         }
-        .program-shell-card { margin-top: 4px; }
+        .program-shell-card { margin-top: 2px; }
         .program-shell-head, .stage-status-head {
             display: flex;
             justify-content: space-between;
@@ -2288,12 +2308,12 @@
             border: 1px solid rgba(16, 35, 63, 0.14);
             background: rgba(255,255,255,0.84);
             color: var(--desk-ink);
-            border-radius: 12px;
-            padding: 7px 9px;
+            border-radius: 8px;
+            padding: 6px 9px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            text-align: left;
+            text-align: center;
             transition: all 0.2s ease;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
             line-height: 1.18;
@@ -2332,7 +2352,7 @@
             border: none;
             border-top: 1px dashed rgba(16, 35, 63, 0.12);
             border-radius: 0;
-            padding: 5px 0 0;
+            padding: 4px 0 0;
         }
         .stage-status-card.is-advanced {
             border-color: rgba(18, 59, 115, 0.18);
@@ -2388,7 +2408,7 @@
         }
 
         .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(247, 241, 227, 0.96); color: var(--desk-ink); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(16,35,63,0.12); box-shadow: 0 8px 18px rgba(15,23,42,0.14); z-index: 9999; cursor: pointer; font-family: 'Georgia', serif; font-weight: 700; font-size: 14px; backdrop-filter: blur(8px); display: none; }
-        .export-btn { position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
+        .export-btn { display: none; position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
         .export-btn:hover { background: linear-gradient(135deg, #8a3412, #b45309); transform: translateY(-1px); }
 
         /* 报告弹窗 */
@@ -2959,10 +2979,9 @@
                 padding: 14px;
             }
             .control-panel {
-                top: 14px;
-                right: 14px;
-                width: 304px;
-                max-height: calc(100vh - 20px);
+                top: 8px;
+                width: min(100%, calc(100vw - 28px));
+                max-height: calc(100vh - 16px);
                 padding: 11px 12px;
             }
             .mini-panel-btn {
@@ -2975,12 +2994,12 @@
                 padding: 10px 14px;
             }
             #paper-container {
-                width: min(100%, calc(100vw - 350px));
-                max-width: calc(100vw - 350px);
+                width: 100%;
+                max-width: none;
                 padding-right: 0;
             }
             .sheet {
-                width: min(210mm, calc(100vw - 368px)) !important;
+                width: min(210mm, calc(100vw - 28px)) !important;
                 padding: 10.5mm 13mm 16mm;
                 margin-bottom: 20px;
             }
@@ -2994,10 +3013,9 @@
             }
             .control-panel {
                 width: calc(100vw - 24px);
-                right: 12px;
-                top: 12px;
-                max-height: 34vh;
-                border-radius: 16px;
+                top: 8px;
+                max-height: 48vh;
+                border-radius: 12px;
             }
             .mini-panel-btn {
                 top: 12px;
@@ -3011,7 +3029,7 @@
             #paper-container {
                 width: 100%;
                 max-width: none;
-                padding-top: min(37vh, 320px);
+                padding-top: 0;
             }
             .sheet {
                 width: min(210mm, calc(100vw - 24px)) !important;
@@ -3030,11 +3048,12 @@
         }
         @media (max-width: 640px) {
             body { padding: 10px; }
-            .control-panel { width: calc(100vw - 24px); right: 12px; top: 12px; }
+            .control-panel { width: calc(100vw - 20px); top: 8px; }
             .mini-panel-btn { top: 12px; right: 12px; }
             .export-btn { right: 12px; bottom: 12px; }
             .info-row { grid-template-columns: 1fr; text-align: left; }
-            .ctrl-grid { grid-template-columns: 1fr; }
+            .ctrl-grid { grid-template-columns: 1fr 1fr; }
+            .eb-review-queue { grid-template-columns: 1fr; }
         }
         @media (max-width: 780px) {
             .quick-review-hero-top,
@@ -3069,7 +3088,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.215</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.246</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3081,8 +3100,8 @@
                 <span class="program-chip phase-1" id="program-phase-chip">第一阶段</span>
             </div>
             <div class="program-switcher">
-                <button class="program-switch-btn is-active" id="program-switch-advanced" data-program="advanced_fluency_v1" onclick="window.changeProgram('advanced_fluency_v1')">第一阶段<br><span style="font-size:11px; opacity:0.72;">Advanced</span></button>
-                <button class="program-switch-btn" id="program-switch-closure" data-program="elementary_closure_v1" onclick="window.changeProgram('elementary_closure_v1')">第二阶段<br><span style="font-size:11px; opacity:0.72;">Closure</span></button>
+                <button class="program-switch-btn is-active" id="program-switch-advanced" data-program="advanced_fluency_v1" onclick="window.changeProgram('advanced_fluency_v1')">第一阶段</button>
+                <button class="program-switch-btn" id="program-switch-closure" data-program="elementary_closure_v1" onclick="window.changeProgram('elementary_closure_v1')">第二阶段</button>
             </div>
             <div class="program-main-row">
                 <div class="program-copy">
@@ -3148,9 +3167,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.215';
-        const APP_RELEASE_LABEL = '讲后打勾';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.215 打印体检扩展到错题专项、机制补练、本套报告、主变式和备用二刷，防止小题包额外弹出空白页。';
+        const APP_VERSION = 'v23.246';
+        const APP_RELEASE_LABEL = '错题复练队列';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.246 首屏工具条更简洁；错题本增加复练队列、下次套号和专项批改追踪。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4530,6 +4549,7 @@
                                 mastered: false
                             };
                         }
+                        refreshErrorBookEntrySchedule(profile.errorBook[uid], setNum);
                     }
                 });
 
@@ -4564,6 +4584,7 @@
                     priorityOnly: !!meta.priorityOnly,
                     dueOnly: !!meta.dueOnly,
                     practiceLimit: Number(meta.practiceLimit || 0) || 0,
+                    packCode: meta.packCode || '',
                     results: []
                 };
                 (records || []).forEach(record => {
@@ -4595,6 +4616,9 @@
                     if (record.grade === 'perfect') {
                         entry.mastered = true;
                         entry.masteredDate = today;
+                        entry.nextPracticeSet = null;
+                        entry.practiceGap = null;
+                        entry.practiceState = 'mastered';
                     } else {
                         entry.mastered = false;
                         entry.masteredDate = null;
@@ -4603,12 +4627,16 @@
                         entry.rewrongCount = Math.max(0, Number(entry.rewrongCount || 0)) + 1;
                         entry.lastSet = practiceSet;
                         entry.lastDate = today;
+                        refreshErrorBookEntrySchedule(entry, practiceSet);
                     }
                     log.results.push({
                         sourceErrorUid: sourceUid,
                         tag: record.tag,
                         grade: record.grade,
-                        info: record.info
+                        info: record.info,
+                        nextPracticeSet: entry.nextPracticeSet || null,
+                        practiceGap: entry.practiceGap || null,
+                        practiceState: entry.practiceState || ''
                     });
                 });
                 if (!log.results.length) return null;
@@ -6432,14 +6460,27 @@
             const due = !lastSet || setsSince >= targetGap;
             const priority = rewrong > 0 || lastPracticeWrong;
             const overdue = due && setsSince >= targetGap + 2;
+            const nextDueSet = lastSet ? lastSet + targetGap : Number(currentSet || 0);
+            const setsUntilDue = Math.max(0, nextDueSet - Number(currentSet || 0));
             const weight = priority
                 ? 1.55
                 : (due ? 1 + Math.min(0.75, Math.max(0, dueScore - 1) * 0.45) : clampNumber(0.28 + dueScore * 0.42, 0.28, 0.9));
             const label = priority ? '复错优先' : (overdue ? '逾期复练' : (due ? '到期复练' : `未到期 ${setsSince}/${targetGap}`));
             const badgeClass = priority ? 'priority' : (overdue ? 'overdue' : (due ? 'due' : 'not-due'));
-            return { lastSet, setsSince, targetGap, dueRatio, dueScore, due, overdue, priority, weight, label, badgeClass };
+            const nextLabel = priority ? `Set ${Number(currentSet || 0) + 1} 复错优先` : (due ? '现在可进入短卷' : `预计 Set ${nextDueSet} 再练`);
+            return { lastSet, setsSince, targetGap, nextDueSet, setsUntilDue, dueRatio, dueScore, due, overdue, priority, weight, label, badgeClass, nextLabel };
         }
         window.getErrorEntrySpacingState = getErrorEntrySpacingState;
+
+        function refreshErrorBookEntrySchedule(entry = {}, currentSet = window.currentSetNumber || 0) {
+            if (!entry || entry.mastered) return entry;
+            const spacing = getErrorEntrySpacingState(entry, currentSet);
+            entry.practiceGap = spacing.targetGap;
+            entry.nextPracticeSet = spacing.priority ? Number(currentSet || 0) + 1 : spacing.nextDueSet;
+            entry.practiceState = spacing.badgeClass;
+            return entry;
+        }
+        window.refreshErrorBookEntrySchedule = refreshErrorBookEntrySchedule;
 
         function getErrorEntryPracticePressure(entry = {}) {
             const rewrong = Math.max(0, Number(entry.rewrongCount || 0));
@@ -9589,6 +9630,36 @@
             return { dueCount, priorityCount, overdueCount, nextDueIn: Number.isFinite(nextDueIn) ? nextDueIn : null, message };
         }
 
+        function getErrorBookReviewQueueSummary(entries = []) {
+            const rows = (entries || [])
+                .filter(entry => entry && !entry.mastered)
+                .map(entry => ({ entry, spacing: getErrorEntrySpacingState(entry) }));
+            const priorityRows = rows.filter(row => row.spacing.priority);
+            const readyRows = rows.filter(row => row.spacing.due || row.spacing.priority);
+            const waitingRows = rows.filter(row => !row.spacing.due && !row.spacing.priority);
+            const nextSet = waitingRows.reduce((min, row) => Math.min(min, row.spacing.nextDueSet || Infinity), Infinity);
+            return {
+                total: rows.length,
+                ready: readyRows.length,
+                priority: priorityRows.length,
+                waiting: waitingRows.length,
+                nextSet: Number.isFinite(nextSet) ? nextSet : null
+            };
+        }
+
+        function buildErrorBookReviewQueueHTML(entries = []) {
+            const summary = getErrorBookReviewQueueSummary(entries);
+            const nextText = summary.nextSet ? `下一批预计 Set ${summary.nextSet}` : '暂无等待队列';
+            return `
+                <div class="eb-review-queue">
+                    <div class="eb-review-queue-card ready"><strong>今天可练 ${summary.ready} 题</strong><span>优先打印10题短卷，不一次清空。</span></div>
+                    <div class="eb-review-queue-card priority"><strong>复错优先 ${summary.priority} 题</strong><span>上次专项仍错，下一套先短打。</span></div>
+                    <div class="eb-review-queue-card"><strong>暂缓 ${summary.waiting} 题</strong><span>${nextText}，未到期先做新题交错。</span></div>
+                </div>`;
+        }
+        window.getErrorBookReviewQueueSummary = getErrorBookReviewQueueSummary;
+        window.buildErrorBookReviewQueueHTML = buildErrorBookReviewQueueHTML;
+
         function normalizeErrorBookPracticeLimit(limit = 0) {
             const value = Math.floor(Number(limit || 0));
             if (!Number.isFinite(value) || value <= 0) return 0;
@@ -9987,9 +10058,10 @@
                 const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
                 const resultTitle = getErrorBookPracticeResultTitle(log).replace('批改结果', '');
                 const logId = encodeURIComponent(log.id || '');
+                const packText = log.packCode ? ` · ${log.packCode}` : '';
                 return `
                 <div class="eb-practice-log-row">
-                    <span><strong>${log.date || '最近'}</strong> · ${resultTitle} · ${label} · ${summary.total} 题</span>
+                    <span><strong>${log.date || '最近'}</strong> · ${resultTitle}${packText} · ${label} · ${summary.total} 题</span>
                     <span>已会 ${summary.mastered} · 需讲解 ${summary.needsExplain} · <b>又错 ${summary.wrongAgain}</b> <button class="eb-filter-btn" style="padding:3px 7px; margin-left:6px; font-size:11.5px;" onclick="window.openErrorBookPracticeLog('${student}', '${logId}')">查看</button></span>
                 </div>`;
             }).join('');
@@ -10094,6 +10166,9 @@
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '需讲解' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : (item.grade === 'careless' ? '#92400e' : '#991b1b');
                 const sourceHTML = getPracticeResultSourceHTML(item);
+                const nextPlan = item.grade === 'perfect'
+                    ? '已掌握'
+                    : (item.nextPracticeSet ? `Set ${item.nextPracticeSet} 再练` : '下次优先');
                 return `
                 <tr>
                     <td>${idx + 1}</td>
@@ -10101,6 +10176,7 @@
                     <td><div class="math-row">${item.info?.q || '-'}</div></td>
                     <td><span style="color:${gradeColor}; font-weight:800;">${gradeLabel}</span></td>
                     <td><div class="math-row">${item.info?.a || '-'}</div></td>
+                    <td>${nextPlan}</td>
                 </tr>`;
             }).join('');
             const explainPrintButton = summary.stillOpen
@@ -10113,6 +10189,7 @@
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
                         <span>${log.date || ''}</span>
                         <span>范围：${label}</span>
+                        ${log.packCode ? `<span>锁定码：${log.packCode}</span>` : ''}
                     </div>
                 </div>
                 <div class="eb-practice-report-summary">
@@ -10128,7 +10205,7 @@
                     <strong>第二天：</strong>${nextDayPlan}
                 </div>
                 <table class="archive-table">
-                    <tr><th>#</th>${hasSourceColumn ? '<th>对应原错题</th>' : ''}<th>补练题</th><th>结果</th><th>正确答案</th></tr>
+                    <tr><th>#</th>${hasSourceColumn ? '<th>对应原错题</th>' : ''}<th>补练题</th><th>结果</th><th>正确答案</th><th>下次</th></tr>
                     ${rows}
                 </table>
                 <div class="answer-progress-note no-print" style="margin:10px 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
@@ -10169,6 +10246,7 @@
             const dueScopeEntries = filter === 'mastered' ? activeDueScopeEntries : entries;
             const priorityPracticeCount = entries.filter(entry => !entry.mastered && isErrorBookPriorityPracticeEntry(entry)).length;
             const dueSummary = getErrorBookDueSummary(dueScopeEntries);
+            const queueHtml = buildErrorBookReviewQueueHTML(activeDueScopeEntries);
             const actionPanelHtml = buildErrorBookPracticeActionPanel(name, {
                 filter,
                 dueSummary,
@@ -10194,7 +10272,7 @@
                     <div style="display:flex; gap:8px;">
                         <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                         <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
-                    </div>${mechanismChipHtml}${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}${practiceLogHtml}</div>
+                    </div>${queueHtml}${mechanismChipHtml}${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}${practiceLogHtml}</div>
                     <h2 style="text-align:center; margin-top:50px; color:#4caf50;">${msg}</h2></div>`;
             }
 
@@ -10260,6 +10338,7 @@
                             : '';
                         const spacing = getErrorEntrySpacingState(err);
                         const spacingBadge = `<span class="spacing-badge ${spacing.badgeClass}">${spacing.label}</span>`;
+                        const nextBadge = `<span class="spacing-next">${spacing.nextLabel}</span>`;
                         let dateRange = err.firstSet === err.lastSet
                             ? `Set ${err.lastSet} · ${err.lastDate}`
                             : `Set ${err.firstSet}→${err.lastSet} · ${err.lastDate}`;
@@ -10268,7 +10347,7 @@
                             ${masterBtn}
                             <div class="error-meta">
                                 <span>[${dateRange}]</span>
-                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge} ${practiceBadge} ${spacingBadge}</span>
+                                <span><span class="error-type-badge ${badgeClass}">${badgeText}</span> ${countBadge} ${practiceBadge} ${spacingBadge} ${nextBadge}</span>
                             </div>
                             <div class="error-q math-row">${err.info.q}${suffix}</div>
                         </div>`;
@@ -10289,6 +10368,7 @@
                             <button class="eb-filter-btn ${filter === 'active' ? 'active' : ''}" onclick="window.setEbFilter('active')">待攻克</button>
                             <button class="eb-filter-btn ${filter === 'mastered' ? 'active' : ''}" onclick="window.setEbFilter('mastered')">已掌握</button>
                         </div>
+                        ${queueHtml}
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
                         ${actionPanelHtml}
@@ -10590,6 +10670,7 @@
             const practiceKind = reviewSheet?.getAttribute('data-practice-kind') || '';
             const scopeLabel = reviewSheet?.getAttribute('data-scope-label') || '';
             const practiceLimit = Number(reviewSheet?.getAttribute('data-practice-limit') || 0) || 0;
+            const packCode = reviewSheet?.getAttribute('data-pack-code') || '';
             const setNum = Number(reviewSheet?.getAttribute('data-set-num') || window.currentSetNumber);
             if (!records.length) {
                 showToast('请至少批改一道专项题后再提交。', { background: '#b45309', duration: 2600 });
@@ -10603,7 +10684,7 @@
                 showToast(`还有 ${missingRows.length} 题没有回填，请先补齐再提交，避免错题漏记。`, { background: '#b45309', duration: 3200 });
                 return;
             }
-            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, dueOnly, domainId, practiceKind, scopeLabel, practiceLimit });
+            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, dueOnly, domainId, practiceKind, scopeLabel, practiceLimit, packCode });
             if (!log) {
                 showToast('这次专项批改没有可保存的记录。', { background: '#b45309', duration: 2600 });
                 return;
