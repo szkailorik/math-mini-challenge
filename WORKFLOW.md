@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.244 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a deterministic error-book practice seed based on program, student, set number, scope, limit, and source mistake signatures.
+- Open questions: none.
+- Risks: if the underlying mistake list changes after a new grading submission, the pack correctly refreshes because the learning state changed.
+- Next steps: keep this behavior visible to parents as a stable print/check/correct workflow.
+
+### Iteration 2
+
+- What I changed: routed error-book practice item generation through the locked seed and restored the previous PRNG state afterward, so this flow does not disturb ordinary worksheet generation.
+- Open questions: none.
+- Risks: tiny error books can still produce fewer than 10 or 20 unique items after duplicate filtering.
+- Next steps: preserve short-pack wording and avoid promising an exact count when the source pool is too small.
+
+### Iteration 3
+
+- What I changed: added runtime checks that the same limited error-book pack repeats identically and that the matching grading page keeps the same item cap.
+- Open questions: none.
+- Risks: validation checks deterministic markup and row count, while physical printer margins still depend on the browser and printer driver.
+- Next steps: compare one real 10题错题专项卷 with its answer and grading page after the next print cycle.
+
 ## Current v23.243 Iteration Notes
 
 ### Iteration 1

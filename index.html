@@ -9601,6 +9601,23 @@
             return normalized ? ` · ${normalized}题` : '';
         }
 
+        function getErrorBookPracticeSeed(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, limit = 0, domainId = '' } = {}) {
+            const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
+            const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId });
+            const cappedEntries = normalizedLimit ? entries.slice(0, normalizedLimit) : entries;
+            const signature = cappedEntries.map(entry => [
+                entry.uid || '',
+                entry.tag || '',
+                entry.count || 0,
+                entry.rewrongCount || 0,
+                entry.lastSet || '',
+                entry.lastPracticeGrade || '',
+                entry.mastered ? 'm' : 'a'
+            ].join(':')).join('|');
+            return parseInt(hashString(`error-book-practice-pack|${getCurrentProgramId()}|${student}|${window.currentSetNumber}|${mechanismKey}|${priorityOnly ? 1 : 0}|${dueOnly ? 1 : 0}|${domainId}|${normalizedLimit}|${signature}`), 36) || 1;
+        }
+        window.getErrorBookPracticeSeed = getErrorBookPracticeSeed;
+
         function getErrorBookNextDayPlanFromSummary(dueSummary = {}, priorityCount = 0) {
             if (priorityCount > 0) return '明天先看今天是否又错；仍错只做复错优先10题，不刷全量。';
             if (dueSummary.dueCount > 0) return '明天按今天批改结果分流：已会归档，未会进入复错优先。';
@@ -9713,7 +9730,7 @@
                 reviewLabel: '批改全部卷'
             }));
             return `
-                <div class="eb-practice-plan-strip"><strong>今天怎么练：</strong>先用10题短卷；20题是加量；全部卷只做阶段清仓。<br><strong>第二天安排：</strong>${plan}</div>
+                <div class="eb-practice-plan-strip"><strong>今天怎么练：</strong>先用10题短卷；20题是加量；全部卷只做阶段清仓。题目、答案、批改页会锁定同一套。<br><strong>第二天安排：</strong>${plan}</div>
                 <div class="eb-practice-panel">${cards.join('')}</div>`;
         }
         window.buildErrorBookPracticeActionPanel = buildErrorBookPracticeActionPanel;
@@ -9748,29 +9765,35 @@
             const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly });
             if (!entries.length) return [];
             const maxItems = normalizeErrorBookPracticeLimit(limit);
-            const used = new Set();
-            const items = [];
-            for (const entry of entries) {
-                const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
-                if (!built) continue;
-                const fingerprint = computeQuestionFingerprint(built);
-                if (used.has(fingerprint)) continue;
-                used.add(fingerprint);
-                const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
-                items.push({
-                    ...built,
-                    followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
-                    followupGrade: entry.grade || 'wrong',
-                    followupMechanismKey: resolvedMechanismKey,
-                    sourceErrorUid: entry.uid,
-                    sourceErrorCount: Math.max(1, entry.count || 1),
-                    sourceLastSet: entry.lastSet || '',
-                    isErrorBookPractice: true,
-                    isReviewItem: true
-                });
-                if (maxItems && items.length >= maxItems) break;
+            const previousPrngState = prngState;
+            setSeed(getErrorBookPracticeSeed(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, limit: maxItems }));
+            try {
+                const used = new Set();
+                const items = [];
+                for (const entry of entries) {
+                    const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
+                    if (!built) continue;
+                    const fingerprint = computeQuestionFingerprint(built);
+                    if (used.has(fingerprint)) continue;
+                    used.add(fingerprint);
+                    const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                    items.push({
+                        ...built,
+                        followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
+                        followupGrade: entry.grade || 'wrong',
+                        followupMechanismKey: resolvedMechanismKey,
+                        sourceErrorUid: entry.uid,
+                        sourceErrorCount: Math.max(1, entry.count || 1),
+                        sourceLastSet: entry.lastSet || '',
+                        isErrorBookPractice: true,
+                        isReviewItem: true
+                    });
+                    if (maxItems && items.length >= maxItems) break;
+                }
+                return items;
+            } finally {
+                prngState = previousPrngState;
             }
-            return items;
         }
 
         function buildErrorBookDomainPracticeItems(student, domainId) {

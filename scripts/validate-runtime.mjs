@@ -93,8 +93,8 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排')) {
-  throw new Error('Error-book quick print sizing and next-day plan workflow is missing');
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套')) {
+  throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
 if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
   throw new Error('Error-book practice complete-refill guard is missing');
@@ -1998,6 +1998,13 @@ if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPrac
 const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
 if (!limitedErrorBookPracticeHtml.includes('错题专项卷（1题）') || (limitedErrorBookPracticeHtml.match(/followup-print-item/g) || []).length !== 1) {
   throw new Error('Error-book limited print pack should honor a 1-item cap');
+}
+const stableErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
+context.window.setSeed?.(987654321);
+const stableErrorBookPracticeRepeatHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
+const stableErrorBookPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { limit: 1 }) || '';
+if (stableErrorBookPracticeHtml !== stableErrorBookPracticeRepeatHtml || !stableErrorBookPracticeReviewHtml.includes('data-practice-limit="1"') || (stableErrorBookPracticeReviewHtml.match(/eb-practice-grade-row/g) || []).length !== 1) {
+  throw new Error('Error-book practice packs should be locked for the same scope and size');
 }
 context.window.currentSetNumber = 109;
 const dueErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, { dueOnly: true }) || '';

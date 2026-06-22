@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.244 locks dedicated error-book practice packs:
+
+- The same student, scope, and 10/20-question choice now generate one stable pack across the question sheet, answer reference, and grading page.
+- The parent can print first, check answers later, and enter paper grades without losing one-to-one alignment.
+- The learning purpose is short spaced retrieval: recommended 10-question packs stay the daily default, while 20-question and full-scope packs remain heavier cleanup options.
+
 v23.215 expands blank-popup print protection:
 
 - Safari-style same-page print validation now covers knowledge maps, error-book targeted sheets, mechanism drills, set reports, main variants, and backup second-pass packs.
