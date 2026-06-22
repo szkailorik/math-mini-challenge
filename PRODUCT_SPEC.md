@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.248 adds mastery confirmation for high-risk error-book items:
+
+- A low-risk one-off mistake can still be archived after one correct targeted practice.
+- Repeated, wrong-again, or teaching-needed items now require two consecutive correct targeted practices before they move to mastered.
+- The first success on a high-risk item becomes `待巩固`, with a future set scheduled for spaced confirmation instead of immediate removal.
+
 v23.247 separates teaching-needed from wrong-again practice:
 
 - Targeted error-book grading now tracks `需讲解` separately from `又错`, so a teaching-needed item enters next-set confirmation without inflating the wrong-again counter.

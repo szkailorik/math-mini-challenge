@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.248 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a mastery requirement helper so high-risk error-book items require two successful targeted-practice confirmations.
+- Open questions: none.
+- Risks: one correct answer no longer always removes a repeated mistake, so parents may see more `待巩固` items for a while.
+- Next steps: keep the queue short by scheduling confirmation rather than immediate full replay.
+
+### Iteration 2
+
+- What I changed: changed targeted-practice `perfect` handling so repeated/wrong-again/needs-explanation items become `masteryPending` after the first success and only archive after the second spaced success.
+- Open questions: none.
+- Risks: older records without mastery fields still behave normally until the next targeted practice updates them.
+- Next steps: keep the visible labels clear enough that parents know `待巩固` is progress, not failure.
+
+### Iteration 3
+
+- What I changed: added runtime checks for first-success pending mastery, visible pending labels, scheduled confirmation set, and second-success archive.
+- Open questions: none.
+- Risks: validation checks the data contract and HTML markers, while real-world judgement still depends on accurate paper marking.
+- Next steps: test one repeated mistake across two real practice sessions.
+
 ## Current v23.247 Iteration Notes
 
 ### Iteration 1

@@ -93,7 +93,7 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('专项需讲解') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
 if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(980px, calc(100vw - 28px))')) {
@@ -2192,11 +2192,58 @@ const explainPracticeResultHtml = context.window.buildErrorBookPracticeResultHTM
 if (!explainPracticeResultHtml.includes('机制补练批改结果') || !explainPracticeResultHtml.includes('需讲解') || !explainPracticeResultHtml.includes('Set 110 讲后确认')) {
   throw new Error('Error-book needs-explanation result should show a teach-then-confirm next step');
 }
+context.window.StorageDB.cache.KAI.errorBook.ebMastery = {
+  tag: 'k_conv_1',
+  grade: 'wrong',
+  count: 4,
+  rewrongCount: 1,
+  lastPracticeGrade: 'wrong',
+  practiceCount: 2,
+  lastSet: 108,
+  firstSet: 104,
+  firstDate: 'validator',
+  lastDate: 'validator',
+  mastered: false,
+  mechanismKey: 'representation-conversion',
+  info: { q: '0.75 = (   )', a: '3/4', step: '先转成四分之三。' }
+};
+const firstMasteryLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_1',
+    grade: 'perfect',
+    sourceErrorUid: 'ebMastery',
+    mechanismKey: 'representation-conversion',
+    info: { sec: '错题专项卷', num: 3, q: '0.75 = (   )', a: '3/4', step: '先转成四分之三。' }
+  }
+], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion', set: 109 });
+const masteryPendingEntry = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.ebMastery;
+const masteryPendingHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', firstMasteryLog) || '';
+if (!firstMasteryLog?.results?.[0]?.masteryPending || masteryPendingEntry.mastered || !masteryPendingEntry.masteryPending || masteryPendingEntry.masteryStreak !== 1 || masteryPendingEntry.masteryRequired !== 2 || masteryPendingEntry.nextPracticeSet !== 111 || !masteryPendingHtml.includes('Set 111 巩固确认')) {
+  throw new Error('Repeated error should require a second spaced confirmation before mastery');
+}
+context.window.renderErrorBook();
+const masteryPendingBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (!masteryPendingBookHtml.includes('专项已会·待巩固 1/2') || !masteryPendingBookHtml.includes('预计 Set 111 巩固确认')) {
+  throw new Error('Error book should surface pending mastery confirmation after first success');
+}
+await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_1',
+    grade: 'perfect',
+    sourceErrorUid: 'ebMastery',
+    mechanismKey: 'representation-conversion',
+    info: { sec: '错题专项卷', num: 3, q: '0.75 = (   )', a: '3/4', step: '先转成四分之三。' }
+  }
+], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion', set: 111 });
+const masteredAfterConfirm = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.ebMastery;
+if (!masteredAfterConfirm.mastered || masteredAfterConfirm.masteryPending || masteredAfterConfirm.masteryStreak !== 2 || masteredAfterConfirm.practiceState !== 'mastered') {
+  throw new Error('Second consecutive spaced success should mark repeated error as mastered');
+}
 const practiceExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', practiceLog) || '';
 if (!practiceExplainChecklistHtml.includes('机制补练讲解清单') || !practiceExplainChecklistHtml.includes('讲解顺序') || !practiceExplainChecklistHtml.includes('讲解动作') || !practiceExplainChecklistHtml.includes('讲后记录') || !practiceExplainChecklistHtml.includes('□ 已讲清') || !practiceExplainChecklistHtml.includes('□ 已重做') || !practiceExplainChecklistHtml.includes('□ 仍不会') || !practiceExplainChecklistHtml.includes('隔天优先二刷') || !practiceExplainChecklistHtml.includes('0.25')) {
   throw new Error('Error-book targeted practice explanation checklist is missing actionable review details');
 }
-const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
+const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', { errorBookPracticeLog: [practiceLog] }) || '';
 if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('第二天安排') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('需讲解 0') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
   throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts or next-day plan');
 }
@@ -2222,8 +2269,33 @@ await context.window.StorageDB.saveErrorBookPractice('KAI', [
     info: { sec: '错题专项卷', num: 1, q: '0.25 = (   )', a: '1/4', step: '先转成分数。' }
   }
 ], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion' });
-if (!context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.eb1.mastered) {
-  throw new Error('Error-book targeted practice did not mark mastered items after a perfect review');
+const eb1AfterOnePerfect = context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.eb1;
+if (eb1AfterOnePerfect.mastered || !eb1AfterOnePerfect.masteryPending || eb1AfterOnePerfect.masteryStreak !== 1) {
+  throw new Error('Wrong-again error should not be mastered after only one perfect review');
+}
+context.window.StorageDB.cache.KAI.errorBook.ebLowRisk = {
+  tag: 'k_conv_1',
+  grade: 'careless',
+  count: 1,
+  lastSet: 108,
+  firstSet: 108,
+  firstDate: 'validator',
+  lastDate: 'validator',
+  mastered: false,
+  mechanismKey: 'representation-conversion',
+  info: { q: '0.5 = (   )', a: '1/2', step: '一半。' }
+};
+await context.window.StorageDB.saveErrorBookPractice('KAI', [
+  {
+    tag: 'k_conv_1',
+    grade: 'perfect',
+    sourceErrorUid: 'ebLowRisk',
+    mechanismKey: 'representation-conversion',
+    info: { sec: '错题专项卷', num: 4, q: '0.5 = (   )', a: '1/2', step: '一半。' }
+  }
+], 'advanced_fluency_v1', { mechanismKey: 'representation-conversion' });
+if (!context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1').errorBook.ebLowRisk.mastered) {
+  throw new Error('Low-risk one-off error should be mastered after one perfect review');
 }
 context.window.setEbMechanism('');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {} };
