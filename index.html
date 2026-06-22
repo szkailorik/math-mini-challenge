@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.249 (错题选题可追踪)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.250 (错题短卷交错平衡)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -3093,7 +3093,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.249</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.250</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3172,9 +3172,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.249';
-        const APP_RELEASE_LABEL = '错题选题可追踪';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.249 错题专项卷会显示每题选入原因：复错优先、讲后确认、巩固确认或到期复练。';
+        const APP_VERSION = 'v23.250';
+        const APP_RELEASE_LABEL = '错题短卷交错平衡';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.250 错题10题/20题短卷会在优先级之上软平衡不同机制，避免同一类题挤满整张卷。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -9783,10 +9783,68 @@
             return normalized ? ` · ${normalized}题` : '';
         }
 
+        function getErrorBookPracticeEntryIdentity(entry = {}, index = 0) {
+            return entry.uid || `${entry.tag || 'tag'}|${entry.firstSet || ''}|${entry.lastSet || ''}|${entry.count || 0}|${index}`;
+        }
+
+        function getErrorBookPracticeEntryMechanism(entry = {}) {
+            return entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info) || 'generic_followup';
+        }
+
+        function getErrorBookPracticeDiversityCaps(limit = 0) {
+            const normalized = normalizeErrorBookPracticeLimit(limit);
+            if (!normalized) return { mechanismSoftCap: Infinity, mechanismRelaxedCap: Infinity, tagSoftCap: Infinity, tagRelaxedCap: Infinity };
+            return {
+                mechanismSoftCap: normalized <= 6 ? 3 : (normalized <= 10 ? 4 : Math.max(5, Math.ceil(normalized * 0.38))),
+                mechanismRelaxedCap: normalized <= 10 ? 6 : Math.max(8, Math.ceil(normalized * 0.58)),
+                tagSoftCap: normalized <= 10 ? 3 : Math.max(4, Math.ceil(normalized * 0.28)),
+                tagRelaxedCap: normalized <= 10 ? 5 : Math.max(7, Math.ceil(normalized * 0.45))
+            };
+        }
+        window.getErrorBookPracticeDiversityCaps = getErrorBookPracticeDiversityCaps;
+
+        function arrangeErrorBookPracticeEntries(entries = [], { limit = 0, mechanismKey = '' } = {}) {
+            const source = (entries || []).filter(Boolean);
+            const maxItems = normalizeErrorBookPracticeLimit(limit);
+            if (!maxItems || source.length <= maxItems || mechanismKey) return source.slice();
+            const rows = source.map((entry, index) => ({
+                entry,
+                key: getErrorBookPracticeEntryIdentity(entry, index),
+                mechanism: getErrorBookPracticeEntryMechanism(entry),
+                tag: entry.tag || 'generic-tag'
+            }));
+            const selected = [];
+            const selectedKeys = new Set();
+            const mechanismCounts = {};
+            const tagCounts = {};
+            const caps = getErrorBookPracticeDiversityCaps(maxItems);
+            const tryAdd = (row, mechanismCap, tagCap) => {
+                if (selected.length >= maxItems || selectedKeys.has(row.key)) return false;
+                const mechanismCount = mechanismCounts[row.mechanism] || 0;
+                const tagCount = tagCounts[row.tag] || 0;
+                if (mechanismCount >= mechanismCap || tagCount >= tagCap) return false;
+                selected.push(row);
+                selectedKeys.add(row.key);
+                mechanismCounts[row.mechanism] = mechanismCount + 1;
+                tagCounts[row.tag] = tagCount + 1;
+                return true;
+            };
+            [
+                { mechanismCap: caps.mechanismSoftCap, tagCap: caps.tagSoftCap },
+                { mechanismCap: caps.mechanismRelaxedCap, tagCap: caps.tagRelaxedCap },
+                { mechanismCap: Infinity, tagCap: Infinity }
+            ].forEach(pass => {
+                rows.forEach(row => tryAdd(row, pass.mechanismCap, pass.tagCap));
+            });
+            return selected.map(row => row.entry).concat(rows.filter(row => !selectedKeys.has(row.key)).map(row => row.entry));
+        }
+        window.arrangeErrorBookPracticeEntries = arrangeErrorBookPracticeEntries;
+
         function getErrorBookPracticeSeed(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, limit = 0, domainId = '' } = {}) {
             const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
             const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId });
-            const cappedEntries = normalizedLimit ? entries.slice(0, normalizedLimit) : entries;
+            const arrangedEntries = arrangeErrorBookPracticeEntries(entries, { limit: normalizedLimit, mechanismKey });
+            const cappedEntries = normalizedLimit ? arrangedEntries.slice(0, normalizedLimit) : arrangedEntries;
             const signature = cappedEntries.map(entry => [
                 entry.uid || '',
                 entry.tag || '',
@@ -9847,8 +9905,8 @@
             const disabled = activeCount <= 0;
             const scopeLabel = activeMechanism ? `当前机制「${getErrorMechanismLabel(activeMechanism)}」` : '全部活跃错题';
             const dailySubtitle = hasDue
-                ? '按间隔复习先抽到期/复错题，不一次清空错题本。'
-                : `${scopeLabel}里先取优先级最高的10题，适合今天快速练。`;
+                ? '按间隔先抽到期/复错题，并软平衡不同机制。'
+                : `${scopeLabel}里按优先级取10题，同时避免同一机制刷满。`;
             const plan = getErrorBookNextDayPlanFromSummary(dueSummary, priorityPracticeCount);
             const cards = [
                 buildErrorBookPracticeActionCardHTML({
@@ -9867,7 +9925,7 @@
                 buildErrorBookPracticeActionCardHTML({
                     student,
                     title: '加量20题',
-                    subtitle: '时间充足时使用；仍按优先级排序，不随机乱抓。',
+                    subtitle: '时间充足时使用；按优先级+机制交错，不随机乱抓。',
                     kicker: '加量',
                     limit: 20,
                     dueOnly: hasDue,
@@ -9953,16 +10011,23 @@
             const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId });
             if (!entries.length) return [];
             const maxItems = normalizeErrorBookPracticeLimit(limit);
+            const arrangedEntries = arrangeErrorBookPracticeEntries(entries, { limit: maxItems, mechanismKey });
             const previousPrngState = prngState;
             setSeed(getErrorBookPracticeSeed(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId, limit: maxItems }));
             try {
                 const used = new Set();
                 const items = [];
-                for (const entry of entries) {
-                    const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
+                for (const entry of arrangedEntries) {
+                    let built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
                     if (!built) continue;
-                    const fingerprint = computeQuestionFingerprint(built);
-                    if (used.has(fingerprint)) continue;
+                    let fingerprint = computeQuestionFingerprint(built.q);
+                    if (used.has(fingerprint)) {
+                        const replay = buildErrorReplayItem(entry);
+                        const replayFingerprint = replay ? computeQuestionFingerprint(replay.q) : '';
+                        if (!replay || used.has(replayFingerprint)) continue;
+                        built = replay;
+                        fingerprint = replayFingerprint;
+                    }
                     used.add(fingerprint);
                     const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
                     const practiceLane = getErrorBookPracticeLane(entry);
@@ -10078,9 +10143,22 @@
         }
         window.getErrorBookPracticeLaneSummaryText = getErrorBookPracticeLaneSummaryText;
 
+        function getErrorBookPracticeInterleaveSummaryText(items = []) {
+            const mechanisms = new Set((items || []).map(item => item.followupMechanismKey || '').filter(Boolean));
+            const tags = new Set((items || []).map(item => item.tag || '').filter(Boolean));
+            if (mechanisms.size >= 2) return `交错 ${mechanisms.size} 类机制`;
+            if (tags.size >= 2) return `同机制 ${tags.size} 类题`;
+            return '';
+        }
+        window.getErrorBookPracticeInterleaveSummaryText = getErrorBookPracticeInterleaveSummaryText;
+
         function buildErrorBookPracticeLaneSummaryHTML(items = []) {
             const summary = getErrorBookPracticeLaneSummaryText(items);
-            return summary ? `<span class="practice-lane-summary"><strong>选题</strong>：${summary}</span>` : '';
+            const interleave = getErrorBookPracticeInterleaveSummaryText(items);
+            const pieces = [];
+            if (summary) pieces.push(summary);
+            if (interleave) pieces.push(interleave);
+            return pieces.length ? `<span class="practice-lane-summary"><strong>选题</strong>：${pieces.join(' · ')}</span>` : '';
         }
         window.buildErrorBookPracticeLaneSummaryHTML = buildErrorBookPracticeLaneSummaryHTML;
 

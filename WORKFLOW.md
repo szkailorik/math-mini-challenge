@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.250 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a soft-balancing layer for capped error-book practice packs so priority sorting no longer lets one mechanism dominate a 10-question sheet when alternatives exist.
+- Open questions: none.
+- Risks: aggressive balancing could hide urgent items, so the caps are soft and relax before final fill.
+- Next steps: compare several real 10-question packs for mechanism spread and urgency.
+
+### Iteration 2
+
+- What I changed: preserved single-mechanism behavior for explicit mechanism drills while applying interleaving only to broader short packs.
+- Open questions: none.
+- Risks: domain packs may still skew if a domain genuinely contains one dominant mechanism.
+- Next steps: keep the print metadata visible so parents can spot skewed packs quickly.
+
+### Iteration 3
+
+- What I changed: added runtime validation for broad-pack mechanism spread, focused mechanism packs, and visible interleaving metadata.
+- Open questions: none.
+- Risks: validation uses synthetic entries; real error books can still be naturally narrow.
+- Next steps: observe packs after several real grading sessions.
+
 ## Current v23.249 Iteration Notes
 
 ### Iteration 1

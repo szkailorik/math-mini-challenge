@@ -93,7 +93,7 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function getErrorBookPracticeLane') || !html.includes('data-practice-lane') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function arrangeErrorBookPracticeEntries') || !html.includes('function getErrorBookPracticeDiversityCaps') || !html.includes('computeQuestionFingerprint(built.q)') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function getErrorBookPracticeLane') || !html.includes('data-practice-lane') || !html.includes('交错') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
 if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(980px, calc(100vw - 28px))')) {
@@ -2137,6 +2137,64 @@ if (notDueKaiBudget?.dueReadyCount !== 0 || notDueKaiBudget.maxExactReplay !== 0
 }
 context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
 context.window.StorageDB.cache.Lorik = previousLorikDailyMixRecord;
+const previousKaiPracticeBalanceRecord = context.window.StorageDB.cache.KAI;
+const previousPracticeBalanceSet = context.window.currentSetNumber;
+const makePracticeBalanceErrorBook = () => {
+  const rows = [];
+  const pushRows = (tags, mechanismKey, qPrefix) => {
+    tags.forEach((tag, index) => {
+      rows.push({
+        uid: `${tag}-${index}`,
+        tag,
+        mechanismKey,
+        grade: 'wrong',
+        count: 4,
+        firstSet: 90 + index,
+        firstDate: 'validator',
+        lastSet: 112,
+        lastDate: 'validator',
+        mastered: false,
+        info: { sec: '平衡测试', num: index + 1, q: `${qPrefix} ${index + 1} = (   )`, a: String(index + 1), step: '按同类结构复练。' }
+      });
+    });
+  };
+  pushRows(['k_conv_1', 'k_conv_2', 'k_conv_3', 'k_conv_4', 'k_conv_5', 'k_conv_6', 'k_conv_7', 'k_conv_8'], 'bridge_convert', '表示转换');
+  pushRows(['k_fcalc_addsub', 'k_fcalc_paren', 'k_fcalc_dist', 'k_fcalc_muldiv', 'k_fcalc_cancel'], 'fraction_addsub', '分数通分');
+  pushRows(['k_eq_sub', 'k_eq_divisor', 'k_eq_twostep', 'k_eq_prop'], 'equation_inverse', '方程逆运算');
+  return Object.fromEntries(rows.map(row => [row.uid, row]));
+};
+context.window.StorageDB.cache.KAI = context.window.StorageDB.migrateProfile({
+  weights: {},
+  lastSeen: {},
+  history: [],
+  errorBook: makePracticeBalanceErrorBook()
+});
+context.window.currentSetNumber = 120;
+const balanceSourceEntries = Object.entries(context.window.StorageDB.getProfile('KAI', 'advanced_fluency_v1')?.errorBook || {}).map(([uid, entry]) => ({ uid, ...entry }));
+const arrangedBalanceEntries = context.window.arrangeErrorBookPracticeEntries?.(balanceSourceEntries, { limit: 10 }) || [];
+const arrangedMechanismCounts = arrangedBalanceEntries.slice(0, 10).reduce((acc, entry) => {
+  const key = entry.mechanismKey || 'unknown';
+  acc[key] = (acc[key] || 0) + 1;
+  return acc;
+}, {});
+const balancedPracticeItems = context.window.buildErrorBookPracticeItems?.('KAI', { limit: 10 }) || [];
+const balanceMechanismCounts = balancedPracticeItems.reduce((acc, item) => {
+  const key = item.followupMechanismKey || 'unknown';
+  acc[key] = (acc[key] || 0) + 1;
+  return acc;
+}, {});
+const balanceMechanismCount = Object.keys(balanceMechanismCounts).length;
+const balanceDominantCount = Math.max(...Object.values(balanceMechanismCounts));
+const balancedPrintHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 10 }) || '';
+if (arrangedBalanceEntries.length < 10 || Object.keys(arrangedMechanismCounts).length < 3 || Math.max(...Object.values(arrangedMechanismCounts)) > 6 || balancedPracticeItems.length !== 10 || balanceMechanismCount < 3 || balanceDominantCount > 6 || !context.window.getErrorBookPracticeInterleaveSummaryText?.(balancedPracticeItems).includes('交错') || !balancedPrintHtml.includes('交错')) {
+  throw new Error(`Error-book 10-item practice should soft-balance mechanisms, arranged ${JSON.stringify(arrangedMechanismCounts)}, built ${JSON.stringify(balanceMechanismCounts)}, source ${balanceSourceEntries.length}`);
+}
+const mechanismOnlyPracticeItems = context.window.buildErrorBookPracticeItems?.('KAI', { mechanismKey: 'bridge_convert', limit: 6 }) || [];
+if (mechanismOnlyPracticeItems.length !== 6 || mechanismOnlyPracticeItems.some(item => item.followupMechanismKey !== 'bridge_convert')) {
+  throw new Error('Mechanism-specific error-book practice should stay focused on the selected mechanism');
+}
+context.window.StorageDB.cache.KAI = previousKaiPracticeBalanceRecord;
+context.window.currentSetNumber = previousPracticeBalanceSet;
 const reviewHtmlForPractice = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { mechanismKey: 'representation-conversion' }) || '';
 if (!reviewHtmlForPractice.includes('错题专项卷批改') || !reviewHtmlForPractice.includes('提交专项批改') || !reviewHtmlForPractice.includes('data-source-uid="eb1"') || !reviewHtmlForPractice.includes('data-practice-lane=') || !reviewHtmlForPractice.includes('practice-lane-chip') || !reviewHtmlForPractice.includes('选题') || !reviewHtmlForPractice.includes('全部已会 ✓') || !reviewHtmlForPractice.includes('全部需讲解 ⚠️') || !reviewHtmlForPractice.includes('全部又错 ✗') || !reviewHtmlForPractice.includes('还差')) {
   throw new Error('Error-book targeted practice grading sheet is missing review rows or submit action');

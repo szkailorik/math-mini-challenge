@@ -27,6 +27,13 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.250 improves error-book short-pack interleaving:
+
+- Recommended 10-question and extended 20-question error-book packs now soft-balance mechanisms after priority sorting, so one crowded weakness does not fill the whole sheet when other due mistakes are available.
+- Mechanism-specific drills remain focused on the chosen mechanism, preserving the value of deliberate专项短练.
+- If a generated variant collides with an already-used prompt, the pack falls back to the original replay item instead of silently dropping the row.
+- Print and grading metadata show the interleaving summary, making it easier to see whether a short pack is broad review or single-mechanism practice.
+
 v23.249 makes error-book practice selection reasons visible:
 
 - Every dedicated error-book practice item now carries a short queue label such as `复错优先`, `讲后确认`, `巩固确认`, `逾期复练`, or `到期复练`.
