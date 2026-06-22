@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.243 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a clear error-book action panel with recommended 10-question, extended 20-question, wrong-again priority, and full-scope print paths.
+- Open questions: none.
+- Risks: parents may still overuse full-scope sheets, so the copy positions them as stage clean-up rather than daily work.
+- Next steps: keep the default path short enough for daily spaced retrieval.
+
+### Iteration 2
+
+- What I changed: practice printing and grading now accept a shared `practiceLimit`, so the printed sheet, answer page, and grading page stay aligned for 10题 / 20题 packs.
+- Open questions: none.
+- Risks: duplicate filtering can make the final count smaller than requested when the active error book is tiny.
+- Next steps: keep the UI wording as “up to N questions” in practice if parents notice short packs.
+
+### Iteration 3
+
+- What I changed: recent records and result reports now show a concise second-day plan, while the full error-book answer reference is reduced to final answer plus one check hint.
+- Open questions: none.
+- Risks: next-day guidance is rule-based, not a full tutoring diagnosis.
+- Next steps: validate with a real printed 10题 sheet and one follow-up grading record.
+
 ## Current v23.242 Iteration Notes
 
 ### Iteration 1

@@ -93,6 +93,9 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排')) {
+  throw new Error('Error-book quick print sizing and next-day plan workflow is missing');
+}
 if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
   throw new Error('Error-book practice complete-refill guard is missing');
 }
@@ -1974,6 +1977,12 @@ if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
 if (!mechanismFilteredHtml.includes('到期复练') || !mechanismFilteredHtml.includes('今天建议先做') || !mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
+if (!mechanismFilteredHtml.includes('今日10题（推荐）') || !mechanismFilteredHtml.includes('加量20题') || !mechanismFilteredHtml.includes('第二天安排')) {
+  throw new Error('Error book should make 10/20-item print choices and next-day plan visible');
+}
+if (mechanismFilteredHtml.includes('解析 (Solutions)') || mechanismFilteredHtml.includes('攻克建议')) {
+  throw new Error('Error-book answer reference should not show long solution wording');
+}
 const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KAI', 'representation-conversion', false) || '';
 if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes('0.25')) {
   throw new Error('Error book mechanism print builder did not produce concrete practice content');
@@ -1986,6 +1995,10 @@ const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML
 if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
   throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
 }
+const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
+if (!limitedErrorBookPracticeHtml.includes('错题专项卷（1题）') || (limitedErrorBookPracticeHtml.match(/followup-print-item/g) || []).length !== 1) {
+  throw new Error('Error-book limited print pack should honor a 1-item cap');
+}
 context.window.currentSetNumber = 109;
 const dueErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, { dueOnly: true }) || '';
 if (!dueErrorBookPracticeHtml.includes('到期错题复练卷') || !dueErrorBookPracticeHtml.includes('到期复练') || !dueErrorBookPracticeHtml.includes('参考答案')) {
@@ -1994,6 +2007,10 @@ if (!dueErrorBookPracticeHtml.includes('到期错题复练卷') || !dueErrorBook
 const dueReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { dueOnly: true }) || '';
 if (!dueReviewHtml.includes('到期错题复练批改') || !dueReviewHtml.includes('data-due-only="true"')) {
   throw new Error('Due error-book practice grading sheet is missing due-only metadata');
+}
+const limitedDueReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { dueOnly: true, limit: 1 }) || '';
+if (!limitedDueReviewHtml.includes('到期错题复练批改（1题）') || !limitedDueReviewHtml.includes('data-practice-limit="1"') || (limitedDueReviewHtml.match(/eb-practice-grade-row/g) || []).length !== 1) {
+  throw new Error('Due error-book grading sheet should honor a 1-item cap and persist practice limit metadata');
 }
 if (!fullErrorBookPracticeHtml.includes('参考答案') || !fullErrorBookPracticeHtml.includes('复练标记')) {
   throw new Error('Full error-book targeted practice answer sheet is missing answer/reference tracking columns');
@@ -2131,7 +2148,7 @@ if (!priorityReviewHtml.includes('复错优先卷批改') || !priorityReviewHtml
   throw new Error('Wrong-again priority practice grading sheet is missing priority metadata');
 }
 const practiceResultHtml = context.window.buildErrorBookPracticeResultHTML?.('KAI', practiceLog) || '';
-if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案') || !practiceResultHtml.includes('打印讲解清单') || !practiceResultHtml.includes('data-log-id=')) {
+if (!practiceResultHtml.includes('机制补练批改结果') || !practiceResultHtml.includes('下一步') || !practiceResultHtml.includes('第二天') || !practiceResultHtml.includes('第 1 题') || !practiceResultHtml.includes('需讲解') || !practiceResultHtml.includes('又错') || !practiceResultHtml.includes('正确答案') || !practiceResultHtml.includes('打印讲解清单') || !practiceResultHtml.includes('data-log-id=')) {
   throw new Error('Error-book targeted practice result report is missing summary or answer details');
 }
 const practiceExplainChecklistHtml = context.window.buildErrorBookPracticeExplainChecklistHTML?.('KAI', practiceLog) || '';
@@ -2139,8 +2156,8 @@ if (!practiceExplainChecklistHtml.includes('机制补练讲解清单') || !pract
   throw new Error('Error-book targeted practice explanation checklist is missing actionable review details');
 }
 const practiceLogHtml = context.window.buildErrorBookPracticeLogHTML?.('KAI', practicedProfile) || '';
-if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('需讲解 0') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
-  throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts');
+if (!practiceLogHtml.includes('最近补练批改') || !practiceLogHtml.includes('第二天安排') || !practiceLogHtml.includes('机制补练') || !practiceLogHtml.includes('需讲解 0') || !practiceLogHtml.includes('又错 1') || !practiceLogHtml.includes('openErrorBookPracticeLog')) {
+  throw new Error('Error-book targeted practice recent-log summary is missing wrong-again counts or next-day plan');
 }
 const domainPracticeLog = await context.window.StorageDB.saveErrorBookPractice('KAI', [
   {

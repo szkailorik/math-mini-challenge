@@ -1120,6 +1120,20 @@
         .eb-practice-report-card { border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; padding: 10px 12px; }
         .eb-practice-report-card span { display: block; color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.04em; }
         .eb-practice-report-card b { display: block; color: #0f172a; font-size: 22px; line-height: 1.1; }
+        .eb-practice-plan-strip { margin-top: 10px; padding: 9px 11px; border: 1px solid #d9e7dd; border-radius: 8px; background: #f6fcf8; color: #14532d; font-size: 12.5px; line-height: 1.45; font-weight: 800; }
+        .eb-practice-panel { margin-top: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .eb-practice-card { border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; padding: 10px 11px; display: flex; flex-direction: column; gap: 8px; }
+        .eb-practice-card.recommended { border-color: #86efac; background: #f0fdf4; }
+        .eb-practice-card.priority { border-color: #fecaca; background: #fff7f7; }
+        .eb-practice-card h3 { margin: 0; color: #0f172a; font-size: 14px; line-height: 1.25; }
+        .eb-practice-card p { margin: 3px 0 0; color: #475569; font-size: 12px; line-height: 1.42; }
+        .eb-practice-card-kicker { display: inline-flex; width: fit-content; padding: 2px 7px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc; color: #334155; font-size: 11px; font-weight: 900; }
+        .eb-practice-card.recommended .eb-practice-card-kicker { border-color: #86efac; background: #dcfce7; color: #166534; }
+        .eb-practice-card.priority .eb-practice-card-kicker { border-color: #fca5a5; background: #fee2e2; color: #991b1b; }
+        .eb-practice-card-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+        .eb-practice-card-actions .eb-filter-btn { padding: 6px 9px; font-size: 12px; border-radius: 6px; }
+        .eb-practice-card-actions .eb-filter-btn[disabled] { opacity: 0.48; cursor: not-allowed; }
+        .eb-answer-table td { vertical-align: top; text-align: left; }
         .master-btn { position: absolute; top: 8px; right: 8px; background: #10b981; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
         .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
         .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
@@ -4549,6 +4563,7 @@
                     scopeLabel: meta.scopeLabel || '',
                     priorityOnly: !!meta.priorityOnly,
                     dueOnly: !!meta.dueOnly,
+                    practiceLimit: Number(meta.practiceLimit || 0) || 0,
                     results: []
                 };
                 (records || []).forEach(record => {
@@ -9574,6 +9589,135 @@
             return { dueCount, priorityCount, overdueCount, nextDueIn: Number.isFinite(nextDueIn) ? nextDueIn : null, message };
         }
 
+        function normalizeErrorBookPracticeLimit(limit = 0) {
+            const value = Math.floor(Number(limit || 0));
+            if (!Number.isFinite(value) || value <= 0) return 0;
+            return Math.min(60, Math.max(1, value));
+        }
+        window.normalizeErrorBookPracticeLimit = normalizeErrorBookPracticeLimit;
+
+        function getErrorBookLimitSuffix(limit = 0) {
+            const normalized = normalizeErrorBookPracticeLimit(limit);
+            return normalized ? ` · ${normalized}题` : '';
+        }
+
+        function getErrorBookNextDayPlanFromSummary(dueSummary = {}, priorityCount = 0) {
+            if (priorityCount > 0) return '明天先看今天是否又错；仍错只做复错优先10题，不刷全量。';
+            if (dueSummary.dueCount > 0) return '明天按今天批改结果分流：已会归档，未会进入复错优先。';
+            return '明天继续新题和交错训练；错题未到期不提前刷，等到期再打10题。';
+        }
+        window.getErrorBookNextDayPlanFromSummary = getErrorBookNextDayPlanFromSummary;
+
+        function getErrorBookPracticeNextDayPlan(log = {}) {
+            const summary = summarizeErrorBookPracticeLog(log);
+            if (!summary.total) return '明天先做常规训练；有新错题再进入错题本。';
+            if (summary.wrongAgain > 0) return `明天先打印复错优先10题；${summary.wrongAgain}题又错先短打，不扩大题量。`;
+            if (summary.needsExplain > 0) return `今天先讲清${summary.needsExplain}题，明天用10题小卷确认是否真正会了。`;
+            return '明天不重复整张卷，回到新题训练；这些题按间隔到期再少量保温。';
+        }
+        window.getErrorBookPracticeNextDayPlan = getErrorBookPracticeNextDayPlan;
+
+        function buildErrorBookPracticeActionCardHTML({ student, title, subtitle, kicker = '', limit = 10, priorityOnly = false, dueOnly = false, recommended = false, priority = false, disabled = false, printLabel = '打印题目', answerLabel = '题目+答案', reviewLabel = '批改' } = {}) {
+            const cap = normalizeErrorBookPracticeLimit(limit);
+            const className = `eb-practice-card${recommended ? ' recommended' : ''}${priority ? ' priority' : ''}`;
+            const disabledAttr = disabled ? ' disabled aria-disabled="true"' : '';
+            return `
+                <div class="${className}">
+                    <div>
+                        ${kicker ? `<span class="eb-practice-card-kicker">${kicker}</span>` : ''}
+                        <h3>${title}</h3>
+                        <p>${subtitle}</p>
+                    </div>
+                    <div class="eb-practice-card-actions">
+                        <button class="eb-filter-btn ${recommended ? 'active' : ''}" onclick="window.printErrorBookPractice('${student}', false, ${priorityOnly}, ${dueOnly}, ${cap})"${disabledAttr}>${printLabel}</button>
+                        <button class="eb-filter-btn" onclick="window.printErrorBookPractice('${student}', true, ${priorityOnly}, ${dueOnly}, ${cap})"${disabledAttr}>${answerLabel}</button>
+                        <button class="eb-filter-btn" onclick="window.openErrorBookPracticeReview('${student}', ${priorityOnly}, ${dueOnly}, ${cap})"${disabledAttr}>${reviewLabel}</button>
+                    </div>
+                </div>`;
+        }
+
+        function buildErrorBookPracticeActionPanel(student, { filter = 'active', dueSummary = {}, priorityPracticeCount = 0, activeMechanism = '', activeCount = 0 } = {}) {
+            if (filter !== 'active') return '';
+            const hasDue = Number(dueSummary.dueCount || 0) > 0;
+            const disabled = activeCount <= 0;
+            const scopeLabel = activeMechanism ? `当前机制「${getErrorMechanismLabel(activeMechanism)}」` : '全部活跃错题';
+            const dailySubtitle = hasDue
+                ? '按间隔复习先抽到期/复错题，不一次清空错题本。'
+                : `${scopeLabel}里先取优先级最高的10题，适合今天快速练。`;
+            const plan = getErrorBookNextDayPlanFromSummary(dueSummary, priorityPracticeCount);
+            const cards = [
+                buildErrorBookPracticeActionCardHTML({
+                    student,
+                    title: '今日10题（推荐）',
+                    subtitle: dailySubtitle,
+                    kicker: hasDue ? '到期优先' : '短卷优先',
+                    limit: 10,
+                    dueOnly: hasDue,
+                    recommended: true,
+                    disabled,
+                    printLabel: hasDue ? '打印到期复练卷' : '打印10题小卷',
+                    answerLabel: hasDue ? '到期卷+答案' : '10题+答案',
+                    reviewLabel: hasDue ? '批改到期卷' : '批改10题'
+                }),
+                buildErrorBookPracticeActionCardHTML({
+                    student,
+                    title: '加量20题',
+                    subtitle: '时间充足时使用；仍按优先级排序，不随机乱抓。',
+                    kicker: '加量',
+                    limit: 20,
+                    dueOnly: hasDue,
+                    disabled,
+                    printLabel: '打印20题',
+                    answerLabel: '20题+答案',
+                    reviewLabel: '批改20题'
+                })
+            ];
+            if (priorityPracticeCount > 0) {
+                cards.push(buildErrorBookPracticeActionCardHTML({
+                    student,
+                    title: '复错优先10题',
+                    subtitle: '只处理专项又错或上次未过关的题，适合第二天短打。',
+                    kicker: `${priorityPracticeCount}题复错`,
+                    limit: 10,
+                    priorityOnly: true,
+                    priority: true,
+                    disabled,
+                    printLabel: '打印复错优先卷',
+                    answerLabel: '打印复错优先卷+答案',
+                    reviewLabel: '批改复错优先卷'
+                }));
+            }
+            if (activeMechanism) {
+                cards.push(`
+                <div class="eb-practice-card">
+                    <div>
+                        <span class="eb-practice-card-kicker">机制短练</span>
+                        <h3>当前机制补练</h3>
+                        <p>围绕「${getErrorMechanismLabel(activeMechanism)}」单独出一张6题短卷。</p>
+                    </div>
+                    <div class="eb-practice-card-actions">
+                        <button class="eb-filter-btn" onclick="window.printErrorBookMechanismPractice('${student}', '${activeMechanism}', false)"${disabled ? ' disabled aria-disabled="true"' : ''}>打印当前机制补练</button>
+                        <button class="eb-filter-btn" onclick="window.printErrorBookMechanismPractice('${student}', '${activeMechanism}', true)"${disabled ? ' disabled aria-disabled="true"' : ''}>补练+答案</button>
+                    </div>
+                </div>`);
+            }
+            cards.push(buildErrorBookPracticeActionCardHTML({
+                student,
+                title: activeMechanism ? '当前机制全部' : '全部活跃错题',
+                subtitle: activeMechanism ? '只打印当前机制下的全部错题。' : '用于阶段性清仓，不建议每天都打全量。',
+                kicker: scopeLabel,
+                limit: 0,
+                disabled,
+                printLabel: `打印${activeMechanism ? '当前机制' : '全部'}错题卷`,
+                answerLabel: '全部卷+答案',
+                reviewLabel: '批改全部卷'
+            }));
+            return `
+                <div class="eb-practice-plan-strip"><strong>今天怎么练：</strong>先用10题短卷；20题是加量；全部卷只做阶段清仓。<br><strong>第二天安排：</strong>${plan}</div>
+                <div class="eb-practice-panel">${cards.join('')}</div>`;
+        }
+        window.buildErrorBookPracticeActionPanel = buildErrorBookPracticeActionPanel;
+
         function getErrorBookPracticeEntries(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, domainId = '' } = {}) {
             const profile = StorageDB.getProfile(student) || {};
             const entries = Object.entries(profile.errorBook || {}).map(([uid, value]) => ({ uid, ...value }));
@@ -9600,18 +9744,20 @@
                 });
         }
 
-        function buildErrorBookPracticeItems(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false } = {}) {
+        function buildErrorBookPracticeItems(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, limit = 0 } = {}) {
             const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly });
             if (!entries.length) return [];
+            const maxItems = normalizeErrorBookPracticeLimit(limit);
             const used = new Set();
-            return entries.map(entry => {
+            const items = [];
+            for (const entry of entries) {
                 const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
-                if (!built) return null;
+                if (!built) continue;
                 const fingerprint = computeQuestionFingerprint(built);
-                if (used.has(fingerprint)) return null;
+                if (used.has(fingerprint)) continue;
                 used.add(fingerprint);
                 const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
-                return {
+                items.push({
                     ...built,
                     followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
                     followupGrade: entry.grade || 'wrong',
@@ -9621,8 +9767,10 @@
                     sourceLastSet: entry.lastSet || '',
                     isErrorBookPractice: true,
                     isReviewItem: true
-                };
-            }).filter(Boolean);
+                });
+                if (maxItems && items.length >= maxItems) break;
+            }
+            return items;
         }
 
         function buildErrorBookDomainPracticeItems(student, domainId) {
@@ -9715,18 +9863,21 @@
         }
         window.buildErrorBookDomainPrintHTML = buildErrorBookDomainPrintHTML;
 
-        function getErrorBookPracticeScopeLabel(mechanismKey = '', priorityOnly = false, domainId = '', dueOnly = false) {
+        function getErrorBookPracticeScopeLabel(mechanismKey = '', priorityOnly = false, domainId = '', dueOnly = false, limit = 0) {
             const domain = domainId ? KnowledgeDomains.find(item => item.id === domainId) : null;
             const base = domain ? `${domain.name}领域错题` : (mechanismKey ? getErrorMechanismLabel(mechanismKey) : '全部活跃错题');
-            if (dueOnly) return `到期复练 · ${base}`;
-            return priorityOnly ? `复错优先 · ${base}` : base;
+            const suffix = getErrorBookLimitSuffix(limit);
+            if (dueOnly) return `到期复练 · ${base}${suffix}`;
+            return `${priorityOnly ? `复错优先 · ${base}` : base}${suffix}`;
         }
 
-        function buildErrorBookPracticePrintHTML(student, includeAnswers = false, { mechanismKey = '', priorityOnly = false, dueOnly = false } = {}) {
-            const items = buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly });
+        function buildErrorBookPracticePrintHTML(student, includeAnswers = false, { mechanismKey = '', priorityOnly = false, dueOnly = false, limit = 0 } = {}) {
+            const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
+            const items = buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
             if (!items.length) return '';
-            const title = priorityOnly ? '复错优先专项卷' : (dueOnly ? (mechanismKey ? `到期错题复练：${getErrorMechanismLabel(mechanismKey)}` : '到期错题复练卷') : (mechanismKey ? `错题专项卷：${getErrorMechanismLabel(mechanismKey)}` : '错题专项卷'));
-            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, '', dueOnly);
+            const limitTitle = normalizedLimit ? `（${normalizedLimit}题）` : '';
+            const title = priorityOnly ? `复错优先专项卷${limitTitle}` : (dueOnly ? (mechanismKey ? `到期错题复练：${getErrorMechanismLabel(mechanismKey)}${limitTitle}` : `到期错题复练卷${limitTitle}`) : (mechanismKey ? `错题专项卷：${getErrorMechanismLabel(mechanismKey)}${limitTitle}` : `错题专项卷${limitTitle}`));
+            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, '', dueOnly, normalizedLimit);
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
@@ -9738,7 +9889,7 @@
                 </header>
                 <div class="set-review-followup-print-head">
                     <h2 class="sheet-title">${title}</h2>
-                    <p class="followup-print-subtitle">先独立完成，再在每题下方标记“已会 / 又错”，便于回错题本继续处理。</p>
+                    <p class="followup-print-subtitle">先独立完成；家长只看答案页快速核对，纸上勾“已会 / 又错”。</p>
                 </div>
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
@@ -9750,12 +9901,14 @@
         }
         window.buildErrorBookPracticePrintHTML = buildErrorBookPracticePrintHTML;
 
-        function buildErrorBookPracticeReviewHTML(student, { mechanismKey = '', priorityOnly = false, dueOnly = false, domainId = '' } = {}) {
+        function buildErrorBookPracticeReviewHTML(student, { mechanismKey = '', priorityOnly = false, dueOnly = false, domainId = '', limit = 0 } = {}) {
+            const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
             const domain = domainId ? KnowledgeDomains.find(item => item.id === domainId) : null;
-            const items = domain ? buildErrorBookDomainPracticeItems(student, domainId) : buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly });
+            const items = domain ? buildErrorBookDomainPracticeItems(student, domainId) : buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
             if (!items.length) return '';
-            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, domainId, dueOnly);
-            const title = domain ? `${domain.name}领域补练批改` : (priorityOnly ? '复错优先卷批改' : (dueOnly ? '到期错题复练批改' : '错题专项卷批改'));
+            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, domainId, dueOnly, normalizedLimit);
+            const limitTitle = normalizedLimit ? `（${normalizedLimit}题）` : '';
+            const title = domain ? `${domain.name}领域补练批改` : (priorityOnly ? `复错优先卷批改${limitTitle}` : (dueOnly ? `到期错题复练批改${limitTitle}` : `错题专项卷批改${limitTitle}`));
             const rows = items.map((item, idx) => {
                 const infoObj = { sec: domain ? `${domain.name}领域补练` : (dueOnly ? '到期错题复练卷' : '错题专项卷'), num: idx + 1, q: item.q, a: item.a, step: item.step || '' };
                 const encodedInfo = encodeURIComponent(JSON.stringify(infoObj));
@@ -9767,8 +9920,8 @@
                 <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${sourceUid}" data-mechanism-key="${item.followupMechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
                     <div class="ans-content">
                         <div class="ans-q-line"><span class="ans-num">${idx + 1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif;">[专项题] <span class="math-row">${renderedQuestion}</span></span></div>
-                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;">[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
-                        <div class="ans-tip">${compactHint} 纸上勾了“已会”就点 ✓；纸上勾了“又错”就点 ✗。</div>
+                        <div class="ans-a-line" style="font-family:'Times New Roman',serif;"><span class="ans-answer-num">${idx + 1}.</span>[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
+                        <div class="ans-tip">${compactHint}</div>
                     </div>
                     <div class="grade-area no-print">
                         <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
@@ -9778,7 +9931,7 @@
                 </div>`;
             }).join('');
             return `
-            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="${priorityOnly ? 'true' : 'false'}" data-due-only="${dueOnly ? 'true' : 'false'}" data-domain-id="${domainId || ''}">
+            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="${priorityOnly ? 'true' : 'false'}" data-due-only="${dueOnly ? 'true' : 'false'}" data-domain-id="${domainId || ''}" data-practice-limit="${normalizedLimit}">
                 <div class="header">
                     <h1>${student} ${title}</h1>
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
@@ -9787,7 +9940,7 @@
                     </div>
                 </div>
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
-                    批改纸质专项卷：✓ 代表这道错题已会，会移入已掌握；✗ 或 ⚠️ 会保留在错题本，并记录为专项复错。
+                    批改纸质专项卷：✓ 已会归档；⚠️ 先讲解；✗ 又错，明天进入复错优先短卷。
                 </div>
                 ${buildErrorBookPracticeBatchToolsHTML(student, title, items.length)}
                 <div class="ans-grid-block">${rows}</div>
@@ -9819,9 +9972,10 @@
         function buildErrorBookPracticeLogHTML(student, profile = {}) {
             const logs = (profile.errorBookPracticeLog || []).slice(-3).reverse();
             if (!logs.length) return '';
+            const latestPlan = getErrorBookPracticeNextDayPlan(logs[0]);
             const rows = logs.map(log => {
                 const summary = summarizeErrorBookPracticeLog(log);
-                const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+                const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
                 const resultTitle = getErrorBookPracticeResultTitle(log).replace('批改结果', '');
                 const logId = encodeURIComponent(log.id || '');
                 return `
@@ -9833,6 +9987,7 @@
             return `
             <div class="eb-practice-log">
                 <div class="eb-practice-log-title">${student} 最近补练批改</div>
+                <div class="eb-practice-plan-strip"><strong>第二天安排：</strong>${latestPlan}</div>
                 <div class="eb-practice-log-list">${rows}</div>
             </div>`;
         }
@@ -9859,7 +10014,7 @@
         }
 
         function buildErrorBookPracticeExplainChecklistHTML(student, log = {}) {
-            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
             const title = getErrorBookPracticeResultTitle(log).replace('批改结果', '讲解清单');
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             if (!openItems.length) {
@@ -9908,7 +10063,7 @@
 
         function buildErrorBookPracticeResultHTML(student, log = {}) {
             const summary = summarizeErrorBookPracticeLog(log);
-            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '');
+            const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
             const title = getErrorBookPracticeResultTitle(log);
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
@@ -9922,6 +10077,7 @@
             const nextAction = summary.stillOpen
                 ? nextPieces.join(' ')
                 : '本次补练全部过关，可以把这张纸归档，后续按间隔复习少量保温。';
+            const nextDayPlan = getErrorBookPracticeNextDayPlan(log);
             const returnToSetReviewButton = (log.practiceKind === 'set-review-backup' || log.practiceKind === 'set-review-followup') && Number(log.set)
                 ? `<button class="review-jump-btn no-print" onclick="window.showSetReview(${Number(log.set)}, '${student}')">返回 Set ${Number(log.set)} 本套报告</button>`
                 : '';
@@ -9956,8 +10112,11 @@
                     <div class="eb-practice-report-card"><span>需讲解</span><b>${summary.needsExplain}</b></div>
                     <div class="eb-practice-report-card"><span>又错</span><b>${summary.wrongAgain}</b></div>
                 </div>
-                <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid ${summary.stillOpen ? '#fed7aa' : '#bbf7d0'}; background:${summary.stillOpen ? '#fff7ed' : '#f0fdf4'}; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
+                <div class="answer-progress-note" style="margin:0 0 8px; padding:10px 14px; border:1px solid ${summary.stillOpen ? '#fed7aa' : '#bbf7d0'}; background:${summary.stillOpen ? '#fff7ed' : '#f0fdf4'}; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
                     <strong>下一步：</strong>${nextAction}
+                </div>
+                <div class="answer-progress-note" style="margin:0 0 12px; padding:8px 12px; border:1px solid #d9e7dd; background:#f6fcf8; color:#14532d; font-size:13px; line-height:1.45; border-radius:8px;">
+                    <strong>第二天：</strong>${nextDayPlan}
                 </div>
                 <table class="archive-table">
                     <tr><th>#</th>${hasSourceColumn ? '<th>对应原错题</th>' : ''}<th>补练题</th><th>结果</th><th>正确答案</th></tr>
@@ -10001,6 +10160,13 @@
             const dueScopeEntries = filter === 'mastered' ? activeDueScopeEntries : entries;
             const priorityPracticeCount = entries.filter(entry => !entry.mastered && isErrorBookPriorityPracticeEntry(entry)).length;
             const dueSummary = getErrorBookDueSummary(dueScopeEntries);
+            const actionPanelHtml = buildErrorBookPracticeActionPanel(name, {
+                filter,
+                dueSummary,
+                priorityPracticeCount,
+                activeMechanism,
+                activeCount: entries.filter(entry => !entry.mastered).length
+            });
 
             let filterTitle = filter === 'mastered'
                 ? `🏆 ${name} 已掌握错题（Mastered Archive）`
@@ -10116,9 +10282,7 @@
                         </div>
                         ${mechanismChipHtml}
                         ${activeMechanism ? `<div style="margin-top:8px; color:#0f172a; font-size:13px;">当前只看：<strong>${getErrorMechanismLabel(activeMechanism)}</strong></div>` : ''}
-                        ${filter === 'active' ? `<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">${dueSummary.dueCount ? `<button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', false, false, true)">🖨️ 打印到期复练卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, false, true)">🧾 到期卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', false, true)">📝 批改到期卷</button>` : `<span class="spacing-badge not-due">暂无到期复练卷</span>`}<button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px; background:#64748b; border-color:#64748b;" onclick="window.printErrorBookPractice('${name}', false)">打印${activeMechanism ? '当前机制' : '全部'}错题卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true)">全部卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}')">批改全部卷</button></div>` : ''}
-                        ${filter === 'active' && priorityPracticeCount > 0 ? `<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:8px; background:#991b1b; border-color:#991b1b;" onclick="window.printErrorBookPractice('${name}', false, true)">🔥 打印复错优先卷</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.printErrorBookPractice('${name}', true, true)">🧾 打印复错优先卷+答案</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:8px;" onclick="window.openErrorBookPracticeReview('${name}', true)">📝 批改复错优先卷</button></div>` : ''}
-                        ${activeMechanism && filter === 'active' ? `<div style="margin-top:10px;"><button class="eb-filter-btn active" style="padding:8px 12px; border-radius:10px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', false)">🖨️ 打印当前机制补练</button><button class="eb-filter-btn" style="padding:8px 12px; border-radius:10px; margin-left:8px;" onclick="window.printErrorBookMechanismPractice('${name}', '${activeMechanism}', true)">🧾 打印补练+答案</button></div>` : ''}
+                        ${actionPanelHtml}
                         ${practiceLogHtml}
                     </div>` : '';
 
@@ -10136,28 +10300,25 @@
                 </div>`;
             });
 
-            // 答案解析页
-            let ansHtml = `<div class="sheet ans-sheet"><div class="header"><h1>${name} ${filter === 'mastered' ? '已掌握错题' : '专属错题本'} - 解析 (Solutions)</h1></div><div class="ans-grid-block">`;
+            // 答案速查页
+            let ansHtml = `<div class="sheet ans-sheet error-book-answer-sheet"><div class="header"><h1>${name} ${filter === 'mastered' ? '已掌握错题' : '专属错题本'} - 答案速查</h1><div class="info-row" style="font-weight:normal; font-size:14px;"><span>只保留最终答案和一句核对点</span><span>${entries.length} 题</span></div></div><table class="archive-table eb-answer-table"><tr><th>#</th><th>原题</th><th>答案</th><th>核对点</th></tr>`;
             let idx = 1;
             sortedTags.forEach(tag => {
                 let kb = getKnowledgeTip(tag);
-                ansHtml += `<div class="eb-tag-header" style="grid-column: auto;">🎯 ${kb.name}</div>`;
+                ansHtml += `<tr><td colspan="4" style="background:#f8fafc; color:#123b73; font-weight:900; text-align:left;">${kb.name}</td></tr>`;
                 byTag[tag].forEach(err => {
+                    const item = { tag: err.tag, q: err.info.q, a: err.info.a, step: err.info.step || '' };
                     ansHtml += `
-                    <div class="step-box" style="margin-bottom:12px; padding:10px;">
-                        <div class="step-detail">
-                            <span class="step-title" style="font-size:16px; width:35px;">${idx}.</span>
-                            <div style="flex:1;">
-                                <div class="math-row" style="color:#64748b; font-size:14.5px; margin-bottom:6px;">[原题 Q · 错 ${err.count} 次] ${err.info.q}</div>
-                                <div class="math-row" style="color:#002D72; margin-bottom:8px; font-size:15.5px;">[正解 A] ${err.info.step ? err.info.step + ' &rarr; ' : ''}<strong class="highlight">${err.info.a}</strong></div>
-                                <div style="color:#d32f2f; font-size:14px; font-family:'KaiTi', serif;">💡 攻克建议 (Advice)：${kb.advice}</div>
-                            </div>
-                        </div>
-                    </div>`;
+                    <tr>
+                        <td>${idx}</td>
+                        <td><div class="math-row">${beautifyMathHTML(err.info.q || '-')}</div></td>
+                        <td><strong class="highlight"><span class="math-row">${beautifyMathHTML(err.info.a || '-')}</span></strong></td>
+                        <td>${getCompactAnswerCheckHint(item, kb)}</td>
+                    </tr>`;
                     idx++;
                 });
             });
-            ansHtml += `</div></div>`;
+            ansHtml += `</table></div>`;
 
             return html + ansHtml;
         }
@@ -10210,7 +10371,7 @@
             openPrintDialog({ root, delay: 220 });
         };
 
-        window.printErrorBookPractice = function(student, includeAnswers = false, priorityOnly = false, dueOnly = false) {
+        window.printErrorBookPractice = function(student, includeAnswers = false, priorityOnly = false, dueOnly = false, limit = 0) {
             ensurePrintLifecycleHooks();
             clearPrintMode();
             const root = getPrintRoot();
@@ -10219,7 +10380,7 @@
                 return;
             }
             const mechanismKey = window._ebMechanism || '';
-            const html = buildErrorBookPracticePrintHTML(student, includeAnswers, { mechanismKey, priorityOnly, dueOnly });
+            const html = buildErrorBookPracticePrintHTML(student, includeAnswers, { mechanismKey, priorityOnly, dueOnly, limit });
             if (!html) {
                 showToast(priorityOnly ? '当前还没有可打印的复错优先题。' : (dueOnly ? '当前还没有到期需要复练的错题。' : '当前错题本还没有可打印的专项训练题。'), { background: '#b45309', duration: 2600 });
                 return;
@@ -10230,9 +10391,9 @@
             openPrintDialog({ root, delay: 220 });
         };
 
-        window.openErrorBookPracticeReview = function(student, priorityOnly = false, dueOnly = false) {
+        window.openErrorBookPracticeReview = function(student, priorityOnly = false, dueOnly = false, limit = 0) {
             const mechanismKey = window._ebMechanism || '';
-            const html = buildErrorBookPracticeReviewHTML(student, { mechanismKey, priorityOnly, dueOnly });
+            const html = buildErrorBookPracticeReviewHTML(student, { mechanismKey, priorityOnly, dueOnly, limit });
             if (!html) {
                 showToast(priorityOnly ? '当前还没有可批改的复错优先题。' : (dueOnly ? '当前还没有到期需要批改的错题卷。' : '当前错题本还没有可批改的专项训练题。'), { background: '#b45309', duration: 2600 });
                 return;
@@ -10419,6 +10580,7 @@
             const domainId = reviewSheet?.getAttribute('data-domain-id') || '';
             const practiceKind = reviewSheet?.getAttribute('data-practice-kind') || '';
             const scopeLabel = reviewSheet?.getAttribute('data-scope-label') || '';
+            const practiceLimit = Number(reviewSheet?.getAttribute('data-practice-limit') || 0) || 0;
             const setNum = Number(reviewSheet?.getAttribute('data-set-num') || window.currentSetNumber);
             if (!records.length) {
                 showToast('请至少批改一道专项题后再提交。', { background: '#b45309', duration: 2600 });
@@ -10432,7 +10594,7 @@
                 showToast(`还有 ${missingRows.length} 题没有回填，请先补齐再提交，避免错题漏记。`, { background: '#b45309', duration: 3200 });
                 return;
             }
-            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, dueOnly, domainId, practiceKind, scopeLabel });
+            const log = await StorageDB.saveErrorBookPractice(student, records, getCurrentProgramId(), { set: setNum, mechanismKey: domainId || practiceKind ? '' : (window._ebMechanism || ''), priorityOnly, dueOnly, domainId, practiceKind, scopeLabel, practiceLimit });
             if (!log) {
                 showToast('这次专项批改没有可保存的记录。', { background: '#b45309', duration: 2600 });
                 return;
