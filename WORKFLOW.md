@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.249 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a practice-lane classifier that explains why each error-book item entered a targeted pack.
+- Open questions: none.
+- Risks: labels must stay short enough for print metadata lines.
+- Next steps: keep lane wording consistent with visible error-book badges.
+
+### Iteration 2
+
+- What I changed: threaded lane labels through print sheets, grading rows, saved practice logs, result reports, and teaching checklists.
+- Open questions: none.
+- Risks: older logs do not have lane labels, so result tables only show the column when the metadata exists.
+- Next steps: use real 10-question and 20-question packs to confirm the summary line stays compact.
+
+### Iteration 3
+
+- What I changed: expanded runtime validation so the lane metadata appears in grading HTML, priority print packs, saved logs, results, and explanation checklists.
+- Open questions: none.
+- Risks: validation checks structure and labels, not the parent judgement behind every printed mark.
+- Next steps: compare one paper pack against the reopened result log after grading.
+
 ## Current v23.248 Iteration Notes
 
 ### Iteration 1

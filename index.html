@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.248 (错题掌握确认)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.249 (错题选题可追踪)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1125,6 +1125,9 @@
         .eb-practice-log-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12.5px; color: #334155; background: #f8fafc; }
         .eb-practice-log-row strong { color: #0f172a; }
         .eb-practice-log-row b { color: #991b1b; }
+        .practice-lane-chip { display: inline-flex; align-items: center; width: fit-content; margin-left: 6px; padding: 1px 6px; border: 1px solid #94a3b8; border-radius: 6px; background: #fff; color: #0f172a; font-family: sans-serif; font-size: 11px; font-weight: 900; white-space: nowrap; }
+        .practice-lane-detail { margin-left: 5px; color: #64748b; font-family: sans-serif; font-size: 11.5px; }
+        .practice-lane-summary { display: inline-flex; align-items: center; gap: 5px; color: #334155; }
         .eb-practice-report-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
         .eb-practice-report-card { border: 1px solid #dbe4ee; border-radius: 8px; background: #fff; padding: 10px 12px; }
         .eb-practice-report-card span { display: block; color: #64748b; font-size: 11px; font-weight: 800; margin-bottom: 4px; letter-spacing: 0.04em; }
@@ -3090,7 +3093,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.248</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.249</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3169,9 +3172,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.248';
-        const APP_RELEASE_LABEL = '错题掌握确认';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.248 反复错/需讲解题做对一次先待巩固，二次确认后再归档。';
+        const APP_VERSION = 'v23.249';
+        const APP_RELEASE_LABEL = '错题选题可追踪';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.249 错题专项卷会显示每题选入原因：复错优先、讲后确认、巩固确认或到期复练。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4655,6 +4658,8 @@
                     }
                     log.results.push({
                         sourceErrorUid: sourceUid,
+                        practiceLane: record.practiceLane || '',
+                        practiceLaneLabel: record.practiceLaneLabel || '',
                         tag: record.tag,
                         grade: record.grade,
                         info: record.info,
@@ -6507,6 +6512,67 @@
             return { lastSet, setsSince, targetGap, nextDueSet, setsUntilDue, dueRatio, dueScore, due, overdue, priority, weight, label, badgeClass, nextLabel };
         }
         window.getErrorEntrySpacingState = getErrorEntrySpacingState;
+
+        function getErrorBookPracticeLane(entry = {}, currentSet = window.currentSetNumber || 0) {
+            const spacing = getErrorEntrySpacingState(entry, currentSet);
+            const rewrong = Math.max(0, Number(entry.rewrongCount || 0));
+            const needsExplain = Math.max(0, Number(entry.needsExplainCount || 0));
+            const lastPracticeGrade = entry.lastPracticeGrade || '';
+            const priorityNextSet = spacing.priority ? Number(currentSet || 0) + 1 : spacing.nextDueSet;
+            if (entry.masteryPending) {
+                return {
+                    key: 'mastery-confirm',
+                    label: '巩固确认',
+                    detail: spacing.due ? '已会一次，今天确认' : `已会一次，Set ${spacing.nextDueSet} 确认`,
+                    nextPracticeSet: spacing.nextDueSet,
+                    badgeClass: spacing.badgeClass
+                };
+            }
+            if (rewrong > 0 || lastPracticeGrade === 'wrong') {
+                return {
+                    key: 'wrong-again',
+                    label: '复错优先',
+                    detail: '专项又错，次日优先',
+                    nextPracticeSet: priorityNextSet,
+                    badgeClass: spacing.badgeClass
+                };
+            }
+            if (lastPracticeGrade === 'careless' || (spacing.priority && needsExplain > 0)) {
+                return {
+                    key: 'teach-confirm',
+                    label: '讲后确认',
+                    detail: '需讲解后再确认',
+                    nextPracticeSet: priorityNextSet,
+                    badgeClass: spacing.badgeClass
+                };
+            }
+            if (spacing.overdue) {
+                return {
+                    key: 'overdue',
+                    label: '逾期复练',
+                    detail: `已隔 ${spacing.setsSince} 套`,
+                    nextPracticeSet: spacing.nextDueSet,
+                    badgeClass: spacing.badgeClass
+                };
+            }
+            if (spacing.due) {
+                return {
+                    key: 'due',
+                    label: '到期复练',
+                    detail: `间隔 ${spacing.targetGap} 套后复练`,
+                    nextPracticeSet: spacing.nextDueSet,
+                    badgeClass: spacing.badgeClass
+                };
+            }
+            return {
+                key: 'warmup',
+                label: '保温题',
+                detail: `预计 Set ${spacing.nextDueSet} 再练`,
+                nextPracticeSet: spacing.nextDueSet,
+                badgeClass: spacing.badgeClass
+            };
+        }
+        window.getErrorBookPracticeLane = getErrorBookPracticeLane;
 
         function refreshErrorBookEntrySchedule(entry = {}, currentSet = window.currentSetNumber || 0) {
             if (!entry || entry.mastered) return entry;
@@ -9899,6 +9965,7 @@
                     if (used.has(fingerprint)) continue;
                     used.add(fingerprint);
                     const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
+                    const practiceLane = getErrorBookPracticeLane(entry);
                     items.push({
                         ...built,
                         followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
@@ -9907,6 +9974,10 @@
                         sourceErrorUid: entry.uid,
                         sourceErrorCount: Math.max(1, entry.count || 1),
                         sourceLastSet: entry.lastSet || '',
+                        sourceNextPracticeSet: practiceLane.nextPracticeSet || entry.nextPracticeSet || '',
+                        sourcePracticeLaneKey: practiceLane.key,
+                        sourcePracticeLaneLabel: practiceLane.label,
+                        sourcePracticeLaneDetail: practiceLane.detail,
                         isErrorBookPractice: true,
                         isErrorBookDomainPractice: !!domainId,
                         isReviewItem: true
@@ -9948,6 +10019,7 @@
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
                     <span>重点机制：${label} · 锁定码：${packCode}</span>
+                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -9976,6 +10048,7 @@
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
                     <span>来源：错题本活跃错题 · 锁定码：${packCode}</span>
+                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -9990,6 +10063,26 @@
             if (dueOnly) return `到期复练 · ${base}${suffix}`;
             return `${priorityOnly ? `复错优先 · ${base}` : base}${suffix}`;
         }
+
+        function getErrorBookPracticeLaneSummaryText(items = []) {
+            const counts = {};
+            (items || []).forEach(item => {
+                const label = item.sourcePracticeLaneLabel || item.practiceLaneLabel || '';
+                if (!label) return;
+                counts[label] = (counts[label] || 0) + 1;
+            });
+            const order = ['复错优先', '讲后确认', '巩固确认', '逾期复练', '到期复练', '保温题'];
+            const known = order.filter(label => counts[label]).map(label => `${label} ${counts[label]}`);
+            const extra = Object.keys(counts).filter(label => !order.includes(label)).sort().map(label => `${label} ${counts[label]}`);
+            return known.concat(extra).join(' · ');
+        }
+        window.getErrorBookPracticeLaneSummaryText = getErrorBookPracticeLaneSummaryText;
+
+        function buildErrorBookPracticeLaneSummaryHTML(items = []) {
+            const summary = getErrorBookPracticeLaneSummaryText(items);
+            return summary ? `<span class="practice-lane-summary"><strong>选题</strong>：${summary}</span>` : '';
+        }
+        window.buildErrorBookPracticeLaneSummaryHTML = buildErrorBookPracticeLaneSummaryHTML;
 
         function buildErrorBookPracticePrintHTML(student, includeAnswers = false, { mechanismKey = '', priorityOnly = false, dueOnly = false, limit = 0 } = {}) {
             const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
@@ -10015,6 +10108,7 @@
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
                     <span>范围：${label} · 锁定码：${packCode}</span>
+                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -10040,12 +10134,16 @@
                 const renderedAnswer = beautifyMathHTML(item.a || '-');
                 const compactHint = getCompactAnswerCheckHint(item);
                 const sourceUid = item.sourceErrorUid || '';
+                const laneKey = item.sourcePracticeLaneKey || '';
+                const laneLabel = item.sourcePracticeLaneLabel || '';
+                const laneDetail = item.sourcePracticeLaneDetail || '';
+                const laneHTML = laneLabel ? `<span class="practice-lane-chip">${laneLabel}</span>${laneDetail ? `<span class="practice-lane-detail">${laneDetail}</span>` : ''}` : '';
                 return `
-                <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${sourceUid}" data-mechanism-key="${item.followupMechanismKey || ''}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
+                <div class="ans-row eb-practice-grade-row pending-answer" data-student="${student}" data-tag="${item.tag || ''}" data-source-uid="${sourceUid}" data-mechanism-key="${item.followupMechanismKey || ''}" data-practice-lane="${laneKey}" data-practice-lane-label="${laneLabel}" data-info="${encodedInfo}" data-grade="" data-submitted="false">
                     <div class="ans-content">
                         <div class="ans-q-line"><span class="ans-num">${idx + 1}.</span> <span class="review-question" style="font-family:'Times New Roman',serif;">[专项题] <span class="math-row">${renderedQuestion}</span></span></div>
                         <div class="ans-a-line" style="font-family:'Times New Roman',serif;"><span class="ans-answer-num">${idx + 1}.</span>[答案] <strong class="highlight"><span class="math-row">${renderedAnswer}</span></strong></div>
-                        <div class="ans-tip">${compactHint}</div>
+                        <div class="ans-tip">${compactHint}${laneHTML}</div>
                     </div>
                     <div class="grade-area no-print">
                         <button class="grade-btn perfect" title="已会" onclick="window.markAnswer(this, 'perfect')">✓</button>
@@ -10062,6 +10160,7 @@
                         <span>范围：${label}</span>
                         <span>${items.length} 题</span>
                         <span>锁定码：${packCode}</span>
+                        ${buildErrorBookPracticeLaneSummaryHTML(items)}
                     </div>
                 </div>
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
@@ -10150,15 +10249,18 @@
                     <div class="answer-progress-note" style="border:1px solid #bbf7d0; background:#f0fdf4; color:#166534;">本次没有需讲解或又错题，可以归档。</div>
                 </div>`;
             }
+            const hasLaneColumn = openItems.some(row => row.item.practiceLaneLabel);
             const rows = openItems.map((row, listIdx) => {
                 const item = row.item;
                 const gradeLabel = item.grade === 'careless' ? '需讲解' : '又错';
+                const laneLabel = item.practiceLaneLabel || '';
                 const action = item.grade === 'careless'
                     ? '让孩子先口述方法；讲关键一步；再做同类确认。'
                     : '先回看原错因；重做本题；隔天优先二刷。';
                 return `
                 <tr>
                     <td>${listIdx + 1}</td>
+                    ${hasLaneColumn ? `<td>${laneLabel ? `<span class="practice-lane-chip" style="margin-left:0;">${laneLabel}</span>` : '-'}</td>` : ''}
                     <td>${getPracticeResultSourceHTML(item) || `第 ${row.idx + 1} 题`}</td>
                     <td><div class="math-row">${item.info?.q || '-'}</div></td>
                     <td><span style="font-weight:800; color:${item.grade === 'careless' ? '#92400e' : '#991b1b'};">${gradeLabel}</span></td>
@@ -10180,7 +10282,7 @@
                     <strong>讲解顺序：</strong>先讲需讲解题，让孩子说方法；再处理又错题，隔天二刷。讲完后在右侧勾选，仍不会的题保留到下次优先复练。
                 </div>
                 <table class="archive-table">
-                    <tr><th>#</th><th>对应原错题</th><th>补练题</th><th>状态</th><th>正确答案</th><th>讲解动作</th><th>讲后记录</th></tr>
+                    <tr><th>#</th>${hasLaneColumn ? '<th>选题</th>' : ''}<th>对应原错题</th><th>补练题</th><th>状态</th><th>正确答案</th><th>讲解动作</th><th>讲后记录</th></tr>
                     ${rows}
                 </table>
             </div>`;
@@ -10192,6 +10294,8 @@
             const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
             const title = getErrorBookPracticeResultTitle(log);
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
+            const hasLaneColumn = (log.results || []).some(item => item.practiceLaneLabel);
+            const laneSummary = getErrorBookPracticeLaneSummaryText(log.results || []);
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             const explainItems = openItems.filter(row => row.item.grade === 'careless');
             const wrongItems = openItems.filter(row => row.item.grade === 'wrong');
@@ -10211,6 +10315,7 @@
                 const gradeLabel = item.grade === 'perfect' ? '已会' : (item.grade === 'careless' ? '需讲解' : '又错');
                 const gradeColor = item.grade === 'perfect' ? '#166534' : (item.grade === 'careless' ? '#92400e' : '#991b1b');
                 const sourceHTML = getPracticeResultSourceHTML(item);
+                const laneLabel = item.practiceLaneLabel || '';
                 const nextPlan = item.masteryPending
                     ? (item.nextPracticeSet ? `Set ${item.nextPracticeSet} 巩固确认` : '待巩固')
                     : (item.grade === 'perfect'
@@ -10219,6 +10324,7 @@
                 return `
                 <tr>
                     <td>${idx + 1}</td>
+                    ${hasLaneColumn ? `<td>${laneLabel ? `<span class="practice-lane-chip" style="margin-left:0;">${laneLabel}</span>` : '-'}</td>` : ''}
                     ${hasSourceColumn ? `<td>${sourceHTML || '-'}</td>` : ''}
                     <td><div class="math-row">${item.info?.q || '-'}</div></td>
                     <td><span style="color:${gradeColor}; font-weight:800;">${gradeLabel}</span></td>
@@ -10237,6 +10343,7 @@
                         <span>${log.date || ''}</span>
                         <span>范围：${label}</span>
                         ${log.packCode ? `<span>锁定码：${log.packCode}</span>` : ''}
+                        ${laneSummary ? `<span>选题：${laneSummary}</span>` : ''}
                     </div>
                 </div>
                 <div class="eb-practice-report-summary">
@@ -10252,7 +10359,7 @@
                     <strong>第二天：</strong>${nextDayPlan}
                 </div>
                 <table class="archive-table">
-                    <tr><th>#</th>${hasSourceColumn ? '<th>对应原错题</th>' : ''}<th>补练题</th><th>结果</th><th>正确答案</th><th>下次</th></tr>
+                    <tr><th>#</th>${hasLaneColumn ? '<th>选题</th>' : ''}${hasSourceColumn ? '<th>对应原错题</th>' : ''}<th>补练题</th><th>结果</th><th>正确答案</th><th>下次</th></tr>
                     ${rows}
                 </table>
                 <div class="answer-progress-note no-print" style="margin:10px 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
@@ -10623,7 +10730,9 @@
             return {
                 ...base,
                 sourceErrorUid: row.getAttribute('data-source-uid') || '',
-                mechanismKey: row.getAttribute('data-mechanism-key') || ''
+                mechanismKey: row.getAttribute('data-mechanism-key') || '',
+                practiceLane: row.getAttribute('data-practice-lane') || '',
+                practiceLaneLabel: row.getAttribute('data-practice-lane-label') || ''
             };
         }
 

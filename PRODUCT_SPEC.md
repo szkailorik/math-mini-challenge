@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.249 makes error-book practice selection reasons visible:
+
+- Every dedicated error-book practice item now carries a short queue label such as `复错优先`, `讲后确认`, `巩固确认`, `逾期复练`, or `到期复练`.
+- Printable packs, grading sheets, result reports, and teaching checklists show these labels so a parent can see why each item appeared in today's short pack.
+- The labels are persisted in targeted-practice logs, making the next-day review trail clearer when a large error book is trained through 10-question or 20-question packs.
+
 v23.248 adds mastery confirmation for high-risk error-book items:
 
 - A low-risk one-off mistake can still be archived after one correct targeted practice.
