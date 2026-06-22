@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.247 Iteration Notes
+
+### Iteration 1
+
+- What I changed: separated targeted-practice `careless` from true `wrong` in error-book persistence, adding `needsExplainCount` while keeping `rewrongCount` for actual wrong-again cases.
+- Open questions: none.
+- Risks: older records may only have `lastPracticeGrade`; they still route through the existing priority rule until the next grading refreshes the richer counters.
+- Next steps: preserve backward compatibility while making new records more precise.
+
+### Iteration 2
+
+- What I changed: changed error-book card labels so `专项需讲解` and `专项又错` are visually and semantically distinct.
+- Open questions: none.
+- Risks: both states still deserve next-set confirmation, but only true wrong-again should raise the wrong-again count.
+- Next steps: keep parent-facing reports clear about teach-first versus retry-first actions.
+
+### Iteration 3
+
+- What I changed: added runtime checks that needs-explanation practice does not increment `rewrongCount`, still schedules the next set, and appears as `讲后确认`.
+- Open questions: none.
+- Risks: validation covers app data and markup, not the parent's paper annotation habits.
+- Next steps: watch one real paper-grading cycle to ensure the labels match how the parent marks the page.
+
 ## Current v23.246 Iteration Notes
 
 ### Iteration 1

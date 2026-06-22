@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.247 separates teaching-needed from wrong-again practice:
+
+- Targeted error-book grading now tracks `需讲解` separately from `又错`, so a teaching-needed item enters next-set confirmation without inflating the wrong-again counter.
+- Error-book cards use different labels for `专项需讲解` and `专项又错`, keeping parent decisions clearer during paper review.
+- Result reports show `讲后确认` for explanation-needed items and ordinary `再练` for true wrong-again items.
+
 v23.246 improves first-screen clarity and error-book scheduling:
 
 - The opening toolbar now sits above the worksheet instead of floating over it, with the image-export shortcut hidden from the default view.
