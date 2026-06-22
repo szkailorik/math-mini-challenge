@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.250 (错题短卷交错平衡)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.251 (错题短卷结构可读)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -3093,7 +3093,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.250</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.251</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3172,9 +3172,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.250';
-        const APP_RELEASE_LABEL = '错题短卷交错平衡';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.250 错题10题/20题短卷会在优先级之上软平衡不同机制，避免同一类题挤满整张卷。';
+        const APP_VERSION = 'v23.251';
+        const APP_RELEASE_LABEL = '错题短卷结构可读';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.251 错题短卷会显示具体机制分布，比如表示转换4、分数通分3，方便判断训练结构。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -3696,6 +3696,8 @@
             bridge_compare: '基准比较',
             bridge_choice: '表示选择',
             bridge_apply: '转换后运用',
+            'representation-conversion': '表示转换',
+            'baseline-comparison': '基准比较',
             arithmetic_multiplication: '基础乘法结构',
             arithmetic_division: '基础除法结构',
             arithmetic_subtraction: '基础减法结构',
@@ -4660,6 +4662,7 @@
                         sourceErrorUid: sourceUid,
                         practiceLane: record.practiceLane || '',
                         practiceLaneLabel: record.practiceLaneLabel || '',
+                        mechanismKey: record.mechanismKey || entry.mechanismKey || '',
                         tag: record.tag,
                         grade: record.grade,
                         info: record.info,
@@ -10143,10 +10146,31 @@
         }
         window.getErrorBookPracticeLaneSummaryText = getErrorBookPracticeLaneSummaryText;
 
+        function getErrorBookPracticeMechanismKey(item = {}) {
+            return item.followupMechanismKey || item.mechanismKey || getErrorMechanismKey(item.tag, item.info) || '';
+        }
+        window.getErrorBookPracticeMechanismKey = getErrorBookPracticeMechanismKey;
+
+        function getErrorBookPracticeMechanismSummaryText(items = []) {
+            const counts = {};
+            (items || []).forEach(item => {
+                const key = getErrorBookPracticeMechanismKey(item);
+                if (!key) return;
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            const rows = Object.entries(counts)
+                .sort((a, b) => b[1] - a[1] || getErrorMechanismLabel(a[0]).localeCompare(getErrorMechanismLabel(b[0]), 'zh-Hans'))
+                .map(([key, count]) => `${getErrorMechanismLabel(key)}${count}`);
+            return rows.join(' · ');
+        }
+        window.getErrorBookPracticeMechanismSummaryText = getErrorBookPracticeMechanismSummaryText;
+
         function getErrorBookPracticeInterleaveSummaryText(items = []) {
-            const mechanisms = new Set((items || []).map(item => item.followupMechanismKey || '').filter(Boolean));
+            const mechanisms = new Set((items || []).map(item => getErrorBookPracticeMechanismKey(item)).filter(Boolean));
             const tags = new Set((items || []).map(item => item.tag || '').filter(Boolean));
-            if (mechanisms.size >= 2) return `交错 ${mechanisms.size} 类机制`;
+            const mechanismSummary = getErrorBookPracticeMechanismSummaryText(items);
+            if (mechanisms.size >= 2) return `交错 ${mechanisms.size}类：${mechanismSummary}`;
+            if (mechanismSummary) return `单机制：${mechanismSummary}`;
             if (tags.size >= 2) return `同机制 ${tags.size} 类题`;
             return '';
         }
@@ -10278,12 +10302,13 @@
             const rows = logs.map(log => {
                 const summary = summarizeErrorBookPracticeLog(log);
                 const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
+                const mechanismSummary = getErrorBookPracticeMechanismSummaryText(log.results || []);
                 const resultTitle = getErrorBookPracticeResultTitle(log).replace('批改结果', '');
                 const logId = encodeURIComponent(log.id || '');
                 const packText = log.packCode ? ` · ${log.packCode}` : '';
                 return `
                 <div class="eb-practice-log-row">
-                    <span><strong>${log.date || '最近'}</strong> · ${resultTitle}${packText} · ${label} · ${summary.total} 题</span>
+                    <span><strong>${log.date || '最近'}</strong> · ${resultTitle}${packText} · ${label} · ${summary.total} 题${mechanismSummary ? ` · ${mechanismSummary}` : ''}</span>
                     <span>已会 ${summary.mastered} · 需讲解 ${summary.needsExplain} · <b>又错 ${summary.wrongAgain}</b> <button class="eb-filter-btn" style="padding:3px 7px; margin-left:6px; font-size:11.5px;" onclick="window.openErrorBookPracticeLog('${student}', '${logId}')">查看</button></span>
                 </div>`;
             }).join('');
@@ -10319,6 +10344,7 @@
         function buildErrorBookPracticeExplainChecklistHTML(student, log = {}) {
             const label = log.scopeLabel || getErrorBookPracticeScopeLabel(log.mechanismKey || '', !!log.priorityOnly, log.domainId || '', !!log.dueOnly, log.practiceLimit || 0);
             const title = getErrorBookPracticeResultTitle(log).replace('批改结果', '讲解清单');
+            const mechanismSummary = getErrorBookPracticeMechanismSummaryText(log.results || []);
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             if (!openItems.length) {
                 return `
@@ -10354,6 +10380,7 @@
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
                         <span>${log.date || ''}</span>
                         <span>范围：${label}</span>
+                        ${mechanismSummary ? `<span>结构：${mechanismSummary}</span>` : ''}
                     </div>
                 </div>
                 <div class="answer-progress-note" style="margin:0 0 12px; padding:10px 14px; border:1px solid #fed7aa; background:#fff7ed; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">
@@ -10374,6 +10401,7 @@
             const hasSourceColumn = (log.results || []).some(item => getPracticeResultSourceHTML(item));
             const hasLaneColumn = (log.results || []).some(item => item.practiceLaneLabel);
             const laneSummary = getErrorBookPracticeLaneSummaryText(log.results || []);
+            const mechanismSummary = getErrorBookPracticeMechanismSummaryText(log.results || []);
             const openItems = (log.results || []).map((item, idx) => ({ item, idx })).filter(row => row.item.grade && row.item.grade !== 'perfect');
             const explainItems = openItems.filter(row => row.item.grade === 'careless');
             const wrongItems = openItems.filter(row => row.item.grade === 'wrong');
@@ -10422,6 +10450,7 @@
                         <span>范围：${label}</span>
                         ${log.packCode ? `<span>锁定码：${log.packCode}</span>` : ''}
                         ${laneSummary ? `<span>选题：${laneSummary}</span>` : ''}
+                        ${mechanismSummary ? `<span>结构：${mechanismSummary}</span>` : ''}
                     </div>
                 </div>
                 <div class="eb-practice-report-summary">

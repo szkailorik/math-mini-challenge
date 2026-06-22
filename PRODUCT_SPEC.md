@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.251 makes error-book short-pack structure readable:
+
+- Error-book print, grading, result, and recent-log surfaces now show concrete mechanism distribution, such as `表示转换4 · 分数通分加减3`.
+- Legacy mechanism keys from older saved records are mapped back to parent-facing Chinese labels so reopened logs do not show code-like labels.
+- This keeps interleaving visible after printing and after grading, helping tutors judge whether a pack is broad review or a narrow mechanism drill.
+
 v23.250 improves error-book short-pack interleaving:
 
 - Recommended 10-question and extended 20-question error-book packs now soft-balance mechanisms after priority sorting, so one crowded weakness does not fill the whole sheet when other due mistakes are available.

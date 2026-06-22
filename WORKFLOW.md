@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.251 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added mechanism-count summaries for generated error-book packs so the interleaving structure is readable, not just counted.
+- Open questions: none.
+- Risks: metadata lines can become long on very broad packs, so the wording stays compact.
+- Next steps: watch real print previews for 20-question packs.
+
+### Iteration 2
+
+- What I changed: persisted mechanism keys in targeted-practice logs and mapped legacy keys back to Chinese labels for reopened records.
+- Open questions: none.
+- Risks: older logs without mechanism metadata still fall back to tag inference where possible.
+- Next steps: keep result pages tolerant of legacy data.
+
+### Iteration 3
+
+- What I changed: expanded runtime validation so print, grading, result, recent-log, and explanation-checklist surfaces all preserve readable pack structure.
+- Open questions: none.
+- Risks: validation checks representative mechanisms; real error books may contain unusual legacy tags.
+- Next steps: monitor reopened historical logs after sync.
+
 ## Current v23.250 Iteration Notes
 
 ### Iteration 1
