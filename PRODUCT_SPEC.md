@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.245 adds visible lock codes to error-book packs:
+
+- Error-book question sheets, answer references, and grading pages now show the same short lock code for the selected scope.
+- Domain-specific practice uses the same locked item generator as ordinary error-book packs, reducing rule drift between print and grading.
+- Parents can match loose paper pages quickly before checking or entering grades.
+
 v23.244 locks dedicated error-book practice packs:
 
 - The same student, scope, and 10/20-question choice now generate one stable pack across the question sheet, answer reference, and grading page.

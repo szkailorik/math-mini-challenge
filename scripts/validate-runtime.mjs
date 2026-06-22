@@ -93,7 +93,7 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套')) {
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
 if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
@@ -1582,12 +1582,18 @@ emit('afterprint');
 await assertSafariSamePagePrint('Knowledge map print', () => context.window.printCurrentKnowledgeMap?.(), 'KAI 知识点地图');
 context.__printCalls = 0;
 const domainPracticeHtml = context.window.buildErrorBookDomainPrintHTML?.('KAI', 'decimal', true) || '';
-if (!domainPracticeHtml.includes('领域专项补练：小数与位值') || !domainPracticeHtml.includes('参考答案')) {
-  throw new Error('Error-book domain practice print sheet did not render decimal domain practice with answers');
+const domainPackCode = context.window.getErrorBookPracticePackCode?.('KAI', { domainId: 'decimal', limit: 8 }) || '';
+if (!domainPracticeHtml.includes('领域专项补练：小数与位值') || !domainPracticeHtml.includes('参考答案') || !domainPracticeHtml.includes(`锁定码：${domainPackCode}`)) {
+  throw new Error('Error-book domain practice print sheet did not render decimal domain practice with answers and lock code');
+}
+context.window.setSeed?.(246813579);
+const repeatedDomainPracticeHtml = context.window.buildErrorBookDomainPrintHTML?.('KAI', 'decimal', true) || '';
+if (domainPracticeHtml !== repeatedDomainPracticeHtml) {
+  throw new Error('Error-book domain practice print pack should be deterministic for the same domain scope');
 }
 const domainPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { domainId: 'decimal' }) || '';
-if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !domainPracticeReviewHtml.includes('data-domain-id="decimal"') || !domainPracticeReviewHtml.includes('data-source-uid="e4"')) {
-  throw new Error('Error-book domain practice grading sheet is missing domain scope metadata');
+if (!domainPracticeReviewHtml.includes('小数与位值领域补练批改') || !domainPracticeReviewHtml.includes('data-domain-id="decimal"') || !domainPracticeReviewHtml.includes('data-source-uid="e4"') || !domainPracticeReviewHtml.includes('data-practice-limit="8"') || !domainPracticeReviewHtml.includes(`data-pack-code="${domainPackCode}"`) || !domainPracticeReviewHtml.includes(`锁定码：${domainPackCode}`)) {
+  throw new Error('Error-book domain practice grading sheet is missing domain scope metadata or matching lock code');
 }
 if (!domainPracticeReviewHtml.includes('纸卷快速回填') || !domainPracticeReviewHtml.includes('全部已会 ✓') || !domainPracticeReviewHtml.includes('全部需讲解 ⚠️') || !domainPracticeReviewHtml.includes('清空重填') || !domainPracticeReviewHtml.includes('practice-batch-progress') || !domainPracticeReviewHtml.includes('暂不能提交')) {
   throw new Error('Error-book domain practice grading sheet is missing batch refill actions');
@@ -1995,15 +2001,16 @@ const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML
 if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
   throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
 }
+const limitedPackCode = context.window.getErrorBookPracticePackCode?.('KAI', { limit: 1 }) || '';
 const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
-if (!limitedErrorBookPracticeHtml.includes('错题专项卷（1题）') || (limitedErrorBookPracticeHtml.match(/followup-print-item/g) || []).length !== 1) {
-  throw new Error('Error-book limited print pack should honor a 1-item cap');
+if (!limitedErrorBookPracticeHtml.includes('错题专项卷（1题）') || !limitedErrorBookPracticeHtml.includes(`锁定码：${limitedPackCode}`) || (limitedErrorBookPracticeHtml.match(/followup-print-item/g) || []).length !== 1) {
+  throw new Error('Error-book limited print pack should honor a 1-item cap and show its lock code');
 }
 const stableErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
 context.window.setSeed?.(987654321);
 const stableErrorBookPracticeRepeatHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
 const stableErrorBookPracticeReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('KAI', { limit: 1 }) || '';
-if (stableErrorBookPracticeHtml !== stableErrorBookPracticeRepeatHtml || !stableErrorBookPracticeReviewHtml.includes('data-practice-limit="1"') || (stableErrorBookPracticeReviewHtml.match(/eb-practice-grade-row/g) || []).length !== 1) {
+if (stableErrorBookPracticeHtml !== stableErrorBookPracticeRepeatHtml || !stableErrorBookPracticeReviewHtml.includes('data-practice-limit="1"') || !stableErrorBookPracticeReviewHtml.includes(`data-pack-code="${limitedPackCode}"`) || !stableErrorBookPracticeReviewHtml.includes(`锁定码：${limitedPackCode}`) || (stableErrorBookPracticeReviewHtml.match(/eb-practice-grade-row/g) || []).length !== 1) {
   throw new Error('Error-book practice packs should be locked for the same scope and size');
 }
 context.window.currentSetNumber = 109;

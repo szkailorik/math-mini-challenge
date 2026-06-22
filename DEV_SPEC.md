@@ -68,6 +68,7 @@ Directly opening `index.html` may work for much of the app, but an HTTP server i
 - `dueOnly` targeted-practice mode: filters printable error-book practice and grading rows to only due/overdue/priority entries, records the mode on the practice log, and leaves full all-error sheets available as a secondary option.
 - `getErrorBookDueSummary`: summarizes visible due-only readiness for the error-book page, including due count, wrong-again count, overdue count, and the next expected due interval when no item is ready.
 - `getErrorBookPracticeSeed` / `buildErrorBookPracticeItems`: seed error-book variant generation from the active program, student, set number, scope, item cap, and source error signatures, then restore the previous PRNG state so print, answer, and grading pages stay aligned without disturbing the main paper generator.
+- `getErrorBookPracticePackCode`: exposes a short parent-facing code derived from the same locked seed; error-book print, answer, domain, mechanism, and grading surfaces display it so paper pages can be matched before grade entry.
 - `TRAINING_LEVELS` / `inferDifficulty`: assigns L1-L4 levels to generated items and lets the training cycle bias selection.
 - `TRAINING_FOCUS_PLAN` / `Engine.getFocusPlan`: maps the seven-set cycle to a visible goal, target level band, and training principle.
 - `generateOrLoadSetData`: reuses cached set data so question sheets and answer sheets stay aligned.

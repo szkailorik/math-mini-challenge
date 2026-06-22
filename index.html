@@ -9618,6 +9618,12 @@
         }
         window.getErrorBookPracticeSeed = getErrorBookPracticeSeed;
 
+        function getErrorBookPracticePackCode(student, options = {}) {
+            const seedValue = Math.abs(Number(getErrorBookPracticeSeed(student, options)) || 1);
+            return `EB-${seedValue.toString(36).toUpperCase().slice(-5).padStart(5, '0')}`;
+        }
+        window.getErrorBookPracticePackCode = getErrorBookPracticePackCode;
+
         function getErrorBookNextDayPlanFromSummary(dueSummary = {}, priorityCount = 0) {
             if (priorityCount > 0) return '明天先看今天是否又错；仍错只做复错优先10题，不刷全量。';
             if (dueSummary.dueCount > 0) return '明天按今天批改结果分流：已会归档，未会进入复错优先。';
@@ -9761,12 +9767,12 @@
                 });
         }
 
-        function buildErrorBookPracticeItems(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, limit = 0 } = {}) {
-            const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly });
+        function buildErrorBookPracticeItems(student, { mechanismKey = '', includeMastered = false, priorityOnly = false, dueOnly = false, domainId = '', limit = 0 } = {}) {
+            const entries = getErrorBookPracticeEntries(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId });
             if (!entries.length) return [];
             const maxItems = normalizeErrorBookPracticeLimit(limit);
             const previousPrngState = prngState;
-            setSeed(getErrorBookPracticeSeed(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, limit: maxItems }));
+            setSeed(getErrorBookPracticeSeed(student, { mechanismKey, includeMastered, priorityOnly, dueOnly, domainId, limit: maxItems }));
             try {
                 const used = new Set();
                 const items = [];
@@ -9786,6 +9792,7 @@
                         sourceErrorCount: Math.max(1, entry.count || 1),
                         sourceLastSet: entry.lastSet || '',
                         isErrorBookPractice: true,
+                        isErrorBookDomainPractice: !!domainId,
                         isReviewItem: true
                     });
                     if (maxItems && items.length >= maxItems) break;
@@ -9797,39 +9804,11 @@
         }
 
         function buildErrorBookDomainPracticeItems(student, domainId) {
-            const entries = getErrorBookPracticeEntries(student, { domainId }).slice(0, 8);
-            if (!entries.length) return [];
-            const used = new Set();
-            const previousPrngState = prngState;
-            const seedValue = parseInt(hashString(`domain-practice|${student}|${getCurrentProgramId()}|${domainId}|${entries.map(entry => entry.uid).join('|')}`), 36) || 1;
-            setSeed(seedValue);
-            try {
-                return entries.map(entry => {
-                    const built = buildErrorVariantItem(entry, () => buildErrorReplayItem(entry)) || buildErrorReplayItem(entry);
-                    if (!built) return null;
-                    const fingerprint = computeQuestionFingerprint(built);
-                    if (used.has(fingerprint)) return null;
-                    used.add(fingerprint);
-                    const resolvedMechanismKey = entry.mechanismKey || getErrorMechanismKey(entry.tag, entry.info);
-                    return {
-                        ...built,
-                        followupFamily: getSetReviewFollowupFamily(entry.tag, entry.info),
-                        followupGrade: entry.grade || 'wrong',
-                        followupMechanismKey: resolvedMechanismKey,
-                        sourceErrorUid: entry.uid,
-                        sourceErrorCount: Math.max(1, entry.count || 1),
-                        sourceLastSet: entry.lastSet || '',
-                        isErrorBookDomainPractice: true,
-                        isReviewItem: true
-                    };
-                }).filter(Boolean);
-            } finally {
-                prngState = previousPrngState;
-            }
+            return buildErrorBookPracticeItems(student, { domainId, limit: 8 });
         }
 
         function buildErrorBookMechanismPracticeItems(student, mechanismKey) {
-            return buildErrorBookPracticeItems(student, { mechanismKey }).slice(0, 6).map(item => ({ ...item, isMechanismFollowup: true }));
+            return buildErrorBookPracticeItems(student, { mechanismKey, limit: 6 }).map(item => ({ ...item, isMechanismFollowup: true }));
         }
 
         function buildErrorBookMechanismPrintHTML(student, mechanismKey, includeAnswers = false) {
@@ -9838,6 +9817,7 @@
             const label = getErrorMechanismLabel(mechanismKey);
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
+            const packCode = getErrorBookPracticePackCode(student, { mechanismKey, limit: 6 });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell" data-pack="${printPack}">
@@ -9851,7 +9831,7 @@
                 </div>
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>重点机制：${label}</span>
+                    <span>重点机制：${label} · 锁定码：${packCode}</span>
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -9865,6 +9845,7 @@
             if (!items.length || !domain) return '';
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
+            const packCode = getErrorBookPracticePackCode(student, { domainId, limit: 8 });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell" data-pack="${printPack}">
@@ -9878,7 +9859,7 @@
                 </div>
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>来源：错题本活跃错题</span>
+                    <span>来源：错题本活跃错题 · 锁定码：${packCode}</span>
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -9903,6 +9884,7 @@
             const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, '', dueOnly, normalizedLimit);
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
+            const packCode = getErrorBookPracticePackCode(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
             <section class="set-review-followup-print-shell" data-pack="${printPack}">
@@ -9916,7 +9898,7 @@
                 </div>
                 <div class="followup-print-meta">
                     <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>范围：${label}</span>
+                    <span>范围：${label} · 锁定码：${packCode}</span>
                 </div>
                 <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
                 ${answerBlock}
@@ -9927,9 +9909,12 @@
         function buildErrorBookPracticeReviewHTML(student, { mechanismKey = '', priorityOnly = false, dueOnly = false, domainId = '', limit = 0 } = {}) {
             const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
             const domain = domainId ? KnowledgeDomains.find(item => item.id === domainId) : null;
-            const items = domain ? buildErrorBookDomainPracticeItems(student, domainId) : buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
+            if (domainId && !domain) return '';
+            const effectiveLimit = domain ? 8 : normalizedLimit;
+            const items = buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly, domainId, limit: effectiveLimit });
             if (!items.length) return '';
-            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, domainId, dueOnly, normalizedLimit);
+            const label = getErrorBookPracticeScopeLabel(mechanismKey, priorityOnly, domainId, dueOnly, effectiveLimit);
+            const packCode = getErrorBookPracticePackCode(student, { mechanismKey, priorityOnly, dueOnly, domainId, limit: effectiveLimit });
             const limitTitle = normalizedLimit ? `（${normalizedLimit}题）` : '';
             const title = domain ? `${domain.name}领域补练批改` : (priorityOnly ? `复错优先卷批改${limitTitle}` : (dueOnly ? `到期错题复练批改${limitTitle}` : `错题专项卷批改${limitTitle}`));
             const rows = items.map((item, idx) => {
@@ -9954,12 +9939,13 @@
                 </div>`;
             }).join('');
             return `
-            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="${priorityOnly ? 'true' : 'false'}" data-due-only="${dueOnly ? 'true' : 'false'}" data-domain-id="${domainId || ''}" data-practice-limit="${normalizedLimit}">
+            <div class="sheet ans-sheet eb-practice-review-sheet" data-student="${student}" data-priority-only="${priorityOnly ? 'true' : 'false'}" data-due-only="${dueOnly ? 'true' : 'false'}" data-domain-id="${domainId || ''}" data-practice-limit="${effectiveLimit}" data-pack-code="${packCode}">
                 <div class="header">
                     <h1>${student} ${title}</h1>
                     <div class="info-row" style="font-weight:normal; font-size:14px;">
                         <span>范围：${label}</span>
                         <span>${items.length} 题</span>
+                        <span>锁定码：${packCode}</span>
                     </div>
                 </div>
                 <div class="answer-progress-note no-print" style="margin:0 0 12px; padding:10px 14px; border:1px solid #cbd5e1; background:#f8fafc; color:#334155; font-size:13.5px; line-height:1.6; border-radius:8px;">

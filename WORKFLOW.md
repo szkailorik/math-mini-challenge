@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.245 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a parent-facing lock code derived from the same deterministic error-book practice seed.
+- Open questions: none.
+- Risks: the code changes when the underlying error book changes, which is correct but should be understood as a fresh pack.
+- Next steps: keep the code short enough to match paper pages without becoming visual noise.
+
+### Iteration 2
+
+- What I changed: moved domain专项补练 onto the shared locked practice generator and kept its 8-question cap explicit in print and grading metadata.
+- Open questions: none.
+- Risks: a very small domain still prints fewer than 8 unique questions after duplicate filtering.
+- Next steps: continue treating 8 as a cap, not a guarantee.
+
+### Iteration 3
+
+- What I changed: added runtime checks that domain print packs repeat identically and that print/review pages carry the same lock code.
+- Open questions: none.
+- Risks: validation proves app markup alignment; a real printer can still reorder loose pages if users print different packs together.
+- Next steps: use the lock code as the human pairing cue on every small paper pack.
+
 ## Current v23.244 Iteration Notes
 
 ### Iteration 1
