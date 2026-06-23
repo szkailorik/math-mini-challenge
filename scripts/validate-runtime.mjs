@@ -63,6 +63,9 @@ if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-templ
 if (!html.includes('ENGINE_STARTUP_SYNC_TIMEOUT_MS') || !html.includes('function renderStartupLocalPaper') || !html.includes('StorageDB.init({ skipFallback: true })') || !html.includes('已先加载本地题') || !html.includes('setupAutoCloudPull._bound')) {
   throw new Error('Startup should render local paper first and continue cloud sync in the background');
 }
+if (!html.includes('STARTUP_HEALTH_CHECK_DELAY_MS') || !html.includes('function installStartupHealthCheck') || !html.includes('window.recoverStartupLocalPaper') || !html.includes('startup-recovery-card')) {
+  throw new Error('Startup recovery guard is missing');
+}
 if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
   throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
 }
@@ -523,6 +526,17 @@ vm.createContext(context);
 vm.runInContext(match[1], context, { filename: 'index.html' });
 
 await new Promise(resolve => setTimeout(resolve, 25));
+const startupPaperElement = elements.get('paper-container');
+const startupPaperHtml = startupPaperElement?.innerHTML || '';
+if (!startupPaperHtml.includes('class="sheet')) {
+  throw new Error('Local-first startup did not render a worksheet');
+}
+startupPaperElement.innerHTML = '';
+context.window.recoverStartupLocalPaper?.();
+if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
+  throw new Error('Startup recovery action did not restore the local worksheet');
+}
+startupPaperElement.innerHTML = startupPaperHtml;
 
 async function assertSafariSamePagePrint(label, printFn, expectedText = '') {
   emit('afterprint');

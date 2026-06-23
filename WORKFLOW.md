@@ -29,7 +29,7 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
-## Current v23.255 Iteration Notes
+## Current v23.256 Iteration Notes
 
 ### Iteration 1
 
@@ -47,9 +47,9 @@ Every substantial release should include at least three passes:
 
 ### Iteration 3
 
-- What I changed: added runtime validation that locks in the local-first startup path and prevents duplicate auto-pull bindings.
+- What I changed: added a startup health check, a one-click local-paper recovery action, and runtime validation that clears the paper area then confirms recovery can rebuild it.
 - Open questions: none.
-- Risks: validation checks startup structure; real GitHub latency still depends on the network.
+- Risks: validation checks startup structure and local recovery; real GitHub latency still depends on the network.
 - Next steps: verify first-open behavior in the browser after deploy.
 
 ## Current v23.252 Iteration Notes

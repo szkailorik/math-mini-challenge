@@ -27,11 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
-v23.255 makes startup local-first with zero external first-paint dependency:
+v23.256 makes startup local-first and self-healing:
 
 - The worksheet renders from local data immediately after opening the site, so daily practice can begin even when GitHub Gist sync is slow.
 - Cloud sync continues in the background and refreshes the main paper only if the user is still on the main worksheet view.
 - The optional image-export library is loaded only after the user clicks image export, so a slow CDN cannot keep the home screen blank.
+- If no worksheet appears shortly after startup, the app retries local rendering once and then shows a compact recovery card instead of leaving the family with a blank page.
 - This keeps cross-device data useful without letting network latency block retrieval practice.
 
 v23.252 fixes two parent-facing workflow blockers:

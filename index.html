@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.255 (首屏零外链阻塞)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.256 (启动自恢复)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -2419,6 +2419,49 @@
             font-weight: 700;
             text-align: center;
         }
+        .startup-recovery-card {
+            width: min(720px, calc(100vw - 36px));
+            margin: 34px auto 0;
+            padding: 16px 18px 18px;
+            border: 1px solid rgba(18, 59, 115, 0.16);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+            text-align: center;
+            color: var(--desk-ink);
+        }
+        .startup-recovery-card h2 {
+            margin: 0 0 8px;
+            font-size: 21px;
+            line-height: 1.25;
+        }
+        .startup-recovery-card p {
+            margin: 0 0 12px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #475569;
+        }
+        .startup-recovery-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+        .startup-recovery-actions button {
+            border: 1px solid rgba(18, 59, 115, 0.2);
+            border-radius: 7px;
+            background: #fff;
+            color: var(--desk-ink);
+            padding: 8px 11px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .startup-recovery-actions button.primary {
+            background: #0f766e;
+            border-color: #0f766e;
+            color: #fff;
+        }
 
         .mini-panel-btn { position: fixed; top: 20px; right: 20px; background: rgba(247, 241, 227, 0.96); color: var(--desk-ink); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(16,35,63,0.12); box-shadow: 0 8px 18px rgba(15,23,42,0.14); z-index: 9999; cursor: pointer; font-family: 'Georgia', serif; font-weight: 700; font-size: 14px; backdrop-filter: blur(8px); display: none; }
         .export-btn { display: none; position: fixed; top: 20px; right: 388px; background: linear-gradient(135deg, #123b73, #315a91); color: white; border: none; padding: 11px 16px; font-size: 13px; font-weight: 700; border-radius: 12px; cursor: pointer; box-shadow: 0 10px 20px rgba(18,59,115,0.22); z-index: 1000; transition: 0.2s; letter-spacing: 0.04em; }
@@ -3165,7 +3208,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.255</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.256</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3244,10 +3287,11 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.255';
-        const APP_RELEASE_LABEL = '首屏零外链阻塞';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.255 打开网页不等待外部脚本，图片导出组件改为点击时再加载。';
+        const APP_VERSION = 'v23.256';
+        const APP_RELEASE_LABEL = '启动自恢复';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.256 如果首屏没有按时出卷，会自动重试本地渲染，并提供一键恢复入口。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
+        const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
@@ -15955,11 +15999,39 @@ window.addEventListener('afterprint', function () {
             const container = document.getElementById('paper-container');
             if (!container) return false;
             const text = container.textContent || '';
-            return !!container.querySelector('.sheet') || text.includes('正在连接智能引擎') || text.includes('Connecting to Engine') || !text.trim();
+            const html = container.innerHTML || '';
+            return html.includes('class="sheet') || text.includes('正在连接智能引擎') || text.includes('Connecting to Engine') || !text.trim();
+        }
+
+        function hasStartupPracticeContent() {
+            const container = document.getElementById('paper-container');
+            if (!container) return false;
+            const html = container.innerHTML || '';
+            return html.includes('class="sheet')
+                || html.includes('error-book-page')
+                || html.includes('quick-review-page')
+                || html.includes('eb-practice-review-sheet')
+                || html.includes('set-review-sheet');
+        }
+
+        function showStartupRecoveryCard(message = '试卷没有按时显示。') {
+            const container = document.getElementById('paper-container');
+            if (!container || hasStartupPracticeContent()) return;
+            container.innerHTML = `
+                <div class="startup-recovery-card">
+                    <h2>先把本地试卷调出来</h2>
+                    <p>${message} 云同步或浏览器缓存偶尔会慢一点，先用本机数据继续训练，不影响后面同步。</p>
+                    <div class="startup-recovery-actions">
+                        <button class="primary" onclick="window.recoverStartupLocalPaper()">重新加载本地试卷</button>
+                        <button onclick="window.showDataModal()">检查云同步</button>
+                        <button onclick="window.location.reload()">刷新页面</button>
+                    </div>
+                </div>`;
         }
 
         function renderStartupLocalPaper() {
             try {
+                if (typeof clearPrintMode === 'function') clearPrintMode();
                 StorageDB.fallbackLocal();
                 updateCloudStatus();
                 if (typeof window.renderPaper === 'function') {
@@ -15974,6 +16046,28 @@ window.addEventListener('afterprint', function () {
                 container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";
             }
             return false;
+        }
+        window.recoverStartupLocalPaper = function() {
+            const ok = renderStartupLocalPaper();
+            if (ok) {
+                showToast('✅ 已重新加载本地试卷。', { background: '#0f766e', duration: 2200 });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                showStartupRecoveryCard('本地试卷仍未显示，请刷新页面或检查浏览器缓存。');
+            }
+        };
+
+        function installStartupHealthCheck() {
+            if (window.__startupHealthCheckBound) return;
+            window.__startupHealthCheckBound = true;
+            setTimeout(() => {
+                if (hasStartupPracticeContent()) return;
+                console.warn('Startup health check: no practice content detected, retrying local render.');
+                renderStartupLocalPaper();
+                setTimeout(() => {
+                    if (!hasStartupPracticeContent()) showStartupRecoveryCard('系统已经自动重试了一次。');
+                }, 360);
+            }, STARTUP_HEALTH_CHECK_DELAY_MS);
         }
 
         function refreshAfterStartupCloudSync({ background = false } = {}) {
@@ -15999,6 +16093,7 @@ window.addEventListener('afterprint', function () {
             const releaseLabel = document.getElementById('release-note-label');
             if (releaseLabel) releaseLabel.innerHTML = APP_RELEASE_NOTE_HTML;
             renderProgramShell();
+            installStartupHealthCheck();
             renderStartupLocalPaper();
             const startupSync = StorageDB.init({ skipFallback: true });
             try {
