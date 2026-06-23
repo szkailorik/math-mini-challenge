@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.260 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a dedicated error-book answer-key grid for targeted practice print packs.
+- Open questions: none.
+- Risks: generic follow-up answer pages still use their existing table by design.
+- Next steps: keep the dedicated builder scoped to `data-error-book-practice` print flows.
+
+### Iteration 2
+
+- What I changed: made each answer-key row show only the question number, final answer, one compact check hint, and replay mark.
+- Open questions: none.
+- Risks: very long answer hints may wrap, but the grid remains two-column and page-safe.
+- Next steps: tune individual hint copy only if observed answers become noisy.
+
+### Iteration 3
+
+- What I changed: updated runtime validation so error-book print packs must use the compact answer-key grid instead of the generic report table.
+- Open questions: none.
+- Risks: validation checks generated HTML, not physical printer toner density.
+- Next steps: continue spot-checking Chrome PDF output for print-heavy layout changes.
+
 ## Current v23.259 Iteration Notes
 
 ### Iteration 1

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.260 makes error-book answer checking faster:
+
+- Error-book print answer pages now use a two-column answer-key grid instead of the generic report table.
+- Each answer item keeps only the number, final answer, one compact check hint, and the paper replay mark.
+- This matches the printed two-column question paper and reduces parent scanning time after a paper practice session.
+
 v23.259 makes error-book print density adaptive:
 
 - Error-book paper pages now estimate each question's print cost from density, fractions, conversions, and prompt length.

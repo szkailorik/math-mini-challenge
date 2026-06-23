@@ -54,7 +54,7 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
-if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('function getErrorBookPracticePrintItemCost') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer')) {
+if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('function getErrorBookPracticePrintItemCost') || !html.includes('function buildErrorBookPracticeAnswerKeyHTML') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer') || !html.includes('error-book-answer-key-grid')) {
   throw new Error('Error-book targeted practice print sheets must use the paged two-column paper layout');
 }
 if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
@@ -540,7 +540,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.259') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.260') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2095,8 +2095,8 @@ const limitedDueReviewHtml = context.window.buildErrorBookPracticeReviewHTML?.('
 if (!limitedDueReviewHtml.includes('到期错题复练批改（1题）') || !limitedDueReviewHtml.includes('data-practice-limit="1"') || (limitedDueReviewHtml.match(/eb-practice-grade-row/g) || []).length !== 1) {
   throw new Error('Due error-book grading sheet should honor a 1-item cap and persist practice limit metadata');
 }
-if (!fullErrorBookPracticeHtml.includes('参考答案') || !fullErrorBookPracticeHtml.includes('复练标记')) {
-  throw new Error('Full error-book targeted practice answer sheet is missing answer/reference tracking columns');
+if (!fullErrorBookPracticeHtml.includes('参考答案') || !fullErrorBookPracticeHtml.includes('error-book-answer-key-grid') || !fullErrorBookPracticeHtml.includes('复练标记') || fullErrorBookPracticeHtml.includes('<th>检查提醒</th>')) {
+  throw new Error('Full error-book targeted practice answer sheet should use the compact answer-key grid');
 }
 if (fullErrorBookPracticeHtml.includes('class="blank math-inline-blank"') || fullErrorBookPracticeHtml.includes('<div class="blank"></div>')) {
   throw new Error('Full error-book targeted practice print HTML still contains legacy underline blanks');

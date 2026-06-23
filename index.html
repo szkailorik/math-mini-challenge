@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.259 (错题智能分页)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.260 (错题答案速查)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -2701,6 +2701,61 @@
         .set-review-followup-answer { margin-top:2px; border:1px solid #e2e8f0; border-radius:14px; background:#fcfcfd; padding:12px; }
         .set-review-followup-answer h5 { margin:0 0 6px; font-size:14px; color:#334155; }
         .set-review-followup-answer-note { margin:0 0 10px; color:#64748b; font-size:12px; line-height:1.45; }
+        .error-book-answer-key.print-answer-sheet {
+            page-break-before:auto;
+            break-before:auto;
+            margin:0;
+            padding:0;
+        }
+        .error-book-answer-key-note {
+            margin: 0 0 7px;
+            font-family:'Songti SC', serif;
+            font-size: 10.4px;
+            line-height: 1.35;
+            color:#475569;
+            text-align:center;
+        }
+        .error-book-answer-key-grid {
+            display:grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 3.8mm 7mm;
+            align-items:start;
+        }
+        .error-book-answer-key-item {
+            display:grid;
+            grid-template-columns: 28px minmax(0, 1fr);
+            gap: 6px;
+            min-height: 13mm;
+            padding: 1.8mm 0 2.2mm;
+            border-bottom:1px solid rgba(15, 23, 42, 0.24);
+            page-break-inside:avoid;
+            break-inside:avoid;
+        }
+        .error-book-answer-key-num {
+            color:#0f172a;
+            font-family:'Times New Roman',serif;
+            font-size:14px;
+            font-weight:800;
+            line-height:1.2;
+            text-align:right;
+        }
+        .error-book-answer-key-main {
+            display:grid;
+            gap:3px;
+            min-width:0;
+        }
+        .error-book-answer-key-answer {
+            font-size:13.8px;
+            line-height:1.24;
+            color:#111827;
+        }
+        .error-book-answer-key-hint,
+        .error-book-answer-key-mark {
+            font-family:'Songti SC', serif;
+            font-size:9.6px;
+            line-height:1.24;
+            color:#475569;
+        }
         .set-review-followup-empty { margin-top:10px; padding:12px; border-radius:10px; background:#f8fafc; color:#64748b; font-size:13px; }
         .set-review-followup-print-shell {
             width: 184mm;
@@ -3319,7 +3374,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.259</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.260</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3399,9 +3454,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.259';
-        const APP_RELEASE_LABEL = '错题智能分页';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.259 错题专项打印按题目复杂度智能分页，长分数/换算题不再硬挤一页。';
+        const APP_VERSION = 'v23.260';
+        const APP_RELEASE_LABEL = '错题答案速查';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.260 错题专项答案页改成两栏速查，核对更像正式答案纸。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10508,7 +10563,7 @@
                     <span><strong>${items.length} 题</strong> · 答案速查</span>
                     <span>${metaRight}</span>
                 </div>
-                ${buildSetReviewFollowupAnswerHTML(items, { forPrint: true })}
+                ${buildErrorBookPracticeAnswerKeyHTML(items, { forPrint: true })}
             </section>` : '';
             return questionPages + answerPage;
         }
@@ -15039,6 +15094,28 @@
             </div>`;
         }
         window.buildSetReviewFollowupPracticeReviewHTML = buildSetReviewFollowupPracticeReviewHTML;
+
+        function buildErrorBookPracticeAnswerKeyHTML(items, { forPrint = false } = {}) {
+            if (!items.length) return '';
+            const rows = items.map((item, idx) => {
+                const hint = getCompactAnswerCheckHint(item);
+                return `
+                <div class="error-book-answer-key-item">
+                    <span class="error-book-answer-key-num">${idx + 1}.</span>
+                    <div class="error-book-answer-key-main">
+                        <div class="error-book-answer-key-answer math-row">${item.a || item.answer || '-'}</div>
+                        <div class="error-book-answer-key-hint">${hint}</div>
+                        <div class="error-book-answer-key-mark">复练标记：□ 已会　□ 需讲　□ 又错</div>
+                    </div>
+                </div>`;
+            }).join('');
+            return `
+            <div class="error-book-answer-key ${forPrint ? 'print-answer-sheet' : ''}">
+                <p class="error-book-answer-key-note">只看最终答案和一个核对点；纸上标记后回到错题本批改页录入。</p>
+                <div class="error-book-answer-key-grid">${rows}</div>
+            </div>`;
+        }
+        window.buildErrorBookPracticeAnswerKeyHTML = buildErrorBookPracticeAnswerKeyHTML;
 
         function buildSetReviewFollowupAnswerHTML(items, { forPrint = false, includeBackupAnswers = false } = {}) {
             if (!items.length) return '';
