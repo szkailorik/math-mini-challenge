@@ -66,6 +66,9 @@ if (!html.includes('ENGINE_STARTUP_SYNC_TIMEOUT_MS') || !html.includes('function
 if (!html.includes('STARTUP_HEALTH_CHECK_DELAY_MS') || !html.includes('function installStartupHealthCheck') || !html.includes('window.recoverStartupLocalPaper') || !html.includes('startup-recovery-card')) {
   throw new Error('Startup recovery guard is missing');
 }
+if (!html.includes('id="version-refresh-status"') || !html.includes('APP_VERSION_STORAGE_KEY') || !html.includes('function updateVersionFreshness') || !html.includes('window.forceReloadLatestVersion') || !html.includes('强制刷新最新版')) {
+  throw new Error('Version refresh guard is missing');
+}
 if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
   throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
 }
@@ -537,6 +540,9 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.257') {
+  throw new Error('Startup should persist the current app version for refresh hints');
+}
 
 async function assertSafariSamePagePrint(label, printFn, expectedText = '') {
   emit('afterprint');

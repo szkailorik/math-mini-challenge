@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.256 (启动自恢复)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.257 (版本刷新护栏)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -2419,6 +2419,32 @@
             font-weight: 700;
             text-align: center;
         }
+        #version-refresh-status {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 2px;
+            padding: 5px 8px;
+            border: 1px solid rgba(180, 83, 9, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 247, 237, 0.95);
+            color: #92400e;
+            font-size: 10.8px;
+            line-height: 1.25;
+            font-weight: 800;
+            text-align: center;
+        }
+        #version-refresh-status button {
+            border: 1px solid rgba(180, 83, 9, 0.28);
+            border-radius: 6px;
+            background: #fff;
+            color: #7c2d12;
+            padding: 3px 7px;
+            font-size: 10.5px;
+            font-weight: 900;
+            cursor: pointer;
+        }
         .startup-recovery-card {
             width: min(720px, calc(100vw - 36px));
             margin: 34px auto 0;
@@ -3208,11 +3234,12 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.256</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.257</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
         <div id="cache-repair-status" title=""></div>
+        <div id="version-refresh-status"></div>
         <button id="cloud-connect-shortcut" class="ctrl-btn" style="display:none; background:#0ea5e9; color:white; width:100%;" onclick="window.showDataModal()">☁️ 连接云同步 / Connect Sync</button>
         <div class="program-shell-card" id="program-shell-card">
             <div class="program-shell-head">
@@ -3287,12 +3314,13 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.256';
-        const APP_RELEASE_LABEL = '启动自恢复';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.256 如果首屏没有按时出卷，会自动重试本地渲染，并提供一键恢复入口。';
+        const APP_VERSION = 'v23.257';
+        const APP_RELEASE_LABEL = '版本刷新护栏';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.257 数据中心加入“强制刷新最新版”，检测到旧版本痕迹时会提示刷新。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        const APP_VERSION_STORAGE_KEY = 'MathEngine_LastAppVersion';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4897,6 +4925,14 @@
                     <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
                         从旧版本残留的 localStorage 键中扫描合并。
                         <button class="modal-btn" style="background:#f59e0b; color:#fff; width:100%; margin-top:12px;" onclick="window.recoverLegacyData()">🔍 深度扫描并合并残留数据</button>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3>🧭 4. 版本刷新 / Latest Version</h3>
+                    <div style="padding:15px; font-size:14.5px; color:#475569; line-height:1.6;">
+                        当前代码版本：<strong>${APP_VERSION}</strong>。如果 GitHub 已经更新但本机页面还像旧版本，点下面按钮会自动加版本参数并强制重新读取页面。
+                        <button class="modal-btn" style="background:#0f766e; color:#fff; width:100%; margin-top:12px;" onclick="window.forceReloadLatestVersion()">🧭 强制刷新最新版</button>
                     </div>
                 </div>
             `;
@@ -16029,6 +16065,63 @@ window.addEventListener('afterprint', function () {
                 </div>`;
         }
 
+        function normalizeAppVersionText(version = '') {
+            return String(version || '').trim().replace(/^v/i, '');
+        }
+
+        function getCurrentUrlVersionParam() {
+            try {
+                if (typeof URLSearchParams !== 'function') return '';
+                const params = new URLSearchParams(window.location?.search || '');
+                return params.get('v') || params.get('appv') || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function updateVersionFreshness() {
+            const el = document.getElementById('version-refresh-status');
+            if (!el) return;
+            let previousVersion = '';
+            try {
+                previousVersion = localStorage.getItem(APP_VERSION_STORAGE_KEY) || '';
+            } catch (e) {
+                previousVersion = '';
+            }
+            const currentVersionParam = getCurrentUrlVersionParam();
+            const current = normalizeAppVersionText(APP_VERSION);
+            const staleUrlVersion = currentVersionParam && normalizeAppVersionText(currentVersionParam) !== current;
+            const versionChanged = previousVersion && previousVersion !== APP_VERSION;
+            safeLocalSetItem(APP_VERSION_STORAGE_KEY, APP_VERSION);
+            if (!staleUrlVersion && !versionChanged) {
+                el.style.display = 'none';
+                el.innerHTML = '';
+                return;
+            }
+            const message = staleUrlVersion
+                ? `当前代码 ${APP_VERSION}，地址仍带 v${currentVersionParam}`
+                : `已更新：${previousVersion} → ${APP_VERSION}`;
+            el.innerHTML = `<span>${message}</span><button onclick="window.forceReloadLatestVersion()">刷新最新版</button>`;
+            el.style.display = 'flex';
+        }
+
+        window.forceReloadLatestVersion = function() {
+            try {
+                const href = window.location?.href || '';
+                if (!href) {
+                    showToast('当前环境无法直接改写地址，请手动刷新页面。', { background: '#b45309', duration: 2600 });
+                    return;
+                }
+                const url = new URL(href);
+                url.searchParams.set('v', normalizeAppVersionText(APP_VERSION));
+                url.searchParams.set('fresh', String(Date.now()));
+                if (typeof window.location.replace === 'function') window.location.replace(url.toString());
+                else window.location.href = url.toString();
+            } catch (e) {
+                if (window.location && typeof window.location.reload === 'function') window.location.reload();
+            }
+        };
+
         function renderStartupLocalPaper() {
             try {
                 if (typeof clearPrintMode === 'function') clearPrintMode();
@@ -16093,6 +16186,7 @@ window.addEventListener('afterprint', function () {
             const releaseLabel = document.getElementById('release-note-label');
             if (releaseLabel) releaseLabel.innerHTML = APP_RELEASE_NOTE_HTML;
             renderProgramShell();
+            updateVersionFreshness();
             installStartupHealthCheck();
             renderStartupLocalPaper();
             const startupSync = StorageDB.init({ skipFallback: true });

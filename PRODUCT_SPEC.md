@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.257 makes version freshness recoverable:
+
+- The app stores the last opened app version locally and shows a small refresh hint when a newly loaded version differs from the previous one.
+- The Data Backup center now includes a `强制刷新最新版` action that adds a version/freshness query parameter, helping families bypass stale browser cache after GitHub Pages updates.
+- This reduces confusion when one device still appears to be running an older training engine after deployment.
+
 v23.256 makes startup local-first and self-healing:
 
 - The worksheet renders from local data immediately after opening the site, so daily practice can begin even when GitHub Gist sync is slow.

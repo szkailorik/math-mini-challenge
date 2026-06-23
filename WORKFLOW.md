@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.257 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a stored app-version marker so the app can notice when a newly loaded build differs from the last opened build.
+- Open questions: none.
+- Risks: old code cannot fix an already-cached old page until the browser fetches this version once.
+- Next steps: keep the manual refresh path visible from Data Backup.
+
+### Iteration 2
+
+- What I changed: added a `强制刷新最新版` action that rewrites the current URL with `v=<current>` and a freshness timestamp to bypass stale cache.
+- Open questions: none.
+- Risks: query-string refresh depends on the hosting layer serving the latest committed `index.html`.
+- Next steps: use it after GitHub Pages deploys if a browser appears stale.
+
+### Iteration 3
+
+- What I changed: added validation that the version-refresh UI, reload action, and persisted app-version marker remain present.
+- Open questions: none.
+- Risks: validation checks the guardrails, not remote CDN cache headers.
+- Next steps: verify the public GitHub Pages URL after deployment.
+
 ## Current v23.256 Iteration Notes
 
 ### Iteration 1
