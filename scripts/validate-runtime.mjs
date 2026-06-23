@@ -54,7 +54,7 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
-if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer')) {
+if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('function getErrorBookPracticePrintItemCost') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer')) {
   throw new Error('Error-book targeted practice print sheets must use the paged two-column paper layout');
 }
 if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
@@ -540,7 +540,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.258') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.259') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2051,6 +2051,24 @@ if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPrac
 }
 if (!fullErrorBookPracticeHtml.includes('data-error-book-practice="true"')) {
   throw new Error('Full error-book targeted practice print should opt into multi-page-safe print layout');
+}
+const denseErrorBookItems = Array.from({ length: 20 }, (_, index) => ({
+  q: `<span class="math-row"><span class="frac"><span>3</span><span>4</span></span> + <span class="frac"><span>5</span><span>12</span></span> - <span class="frac"><span>1</span><span>6</span></span> = ____ long conversion ${index}</span>`,
+  a: '<span class="frac"><span>1</span><span>1</span></span>',
+  tag: 'fraction_calc',
+  followupFamily: 'fraction',
+  followupMechanismKey: 'fraction-common-denominator',
+  isErrorBookPractice: true
+}));
+const denseErrorBookPages = context.window.chunkErrorBookPracticePrintItems?.(denseErrorBookItems) || [];
+const denseErrorBookHtml = context.window.buildErrorBookPracticePrintPagesHTML?.(denseErrorBookItems, {
+  student: 'KAI',
+  title: '错题专项卷（20题）',
+  metaRight: '范围：复杂分数题 · 锁定码：EB-DENSE',
+  includeAnswers: false
+}) || '';
+if (denseErrorBookPages.length < 2 || (denseErrorBookHtml.match(/data-error-book-page="/g) || []).length < 2) {
+  throw new Error('Dense error-book print packs should paginate instead of forcing all items onto one page');
 }
 const limitedPackCode = context.window.getErrorBookPracticePackCode?.('KAI', { limit: 1 }) || '';
 const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';

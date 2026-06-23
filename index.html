@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.258 (错题双栏试卷)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.259 (错题智能分页)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -2720,7 +2720,7 @@
             width: 188mm;
             min-height: var(--print-sheet-height);
             padding: 6mm 5mm 8mm;
-            overflow: hidden;
+            overflow: visible;
             page-break-inside: avoid;
             break-inside: avoid-page;
             page-break-after: always;
@@ -2729,6 +2729,10 @@
         .set-review-followup-print-shell[data-error-book-practice="true"]:last-child {
             page-break-after: auto;
             break-after: auto;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"][data-mode="answer-only"] {
+            min-height: auto;
+            overflow: visible;
         }
         .booklet-meta-band {
             display:flex;
@@ -3066,6 +3070,12 @@
             break-before:auto;
             margin-top:0;
         }
+        .set-review-followup-print-shell[data-error-book-practice="true"][data-mode="answer-only"] .set-review-followup-answer.print-answer-sheet {
+            border:0;
+            border-radius:0;
+            background:#fff;
+            padding:0;
+        }
         body.print-set-review-followup,
         body.print-set-review-followup-with-answers {
             background: #fff !important;
@@ -3309,7 +3319,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.258</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.259</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3389,9 +3399,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.258';
-        const APP_RELEASE_LABEL = '错题双栏试卷';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.258 错题专项打印改为分页双栏试卷，10题/20题更像正式练习卷。';
+        const APP_VERSION = 'v23.259';
+        const APP_RELEASE_LABEL = '错题智能分页';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.259 错题专项打印按题目复杂度智能分页，长分数/换算题不再硬挤一页。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10401,22 +10411,49 @@
         }
         window.buildErrorBookPracticeLaneSummaryHTML = buildErrorBookPracticeLaneSummaryHTML;
 
+        function getErrorBookPracticePrintItemCost(item = {}) {
+            const source = `${item.q || ''} ${item.a || ''}`;
+            const density = getSetReviewFollowupItemDensity(item);
+            const shape = getSetReviewFollowupItemShape(item);
+            const plainLength = source.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().length;
+            let cost = 1;
+            if (density === 'dense') cost += 0.28;
+            if (density === 'ultra') cost += 0.58;
+            if (shape === 'fraction' || shape === 'conversion') cost += 0.16;
+            if (plainLength >= 42) cost += 0.18;
+            if (plainLength >= 64) cost += 0.28;
+            return cost;
+        }
+        window.getErrorBookPracticePrintItemCost = getErrorBookPracticePrintItemCost;
+
         function getErrorBookPracticePrintPageSize(items = []) {
-            const densities = (items || []).map(item => getSetReviewFollowupItemDensity(item));
-            const denseOrUltra = densities.filter(level => level === 'dense' || level === 'ultra').length;
-            const ultraCount = densities.filter(level => level === 'ultra').length;
+            const costs = (items || []).map(getErrorBookPracticePrintItemCost);
+            const avgCost = costs.length ? costs.reduce((sum, value) => sum + value, 0) / costs.length : 1;
             if ((items || []).length <= 10) return 10;
-            if (ultraCount >= 4 || denseOrUltra >= 12) return 14;
-            if (denseOrUltra >= 8) return 16;
-            return 20;
+            return Math.max(10, Math.min(20, Math.floor(20 / Math.max(1, avgCost))));
         }
         window.getErrorBookPracticePrintPageSize = getErrorBookPracticePrintPageSize;
 
         function chunkErrorBookPracticePrintItems(items = []) {
             const pageSize = getErrorBookPracticePrintPageSize(items);
+            const pageCostLimit = 20;
             const pages = [];
-            for (let i = 0; i < items.length; i += pageSize) {
-                pages.push(items.slice(i, i + pageSize));
+            let current = [];
+            let currentCost = 0;
+            (items || []).forEach(item => {
+                const itemCost = getErrorBookPracticePrintItemCost(item);
+                const wouldOverflowByCount = current.length >= pageSize;
+                const wouldOverflowByCost = current.length > 0 && currentCost + itemCost > pageCostLimit;
+                if (wouldOverflowByCount || wouldOverflowByCost) {
+                    pages.push(current);
+                    current = [];
+                    currentCost = 0;
+                }
+                current.push(item);
+                currentCost += itemCost;
+            });
+            if (current.length) {
+                pages.push(current);
             }
             return pages;
         }

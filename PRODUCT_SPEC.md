@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.259 makes error-book print density adaptive:
+
+- Error-book paper pages now estimate each question's print cost from density, fractions, conversions, and prompt length.
+- Standard 20-question packs can still fit on one paper-like page, while dense fraction or conversion packs automatically split across pages instead of being forced into a cramped sheet.
+- Answer pages stay separate and lose card-like framing inside error-book paper mode, so parent checking is closer to a real answer key.
+
 v23.258 makes error-book practice printouts look like real papers:
 
 - Error-book targeted packs now render as paged two-column A4 practice papers instead of a single top-to-bottom list.

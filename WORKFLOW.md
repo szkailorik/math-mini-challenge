@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.259 Iteration Notes
+
+### Iteration 1
+
+- What I changed: changed error-book print pagination from fixed item counts to per-question print-cost scoring.
+- Open questions: none.
+- Risks: cost scoring is an estimate, so extreme prompts may still need a later specialty rule.
+- Next steps: keep validation examples with dense fraction-heavy items.
+
+### Iteration 2
+
+- What I changed: made the base error-book paper shell overflow-visible and removed card framing from answer-only pages inside paper mode.
+- Open questions: none.
+- Risks: visible overflow protects question completeness but depends on the cost model to avoid awkward page bottoms.
+- Next steps: tune the score thresholds only from observed print samples.
+
+### Iteration 3
+
+- What I changed: added runtime validation that dense 20-question error-book packs split into multiple paper pages.
+- Open questions: none.
+- Risks: validation checks generated print HTML rather than every browser's final pagination engine.
+- Next steps: keep Chrome PDF spot checks for print-heavy layout changes.
+
 ## Current v23.258 Iteration Notes
 
 ### Iteration 1
