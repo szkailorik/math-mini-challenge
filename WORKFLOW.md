@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.261 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added answer-key chunking for large error-book print packs.
+- Open questions: none.
+- Risks: answer rows are compact, so extremely long final answers may still wrap.
+- Next steps: keep answer chunk size conservative and preserve visible overflow.
+
+### Iteration 2
+
+- What I changed: generated repeated answer-key pages with page numbers, lock-scope metadata, and question-number ranges.
+- Open questions: none.
+- Risks: answer pages now add more printed pages for large packs, but they are easier to match to the paper.
+- Next steps: favor clarity over squeezing answer keys too tightly.
+
+### Iteration 3
+
+- What I changed: added runtime validation that a 45-item answer key splits across pages and keeps global numbering on page 2.
+- Open questions: none.
+- Risks: validation checks generated HTML, not every physical printer.
+- Next steps: use Chrome PDF spot checks for future paper-layout changes.
+
 ## Current v23.260 Iteration Notes
 
 ### Iteration 1

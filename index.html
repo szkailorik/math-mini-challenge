@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.260 (错题答案速查)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.261 (错题答案分页)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -3374,7 +3374,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.260</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.261</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3454,9 +3454,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.260';
-        const APP_RELEASE_LABEL = '错题答案速查';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.260 错题专项答案页改成两栏速查，核对更像正式答案纸。';
+        const APP_VERSION = 'v23.261';
+        const APP_RELEASE_LABEL = '错题答案分页';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.261 错题专项答案页也会自动分页，题目多时每页保留页眉和题号范围。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10514,6 +10514,55 @@
         }
         window.chunkErrorBookPracticePrintItems = chunkErrorBookPracticePrintItems;
 
+        function getErrorBookAnswerKeyPageSize(items = []) {
+            const costs = (items || []).map(item => Math.max(1, getErrorBookPracticePrintItemCost(item) * 0.72));
+            const avgCost = costs.length ? costs.reduce((sum, value) => sum + value, 0) / costs.length : 1;
+            return Math.max(18, Math.min(32, Math.floor(32 / Math.max(1, avgCost))));
+        }
+        window.getErrorBookAnswerKeyPageSize = getErrorBookAnswerKeyPageSize;
+
+        function chunkErrorBookAnswerKeyItems(items = []) {
+            const pageSize = getErrorBookAnswerKeyPageSize(items);
+            const pages = [];
+            for (let i = 0; i < items.length; i += pageSize) {
+                pages.push(items.slice(i, i + pageSize));
+            }
+            return pages;
+        }
+        window.chunkErrorBookAnswerKeyItems = chunkErrorBookAnswerKeyItems;
+
+        function buildErrorBookPracticeAnswerKeyPagesHTML(items = [], {
+            student = '',
+            title = '错题专项卷',
+            metaRight = '',
+            headerLeft = '',
+            printPack = 'normal'
+        } = {}) {
+            const pages = chunkErrorBookAnswerKeyItems(items);
+            return pages.map((pageItems, pageIndex) => {
+                const pageRange = pageItems.length
+                    ? `第 ${items.indexOf(pageItems[0]) + 1}-${items.indexOf(pageItems[pageItems.length - 1]) + 1} 题`
+                    : '';
+                return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true" data-mode="answer-only" data-error-book-answer-page="${pageIndex + 1}">
+                <header class="booklet-meta-band">
+                    <span>${headerLeft || `${student} · Error Book`}</span>
+                    <span>Answer Key · Page ${pageIndex + 1}/${pages.length}</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">${title} · 参考答案</h2>
+                    <p class="followup-print-subtitle">家长核对用，只保留最终答案和一句核对点。</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 本页 ${pageRange || '答案速查'}</span>
+                    <span>${metaRight}${pages.length > 1 ? ` · 答案第 ${pageIndex + 1}/${pages.length} 页` : ''}</span>
+                </div>
+                ${buildErrorBookPracticeAnswerKeyHTML(pageItems, { forPrint: true, numberingItems: items })}
+            </section>`;
+            }).join('');
+        }
+        window.buildErrorBookPracticeAnswerKeyPagesHTML = buildErrorBookPracticeAnswerKeyPagesHTML;
+
         function buildErrorBookPracticePrintPagesHTML(items = [], {
             student = '',
             title = '错题专项卷',
@@ -10549,23 +10598,14 @@
                 <footer class="error-book-print-footer">纸上勾选：□ 已会　□ 需讲　□ 又错 · 回到错题本批改页录入</footer>
             </section>`;
             }).join('');
-            const answerPage = includeAnswers ? `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true" data-mode="answer-only">
-                <header class="booklet-meta-band">
-                    <span>${headerLeft || `${student} · Error Book`}</span>
-                    <span>Answer Key</span>
-                </header>
-                <div class="set-review-followup-print-head">
-                    <h2 class="sheet-title">${title} · 参考答案</h2>
-                    <p class="followup-print-subtitle">家长核对用，只保留最终答案和一句核对点。</p>
-                </div>
-                <div class="followup-print-meta">
-                    <span><strong>${items.length} 题</strong> · 答案速查</span>
-                    <span>${metaRight}</span>
-                </div>
-                ${buildErrorBookPracticeAnswerKeyHTML(items, { forPrint: true })}
-            </section>` : '';
-            return questionPages + answerPage;
+            const answerPages = includeAnswers ? buildErrorBookPracticeAnswerKeyPagesHTML(items, {
+                student,
+                title,
+                metaRight,
+                headerLeft,
+                printPack
+            }) : '';
+            return questionPages + answerPages;
         }
         window.buildErrorBookPracticePrintPagesHTML = buildErrorBookPracticePrintPagesHTML;
 
@@ -15095,13 +15135,16 @@
         }
         window.buildSetReviewFollowupPracticeReviewHTML = buildSetReviewFollowupPracticeReviewHTML;
 
-        function buildErrorBookPracticeAnswerKeyHTML(items, { forPrint = false } = {}) {
+        function buildErrorBookPracticeAnswerKeyHTML(items, { forPrint = false, numberingItems = null } = {}) {
             if (!items.length) return '';
+            const numberSource = Array.isArray(numberingItems) && numberingItems.length ? numberingItems : items;
             const rows = items.map((item, idx) => {
                 const hint = getCompactAnswerCheckHint(item);
+                const sourceIndex = numberSource.indexOf(item);
+                const number = sourceIndex >= 0 ? sourceIndex + 1 : idx + 1;
                 return `
                 <div class="error-book-answer-key-item">
-                    <span class="error-book-answer-key-num">${idx + 1}.</span>
+                    <span class="error-book-answer-key-num">${number}.</span>
                     <div class="error-book-answer-key-main">
                         <div class="error-book-answer-key-answer math-row">${item.a || item.answer || '-'}</div>
                         <div class="error-book-answer-key-hint">${hint}</div>

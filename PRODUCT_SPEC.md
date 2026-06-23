@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.261 keeps long answer keys printable:
+
+- Error-book answer keys now split into multiple answer pages when the pack is large.
+- Each answer page repeats the answer-key header, page number, lock scope, and question-number range.
+- Answer numbering stays global across pages, so the parent can match answer page 2 directly to the same paper question numbers.
+
 v23.260 makes error-book answer checking faster:
 
 - Error-book print answer pages now use a two-column answer-key grid instead of the generic report table.
