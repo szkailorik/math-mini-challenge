@@ -54,8 +54,8 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
-if (!html.includes('data-error-book-practice="true"') || !html.includes('.set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet') || !html.includes('.set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list')) {
-  throw new Error('Error-book targeted practice print sheets must use the multi-page-safe block layout');
+if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer')) {
+  throw new Error('Error-book targeted practice print sheets must use the paged two-column paper layout');
 }
 if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
   throw new Error('Floating control panel should stay compact on the home screen');
@@ -540,7 +540,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.257') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.258') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2046,8 +2046,8 @@ if (mechanismPrintHtml.includes('class="blank math-inline-blank"') || mechanismP
 }
 await assertSafariSamePagePrint('Error-book mechanism practice print', () => context.window.printErrorBookMechanismPractice?.('KAI', 'representation-conversion', false), '机制补练');
 const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, {}) || '';
-if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
-  throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
+if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('data-error-book-page="1"') || !fullErrorBookPracticeHtml.includes('纸上勾选') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
+  throw new Error('Full error-book targeted practice print HTML is missing its paged paper title or re-error tracking marks');
 }
 if (!fullErrorBookPracticeHtml.includes('data-error-book-practice="true"')) {
   throw new Error('Full error-book targeted practice print should opt into multi-page-safe print layout');

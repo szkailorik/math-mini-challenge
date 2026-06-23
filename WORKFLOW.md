@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.258 Iteration Notes
+
+### Iteration 1
+
+- What I changed: replaced the error-book targeted-practice print list with a paged paper builder shared by 10-question, 20-question, mechanism, and domain packs.
+- Open questions: none.
+- Risks: extremely long math prompts can still need more than the default page density.
+- Next steps: keep page overflow visible so questions are never clipped.
+
+### Iteration 2
+
+- What I changed: changed the error-book print CSS from one-column block flow to a two-column question grid with stable A4 page shells and lighter paper-grade marks.
+- Open questions: none.
+- Risks: browser print engines handle grid fragmentation differently, so pagination is generated in HTML before print rather than relying on automatic grid breaking.
+- Next steps: verify with runtime print sandbox checks.
+
+### Iteration 3
+
+- What I changed: updated runtime validation to require the paged two-column print builder, version marker, and error-book paper footer.
+- Open questions: none.
+- Risks: validation checks generated HTML and print sandbox behavior, not physical printer margins.
+- Next steps: keep future error-book print changes behind the same builder.
+
 ## Current v23.257 Iteration Notes
 
 ### Iteration 1

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.258 makes error-book practice printouts look like real papers:
+
+- Error-book targeted packs now render as paged two-column A4 practice papers instead of a single top-to-bottom list.
+- The 10-question and 20-question print paths share one pagination builder, so ordinary packs, mechanism drills, and domain drills keep the same paper rhythm.
+- Each paper page keeps only the needed title, scope, lock code, page range, questions, and paper-grade checkboxes; answers stay on a separate concise reference page.
+
 v23.257 makes version freshness recoverable:
 
 - The app stores the last opened app version locally and shows a small refresh hint when a newly loaded version differs from the previous one.

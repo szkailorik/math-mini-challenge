@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.257 (版本刷新护栏)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.258 (错题双栏试卷)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -2369,7 +2369,7 @@
             flex-wrap: nowrap;
             gap: 3px;
             max-height: 18px;
-            overflow: hidden;
+            overflow: visible;
             -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
             mask-image: linear-gradient(90deg, #000 82%, transparent);
         }
@@ -2717,13 +2717,36 @@
             width: 186mm;
         }
         .set-review-followup-print-shell[data-error-book-practice="true"] {
-            height: auto;
-            max-height: none;
-            overflow: visible;
-            page-break-inside: auto;
-            break-inside: auto;
+            width: 188mm;
+            min-height: var(--print-sheet-height);
+            padding: 6mm 5mm 8mm;
+            overflow: hidden;
+            page-break-inside: avoid;
+            break-inside: avoid-page;
+            page-break-after: always;
+            break-after: page;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"]:last-child {
             page-break-after: auto;
             break-after: auto;
+        }
+        .booklet-meta-band {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            padding: 3px 0 5px;
+            border-top: 1px solid rgba(15, 23, 42, 0.65);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.18);
+            color:#334155;
+            font-family:'Arial Narrow','Helvetica Neue',sans-serif;
+            font-size:10.5px;
+            line-height:1.2;
+            letter-spacing:0.12em;
+            text-transform:uppercase;
+        }
+        .booklet-meta-band span {
+            min-width:0;
         }
         .set-review-followup-print-shell[data-pack="compact"] .booklet-meta-band {
             margin-bottom: 5px;
@@ -2805,8 +2828,10 @@
         .followup-print-sheet { display:grid; gap:14px; flex:1; align-content:start; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:10px; }
         .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet {
-            display: block;
-            flex: 0 0 auto;
+            display: grid;
+            gap: 8px;
+            flex: 1 1 auto;
+            align-content: start;
         }
         .followup-print-group {
             page-break-inside:avoid;
@@ -2814,11 +2839,11 @@
             margin-top: 0;
         }
         .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group {
-            page-break-inside:auto;
-            break-inside:auto;
+            page-break-inside: avoid;
+            break-inside: avoid-page;
         }
         .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group + .followup-print-group {
-            margin-top: 10px;
+            margin-top: 6px;
         }
         .followup-print-group-head {
             display:flex;
@@ -2860,7 +2885,13 @@
         .followup-print-list { display:grid; gap:9px; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:6px; }
         .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list {
-            display: block;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 5.8mm 8mm;
+            align-items: start;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"][data-pack="compact"] .followup-print-list {
+            gap: 4.4mm 6.5mm;
         }
         .followup-print-item {
             display:grid;
@@ -2877,6 +2908,18 @@
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-item {
             min-height: 12mm;
             padding: 1.2mm 0;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item {
+            grid-template-columns: 30px minmax(0, 1fr);
+            min-height: 18mm;
+            padding: 1.4mm 0 2.6mm;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.32);
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"][data-pack="compact"] .followup-print-item {
+            min-height: 15mm;
+            padding: 1mm 0 2mm;
         }
         .followup-print-item[data-density="dense"] {
             font-size:13.4px;
@@ -2939,6 +2982,16 @@
             font-size:9.2px;
             line-height:1.16;
         }
+        .error-book-print-footer {
+            margin-top: auto;
+            padding-top: 4px;
+            border-top: 1px solid rgba(15, 23, 42, 0.16);
+            font-family:'Songti SC', serif;
+            font-size: 9.8px;
+            line-height: 1.25;
+            color:#475569;
+            text-align:center;
+        }
         .followup-quality-badge {
             display:inline-block;
             margin-left:6px;
@@ -2977,6 +3030,10 @@
             font-weight:800;
             line-height:1;
             vertical-align:middle;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item .followup-num::after {
+            content:none;
+            display:none;
         }
         .followup-print-item[data-density="dense"] .math-row,
         .followup-print-item[data-density="ultra"] .math-row,
@@ -3066,33 +3123,51 @@
         }
         body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"],
         body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] {
+            min-height: var(--print-sheet-height) !important;
             height: auto !important;
             max-height: none !important;
             overflow: visible !important;
-            page-break-inside: auto !important;
-            break-inside: auto !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid-page !important;
+            page-break-after: always !important;
+            break-after: page !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"]:last-child,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"]:last-child {
             page-break-after: auto !important;
             break-after: auto !important;
         }
         body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet,
-        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet,
-        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list,
-        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list {
-            display: block !important;
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet {
+            display: grid !important;
+            gap: 8px !important;
             height: auto !important;
             max-height: none !important;
             overflow: visible !important;
         }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 5.8mm 8mm !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"][data-pack="compact"] .followup-print-list,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"][data-pack="compact"] .followup-print-list {
+            gap: 4.4mm 6.5mm !important;
+        }
         body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group,
         body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group {
-            page-break-inside: auto !important;
-            break-inside: auto !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid-page !important;
         }
         body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item,
         body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            margin-bottom: 6px !important;
+            margin-bottom: 0 !important;
         }
         body.print-set-review-followup #print-root,
         body.print-set-review-followup-with-answers #print-root { display:block; }
@@ -3234,7 +3309,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.257</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.258</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3314,9 +3389,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.257';
-        const APP_RELEASE_LABEL = '版本刷新护栏';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.257 数据中心加入“强制刷新最新版”，检测到旧版本痕迹时会提示刷新。';
+        const APP_VERSION = 'v23.258';
+        const APP_RELEASE_LABEL = '错题双栏试卷';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.258 错题专项打印改为分页双栏试卷，10题/20题更像正式练习卷。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10229,25 +10304,17 @@
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const packCode = getErrorBookPracticePackCode(student, { mechanismKey, limit: 6 });
-            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
-            return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
-                <header class="booklet-meta-band">
-                    <span>${student} · Error Book</span>
-                    <span>Mechanism Practice</span>
-                </header>
-                <div class="set-review-followup-print-head">
-                    <h2 class="sheet-title">错题机制补练</h2>
-                    <p class="followup-print-subtitle">围绕「${label}」机制补练 · 题型贴近当前错题</p>
-                </div>
-                <div class="followup-print-meta">
-                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>重点机制：${label} · 锁定码：${packCode}</span>
-                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
-                </div>
-                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
-                ${answerBlock}
-            </section>`;
+            return buildErrorBookPracticePrintPagesHTML(items, {
+                student,
+                title: '错题机制补练',
+                subtitle: `围绕「${label}」机制补练 · 题型贴近当前错题`,
+                metaLeft: `<strong>${items.length} 题</strong> · 覆盖 ${families}`,
+                metaRight: `重点机制：${label} · 锁定码：${packCode}`,
+                headerLeft: `${student} · Error Book`,
+                headerRight: 'Mechanism Practice',
+                printPack,
+                includeAnswers
+            });
         }
         window.buildErrorBookMechanismPrintHTML = buildErrorBookMechanismPrintHTML;
 
@@ -10258,25 +10325,17 @@
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const packCode = getErrorBookPracticePackCode(student, { domainId, limit: 8 });
-            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
-            return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
-                <header class="booklet-meta-band">
-                    <span>${student} · Domain Practice</span>
-                    <span>${domain.name}</span>
-                </header>
-                <div class="set-review-followup-print-head">
-                    <h2 class="sheet-title">领域专项补练：${domain.name}</h2>
-                    <p class="followup-print-subtitle">${domain.desc}</p>
-                </div>
-                <div class="followup-print-meta">
-                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>来源：错题本活跃错题 · 锁定码：${packCode}</span>
-                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
-                </div>
-                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
-                ${answerBlock}
-            </section>`;
+            return buildErrorBookPracticePrintPagesHTML(items, {
+                student,
+                title: `领域专项补练：${domain.name}`,
+                subtitle: domain.desc,
+                metaLeft: `<strong>${items.length} 题</strong> · 覆盖 ${families}`,
+                metaRight: `来源：错题本活跃错题 · 锁定码：${packCode}`,
+                headerLeft: `${student} · Domain Practice`,
+                headerRight: domain.name,
+                printPack,
+                includeAnswers
+            });
         }
         window.buildErrorBookDomainPrintHTML = buildErrorBookDomainPrintHTML;
 
@@ -10342,6 +10401,82 @@
         }
         window.buildErrorBookPracticeLaneSummaryHTML = buildErrorBookPracticeLaneSummaryHTML;
 
+        function getErrorBookPracticePrintPageSize(items = []) {
+            const densities = (items || []).map(item => getSetReviewFollowupItemDensity(item));
+            const denseOrUltra = densities.filter(level => level === 'dense' || level === 'ultra').length;
+            const ultraCount = densities.filter(level => level === 'ultra').length;
+            if ((items || []).length <= 10) return 10;
+            if (ultraCount >= 4 || denseOrUltra >= 12) return 14;
+            if (denseOrUltra >= 8) return 16;
+            return 20;
+        }
+        window.getErrorBookPracticePrintPageSize = getErrorBookPracticePrintPageSize;
+
+        function chunkErrorBookPracticePrintItems(items = []) {
+            const pageSize = getErrorBookPracticePrintPageSize(items);
+            const pages = [];
+            for (let i = 0; i < items.length; i += pageSize) {
+                pages.push(items.slice(i, i + pageSize));
+            }
+            return pages;
+        }
+        window.chunkErrorBookPracticePrintItems = chunkErrorBookPracticePrintItems;
+
+        function buildErrorBookPracticePrintPagesHTML(items = [], {
+            student = '',
+            title = '错题专项卷',
+            subtitle = '先独立完成；家长只看答案页快速核对。',
+            metaLeft = '',
+            metaRight = '',
+            headerLeft = '',
+            headerRight = '',
+            printPack = 'normal',
+            includeAnswers = false
+        } = {}) {
+            const pages = chunkErrorBookPracticePrintItems(items);
+            const questionPages = pages.map((pageItems, pageIndex) => {
+                const pageRange = pageItems.length
+                    ? `第 ${items.indexOf(pageItems[0]) + 1}-${items.indexOf(pageItems[pageItems.length - 1]) + 1} 题`
+                    : '';
+                return `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true" data-error-book-page="${pageIndex + 1}">
+                <header class="booklet-meta-band">
+                    <span>${headerLeft || `${student} · Error Book`}</span>
+                    <span>${headerRight || 'Targeted Practice'} · Page ${pageIndex + 1}/${pages.length}</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">${title}</h2>
+                    <p class="followup-print-subtitle">${subtitle}</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span>${metaLeft || `<strong>${items.length} 题</strong>`}${pageRange ? ` · 本页 ${pageRange}` : ''}</span>
+                    <span>${metaRight}${pages.length > 1 ? ` · 第 ${pageIndex + 1}/${pages.length} 页` : ''}</span>
+                    ${buildErrorBookPracticeLaneSummaryHTML(pageItems)}
+                </div>
+                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(pageItems, { forPrint: true, numberingItems: items, includeReviewLog: false })}</div>
+                <footer class="error-book-print-footer">纸上勾选：□ 已会　□ 需讲　□ 又错 · 回到错题本批改页录入</footer>
+            </section>`;
+            }).join('');
+            const answerPage = includeAnswers ? `
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true" data-mode="answer-only">
+                <header class="booklet-meta-band">
+                    <span>${headerLeft || `${student} · Error Book`}</span>
+                    <span>Answer Key</span>
+                </header>
+                <div class="set-review-followup-print-head">
+                    <h2 class="sheet-title">${title} · 参考答案</h2>
+                    <p class="followup-print-subtitle">家长核对用，只保留最终答案和一句核对点。</p>
+                </div>
+                <div class="followup-print-meta">
+                    <span><strong>${items.length} 题</strong> · 答案速查</span>
+                    <span>${metaRight}</span>
+                </div>
+                ${buildSetReviewFollowupAnswerHTML(items, { forPrint: true })}
+            </section>` : '';
+            return questionPages + answerPage;
+        }
+        window.buildErrorBookPracticePrintPagesHTML = buildErrorBookPracticePrintPagesHTML;
+
         function buildErrorBookPracticePrintHTML(student, includeAnswers = false, { mechanismKey = '', priorityOnly = false, dueOnly = false, limit = 0 } = {}) {
             const normalizedLimit = normalizeErrorBookPracticeLimit(limit);
             const items = buildErrorBookPracticeItems(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
@@ -10352,25 +10487,17 @@
             const families = Array.from(new Set(items.map(item => SET_REVIEW_FOLLOWUP_LABELS[item.followupFamily] || '同类跟训'))).join('、');
             const printPack = getSetReviewFollowupPrintPack(items);
             const packCode = getErrorBookPracticePackCode(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
-            const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
-            return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
-                <header class="booklet-meta-band">
-                    <span>${student} · Error Book</span>
-                    <span>Targeted Practice</span>
-                </header>
-                <div class="set-review-followup-print-head">
-                    <h2 class="sheet-title">${title}</h2>
-                    <p class="followup-print-subtitle">先独立完成；家长只看答案页快速核对，纸上勾“已会 / 又错”。</p>
-                </div>
-                <div class="followup-print-meta">
-                    <span><strong>${items.length} 题</strong> · 覆盖 ${families}</span>
-                    <span>范围：${label} · 锁定码：${packCode}</span>
-                    ${buildErrorBookPracticeLaneSummaryHTML(items)}
-                </div>
-                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(items, { forPrint: true })}</div>
-                ${answerBlock}
-            </section>`;
+            return buildErrorBookPracticePrintPagesHTML(items, {
+                student,
+                title,
+                subtitle: '像正式试卷一样左右作答；每题只勾一个复练结果。',
+                metaLeft: `<strong>${items.length} 题</strong> · 覆盖 ${families}`,
+                metaRight: `范围：${label} · 锁定码：${packCode}`,
+                headerLeft: `${student} · Error Book`,
+                headerRight: 'Targeted Practice',
+                printPack,
+                includeAnswers
+            });
         }
         window.buildErrorBookPracticePrintHTML = buildErrorBookPracticePrintHTML;
 
@@ -14538,8 +14665,8 @@
             return `
             <div class="followup-paper-grade">
                 <span>□ 已会</span>
-                <span>□ 又错</span>
                 <span>□ 需讲</span>
+                <span>□ 又错</span>
             </div>`;
         }
         window.buildSetReviewPaperGradeHTML = buildSetReviewPaperGradeHTML;
@@ -14555,18 +14682,20 @@
         }
         window.buildSetReviewPrintActionGuide = buildSetReviewPrintActionGuide;
 
-        function renderSetReviewFollowupGroups(items = [], { forPrint = false } = {}) {
+        function renderSetReviewFollowupGroups(items = [], { forPrint = false, numberingItems = null, includeReviewLog = true } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
+            const numberSource = Array.isArray(numberingItems) && numberingItems.length ? numberingItems : items;
             return groups.map((group, groupIndex) => {
                 const label = SET_REVIEW_FOLLOWUP_LABELS[group.family] || '同类跟训';
                 const note = getSetReviewFollowupGroupNote(group);
                 const mechanismLabel = group.mechanismKey ? getErrorMechanismLabel(group.mechanismKey) : '';
                 const rows = group.items.map((item, idx) => {
-                    const number = items.indexOf(item) + 1;
+                    const sourceIndex = numberSource.indexOf(item);
+                    const number = sourceIndex >= 0 ? sourceIndex + 1 : idx + 1;
                     const shape = getSetReviewFollowupItemShape(item);
                     const density = getSetReviewFollowupItemDensity(item);
-                    const reviewLog = item.isErrorBookPractice ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
+                    const reviewLog = item.isErrorBookPractice && includeReviewLog ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
                     const sourceNote = item.followupSourceLabel ? `<div class="followup-review-log">对应原错题：${item.followupSourceLabel}</div>` : '';
                     const qualityBadge = buildSetReviewQualityBadge(item);
                     return forPrint ? `
