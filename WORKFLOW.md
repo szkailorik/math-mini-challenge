@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.255 Iteration Notes
+
+### Iteration 1
+
+- What I changed: changed startup to render the locally cached worksheet before waiting for GitHub Gist sync.
+- Open questions: none.
+- Risks: a later cloud merge can change the active set number if a fresh device has no local set number.
+- Next steps: keep the refresh limited to the main worksheet view.
+
+### Iteration 2
+
+- What I changed: moved cloud initialization into a bounded background path with a visible local-first toast when sync takes longer than the startup window, and moved the optional image-export CDN script to click-time loading so it cannot block body parsing.
+- Open questions: none.
+- Risks: network requests can still continue in the background, but they no longer block the learner from starting.
+- Next steps: monitor cloud-status wording if a token is stale.
+
+### Iteration 3
+
+- What I changed: added runtime validation that locks in the local-first startup path and prevents duplicate auto-pull bindings.
+- Open questions: none.
+- Risks: validation checks startup structure; real GitHub latency still depends on the network.
+- Next steps: verify first-open behavior in the browser after deploy.
+
 ## Current v23.252 Iteration Notes
 
 ### Iteration 1

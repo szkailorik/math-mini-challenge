@@ -27,6 +27,13 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.255 makes startup local-first with zero external first-paint dependency:
+
+- The worksheet renders from local data immediately after opening the site, so daily practice can begin even when GitHub Gist sync is slow.
+- Cloud sync continues in the background and refreshes the main paper only if the user is still on the main worksheet view.
+- The optional image-export library is loaded only after the user clicks image export, so a slow CDN cannot keep the home screen blank.
+- This keeps cross-device data useful without letting network latency block retrieval practice.
+
 v23.252 fixes two parent-facing workflow blockers:
 
 - Error-book mechanism, domain, and targeted practice printouts now use a multi-page-safe layout, so 10/20-question packs and answer packs can flow across pages without losing questions.

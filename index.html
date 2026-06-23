@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.252 (错题打印完整与首页轻量)</title>
-    <!-- 引入 html2canvas 库用于一键生成图片 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Mini Challenge - 专家私教引擎 v23.255 (首屏零外链阻塞)</title>
+    <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
         html {
@@ -3166,7 +3165,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.252</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.255</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3245,9 +3244,11 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.252';
-        const APP_RELEASE_LABEL = '错题打印完整与首页轻量';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.252 错题本打印改为多页安全排版，首页顶部工作台更轻更矮。';
+        const APP_VERSION = 'v23.255';
+        const APP_RELEASE_LABEL = '首屏零外链阻塞';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.255 打开网页不等待外部脚本，图片导出组件改为点击时再加载。';
+        const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
+        const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -4341,8 +4342,8 @@
             },
 
             // 启动流程：1) 读本地 2) 如果有 token，拉云端并合并
-            init: async function() {
-                this.fallbackLocal();
+            init: async function({ skipFallback = false } = {}) {
+                if (!skipFallback) this.fallbackLocal();
                 updateCloudStatus();
                 if (GistSync.getToken()) {
                     try {
@@ -4909,6 +4910,8 @@
         };
 
         function setupAutoCloudPull() {
+            if (setupAutoCloudPull._bound) return;
+            setupAutoCloudPull._bound = true;
             const pull = () => {
                 if (document.hidden || StorageDB.mode !== 'gist') return;
                 StorageDB.pullRemoteChanges({ render: true, minInterval: 20000 }).catch(e => {
@@ -15899,27 +15902,90 @@ window.addEventListener('afterprint', function () {
             }
         };
 
-        window.downloadAllSheetsAsImages = async function() {
-            if (typeof window.html2canvas !== 'function') {
-                alert('图片导出组件还没有加载完成，请稍后重试，或检查网络后刷新页面。');
-                return;
+        function ensureHtml2CanvasLoaded() {
+            if (typeof window.html2canvas === 'function') return Promise.resolve(window.html2canvas);
+            const existing = document.querySelector('script[data-html2canvas-loader="true"]');
+            if (existing) {
+                return new Promise((resolve, reject) => {
+                    existing.addEventListener('load', () => resolve(window.html2canvas), { once: true });
+                    existing.addEventListener('error', () => reject(new Error('html2canvas 加载失败')), { once: true });
+                });
             }
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = HTML2CANVAS_SRC;
+                script.async = true;
+                script.dataset.html2canvasLoader = 'true';
+                script.onload = () => {
+                    if (typeof window.html2canvas === 'function') resolve(window.html2canvas);
+                    else reject(new Error('html2canvas 未正确初始化'));
+                };
+                script.onerror = () => reject(new Error('html2canvas 加载失败'));
+                document.head.appendChild(script);
+            });
+        }
+
+        window.downloadAllSheetsAsImages = async function() {
             const btn = document.querySelector('.export-btn') || document.getElementById('download-btn');
             const originalText = btn.innerText;
-            btn.innerText = "正在生成图片..."; btn.style.backgroundColor = "#666"; btn.disabled = true;
-            const sheets = document.querySelectorAll('.sheet');
-            for (let i = 0; i < sheets.length; i++) {
-                btn.innerText = `正在生成 ${i + 1} / ${sheets.length} ...`;
-                const canvas = await html2canvas(sheets[i], { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                const link = document.createElement('a');
-                link.download = `Math_Page_${i + 1}.png`;
-                link.href = canvas.toDataURL('image/png');
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                await new Promise(resolve => setTimeout(resolve, 500));
+            try {
+                btn.innerText = "正在加载图片导出组件..."; btn.style.backgroundColor = "#666"; btn.disabled = true;
+                const html2canvasFn = await ensureHtml2CanvasLoaded();
+                btn.innerText = "正在生成图片...";
+                const sheets = document.querySelectorAll('.sheet');
+                for (let i = 0; i < sheets.length; i++) {
+                    btn.innerText = `正在生成 ${i + 1} / ${sheets.length} ...`;
+                    const canvas = await html2canvasFn(sheets[i], { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+                    const link = document.createElement('a');
+                    link.download = `Math_Page_${i + 1}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                btn.innerText = "✅ 下载完成！ (Done)"; btn.style.backgroundColor = "#002D72";
+            } catch (e) {
+                alert(`图片导出组件加载失败：${e.message || e}`);
+                btn.style.backgroundColor = "#dc2626";
+            } finally {
+                setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = "#002D72"; btn.disabled = false; }, 3000);
             }
-            btn.innerText = "✅ 下载完成！ (Done)"; btn.style.backgroundColor = "#002D72";
-            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = "#002D72"; btn.disabled = false; }, 3000);
         };
+
+        function isMainPaperViewReadyForStartupRefresh() {
+            const container = document.getElementById('paper-container');
+            if (!container) return false;
+            const text = container.textContent || '';
+            return !!container.querySelector('.sheet') || text.includes('正在连接智能引擎') || text.includes('Connecting to Engine') || !text.trim();
+        }
+
+        function renderStartupLocalPaper() {
+            try {
+                StorageDB.fallbackLocal();
+                updateCloudStatus();
+                if (typeof window.renderPaper === 'function') {
+                    window.renderPaper();
+                    return true;
+                }
+            } catch (e) {
+                console.error('Local-first startup render failed:', e);
+            }
+            const container = document.getElementById('paper-container');
+            if (container) {
+                container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";
+            }
+            return false;
+        }
+
+        function refreshAfterStartupCloudSync({ background = false } = {}) {
+            renderProgramShell();
+            updateCloudStatus();
+            if (typeof window.renderPaper === 'function' && isMainPaperViewReadyForStartupRefresh()) {
+                window.renderPaper();
+                if (background && StorageDB.mode === 'gist') {
+                    showToast('☁️ 云端数据已合并，卷面已刷新。', { background: '#0f766e', duration: 2400 });
+                }
+            }
+        }
 
         // Initialize directly using an async function since module scripts execute after DOM has parsed
         async function startEngine() {
@@ -15933,17 +15999,30 @@ window.addEventListener('afterprint', function () {
             const releaseLabel = document.getElementById('release-note-label');
             if (releaseLabel) releaseLabel.innerHTML = APP_RELEASE_NOTE_HTML;
             renderProgramShell();
-            const container = document.getElementById('paper-container');
-            if (container) {
-                container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>☁️ 正在连接智能引擎... (Connecting to Engine...)</h2>";
-            }
+            renderStartupLocalPaper();
+            const startupSync = StorageDB.init({ skipFallback: true });
             try {
-                await StorageDB.init();
+                const result = await Promise.race([
+                    startupSync.then(() => 'synced'),
+                    new Promise(resolve => setTimeout(() => resolve('timeout'), ENGINE_STARTUP_SYNC_TIMEOUT_MS))
+                ]);
+                if (result === 'timeout') {
+                    showToast('✅ 已先加载本地题，云同步在后台继续。', { background: '#0f766e', duration: 2600 });
+                    setupAutoCloudPull();
+                    startupSync
+                        .then(() => refreshAfterStartupCloudSync({ background: true }))
+                        .catch(e => {
+                            console.error("Background cloud initialization error:", e);
+                            GistSync._lastError = e.message || String(e);
+                            updateCloudStatus();
+                        });
+                    return;
+                }
+                refreshAfterStartupCloudSync();
             } catch (e) {
                 console.error("Engine initialization error:", e);
-            }
-            if (typeof window.renderPaper === 'function') {
-                window.renderPaper();
+                GistSync._lastError = e.message || String(e);
+                updateCloudStatus();
             }
             setupAutoCloudPull();
         }

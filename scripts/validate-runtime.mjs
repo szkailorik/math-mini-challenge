@@ -9,6 +9,12 @@ if (!match) {
 if (!html.includes('id="print-root"')) {
   throw new Error('Dedicated print sandbox root is missing from HTML');
 }
+if (html.includes('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>') || html.includes('<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>')) {
+  throw new Error('html2canvas export script should not load in the first-paint HTML path');
+}
+if (!html.includes('const HTML2CANVAS_SRC') || !html.includes('function ensureHtml2CanvasLoaded') || !html.includes('data-html2canvas-loader')) {
+  throw new Error('html2canvas should be loaded on demand only when image export is clicked');
+}
 if (!html.includes('body.print-sandbox-active > *:not(#print-root)')) {
   throw new Error('Print CSS is missing sandbox isolation for the print root');
 }
@@ -53,6 +59,9 @@ if (!html.includes('data-error-book-practice="true"') || !html.includes('.set-re
 }
 if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
   throw new Error('Floating control panel should stay compact on the home screen');
+}
+if (!html.includes('ENGINE_STARTUP_SYNC_TIMEOUT_MS') || !html.includes('function renderStartupLocalPaper') || !html.includes('StorageDB.init({ skipFallback: true })') || !html.includes('已先加载本地题') || !html.includes('setupAutoCloudPull._bound')) {
+  throw new Error('Startup should render local paper first and continue cloud sync in the background');
 }
 if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
   throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
