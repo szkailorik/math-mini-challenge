@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.252 Iteration Notes
+
+### Iteration 1
+
+- What I changed: gave error-book mechanism, domain, and targeted-practice print sheets a dedicated `data-error-book-practice` layout path.
+- Open questions: none.
+- Risks: very long individual prompts can still need item-level compression, but the sheet itself now flows across pages instead of clipping.
+- Next steps: keep 10/20-question packs under runtime validation.
+
+### Iteration 2
+
+- What I changed: compressed the home-screen teacher workbench with a shorter max height, lighter chrome, one-line stage insights, and a denser desktop tool row.
+- Open questions: none.
+- Risks: on small screens the panel may still require internal scrolling, which is preferable to pushing the worksheet below the fold.
+- Next steps: watch real-device first-open ergonomics.
+
+### Iteration 3
+
+- What I changed: added runtime validation guardrails for the multi-page-safe error-book print marker and compact floating workbench CSS.
+- Open questions: none.
+- Risks: validation checks layout invariants, not a physical printer driver.
+- Next steps: confirm with browser print preview when the next real error-book pack is available.
+
 ## Current v23.251 Iteration Notes
 
 ### Iteration 1

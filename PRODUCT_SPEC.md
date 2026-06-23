@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.252 fixes two parent-facing workflow blockers:
+
+- Error-book mechanism, domain, and targeted practice printouts now use a multi-page-safe layout, so 10/20-question packs and answer packs can flow across pages without losing questions.
+- The home-screen teacher workbench is capped to a lighter, shorter panel with one-line stage hints and a denser desktop tool row, letting the worksheet become visible sooner after opening the site.
+- This preserves the error-book training logic while making printing and daily navigation faster for paper-based practice.
+
 v23.251 makes error-book short-pack structure readable:
 
 - Error-book print, grading, result, and recent-log surfaces now show concrete mechanism distribution, such as `表示转换4 · 分数通分加减3`.

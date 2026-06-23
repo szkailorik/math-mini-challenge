@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.251 (错题短卷结构可读)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.252 (错题打印完整与首页轻量)</title>
     <!-- 引入 html2canvas 库用于一键生成图片 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -2181,22 +2181,22 @@
         /* ================= 控制面板 ================= */
         .control-panel {
             position: sticky;
-            top: 10px;
-            margin: 0 auto 14px;
-            background: linear-gradient(180deg, rgba(252, 248, 241, 0.98), rgba(245, 238, 227, 0.98));
+            top: 8px;
+            margin: 0 auto 10px;
+            background: rgba(255, 255, 255, 0.96);
             color: var(--desk-ink);
-            padding: 10px 12px;
-            border-radius: 12px;
+            padding: 8px 10px;
+            border-radius: 8px;
             border: 1px solid rgba(16, 35, 63, 0.12);
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.13);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 5px;
             font-family: 'Georgia', 'Baskerville', serif;
             backdrop-filter: blur(10px);
-            width: min(980px, calc(100vw - 28px));
-            max-height: calc(100vh - 16px);
+            width: min(1040px, calc(100vw - 20px));
+            max-height: min(42vh, 330px);
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: rgba(71, 85, 105, 0.4) transparent;
@@ -2211,74 +2211,74 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--desk-line);
-            padding-bottom: 6px;
+            padding-bottom: 4px;
         }
         .panel-header h3 {
             margin: 0;
-            font-size: 16px;
+            font-size: 14.5px;
             text-align: left;
             flex: 1;
             color: var(--desk-ink);
-            letter-spacing: 0.03em;
+            letter-spacing: 0;
         }
-        .toggle-btn { background: none; border: none; color: #475569; cursor: pointer; font-size: 13px; padding: 0; opacity: 0.8; transition: 0.2s;}
+        .toggle-btn { background: none; border: none; color: #475569; cursor: pointer; font-size: 12px; padding: 0; opacity: 0.8; transition: 0.2s;}
         .toggle-btn:hover { opacity: 1; transform: scale(1.05); color: var(--desk-accent);}
         #cloud-status {
-            padding: 3px 8px !important;
-            font-size: 11.5px !important;
-            line-height: 1.25 !important;
+            padding: 2px 7px !important;
+            font-size: 10.5px !important;
+            line-height: 1.15 !important;
             min-height: 0 !important;
         }
         #cloud-connect-shortcut {
             width: auto !important;
-            min-height: 28px !important;
-            padding: 5px 10px !important;
-            font-size: 12px !important;
+            min-height: 26px !important;
+            padding: 4px 9px !important;
+            font-size: 11.5px !important;
             box-shadow: none !important;
         }
-        .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 6px;}
+        .ctrl-row { display: flex; justify-content: space-between; align-items: center; gap: 5px;}
         .ctrl-grid {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 6px;
-            margin-top: 6px;
+            gap: 5px;
+            margin-top: 5px;
         }
         .ctrl-btn {
             background: #ffffff;
             color: var(--desk-ink);
             border: 1px solid rgba(16, 35, 63, 0.12);
-            padding: 6px 9px;
+            padding: 5px 7px;
             font-weight: 700;
-            border-radius: 10px;
+            border-radius: 7px;
             cursor: pointer;
             transition: all 0.2s;
             flex:1;
             text-align:center;
-            font-size: 12.5px;
-            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.05);
+            font-size: 11.8px;
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
         }
         .ctrl-grid .ctrl-btn {
             width: 100%;
-            min-height: 38px;
+            min-height: 32px;
             margin-top: 0 !important;
             flex: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            line-height: 1.2;
+            line-height: 1.15;
         }
         .ctrl-btn:hover { background: var(--desk-accent); color: #fff; transform: translateY(-1px); border-color: var(--desk-accent); }
-        .set-indicator { font-size: 14px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
+        .set-indicator { font-size: 13px; font-weight: 700; color: #7c2d12; white-space: nowrap;}
         .program-shell-card, .stage-status-card {
             background: rgba(255,255,255,0.72);
             border: 1px solid rgba(16, 35, 63, 0.1);
-            border-radius: 14px;
-            padding: 8px 9px;
+            border-radius: 8px;
+            padding: 6px 8px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
-        .program-shell-card { margin-top: 2px; }
+        .program-shell-card { margin-top: 1px; }
         .program-shell-head, .stage-status-head {
             display: flex;
             justify-content: space-between;
@@ -2292,9 +2292,9 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 2px 7px;
-            border-radius: 999px;
-            font-size: 10.5px;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 700;
             white-space: nowrap;
         }
@@ -2313,15 +2313,15 @@
             border: 1px solid rgba(16, 35, 63, 0.14);
             background: rgba(255,255,255,0.84);
             color: var(--desk-ink);
-            border-radius: 8px;
-            padding: 6px 9px;
-            font-size: 12px;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
             text-align: center;
             transition: all 0.2s ease;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
-            line-height: 1.18;
+            line-height: 1.12;
         }
         .program-switch-btn:hover { transform: translateY(-1px); border-color: rgba(164, 74, 31, 0.35); }
         .program-switch-btn.is-active {
@@ -2347,17 +2347,17 @@
         .program-select { display: none; }
         .program-select:focus { outline: 2px solid rgba(191, 219, 254, 0.65); outline-offset: 1px; }
         .stage-status-title {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--desk-ink);
-            line-height: 1.3;
+            line-height: 1.18;
         }
         .stage-status-card {
             background: transparent;
             border: none;
             border-top: 1px dashed rgba(16, 35, 63, 0.12);
             border-radius: 0;
-            padding: 4px 0 0;
+            padding: 3px 0 0;
         }
         .stage-status-card.is-advanced {
             border-color: rgba(18, 59, 115, 0.18);
@@ -2365,17 +2365,26 @@
         .stage-status-card.is-closure {
             border-color: rgba(180, 83, 9, 0.22);
         }
-        .stage-insights { display: flex; flex-wrap: wrap; gap: 4px; }
+        .stage-insights {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 3px;
+            max-height: 18px;
+            overflow: hidden;
+            -webkit-mask-image: linear-gradient(90deg, #000 82%, transparent);
+            mask-image: linear-gradient(90deg, #000 82%, transparent);
+        }
         .stage-insight {
-            font-size: 10px;
-            line-height: 1.2;
-            padding: 2px 6px;
-            border-radius: 999px;
+            flex: 0 0 auto;
+            font-size: 9.5px;
+            line-height: 1.15;
+            padding: 1px 5px;
+            border-radius: 6px;
             background: rgba(255,255,255,0.78);
             border: 1px solid rgba(16, 35, 63, 0.1);
             color: #334155;
             font-family: 'Arial Narrow', sans-serif;
-            letter-spacing: 0.04em;
+            letter-spacing: 0;
         }
         .release-note-compact {
             font-size: 10.5px;
@@ -2639,6 +2648,15 @@
         .set-review-followup-print-shell[data-pack="compact"] {
             width: 186mm;
         }
+        .set-review-followup-print-shell[data-error-book-practice="true"] {
+            height: auto;
+            max-height: none;
+            overflow: visible;
+            page-break-inside: auto;
+            break-inside: auto;
+            page-break-after: auto;
+            break-after: auto;
+        }
         .set-review-followup-print-shell[data-pack="compact"] .booklet-meta-band {
             margin-bottom: 5px;
         }
@@ -2718,10 +2736,21 @@
         }
         .followup-print-sheet { display:grid; gap:14px; flex:1; align-content:start; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-sheet { gap:10px; }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet {
+            display: block;
+            flex: 0 0 auto;
+        }
         .followup-print-group {
             page-break-inside:avoid;
             break-inside:avoid;
             margin-top: 0;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group {
+            page-break-inside:auto;
+            break-inside:auto;
+        }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group + .followup-print-group {
+            margin-top: 10px;
         }
         .followup-print-group-head {
             display:flex;
@@ -2762,6 +2791,9 @@
         }
         .followup-print-list { display:grid; gap:9px; }
         .set-review-followup-print-shell[data-pack="compact"] .followup-print-list { gap:6px; }
+        .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list {
+            display: block;
+        }
         .followup-print-item {
             display:grid;
             grid-template-columns: 24px minmax(0, 1fr);
@@ -2964,6 +2996,36 @@
             color: #7c2d12 !important;
             background: transparent !important;
         }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"],
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] {
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+            page-break-after: auto !important;
+            break-after: auto !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet,
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list {
+            display: block !important;
+            height: auto !important;
+            max-height: none !important;
+            overflow: visible !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-group {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+        }
+        body.print-set-review-followup #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item,
+        body.print-set-review-followup-with-answers #print-root .set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-item {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-bottom: 6px !important;
+        }
         body.print-set-review-followup #print-root,
         body.print-set-review-followup-with-answers #print-root { display:block; }
         body.print-set-review-followup #print-root .set-review-followup-answer { display:none; }
@@ -2986,8 +3048,8 @@
             .control-panel {
                 top: 8px;
                 width: min(100%, calc(100vw - 28px));
-                max-height: calc(100vh - 16px);
-                padding: 11px 12px;
+                max-height: min(42vh, 330px);
+                padding: 8px 10px;
             }
             .mini-panel-btn {
                 top: 14px;
@@ -3019,8 +3081,8 @@
             .control-panel {
                 width: calc(100vw - 24px);
                 top: 8px;
-                max-height: 48vh;
-                border-radius: 12px;
+                max-height: 42vh;
+                border-radius: 8px;
             }
             .mini-panel-btn {
                 top: 12px;
@@ -3053,12 +3115,23 @@
         }
         @media (max-width: 640px) {
             body { padding: 10px; }
-            .control-panel { width: calc(100vw - 20px); top: 8px; }
+            .control-panel { width: calc(100vw - 20px); top: 8px; max-height: 45vh; border-radius: 8px; padding: 8px; }
             .mini-panel-btn { top: 12px; right: 12px; }
             .export-btn { right: 12px; bottom: 12px; }
             .info-row { grid-template-columns: 1fr; text-align: left; }
             .ctrl-grid { grid-template-columns: 1fr 1fr; }
+            .stage-insights { display: none; }
             .eb-review-queue { grid-template-columns: 1fr; }
+        }
+        @media screen and (min-width: 900px) {
+            .ctrl-grid {
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+            }
+            .ctrl-grid .ctrl-btn {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
         @media (max-width: 780px) {
             .quick-review-hero-top,
@@ -3093,7 +3166,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.251</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.252</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3172,9 +3245,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.251';
-        const APP_RELEASE_LABEL = '错题短卷结构可读';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.251 错题短卷会显示具体机制分布，比如表示转换4、分数通分3，方便判断训练结构。';
+        const APP_VERSION = 'v23.252';
+        const APP_RELEASE_LABEL = '错题打印完整与首页轻量';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.252 错题本打印改为多页安全排版，首页顶部工作台更轻更矮。';
         const PRINT_HINT_HTML = '🖨️ 打印提示：请选纵向、缩放 100%、关闭页眉页脚。';
         const PRINT_ROOT_ID = 'print-root';
         const PROGRAM_STORAGE_KEY = 'MathEngine_CurrentProgram';
@@ -10075,7 +10148,7 @@
             const packCode = getErrorBookPracticePackCode(student, { mechanismKey, limit: 6 });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
                 <header class="booklet-meta-band">
                     <span>${student} · Error Book</span>
                     <span>Mechanism Practice</span>
@@ -10104,7 +10177,7 @@
             const packCode = getErrorBookPracticePackCode(student, { domainId, limit: 8 });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
                 <header class="booklet-meta-band">
                     <span>${student} · Domain Practice</span>
                     <span>${domain.name}</span>
@@ -10198,7 +10271,7 @@
             const packCode = getErrorBookPracticePackCode(student, { mechanismKey, priorityOnly, dueOnly, limit: normalizedLimit });
             const answerBlock = includeAnswers ? buildSetReviewFollowupAnswerHTML(items, { forPrint: true }) : '';
             return `
-            <section class="set-review-followup-print-shell" data-pack="${printPack}">
+            <section class="set-review-followup-print-shell" data-pack="${printPack}" data-error-book-practice="true">
                 <header class="booklet-meta-band">
                     <span>${student} · Error Book</span>
                     <span>Targeted Practice</span>

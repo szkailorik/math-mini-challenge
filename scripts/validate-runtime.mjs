@@ -48,6 +48,12 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
+if (!html.includes('data-error-book-practice="true"') || !html.includes('.set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-sheet') || !html.includes('.set-review-followup-print-shell[data-error-book-practice="true"] .followup-print-list')) {
+  throw new Error('Error-book targeted practice print sheets must use the multi-page-safe block layout');
+}
+if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
+  throw new Error('Floating control panel should stay compact on the home screen');
+}
 if (!html.includes('window.openErrorBookPracticeReview') || !html.includes('window.submitErrorBookPractice')) {
   throw new Error('Error-book targeted practice grading workflow is missing from runtime script');
 }
@@ -96,7 +102,7 @@ if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.inc
 if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function arrangeErrorBookPracticeEntries') || !html.includes('function getErrorBookPracticeDiversityCaps') || !html.includes('function getErrorBookPracticeMechanismSummaryText') || !html.includes("'representation-conversion': '表示转换'") || !html.includes('computeQuestionFingerprint(built.q)') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function getErrorBookPracticeLane') || !html.includes('data-practice-lane') || !html.includes('交错') || !html.includes('结构：') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
-if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(980px, calc(100vw - 28px))')) {
+if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(1040px, calc(100vw - 20px))') || !html.includes('max-height: min(42vh, 330px)')) {
   throw new Error('Initial page toolbar layout should avoid floating over the worksheet');
 }
 if (!html.includes('还有 ${missingRows.length} 题没有回填') || !html.includes('还差 ${items.length} 题未回填') || !html.includes('practice-batch-progress')) {
@@ -2003,6 +2009,9 @@ const mechanismPrintHtml = context.window.buildErrorBookMechanismPrintHTML?.('KA
 if (!mechanismPrintHtml.includes('机制补练') || !mechanismPrintHtml.includes('0.25')) {
   throw new Error('Error book mechanism print builder did not produce concrete practice content');
 }
+if (!mechanismPrintHtml.includes('data-error-book-practice="true"')) {
+  throw new Error('Error book mechanism print builder should opt into multi-page-safe print layout');
+}
 if (mechanismPrintHtml.includes('class="blank math-inline-blank"') || mechanismPrintHtml.includes('<div class="blank"></div>')) {
   throw new Error('Error book mechanism print HTML still contains legacy underline blanks');
 }
@@ -2010,6 +2019,9 @@ await assertSafariSamePagePrint('Error-book mechanism practice print', () => con
 const fullErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', true, {}) || '';
 if (!fullErrorBookPracticeHtml.includes('错题专项卷') || !fullErrorBookPracticeHtml.includes('复练记录') || !fullErrorBookPracticeHtml.includes('□ 又错')) {
   throw new Error('Full error-book targeted practice print HTML is missing sheet title or re-error tracking marks');
+}
+if (!fullErrorBookPracticeHtml.includes('data-error-book-practice="true"')) {
+  throw new Error('Full error-book targeted practice print should opt into multi-page-safe print layout');
 }
 const limitedPackCode = context.window.getErrorBookPracticePackCode?.('KAI', { limit: 1 }) || '';
 const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';
