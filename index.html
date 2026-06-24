@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.261 (错题答案分页)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.262 (错题两页稳排)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -3374,7 +3374,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.261</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.262</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3454,9 +3454,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.261';
-        const APP_RELEASE_LABEL = '错题答案分页';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.261 错题专项答案页也会自动分页，题目多时每页保留页眉和题号范围。';
+        const APP_VERSION = 'v23.262';
+        const APP_RELEASE_LABEL = '错题两页稳排';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.262 错题20题卷固定两页稳排，打印题目按原选题顺序不再乱跳。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10485,6 +10485,7 @@
             const costs = (items || []).map(getErrorBookPracticePrintItemCost);
             const avgCost = costs.length ? costs.reduce((sum, value) => sum + value, 0) / costs.length : 1;
             if ((items || []).length <= 10) return 10;
+            if ((items || []).length <= 20) return 10;
             return Math.max(10, Math.min(20, Math.floor(20 / Math.max(1, avgCost))));
         }
         window.getErrorBookPracticePrintPageSize = getErrorBookPracticePrintPageSize;
@@ -10492,13 +10493,14 @@
         function chunkErrorBookPracticePrintItems(items = []) {
             const pageSize = getErrorBookPracticePrintPageSize(items);
             const pageCostLimit = 20;
+            const lockTwoPagePack = (items || []).length > 10 && (items || []).length <= 20;
             const pages = [];
             let current = [];
             let currentCost = 0;
             (items || []).forEach(item => {
                 const itemCost = getErrorBookPracticePrintItemCost(item);
                 const wouldOverflowByCount = current.length >= pageSize;
-                const wouldOverflowByCost = current.length > 0 && currentCost + itemCost > pageCostLimit;
+                const wouldOverflowByCost = !lockTwoPagePack && current.length > 0 && currentCost + itemCost > pageCostLimit;
                 if (wouldOverflowByCount || wouldOverflowByCost) {
                     pages.push(current);
                     current = [];
@@ -10594,7 +10596,7 @@
                     <span>${metaRight}${pages.length > 1 ? ` · 第 ${pageIndex + 1}/${pages.length} 页` : ''}</span>
                     ${buildErrorBookPracticeLaneSummaryHTML(pageItems)}
                 </div>
-                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(pageItems, { forPrint: true, numberingItems: items, includeReviewLog: false })}</div>
+                <div class="followup-print-sheet">${renderSetReviewFollowupGroups(pageItems, { forPrint: true, numberingItems: items, includeReviewLog: false, preserveOrder: true })}</div>
                 <footer class="error-book-print-footer">纸上勾选：□ 已会　□ 需讲　□ 又错 · 回到错题本批改页录入</footer>
             </section>`;
             }).join('');
@@ -14814,10 +14816,38 @@
         }
         window.buildSetReviewPrintActionGuide = buildSetReviewPrintActionGuide;
 
-        function renderSetReviewFollowupGroups(items = [], { forPrint = false, numberingItems = null, includeReviewLog = true } = {}) {
+        function renderSetReviewFollowupGroups(items = [], { forPrint = false, numberingItems = null, includeReviewLog = true, preserveOrder = false } = {}) {
             const groups = buildSetReviewFollowupGroups(items);
             if (!groups.length) return '';
             const numberSource = Array.isArray(numberingItems) && numberingItems.length ? numberingItems : items;
+            const renderPrintRows = (rowItems = []) => rowItems.map((item, idx) => {
+                const sourceIndex = numberSource.indexOf(item);
+                const number = sourceIndex >= 0 ? sourceIndex + 1 : idx + 1;
+                const shape = getSetReviewFollowupItemShape(item);
+                const density = getSetReviewFollowupItemDensity(item);
+                const reviewLog = item.isErrorBookPractice && includeReviewLog ? `<div class="followup-review-log">复练记录：□ 已会　□ 又错</div>` : '';
+                return `
+                        <div class="followup-print-item" data-shape="${shape}" data-density="${density}">
+                            <span class="followup-num">${number}.</span>
+                            <div class="followup-print-body">
+                                <div class="followup-q math-row">${item.q || '-'}</div>
+                                ${reviewLog}
+                                ${buildSetReviewPaperGradeHTML('main')}
+                            </div>
+                        </div>
+                    `;
+            }).join('');
+            if (forPrint && preserveOrder) {
+                const rows = renderPrintRows(items);
+                return `
+                    <section class="followup-print-group" data-preserve-order="true">
+                        <div class="followup-print-group-head">
+                            <h3>错题专项练习</h3>
+                            <span class="followup-print-kicker">${items.length} 题</span>
+                        </div>
+                        <div class="followup-print-list">${rows}</div>
+                    </section>`;
+            }
             return groups.map((group, groupIndex) => {
                 const label = SET_REVIEW_FOLLOWUP_LABELS[group.family] || '同类跟训';
                 const note = getSetReviewFollowupGroupNote(group);

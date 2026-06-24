@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.262 Iteration Notes
+
+### Iteration 1
+
+- What I changed: changed 11-20 item error-book question packs to a fixed ten-questions-per-page print rule.
+- Open questions: none.
+- Risks: very long questions may still wrap inside a question slot, but they no longer create unexpected 3-4 page packs.
+- Next steps: tune row height only from actual print samples.
+
+### Iteration 2
+
+- What I changed: added a preserve-order print path so targeted error-book papers keep the selected item order instead of re-sorting by mistake family.
+- Open questions: none.
+- Risks: family grouping is hidden on the paper, but the scope and answer pages still preserve lock-code traceability.
+- Next steps: keep grouping for on-screen review where it helps diagnosis.
+
+### Iteration 3
+
+- What I changed: updated runtime validation so dense 20-item error-book packs must produce exactly two ordered question pages with page 2 covering questions 11-20.
+- Open questions: none.
+- Risks: validation checks generated HTML rather than a physical printer driver.
+- Next steps: re-run print preview after the GitHub Pages deploy if the browser still shows an old cached version.
+
 ## Current v23.261 Iteration Notes
 
 ### Iteration 1

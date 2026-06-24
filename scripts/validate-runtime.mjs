@@ -54,7 +54,7 @@ if (!html.includes('window.printErrorBookPractice')) {
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
-if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('function getErrorBookPracticePrintItemCost') || !html.includes('function buildErrorBookPracticeAnswerKeyHTML') || !html.includes('function buildErrorBookPracticeAnswerKeyPagesHTML') || !html.includes('function chunkErrorBookAnswerKeyItems') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer') || !html.includes('error-book-answer-key-grid')) {
+if (!html.includes('data-error-book-practice="true"') || !html.includes('function buildErrorBookPracticePrintPagesHTML') || !html.includes('function chunkErrorBookPracticePrintItems') || !html.includes('function getErrorBookPracticePrintItemCost') || !html.includes('function buildErrorBookPracticeAnswerKeyHTML') || !html.includes('function buildErrorBookPracticeAnswerKeyPagesHTML') || !html.includes('function chunkErrorBookAnswerKeyItems') || !html.includes('preserveOrder') || !html.includes('grid-template-columns: repeat(2, minmax(0, 1fr))') || !html.includes('error-book-print-footer') || !html.includes('error-book-answer-key-grid')) {
   throw new Error('Error-book targeted practice print sheets must use the paged two-column paper layout');
 }
 if (!html.includes('max-height: min(42vh, 330px)') || !html.includes('grid-template-columns: repeat(8, minmax(0, 1fr))') || !html.includes('mask-image: linear-gradient(90deg, #000 82%, transparent)')) {
@@ -540,7 +540,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.261') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.262') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2067,8 +2067,8 @@ const denseErrorBookHtml = context.window.buildErrorBookPracticePrintPagesHTML?.
   metaRight: '范围：复杂分数题 · 锁定码：EB-DENSE',
   includeAnswers: false
 }) || '';
-if (denseErrorBookPages.length < 2 || (denseErrorBookHtml.match(/data-error-book-page="/g) || []).length < 2) {
-  throw new Error('Dense error-book print packs should paginate instead of forcing all items onto one page');
+if (denseErrorBookPages.length !== 2 || (denseErrorBookHtml.match(/data-error-book-page="/g) || []).length !== 2 || !denseErrorBookHtml.includes('data-preserve-order="true"') || !denseErrorBookHtml.includes('第 11-20 题')) {
+  throw new Error('Twenty-item error-book print packs should stay in exactly two ordered question pages');
 }
 const limitedPackCode = context.window.getErrorBookPracticePackCode?.('KAI', { limit: 1 }) || '';
 const limitedErrorBookPracticeHtml = context.window.buildErrorBookPracticePrintHTML?.('KAI', false, { limit: 1 }) || '';

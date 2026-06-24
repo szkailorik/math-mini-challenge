@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.262 fixes over-pagination and print order for error-book papers:
+
+- Twenty-question error-book question packs now print as exactly two ordered question pages, ten questions per page.
+- Error-book print pages preserve the selected practice order instead of regrouping by mistake family before print.
+- This keeps paper practice predictable: page 1 is questions 1-10, page 2 is questions 11-20.
+
 v23.261 keeps long answer keys printable:
 
 - Error-book answer keys now split into multiple answer pages when the pack is large.
