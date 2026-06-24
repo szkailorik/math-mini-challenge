@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.264 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a compact KAI / Lorik switch directly inside error-book mode in the floating control panel.
+- Open questions: none.
+- Risks: the control panel remains intentionally compact, so the switch uses short count labels.
+- Next steps: use the full on-page switch for more detailed count wording.
+
+### Iteration 2
+
+- What I changed: added `updateErrorBookStudentControls()` so panel labels, active button state, and learner counts update whenever the visible error book changes.
+- Open questions: none.
+- Risks: counts depend on the same local profile cache as the error book, so stale browser data still needs the existing sync/refresh flow.
+- Next steps: keep the panel as the primary family-switching control for daily use.
+
+### Iteration 3
+
+- What I changed: extended runtime validation to assert the panel switch exists, defaults to KAI, and stays synchronized when switching to Lorik.
+- Open questions: none.
+- Risks: validation uses the runtime DOM mock and generated HTML rather than a visual browser screenshot.
+- Next steps: confirm the control panel feels reachable on the actual device viewport.
+
 ## Current v23.263 Iteration Notes
 
 ### Iteration 1

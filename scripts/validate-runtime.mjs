@@ -51,8 +51,8 @@ if (!html.includes('function getPracticeMixStats') || !html.includes('今日训�
 if (!html.includes('window.printErrorBookPractice')) {
   throw new Error('Full error-book targeted practice printer is missing from runtime script');
 }
-if (!html.includes('window.setEbStudent') || !html.includes('function normalizeErrorBookStudent') || !html.includes('data-eb-student-switch="true"')) {
-  throw new Error('Error-book top student switch is missing from runtime script or markup');
+if (!html.includes('window.setEbStudent') || !html.includes('function normalizeErrorBookStudent') || !html.includes('function updateErrorBookStudentControls') || !html.includes('data-eb-student-switch="true"') || !html.includes('data-eb-panel-switch="true"') || !html.includes('id="eb-panel-current-student"')) {
+  throw new Error('Error-book student switches are missing from runtime script or markup');
 }
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
@@ -543,7 +543,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.263') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.264') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2014,6 +2014,9 @@ const errorBookHtml = elements.get('paper-container')?.innerHTML || '';
 if (!errorBookHtml.includes('data-eb-student-switch="true"') || !errorBookHtml.includes("setEbStudent('KAI')") || !errorBookHtml.includes("setEbStudent('Lorik')")) {
   throw new Error('Error book should render a top-level KAI/Lorik switch before the student section');
 }
+if (elements.get('eb-panel-current-student')?.textContent !== 'KAI 错题本' || !elements.get('eb-panel-student-kai')?.classList.contains('active') || elements.get('eb-panel-student-lorik')?.classList.contains('active')) {
+  throw new Error('Error-book control panel should default to KAI and mark only KAI active');
+}
 if (!errorBookHtml.includes('KAI 专属错题本') || errorBookHtml.includes('Lorik 专属错题本')) {
   throw new Error('Error book should default to one selected student section instead of stacking both learners');
 }
@@ -2027,6 +2030,9 @@ context.window.setEbStudent('Lorik');
 const lorikErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
 if (context.window._ebStudent !== 'Lorik' || !lorikErrorBookHtml.includes('Lorik 专属错题本') || lorikErrorBookHtml.includes('KAI 专属错题本')) {
   throw new Error('Error book student switch should open only the selected learner section');
+}
+if (elements.get('eb-panel-current-student')?.textContent !== 'Lorik 错题本' || !elements.get('eb-panel-student-lorik')?.classList.contains('active') || elements.get('eb-panel-student-kai')?.classList.contains('active')) {
+  throw new Error('Error-book control panel should stay synced when switching to Lorik');
 }
 context.window.setEbStudent('KAI');
 context.window.setEbMechanism('representation-conversion');

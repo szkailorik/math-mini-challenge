@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.263 (错题顶部切换)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.264 (错题面板切换)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -1209,6 +1209,65 @@
             box-shadow: inset 0 0 0 1px #002D72;
         }
         .eb-student-switch-btn.active strong { color: #002D72; }
+        .eb-panel-switch {
+            display: grid;
+            gap: 7px;
+            margin-bottom: 8px;
+            padding: 8px;
+            border: 1px solid #dbe4ee;
+            border-radius: 8px;
+            background: #f8fafc;
+        }
+        .eb-panel-switch-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            color: #0f172a;
+            font-size: 12px;
+            font-weight: 900;
+        }
+        .eb-panel-switch-title span:last-child {
+            color: #64748b;
+            font-weight: 700;
+        }
+        .eb-panel-switch-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 6px;
+        }
+        .eb-panel-student-btn {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #fff;
+            color: #334155;
+            padding: 7px 8px;
+            cursor: pointer;
+            text-align: left;
+            font-family: sans-serif;
+        }
+        .eb-panel-student-btn strong {
+            display: block;
+            color: #0f172a;
+            font-size: 13px;
+            line-height: 1.1;
+        }
+        .eb-panel-student-btn span {
+            display: block;
+            margin-top: 3px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .eb-panel-student-btn.active {
+            border-color: #002D72;
+            background: #eaf2ff;
+            box-shadow: inset 0 0 0 1px #002D72;
+        }
+        .eb-panel-student-btn.active strong { color: #002D72; }
         @media (max-width: 720px) {
             .eb-student-switch-head { flex-direction: column; }
             .eb-student-switch-note { text-align: left; }
@@ -3443,7 +3502,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.263</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.264</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3501,6 +3560,22 @@
         </div>
 
         <div id="error-book-ctrls" style="display:none; margin-top: 10px;">
+            <div class="eb-panel-switch" data-eb-panel-switch="true">
+                <div class="eb-panel-switch-title">
+                    <span id="eb-panel-current-student">KAI 错题本</span>
+                    <span>顶部直达</span>
+                </div>
+                <div class="eb-panel-switch-grid">
+                    <button class="eb-panel-student-btn active" id="eb-panel-student-kai" aria-pressed="true" onclick="window.setEbStudent('KAI')">
+                        <strong>KAI</strong>
+                        <span id="eb-panel-student-kai-meta">待攻克 --</span>
+                    </button>
+                    <button class="eb-panel-student-btn" id="eb-panel-student-lorik" aria-pressed="false" onclick="window.setEbStudent('Lorik')">
+                        <strong>Lorik</strong>
+                        <span id="eb-panel-student-lorik-meta">待攻克 --</span>
+                    </button>
+                </div>
+            </div>
             <button class="ctrl-btn" style="background:#4caf50; color:white; width:100%; margin-bottom:8px;" onclick="window.downloadAllSheetsAsImages()">📸 导出错题本用于打印</button>
             <button class="ctrl-btn" style="background:#8b5cf6; color:white; width:100%; margin-bottom:8px;" onclick="window.showMasteredList()">🏆 已掌握列表 / Mastered</button>
             <button class="ctrl-btn" style="background:#64748b; color:white; width:100%;" onclick="window.exitErrorBook()">🔙 返回常规试卷训练</button>
@@ -3523,9 +3598,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.263';
-        const APP_RELEASE_LABEL = '错题顶部切换';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.263 错题本顶部可直接切换 KAI / Lorik，当前页面只显示一个孩子的错题本。';
+        const APP_VERSION = 'v23.264';
+        const APP_RELEASE_LABEL = '错题面板切换';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.264 错题本控制面板和页面顶部都可直接切换 KAI / Lorik。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -10055,6 +10130,7 @@
             const student = normalizeErrorBookStudent(window._ebStudent || 'KAI');
             window._ebStudent = student;
             const profile = StorageDB.getProfile(student);
+            updateErrorBookStudentControls();
             let finalHTML = buildErrorBookStudentSwitchHTML(student);
             finalHTML += buildStudentErrorSection(student, profile, filter);
             document.getElementById('paper-container').innerHTML = finalHTML;
@@ -10078,6 +10154,28 @@
                 mastered,
                 priority
             };
+        }
+
+        function updateErrorBookStudentControls() {
+            const activeStudent = normalizeErrorBookStudent(window._ebStudent || 'KAI');
+            const currentLabel = document.getElementById('eb-panel-current-student');
+            if (currentLabel) currentLabel.textContent = `${activeStudent} 错题本`;
+            ['KAI', 'Lorik'].forEach(student => {
+                const stats = getErrorBookStudentStats(student);
+                const id = student.toLowerCase();
+                const btn = document.getElementById(`eb-panel-student-${id}`);
+                const meta = document.getElementById(`eb-panel-student-${id}-meta`);
+                if (btn) {
+                    const isActive = student === activeStudent;
+                    if (isActive) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                }
+                if (meta) {
+                    meta.textContent = `待 ${stats.active} · 到期 ${stats.due} · 掌握 ${stats.mastered}`;
+                    meta.title = `待攻克 ${stats.active} · 到期复练 ${stats.due} · 复错优先 ${stats.priority} · 已掌握 ${stats.mastered}`;
+                }
+            });
         }
 
         function buildErrorBookStudentSwitchHTML(activeStudent = 'KAI') {
