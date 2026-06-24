@@ -51,7 +51,7 @@ if (!html.includes('function getPracticeMixStats') || !html.includes('今日训�
 if (!html.includes('window.printErrorBookPractice')) {
   throw new Error('Full error-book targeted practice printer is missing from runtime script');
 }
-if (!html.includes('window.setEbStudent') || !html.includes('function normalizeErrorBookStudent') || !html.includes('function updateErrorBookStudentControls') || !html.includes('data-eb-student-switch="true"') || !html.includes('data-eb-panel-switch="true"') || !html.includes('id="eb-panel-current-student"')) {
+if (!html.includes('window.openErrorBookForStudent') || !html.includes('window.setEbStudent') || !html.includes('function normalizeErrorBookStudent') || !html.includes('function updateErrorBookStudentControls') || !html.includes('data-eb-student-switch="true"') || !html.includes('data-eb-panel-switch="true"') || !html.includes('id="eb-panel-current-student"') || !html.includes('返回${student}错题本') || !html.includes('打开${student}错题本')) {
   throw new Error('Error-book student switches are missing from runtime script or markup');
 }
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
@@ -543,7 +543,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.264') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.265') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2026,6 +2026,12 @@ if (!errorBookHtml.includes('高频机制') || !errorBookHtml.includes('represen
 if (!errorBookHtml.includes('今天可练') || !errorBookHtml.includes('复错优先') || !errorBookHtml.includes('暂缓') || !errorBookHtml.includes('现在可进入短卷')) {
   throw new Error('Error book should render a visible spaced-review queue with next-set timing');
 }
+context.window.openErrorBookForStudent('Lorik');
+const directedLorikErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (context.window._ebStudent !== 'Lorik' || !directedLorikErrorBookHtml.includes('Lorik 专属错题本') || elements.get('eb-panel-current-student')?.textContent !== 'Lorik 错题本') {
+  throw new Error('Directed error-book entry should open the requested learner from external surfaces');
+}
+context.window.openErrorBookForStudent('KAI');
 context.window.setEbStudent('Lorik');
 const lorikErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
 if (context.window._ebStudent !== 'Lorik' || !lorikErrorBookHtml.includes('Lorik 专属错题本') || lorikErrorBookHtml.includes('KAI 专属错题本')) {

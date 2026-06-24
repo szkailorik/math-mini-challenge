@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.265 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added `openErrorBookForStudent(student, filter)` as the shared entry point for opening a specific learner's error book.
+- Open questions: none.
+- Risks: generic `renderErrorBook()` still opens the last selected learner for backward compatibility.
+- Next steps: prefer the explicit student-aware entry from reports and maps.
+
+### Iteration 2
+
+- What I changed: updated knowledge map, learning archive, grading review, and grading result return buttons to target the correct learner.
+- Open questions: none.
+- Risks: print-only actions do not change the visible learner unless they open a grading/review page.
+- Next steps: keep student context visible in any future modal-to-paper transitions.
+
+### Iteration 3
+
+- What I changed: extended runtime validation to call the directed Lorik entry point and confirm both the paper section and control panel switch update.
+- Open questions: none.
+- Risks: validation checks generated DOM state, not a manual click through every modal.
+- Next steps: spot-check the real browser path from 知识点地图 to Lorik错题本.
+
 ## Current v23.264 Iteration Notes
 
 ### Iteration 1

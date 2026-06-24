@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.265 makes error-book entry points student-aware:
+
+- Knowledge map cards and learning archive cards now open the exact learner's error book instead of relying on the previously selected learner.
+- Error-book grading and result pages return to the same learner's error book.
+- This reduces cross-learner confusion when a tutor moves between KAI and Lorik during one review session.
+
 v23.264 keeps learner switching visible in the error-book workbench:
 
 - Error-book mode now adds a compact KAI / Lorik switch inside the floating control panel.
