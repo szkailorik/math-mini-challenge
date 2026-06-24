@@ -51,6 +51,9 @@ if (!html.includes('function getPracticeMixStats') || !html.includes('今日训�
 if (!html.includes('window.printErrorBookPractice')) {
   throw new Error('Full error-book targeted practice printer is missing from runtime script');
 }
+if (!html.includes('window.setEbStudent') || !html.includes('function normalizeErrorBookStudent') || !html.includes('data-eb-student-switch="true"')) {
+  throw new Error('Error-book top student switch is missing from runtime script or markup');
+}
 if (!html.includes('buildErrorBookPracticePrintHTML')) {
   throw new Error('Error-book targeted practice print builder is missing from runtime script');
 }
@@ -540,7 +543,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.262') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.263') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2008,12 +2011,24 @@ context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [],
 context.window.currentSetNumber = 109;
 context.window.renderErrorBook();
 const errorBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (!errorBookHtml.includes('data-eb-student-switch="true"') || !errorBookHtml.includes("setEbStudent('KAI')") || !errorBookHtml.includes("setEbStudent('Lorik')")) {
+  throw new Error('Error book should render a top-level KAI/Lorik switch before the student section');
+}
+if (!errorBookHtml.includes('KAI 专属错题本') || errorBookHtml.includes('Lorik 专属错题本')) {
+  throw new Error('Error book should default to one selected student section instead of stacking both learners');
+}
 if (!errorBookHtml.includes('高频机制') || !errorBookHtml.includes('representation-conversion')) {
   throw new Error('Error book did not render clickable mechanism summary chips');
 }
 if (!errorBookHtml.includes('今天可练') || !errorBookHtml.includes('复错优先') || !errorBookHtml.includes('暂缓') || !errorBookHtml.includes('现在可进入短卷')) {
   throw new Error('Error book should render a visible spaced-review queue with next-set timing');
 }
+context.window.setEbStudent('Lorik');
+const lorikErrorBookHtml = elements.get('paper-container')?.innerHTML || '';
+if (context.window._ebStudent !== 'Lorik' || !lorikErrorBookHtml.includes('Lorik 专属错题本') || lorikErrorBookHtml.includes('KAI 专属错题本')) {
+  throw new Error('Error book student switch should open only the selected learner section');
+}
+context.window.setEbStudent('KAI');
 context.window.setEbMechanism('representation-conversion');
 const mechanismFilteredHtml = elements.get('paper-container')?.innerHTML || '';
 if (!mechanismFilteredHtml.includes('当前只看') || !mechanismFilteredHtml.includes('0.25 =')) {

@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.263 makes the error book easier to operate for two learners:
+
+- The error book opens with a top KAI / Lorik switch, including active, due, priority, and mastered counts for each learner.
+- The page now renders only the selected learner's error book, so the second learner is no longer buried far below the first learner's sheets.
+- Switching learners clears the current mechanism chip filter while preserving the active/mastered mode, keeping print and grading actions scoped to the visible learner.
+
 v23.262 fixes over-pagination and print order for error-book papers:
 
 - Twenty-question error-book question packs now print as exactly two ordered question pages, ten questions per page.

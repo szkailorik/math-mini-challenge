@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.263 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a top-level KAI / Lorik switch to the error book with per-learner active, due, priority, and mastered counts.
+- Open questions: none.
+- Risks: families with very large error books still rely on the existing paged card layout after the learner is selected.
+- Next steps: verify with real KAI and Lorik data after the next print/grading cycle.
+
+### Iteration 2
+
+- What I changed: changed error-book rendering to show only the selected learner section instead of stacking KAI and Lorik in one long page.
+- Open questions: none.
+- Risks: users who expected both books in one scroll now need one extra top click, but the default workflow is much clearer.
+- Next steps: keep print, grading, and mastery actions scoped to the visible learner.
+
+### Iteration 3
+
+- What I changed: added runtime validation for the top learner switch, default single-student rendering, and switching from KAI to Lorik.
+- Open questions: none.
+- Risks: validation checks generated HTML and state transitions, not a manual browser screenshot.
+- Next steps: re-open the GitHub Pages version after deploy and confirm the top switch appears before the first sheet.
+
 ## Current v23.262 Iteration Notes
 
 ### Iteration 1

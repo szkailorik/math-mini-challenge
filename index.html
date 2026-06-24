@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.262 (错题两页稳排)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.263 (错题顶部切换)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -1145,6 +1145,75 @@
         .eb-practice-card-actions .eb-filter-btn { padding: 6px 9px; font-size: 12px; border-radius: 6px; }
         .eb-practice-card-actions .eb-filter-btn[disabled] { opacity: 0.48; cursor: not-allowed; }
         .eb-answer-table td { vertical-align: top; text-align: left; }
+        .eb-student-switch-shell {
+            width: 210mm;
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0 auto 12px;
+            padding: 10px 12px;
+            border: 1px solid #dbe4ee;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            font-family: sans-serif;
+        }
+        .eb-student-switch-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .eb-student-switch-title {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 900;
+        }
+        .eb-student-switch-note {
+            color: #64748b;
+            font-size: 12.5px;
+            line-height: 1.4;
+            text-align: right;
+        }
+        .eb-student-switch-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .eb-student-switch-btn {
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            padding: 9px 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: sans-serif;
+        }
+        .eb-student-switch-btn strong {
+            display: block;
+            color: #0f172a;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+        .eb-student-switch-btn span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+        .eb-student-switch-btn.active {
+            border-color: #002D72;
+            background: #eaf2ff;
+            box-shadow: inset 0 0 0 1px #002D72;
+        }
+        .eb-student-switch-btn.active strong { color: #002D72; }
+        @media (max-width: 720px) {
+            .eb-student-switch-head { flex-direction: column; }
+            .eb-student-switch-note { text-align: left; }
+            .eb-student-switch-actions { grid-template-columns: 1fr; }
+        }
         .master-btn { position: absolute; top: 8px; right: 8px; background: #10b981; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.15); transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
         .master-btn:hover { background: #059669; transform: scale(1.15); box-shadow: 0 4px 8px rgba(16,185,129,0.4); }
         .eb-tag-header { grid-column: 1 / -1; margin-top: 8px; padding: 10px 14px; background: linear-gradient(90deg, #002D72 0%, #1e40af 100%); color: white; border-radius: 6px; font-family: 'KaiTi','楷体',sans-serif; font-weight: bold; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
@@ -3374,7 +3443,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.262</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.263</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3454,9 +3523,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.262';
-        const APP_RELEASE_LABEL = '错题两页稳排';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.262 错题20题卷固定两页稳排，打印题目按原选题顺序不再乱跳。';
+        const APP_VERSION = 'v23.263';
+        const APP_RELEASE_LABEL = '错题顶部切换';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.263 错题本顶部可直接切换 KAI / Lorik，当前页面只显示一个孩子的错题本。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -9964,30 +10033,76 @@
         // ================= v22 重写：错题本渲染（独立存储 · 去重计数 · 分组 · 一键掌握） =================
         window._ebFilter = 'active'; // 'active' | 'mastered'
         window._ebMechanism = '';
+        window._ebStudent = 'KAI';
 
         window.renderErrorBook = function() {
             document.getElementById('normal-ctrls').style.display = 'none';
             document.getElementById('error-book-ctrls').style.display = 'block';
+            window._ebStudent = normalizeErrorBookStudent(window._ebStudent || 'KAI');
             window._ebFilter = 'active';
             window._ebMechanism = '';
             renderErrorBookInternal();
         };
 
         window.showMasteredList = function() {
+            window._ebStudent = normalizeErrorBookStudent(window._ebStudent || 'KAI');
             window._ebFilter = 'mastered';
             renderErrorBookInternal();
         };
 
         function renderErrorBookInternal() {
-            const filter = window._ebFilter;
-            let kai = StorageDB.getProfile("KAI");
-            let lorik = StorageDB.getProfile("Lorik");
-
-            let finalHTML = '';
-            finalHTML += buildStudentErrorSection('KAI', kai, filter);
-            finalHTML += buildStudentErrorSection('Lorik', lorik, filter);
+            const filter = window._ebFilter || 'active';
+            const student = normalizeErrorBookStudent(window._ebStudent || 'KAI');
+            window._ebStudent = student;
+            const profile = StorageDB.getProfile(student);
+            let finalHTML = buildErrorBookStudentSwitchHTML(student);
+            finalHTML += buildStudentErrorSection(student, profile, filter);
             document.getElementById('paper-container').innerHTML = finalHTML;
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function normalizeErrorBookStudent(student = 'KAI') {
+            return String(student || '').toLowerCase() === 'lorik' ? 'Lorik' : 'KAI';
+        }
+
+        function getErrorBookStudentStats(student) {
+            const profile = StorageDB.getProfile(student) || {};
+            const entries = Object.values(profile.errorBook || {});
+            const active = entries.filter(entry => entry && !entry.mastered);
+            const mastered = entries.filter(entry => entry && entry.mastered).length;
+            const dueSummary = getErrorBookDueSummary(active);
+            const priority = active.filter(entry => isErrorBookPriorityPracticeEntry(entry)).length;
+            return {
+                active: active.length,
+                due: dueSummary.dueCount || 0,
+                mastered,
+                priority
+            };
+        }
+
+        function buildErrorBookStudentSwitchHTML(activeStudent = 'KAI') {
+            const students = ['KAI', 'Lorik'];
+            const buttons = students.map(student => {
+                const stats = getErrorBookStudentStats(student);
+                const isActive = student === activeStudent;
+                return `
+                    <button
+                        class="eb-student-switch-btn ${isActive ? 'active' : ''}"
+                        data-eb-student="${student}"
+                        onclick="window.setEbStudent('${student}')"
+                    >
+                        <strong>${isActive ? '正在看：' : '打开：'}${student}</strong>
+                        <span>待攻克 ${stats.active} · 到期 ${stats.due} · 复错优先 ${stats.priority} · 已掌握 ${stats.mastered}</span>
+                    </button>`;
+            }).join('');
+            return `
+                <div class="eb-student-switch-shell no-print" data-eb-student-switch="true">
+                    <div class="eb-student-switch-head">
+                        <div class="eb-student-switch-title">专属错题本切换</div>
+                        <div class="eb-student-switch-note">先选孩子，再打印、批改或查看已掌握；当前页面只显示一本错题本。</div>
+                    </div>
+                    <div class="eb-student-switch-actions">${buttons}</div>
+                </div>`;
         }
 
         function buildErrorBookMechanismChips(summary = {}, activeMechanism = '') {
@@ -11102,6 +11217,12 @@
 
         window.setEbFilter = function(f) {
             window._ebFilter = f;
+            renderErrorBookInternal();
+        };
+
+        window.setEbStudent = function(student) {
+            window._ebStudent = normalizeErrorBookStudent(student);
+            window._ebMechanism = '';
             renderErrorBookInternal();
         };
 
