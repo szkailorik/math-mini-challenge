@@ -117,7 +117,7 @@ if (!html.includes('function buildSetReviewPaperGradeHTML') || !html.includes('f
 if (!html.includes('function buildErrorBookPracticeBatchToolsHTML') || !html.includes('window.markErrorBookPracticeBatch') || !html.includes('window.clearErrorBookPracticeBatch') || !html.includes('function updateErrorBookPracticeBatchProgress') || !html.includes('practice-batch-tools')) {
   throw new Error('Error-book practice batch refill workflow is missing');
 }
-if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function arrangeErrorBookPracticeEntries') || !html.includes('function getErrorBookPracticeDiversityCaps') || !html.includes('function getErrorBookPracticeMechanismSummaryText') || !html.includes("'representation-conversion': '表示转换'") || !html.includes('computeQuestionFingerprint(built.q)') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function getErrorBookPracticeLane') || !html.includes('data-practice-lane') || !html.includes('交错') || !html.includes('结构：') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('今日10题（推荐）') || !html.includes('加量20题') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
+if (!html.includes('function normalizeErrorBookPracticeLimit') || !html.includes('function arrangeErrorBookPracticeEntries') || !html.includes('function getErrorBookPracticeDiversityCaps') || !html.includes('function getErrorBookPracticeMechanismSummaryText') || !html.includes("'representation-conversion': '表示转换'") || !html.includes('computeQuestionFingerprint(built.q)') || !html.includes('function getErrorBookPracticeSeed') || !html.includes('function getErrorBookPracticePackCode') || !html.includes('function getErrorBookPracticeLane') || !html.includes('data-practice-lane') || !html.includes('交错') || !html.includes('结构：') || !html.includes('function refreshErrorBookEntrySchedule') || !html.includes('function getErrorBookMasteryRequirement') || !html.includes('function buildErrorBookReviewQueueHTML') || !html.includes('function buildErrorBookPracticeActionPanel') || !html.includes('function getErrorBookPracticeCoverage') || !html.includes('needsExplainCount') || !html.includes('masteryPending') || !html.includes('专项需讲解') || !html.includes('专项已会·待巩固') || !html.includes('1页10题（推荐）') || !html.includes('2页20题') || !html.includes('3页30题') || !html.includes('错题覆盖') || !html.includes('第二天安排') || !html.includes('锁定同一套') || !html.includes('锁定码')) {
   throw new Error('Error-book quick print sizing and locked-pack workflow is missing');
 }
 if (!html.includes('.export-btn { display: none;') || !html.includes('position: sticky') || !html.includes('width: min(1040px, calc(100vw - 20px))') || !html.includes('max-height: min(42vh, 330px)')) {
@@ -543,7 +543,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.265') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.266') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -2052,11 +2052,19 @@ if (mechanismFilteredHtml.includes('比较 0.49 和 1/2')) {
 if (!mechanismFilteredHtml.includes('打印当前机制补练')) {
   throw new Error('Error book mechanism filter is missing the printable mechanism follow-up entry point');
 }
-if (!mechanismFilteredHtml.includes('到期复练') || !mechanismFilteredHtml.includes('今天建议先做') || !mechanismFilteredHtml.includes('打印到期复练卷') || !mechanismFilteredHtml.includes('到期卷+答案') || !mechanismFilteredHtml.includes('批改到期卷') || !mechanismFilteredHtml.includes('当前机制错题卷')) {
+if (
+  (!mechanismFilteredHtml.includes('短卷优先') && !mechanismFilteredHtml.includes('到期优先')) ||
+  (!mechanismFilteredHtml.includes('打印1页') && !mechanismFilteredHtml.includes('打印到期1页')) ||
+  !mechanismFilteredHtml.includes('1页+答案') ||
+  (!mechanismFilteredHtml.includes('批改1页') && !mechanismFilteredHtml.includes('批改到期1页')) ||
+  !mechanismFilteredHtml.includes('打印当前机制补练') ||
+  !mechanismFilteredHtml.includes('当前机制全部') ||
+  !mechanismFilteredHtml.includes('当前机制错题卷')
+) {
   throw new Error('Error book is missing full targeted practice print entry points');
 }
-if (!mechanismFilteredHtml.includes('今日10题（推荐）') || !mechanismFilteredHtml.includes('加量20题') || !mechanismFilteredHtml.includes('第二天安排') || !mechanismFilteredHtml.includes('现在可进入短卷')) {
-  throw new Error('Error book should make 10/20-item print choices and next-day plan visible');
+if (!mechanismFilteredHtml.includes('1页10题（推荐）') || !mechanismFilteredHtml.includes('2页20题') || !mechanismFilteredHtml.includes('3页30题') || !mechanismFilteredHtml.includes('错题覆盖') || !mechanismFilteredHtml.includes('第二天安排') || !mechanismFilteredHtml.includes('锁定同一套')) {
+  throw new Error('Error book should make page-based print choices, coverage, and next-day plan visible');
 }
 if (mechanismFilteredHtml.includes('解析 (Solutions)') || mechanismFilteredHtml.includes('攻克建议')) {
   throw new Error('Error-book answer reference should not show long solution wording');
@@ -2146,7 +2154,7 @@ if (fullErrorBookPracticeHtml.includes('class="blank math-inline-blank"') || ful
 }
 const phaseOnePolicy = context.window.getErrorBookPracticePolicy?.(1, 24);
 const phaseThreePolicy = context.window.getErrorBookPracticePolicy?.(3, 24);
-if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota >= phaseThreePolicy.exactReplayQuota || phaseThreePolicy.errorLinkedQuota > 10) {
+if (!phaseOnePolicy || !phaseThreePolicy || phaseOnePolicy.exactReplayQuota > phaseThreePolicy.exactReplayQuota || phaseThreePolicy.errorLinkedQuota > 6) {
   throw new Error('Error-book practice policy is not phase-aware or is allowing too much exact replay');
 }
 if (typeof context.window.getDailyErrorMixSnapshot !== 'function') {
@@ -2237,6 +2245,30 @@ const notDueKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanc
 if (notDueKaiBudget?.dueReadyCount !== 0 || notDueKaiBudget.maxExactReplay !== 0 || notDueKaiBudget.maxErrorLinked > 1) {
   throw new Error('Daily error-book mix should hold back not-due mistakes instead of replaying them too soon');
 }
+context.window._dailyErrorMixState = {};
+context.window.currentSetNumber = 140;
+context.window.setSeed?.(140 * 12345);
+context.window._recentQuestions = new Set();
+context.window._paperQuestions = new Set();
+const lateStageSet = context.window.generateProgramSetData?.('advanced_fluency_v1') || {};
+const lateStageItems = context.window.flattenPaperSections?.(lateStageSet, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o', 'l_m', 'l_d', 'l_s', 'l_c', 'l_f', 'l_o']) || [];
+const lateStageTags = new Set(lateStageItems.map(item => item?.tag).filter(Boolean));
+const lateStageKaiItems = context.window.flattenPaperSections?.(lateStageSet, ['k_m', 'k_d', 'k_s', 'k_c', 'k_f', 'k_o']) || [];
+const lateStageKaiStats = context.window.getPracticeMixStats?.(lateStageKaiItems, 'advanced_fluency_v1') || {};
+const lateStageKaiBudget = context.window.getDailyErrorMixSnapshot?.('KAI', 'advanced_fluency_v1') || {};
+if (
+  lateStageSet.lateStageFreshVersion !== 1 ||
+  !['k_ddiv_late_scale', 'k_conv_late_boundary', 'k_eq_late_twostep', 'l_div_decimal_late_scale', 'l_conv_late_boundary', 'l_fmix_late_order'].every(tag => lateStageTags.has(tag)) ||
+  lateStageKaiStats.exactReplay > Math.max(2, lateStageKaiBudget.maxExactReplay) ||
+  lateStageKaiStats.errorLinked > lateStageKaiBudget.maxErrorLinked ||
+  lateStageKaiStats.fresh < 27 ||
+  !String(lateStageKaiStats.policyLabel || '').includes('140后新题优先') ||
+  context.window.shouldRefreshAdvancedLateStageCache?.({ programId: 'advanced_fluency_v1', k_m: [] }, 'advanced_fluency_v1') !== true
+) {
+  throw new Error(`Advanced set 140+ should inject fresh high-value items and tighten replay, tags=${[...lateStageTags].join(',')}, stats=${JSON.stringify(lateStageKaiStats)}, budget=${JSON.stringify(lateStageKaiBudget)}`);
+}
+context.window.currentSetNumber = 109;
+context.window._dailyErrorMixState = {};
 context.window.StorageDB.cache.KAI = previousKaiDailyMixRecord;
 context.window.StorageDB.cache.Lorik = previousLorikDailyMixRecord;
 const previousKaiPracticeBalanceRecord = context.window.StorageDB.cache.KAI;

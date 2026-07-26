@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.266 Iteration Notes
+
+### Iteration 1
+
+- What I changed: reduced Advanced 140+ exact wrong-question replay and added a new-question-first policy label for daily papers.
+- Open questions: none.
+- Risks: learners with very small error books may still see a little exact replay when no strong variant can be built.
+- Next steps: keep monitoring real printed sets after 140 for remembered-answer fatigue.
+
+### Iteration 2
+
+- What I changed: added six late-stage fresh high-value question slots covering decimal division scale checks, boundary conversion comparison, two-step inverse equations, and fraction-order judgement.
+- Open questions: none.
+- Risks: these slots are intentionally narrow and high-value, so later releases should add more families only when a real coverage gap is visible.
+- Next steps: expand the 140+ fresh bank with the same tag-level quality standard rather than generic look-alike items.
+
+### Iteration 3
+
+- What I changed: changed the error-book action panel to 1-page/2-page/3-page printable packs with coverage counts, and extended validation for cache refresh, fresh-slot injection, and wrong-book mix caps.
+- Open questions: none.
+- Risks: visual print quality still depends on actual browser print scaling, but the runtime pack logic now uses page-sized choices.
+- Next steps: print one real 10-question and one 20-question error-book pack from GitHub Pages after deploy.
+
 ## Current v23.265 Iteration Notes
 
 ### Iteration 1

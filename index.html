@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.265 (错题入口定向)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.266 (140后新题优先)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -3502,7 +3502,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.265</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.266</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3598,9 +3598,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.265';
-        const APP_RELEASE_LABEL = '错题入口定向';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.265 从知识地图、学习档案和批改结果返回错题本时，会直接打开对应孩子。';
+        const APP_VERSION = 'v23.266';
+        const APP_RELEASE_LABEL = '140后新题优先';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.266 140套以后日常卷减少原错题回炉，错题本改成按页打印专项短卷。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -3613,6 +3613,8 @@
         const CACHE_REPAIR_STORAGE_KEY = 'MathEngine_LastCacheRepair';
         const ADVANCED_PROGRAM_ID = 'advanced_fluency_v1';
         const CLOSURE_PROGRAM_ID = 'elementary_closure_v1';
+        const ADVANCED_LATE_STAGE_SET = 140;
+        const ADVANCED_LATE_STAGE_CACHE_VERSION = 1;
         const PROGRAM_SIGNAL_FIELDS = ['representationGap', 'methodGap', 'stabilityGap', 'speedGap', 'validationGap'];
         const TRAINING_PROGRAMS = {
             [ADVANCED_PROGRAM_ID]: {
@@ -5413,16 +5415,30 @@
 
         function getErrorBookPracticePolicy(cycleCode, count = 1) {
             const table = {
-                1: { exactReplayRatio: 0.08, errorLinkedRatio: 0.24, weakRatio: 0.36, lightReplayChance: 0.12, repeatReplayChance: 0.22, priorityReplayChance: 0.40, forgettingReplayChance: 0.48, variantChance: 0.50, label: '新知日少量提取' },
-                2: { exactReplayRatio: 0.14, errorLinkedRatio: 0.32, weakRatio: 0.40, lightReplayChance: 0.18, repeatReplayChance: 0.36, priorityReplayChance: 0.54, forgettingReplayChance: 0.60, variantChance: 0.62, label: '陷阱日提高变式' },
-                3: { exactReplayRatio: 0.16, errorLinkedRatio: 0.34, weakRatio: 0.42, lightReplayChance: 0.20, repeatReplayChance: 0.42, priorityReplayChance: 0.60, forgettingReplayChance: 0.70, variantChance: 0.66, label: '遗忘日加强唤醒' },
-                4: { exactReplayRatio: 0.10, errorLinkedRatio: 0.26, weakRatio: 0.36, lightReplayChance: 0.12, repeatReplayChance: 0.26, priorityReplayChance: 0.46, forgettingReplayChance: 0.52, variantChance: 0.54, label: '挑战日保持迁移' }
+                1: { exactReplayRatio: 0.035, errorLinkedRatio: 0.18, weakRatio: 0.34, lightReplayChance: 0.04, repeatReplayChance: 0.10, priorityReplayChance: 0.24, forgettingReplayChance: 0.28, variantChance: 0.64, label: '新题主导少量提取' },
+                2: { exactReplayRatio: 0.045, errorLinkedRatio: 0.22, weakRatio: 0.36, lightReplayChance: 0.06, repeatReplayChance: 0.14, priorityReplayChance: 0.30, forgettingReplayChance: 0.36, variantChance: 0.70, label: '陷阱日变式优先' },
+                3: { exactReplayRatio: 0.055, errorLinkedRatio: 0.24, weakRatio: 0.38, lightReplayChance: 0.07, repeatReplayChance: 0.16, priorityReplayChance: 0.34, forgettingReplayChance: 0.42, variantChance: 0.74, label: '遗忘日少量唤醒' },
+                4: { exactReplayRatio: 0.035, errorLinkedRatio: 0.19, weakRatio: 0.34, lightReplayChance: 0.04, repeatReplayChance: 0.11, priorityReplayChance: 0.26, forgettingReplayChance: 0.30, variantChance: 0.66, label: '挑战日新题迁移' }
             };
-            const policy = table[cycleCode] || table[1];
+            const basePolicy = table[cycleCode] || table[1];
             const size = Math.max(1, Number(count) || 1);
+            const isLateStage = getCurrentProgramId?.() === ADVANCED_PROGRAM_ID && Number(window.currentSetNumber || 0) >= ADVANCED_LATE_STAGE_SET;
+            const policy = isLateStage
+                ? {
+                    ...basePolicy,
+                    exactReplayRatio: Math.max(0.02, basePolicy.exactReplayRatio - 0.018),
+                    errorLinkedRatio: Math.max(0.14, basePolicy.errorLinkedRatio - 0.035),
+                    lightReplayChance: Math.max(0.02, basePolicy.lightReplayChance * 0.55),
+                    repeatReplayChance: Math.max(0.06, basePolicy.repeatReplayChance * 0.65),
+                    priorityReplayChance: Math.max(0.16, basePolicy.priorityReplayChance * 0.72),
+                    forgettingReplayChance: Math.max(0.20, basePolicy.forgettingReplayChance * 0.72),
+                    variantChance: Math.min(0.82, basePolicy.variantChance + 0.08),
+                    label: `${basePolicy.label} · 140后新题优先`
+                }
+                : basePolicy;
             return {
                 ...policy,
-                exactReplayQuota: Math.max(1, Math.floor(size * policy.exactReplayRatio)),
+                exactReplayQuota: isLateStage ? Math.max(0, Math.floor(size * policy.exactReplayRatio)) : Math.max(1, Math.floor(size * policy.exactReplayRatio)),
                 errorLinkedQuota: Math.max(1, Math.ceil(size * policy.errorLinkedRatio)),
                 weakQuota: Math.max(1, Math.ceil(size * policy.weakRatio))
             };
@@ -5511,18 +5527,20 @@
                     targetExactReplayRatio: 0
                 };
             }
-            const pressureShift = pressure.band === 'intensive' ? 0.03 : (pressure.band === 'light' ? -0.06 : 0);
-            const targetErrorLinkedRatio = clampNumber(policy.errorLinkedRatio + pressureShift, 0.16, 0.35);
-            const targetExactReplayRatio = clampNumber(policy.exactReplayRatio + pressureShift * 0.45, 0.05, 0.18);
-            let maxErrorLinked = Math.max(1, Math.min(Math.ceil(total * targetErrorLinkedRatio), Math.floor(total * 0.35)));
-            let maxExactReplay = Math.max(1, Math.min(Math.floor(total * targetExactReplayRatio), Math.floor(maxErrorLinked * 0.5)));
+            const isLateStage = programId === ADVANCED_PROGRAM_ID && Number(window.currentSetNumber || 0) >= ADVANCED_LATE_STAGE_SET;
+            const pressureShift = pressure.band === 'intensive' ? 0.018 : (pressure.band === 'light' ? -0.055 : 0);
+            const targetErrorLinkedRatio = clampNumber(policy.errorLinkedRatio + pressureShift, isLateStage ? 0.10 : 0.12, isLateStage ? 0.24 : 0.27);
+            const targetExactReplayRatio = clampNumber(policy.exactReplayRatio + pressureShift * 0.28, 0.015, isLateStage ? 0.055 : 0.075);
+            const absoluteLinkedCap = isLateStage ? Math.max(1, Math.floor(total * 0.24)) : Math.max(1, Math.floor(total * 0.27));
+            let maxErrorLinked = Math.max(1, Math.min(Math.ceil(total * targetErrorLinkedRatio), absoluteLinkedCap));
+            let maxExactReplay = Math.max(0, Math.min(Math.floor(total * targetExactReplayRatio), Math.floor(maxErrorLinked * (isLateStage ? 0.28 : 0.35))));
             if (!pressure.dueReadyCount) {
                 maxErrorLinked = Math.min(maxErrorLinked, pressure.band === 'intensive' ? 2 : 1);
                 maxExactReplay = 0;
             } else {
-                const dueWindowCap = Math.max(1, pressure.dueReadyCount + pressure.priorityDueCount + Math.ceil(pressure.overdueCount * 0.5) + (pressure.band === 'intensive' ? 2 : 1));
+                const dueWindowCap = Math.max(1, pressure.dueReadyCount + pressure.priorityDueCount + Math.ceil(pressure.overdueCount * 0.5) + (pressure.band === 'intensive' ? 1 : 0));
                 maxErrorLinked = Math.min(maxErrorLinked, dueWindowCap);
-                maxExactReplay = Math.min(maxExactReplay, Math.max(1, Math.ceil(Math.min(pressure.dueReadyCount, maxErrorLinked) * 0.45)));
+                maxExactReplay = Math.min(maxExactReplay, Math.max(0, Math.ceil(Math.min(pressure.dueReadyCount, maxErrorLinked) * (isLateStage ? 0.22 : 0.30))));
             }
             return { pressure, maxErrorLinked, maxExactReplay, targetErrorLinkedRatio, targetExactReplayRatio };
         }
@@ -5922,7 +5940,8 @@
         }
         function buildAdvancedHighValueReplayItem(entry) {
             const replayLevel = getReplayLevel(entry);
-            let nextItem = replayLevel === 'L1' ? buildErrorReplayItem(entry) : buildErrorVariantItem(entry);
+            const preferVariant = Number(window.currentSetNumber || 0) >= ADVANCED_LATE_STAGE_SET;
+            let nextItem = (!preferVariant && replayLevel === 'L1') ? buildErrorReplayItem(entry) : buildErrorVariantItem(entry);
             if (!nextItem) nextItem = buildErrorReplayItem(entry);
             if (!nextItem) return null;
             return {
@@ -5989,6 +6008,153 @@
             return next;
         }
 
+        function buildAdvancedLateStageFreshItem(student, familyKey) {
+            if (student === 'KAI' && familyKey === 'decimal_division') {
+                const variant = Engine.randChoice([
+                    { divisor: 0.18, quotient: 0.45, scale: 100 },
+                    { divisor: 0.24, quotient: 0.35, scale: 100 },
+                    { divisor: 0.36, quotient: 0.28, scale: 100 },
+                    { divisor: 0.125, quotient: 0.64, scale: 1000 }
+                ]);
+                const dividend = variant.divisor * variant.quotient;
+                return {
+                    tag: 'k_ddiv_late_scale',
+                    q: `${formatDecimal(dividend, 4)} &divide; ${formatDecimal(variant.divisor, 3)}`,
+                    a: formatDecimal(variant.quotient),
+                    step: `140套以后保温新题：先估商小于1，再把两数同乘${variant.scale}，最后用商&times;除数验算。`
+                };
+            }
+            if (student === 'KAI' && familyKey === 'conversion_boundary') {
+                const row = Engine.randChoice([
+                    { frac: new Frac(5, 8), dec: 0.63, fracValue: 0.625 },
+                    { frac: new Frac(7, 16), dec: 0.44, fracValue: 0.4375 },
+                    { frac: new Frac(9, 40), dec: 0.23, fracValue: 0.225 },
+                    { frac: new Frac(13, 25), dec: 0.51, fracValue: 0.52 }
+                ]);
+                return {
+                    tag: 'k_conv_late_boundary',
+                    q: `${row.frac.toHTML()}<span class="circle-blank"></span>${formatDecimal(row.dec, 4)}`,
+                    a: row.fracValue > row.dec ? '&gt;' : '&lt;',
+                    step: `140套以后保温新题：先把分数化成小数 ${formatDecimal(row.fracValue, 4)}，再和右边逐位比较。`
+                };
+            }
+            if (student === 'KAI' && familyKey === 'equation_inverse') {
+                const div = Engine.randChoice([3, 4, 5, 6]);
+                const add = new Frac(Engine.randChoice([1, 2, 3]), 6);
+                const base = new Frac(Engine.randChoice([5, 7, 9]), 6);
+                const rhs = base.add(add);
+                const ans = base.mul(new Frac(div, 1));
+                return {
+                    tag: 'k_eq_late_twostep',
+                    q: `<i class="var">x</i> &divide; ${div} + ${add.toHTML()} = ${rhs.toHTML()}`,
+                    a: `<i class="var">x</i> = ${ans.toHTML()}`,
+                    step: `140套以后保温新题：先减去 ${add.toHTML()}，再乘 ${div}，避免把未知数位置看错。`
+                };
+            }
+            if (student === 'Lorik' && familyKey === 'decimal_division') {
+                const variant = Engine.randChoice([
+                    { divisor: 0.25, quotient: 0.68, scale: 100 },
+                    { divisor: 0.75, quotient: 0.56, scale: 100 },
+                    { divisor: 1.25, quotient: 0.84, scale: 100 },
+                    { divisor: 0.16, quotient: 2.25, scale: 100 }
+                ]);
+                const dividend = variant.divisor * variant.quotient;
+                return {
+                    tag: 'l_div_decimal_late_scale',
+                    q: `${formatDecimal(dividend, 4)} &divide; ${formatDecimal(variant.divisor, 3)}`,
+                    a: formatDecimal(variant.quotient),
+                    step: `140套以后保温新题：除数有小数时先同倍扩大，再用估商检查小数点。`
+                };
+            }
+            if (student === 'Lorik' && familyKey === 'conversion_boundary') {
+                const row = Engine.randChoice([
+                    { frac: new Frac(7, 8), dec: 0.86, fracValue: 0.875 },
+                    { frac: new Frac(3, 5), dec: 0.62, fracValue: 0.6 },
+                    { frac: new Frac(11, 20), dec: 0.54, fracValue: 0.55 },
+                    { frac: new Frac(5, 16), dec: 0.31, fracValue: 0.3125 }
+                ]);
+                return {
+                    tag: 'l_conv_late_boundary',
+                    q: `${formatDecimal(row.dec, 4)}<span class="circle-blank"></span>${row.frac.toHTML()}`,
+                    a: row.dec > row.fracValue ? '&gt;' : '&lt;',
+                    step: `140套以后保温新题：把分数换成 ${formatDecimal(row.fracValue, 4)}，再判断两边大小。`
+                };
+            }
+            if (student === 'Lorik' && familyKey === 'fraction_order') {
+                const f1 = new Frac(Engine.randChoice([5, 7]), 12);
+                const f2 = new Frac(Engine.randChoice([1, 2]), 3);
+                const f3 = new Frac(1, Engine.randChoice([4, 6]));
+                const ans = f1.add(f2).div(f3);
+                return {
+                    tag: 'l_fmix_late_order',
+                    q: `<span class="paren-l"></span>${f1.toHTML()} + ${f2.toHTML()}<span class="paren-r"></span> &divide; ${f3.toHTML()}`,
+                    a: ans.toMixedHTML(),
+                    step: `140套以后保温新题：先算括号加法，再把除法改成乘倒数。`
+                };
+            }
+            return null;
+        }
+
+        function injectAdvancedLateStageFreshSlots(data) {
+            if (Number(window.currentSetNumber || 0) < ADVANCED_LATE_STAGE_SET) return data;
+            const plan = [
+                { student: 'KAI', sectionKey: 'k_d', familyKey: 'decimal_division' },
+                { student: 'KAI', sectionKey: 'k_c', familyKey: 'conversion_boundary' },
+                { student: 'KAI', sectionKey: 'k_f', familyKey: 'equation_inverse' },
+                { student: 'Lorik', sectionKey: 'l_d', familyKey: 'decimal_division' },
+                { student: 'Lorik', sectionKey: 'l_c', familyKey: 'conversion_boundary' },
+                { student: 'Lorik', sectionKey: 'l_f', familyKey: 'fraction_order' }
+            ];
+            const next = {
+                ...data,
+                lateStageFreshVersion: ADVANCED_LATE_STAGE_CACHE_VERSION
+            };
+            const used = new Set();
+            Object.values(next).forEach(value => {
+                if (Array.isArray(value)) {
+                    value.forEach(item => {
+                        const fingerprint = computeQuestionFingerprint(item?.q || '');
+                        if (fingerprint) used.add(fingerprint);
+                    });
+                }
+            });
+            plan.forEach(slot => {
+                const section = Array.isArray(next[slot.sectionKey]) ? [...next[slot.sectionKey]] : [];
+                if (!section.length) return;
+                let built = null;
+                let fingerprint = '';
+                for (let attempt = 0; attempt < 10; attempt++) {
+                    const freshItem = buildAdvancedLateStageFreshItem(slot.student, slot.familyKey);
+                    if (!freshItem) continue;
+                    const candidate = attachQualityMetadata({
+                        ...freshItem,
+                        reason: 'late-fresh',
+                        isLateStageFresh: true
+                    });
+                    if (!candidate?.q) continue;
+                    const candidateFingerprint = computeQuestionFingerprint(candidate.q);
+                    if (candidateFingerprint && used.has(candidateFingerprint)) continue;
+                    built = candidate;
+                    fingerprint = candidateFingerprint;
+                    break;
+                }
+                if (!built?.q) return;
+                let replaceIndex = section.length - 1;
+                for (let idx = section.length - 1; idx >= 0; idx--) {
+                    const item = section[idx];
+                    if (item && !item.isReviewItem && !item.isAdvancedHighValueReplay) {
+                        replaceIndex = idx;
+                        break;
+                    }
+                }
+                section[replaceIndex] = built;
+                if (fingerprint) used.add(fingerprint);
+                next[slot.sectionKey] = section;
+            });
+            return next;
+        }
+        window.injectAdvancedLateStageFreshSlots = injectAdvancedLateStageFreshSlots;
+
         const KnowledgeBase = {
             "k_dmul_basic": { name: "小数乘法-位数核对", advice: "先按整数乘法算，再数两个因数共有几位小数。写完后用估算检查数量级。" },
             "k_dmul_trap0": { name: "小数乘法-高位补0", advice: "数清因数总小数位数，结果需保留相同位数，不够在前面补0。" },
@@ -5999,17 +6165,20 @@
             "k_ddiv_shift": { name: "除法-移位易错", advice: "当被除数位数少于除数时，移动小数点后必须在被除数末尾补0。" },
             "k_ddiv_unit": { name: "小数除法-单位化简", advice: "被除数和除数同时乘1000或100，让除数变整数，再做整数除法。" },
             "k_ddiv_decimal_q": { name: "小数除法-小数商", advice: "商小于1时要在个位写0并补小数点，不能漏写前导0。" },
+            "k_ddiv_late_scale": { name: "140后-小数除法验算", advice: "先估商大小，再同倍扩大成整数除法；做完一定用商乘除数验算小数点。" },
             "k_sub_inner0": { name: "减法-跨零连续借位", advice: "极其经典的陷阱。列竖式时，直接在被减数中间连续的'0'上方全部写'9'，最后有效位写'10'。" },
             "k_sub_near_million": { name: "减法-整百万连续借位", advice: "从最高位借位后，中间所有0都会变9，最后一位变10。建议逐位写借位标记。" },
             "k_eq_sub": { name: "方程-减数/除数求知", advice: "孩子极易顺手将两者相加。需反复强化公式：被减数-差=减数（或被除数÷商=除数）。" },
             "k_eq_divisor": { name: "方程-未知数在除数", advice: "a÷x=b 时，未知数是除数，必须用 x=a÷b，不能把 x 直接移到右边相乘后停住。" },
             "k_eq_twostep": { name: "方程-两步逆运算", advice: "先把加减项移走，再处理乘除。每一步只做一个逆运算，避免跳步丢分。" },
+            "k_eq_late_twostep": { name: "140后-两步逆运算", advice: "先消去加减，再处理乘除；未知数在被除数位置时最后要乘回去。" },
             "k_fcalc_muldiv": { name: "分数-除法变乘法易错", advice: "看到连除或乘除混合，第一步必须强制要求把所有除号改为乘号，并将后面的分数严格颠倒。" },
             "k_fcalc_cancel": { name: "分数-先约分再计算", advice: "连乘分数题先找能交叉约分的数，减少大数运算负担，再乘分子分母。" },
             "k_oly_dist": { name: "简算-乘法分配律隐蔽项", advice: "通过小数点反向移位统一公因数，提取至括号外，剩余数字连同原符号放入括号。" },
             "k_oly_balance": { name: "简算-补偿凑整", advice: "看到99、101、999这类接近整十整百的数，先凑成整百，再补加或补减差额。" },
             "k_oly_reverse": { name: "简算-逆向分配律", advice: "看到两项都有相同因数时先提取公因数，再把括号内做加减。" },
             "k_oly_unit_fraction": { name: "分数应用-单位量转换", advice: "先把总量按分母平均分成若干份，再按分子取份数，最后再做加减。" },
+            "k_conv_late_boundary": { name: "140后-临界比较", advice: "先把分数化成精确小数，再和小数逐位比较，尤其注意0.625、0.4375这类边界。" },
             "boss_sequence": { name: "数列找规律(等差)", advice: "观察相邻数字差值。牢记公式：第n项 = 首项 + (n-1)×公差。" },
             "boss_remainder": { name: "剩余定理(画图法)", advice: "遇到'剩下钱的几分之几'，必须画 Bar Model 线段图，把剩余部分重新定义为一个整体切块。" },
             "l_mul_near100": { name: "乘法-接近整百补偿", advice: "把98看成100-2，把102看成100+2，先算整百倍，再补偿。" },
@@ -6017,13 +6186,16 @@
             "l_div_decimal_dividend": { name: "小数除法-被除数带小数点", advice: "先估商落在几和几之间；被除数有小数点时，商上的小数点要和竖式对齐，最后用商乘除数验算。" },
             "l_div_decimal_divisor": { name: "小数除法-除数带小数点", advice: "除数有小数点时，被除数和除数同时扩大10或100倍，把除数先变成整数；再检查商的小数点并用乘法验算。" },
             "l_div_decimal_both": { name: "小数除法-被除数和除数都有小数点", advice: "先统一扩大成整数除法，再回头检查商的小数点位置；商小于1时别忘记先写0，最后用乘法验算。" },
+            "l_div_decimal_late_scale": { name: "Lorik 140后-小数除法验算", advice: "除数有小数先同倍扩大；答案写完要判断商大于1还是小于1。" },
             "l_sub_100k": { name: "减法-整万连续借位", advice: "整万数减法不能直接逐位相减，要从最高位连续借位。" },
             "l_conv_5": { name: "比较-4/5 与近邻小数", advice: "先把 4/5 化成 0.8，再和接近 0.8 的小数逐位比较，别只看整数部分。" },
             "l_conv_6": { name: "比较-1/2 与近邻小数", advice: "把 1/2 看成 0.5，再比较十分位和百分位；遇到 0.49、0.51 这类题尤其要慢一点。" },
             "l_conv_7": { name: "比较-5/8 与近邻小数", advice: "先记住 5/8=0.625，再和接近 0.62、0.63 的小数比较，防止只凭感觉判断。" },
             "l_conv_8": { name: "比较-3/4 与近邻小数", advice: "先把 3/4 化成 0.75，再看另一个小数是比 0.75 多一点还是少一点。" },
+            "l_conv_late_boundary": { name: "Lorik 140后-临界比较", advice: "先找分数对应的小数边界，再判断小数在边界上方还是下方。" },
             "l_fmix_sub": { name: "异分母相减", advice: "基础通分运算不熟练。需要强化寻找最小公倍数的能力。" },
             "l_fmix_ofwhole": { name: "分数-求一个数的几分之几", advice: "先用总数除以分母求一份，再乘分子，避免直接大数乘分数。" },
+            "l_fmix_late_order": { name: "Lorik 140后-分数顺序", advice: "先括号，再乘除；分数除法必须变乘倒数，别把顺序看反。" },
             "l_bmix_125": { name: "125凑整", advice: "背熟好朋友数字：125找8，25找4。看到12.5就要从另一个因数里拆出8。" },
             "l_bmix_near100": { name: "简算-接近整百", advice: "99×a+a 或 101×a-a 都是在凑100个a，先识别整体结构。" },
             "l_bmix_paren": { name: "混合运算-括号优先级", advice: "括号先算，再乘除，最后加减。每一步写等号，防止顺手从左到右全算。" },
@@ -6076,18 +6248,23 @@
         const HIGH_VALUE_TRAINING_RULES = [
             { type: 'tag', value: 'k_ddiv_shift', tier: 3 },
             { type: 'tag', value: 'k_ddiv_decimal_q', tier: 3 },
+            { type: 'tag', value: 'k_ddiv_late_scale', tier: 3 },
             { type: 'tag', value: 'k_eq_sub', tier: 3 },
             { type: 'tag', value: 'k_eq_divisor', tier: 3 },
             { type: 'tag', value: 'k_eq_twostep', tier: 3 },
+            { type: 'tag', value: 'k_eq_late_twostep', tier: 3 },
             { type: 'tag', value: 'k_fcalc_muldiv', tier: 3 },
             { type: 'tag', value: 'k_fcalc_cancel', tier: 3 },
             { type: 'tag', value: 'l_div_decimal_dividend', tier: 3 },
             { type: 'tag', value: 'l_div_decimal_divisor', tier: 3 },
             { type: 'tag', value: 'l_div_decimal_both', tier: 3 },
+            { type: 'tag', value: 'l_div_decimal_late_scale', tier: 3 },
             { type: 'tag', value: 'l_conv_5', tier: 2 },
             { type: 'tag', value: 'l_conv_6', tier: 2 },
             { type: 'tag', value: 'l_conv_7', tier: 2 },
             { type: 'tag', value: 'l_conv_8', tier: 2 },
+            { type: 'tag', value: 'l_conv_late_boundary', tier: 2 },
+            { type: 'tag', value: 'l_fmix_late_order', tier: 3 },
             { type: 'prefix', value: 'k_conv_', tier: 2 },
             { type: 'prefix', value: 'l_div_decimal_', tier: 2 },
             { type: 'prefix', value: 'k_eq_', tier: 2 },
@@ -9315,7 +9492,7 @@
             window._dailyErrorMixState = {};
             if (programId === 'elementary_closure_v1') return buildClosureProgramSet();
             const state = Engine.getCycleState();
-            return injectAdvancedHighValueReplay({
+            const advancedData = injectAdvancedHighValueReplay({
                 programId: 'advanced_fluency_v1',
                 k_m: GenKAI.decimalsMult(), k_d: GenKAI.decimalsDiv(), k_s: GenKAI.bigSub(),
                 k_c: getConversions(), k_f: GenKAI.fracEquations(), k_o: GenKAI.olympiad(),
@@ -9323,6 +9500,7 @@
                 l_c: getLorikConv(), l_f: GenLorik.fracMix(), l_o: GenLorik.basicMixed(),
                 stateLabel: state.label
             });
+            return injectAdvancedLateStageFreshSlots(advancedData);
         }
 
         window.describeClosureSections = describeClosureSections;
@@ -9347,6 +9525,13 @@
             return local;
         }
 
+        function shouldRefreshAdvancedLateStageCache(data, programId = getCurrentProgramId()) {
+            return programId === ADVANCED_PROGRAM_ID
+                && Number(window.currentSetNumber || 0) >= ADVANCED_LATE_STAGE_SET
+                && Number(data?.lateStageFreshVersion || 0) < ADVANCED_LATE_STAGE_CACHE_VERSION;
+        }
+        window.shouldRefreshAdvancedLateStageCache = shouldRefreshAdvancedLateStageCache;
+
         function generateOrLoadSetData() {
             const programId = getCurrentProgramId();
             let cacheKey = getSetCacheKey(window.currentSetNumber, programId);
@@ -9362,6 +9547,7 @@
                     const parsed = JSON.parse(cached);
                     const hydrated = hydrateProgramSetData(parsed, programId);
                     const duplicate = findSetQuestionDuplicate(hydrated.data);
+                    const staleLateStage = shouldRefreshAdvancedLateStageCache(hydrated.data, programId);
                     if (duplicate) {
                         localStorage.removeItem(cachedKey);
                         cacheRepairInfo = {
@@ -9373,6 +9559,8 @@
                             first: duplicate.first,
                             second: duplicate.second
                         };
+                    } else if (staleLateStage) {
+                        localStorage.removeItem(cachedKey);
                     } else {
                         if (hydrated.changed) {
                             safeLocalSetItem(cacheKey, JSON.stringify(hydrated.data));
@@ -9466,8 +9654,9 @@
             const errorLinked = items.filter(isDailyErrorLinkedItem).length;
             const variant = Math.max(0, errorLinked - exactReplay);
             const fresh = Math.max(0, total - errorLinked);
-            const maxErrorLinked = total ? Math.max(1, Math.min(policy.errorLinkedQuota, Math.floor(total * 0.35))) : 0;
-            const maxExactReplay = total ? Math.max(1, Math.min(policy.exactReplayQuota, Math.floor(maxErrorLinked * 0.5))) : 0;
+            const isLateStage = programId === ADVANCED_PROGRAM_ID && Number(window.currentSetNumber || 0) >= ADVANCED_LATE_STAGE_SET;
+            const maxErrorLinked = total ? Math.max(1, Math.min(policy.errorLinkedQuota, Math.floor(total * (isLateStage ? 0.24 : 0.27)))) : 0;
+            const maxExactReplay = total ? Math.max(0, Math.min(policy.exactReplayQuota, Math.floor(maxErrorLinked * (isLateStage ? 0.28 : 0.35)))) : 0;
             return {
                 total,
                 exactReplay,
@@ -10396,6 +10585,15 @@
         }
         window.getErrorBookPracticeNextDayPlan = getErrorBookPracticeNextDayPlan;
 
+        function getErrorBookPracticeCoverage(entries = []) {
+            const active = (entries || []).filter(entry => entry && !entry.mastered);
+            const practiced = active.filter(entry => Number(entry.practiceCount || 0) > 0 || entry.lastPracticeGrade).length;
+            const unpracticed = Math.max(0, active.length - practiced);
+            const pending = active.filter(entry => entry.masteryPending).length;
+            return { total: active.length, practiced, unpracticed, pending };
+        }
+        window.getErrorBookPracticeCoverage = getErrorBookPracticeCoverage;
+
         function buildErrorBookPracticeActionCardHTML({ student, title, subtitle, kicker = '', limit = 10, priorityOnly = false, dueOnly = false, recommended = false, priority = false, disabled = false, printLabel = '打印题目', answerLabel = '题目+答案', reviewLabel = '批改' } = {}) {
             const cap = normalizeErrorBookPracticeLimit(limit);
             const className = `eb-practice-card${recommended ? ' recommended' : ''}${priority ? ' priority' : ''}`;
@@ -10415,40 +10613,54 @@
                 </div>`;
         }
 
-        function buildErrorBookPracticeActionPanel(student, { filter = 'active', dueSummary = {}, priorityPracticeCount = 0, activeMechanism = '', activeCount = 0 } = {}) {
+        function buildErrorBookPracticeActionPanel(student, { filter = 'active', dueSummary = {}, priorityPracticeCount = 0, activeMechanism = '', activeCount = 0, practiceCoverage = null } = {}) {
             if (filter !== 'active') return '';
             const hasDue = Number(dueSummary.dueCount || 0) > 0;
             const disabled = activeCount <= 0;
             const scopeLabel = activeMechanism ? `当前机制「${getErrorMechanismLabel(activeMechanism)}」` : '全部活跃错题';
             const dailySubtitle = hasDue
-                ? '按间隔先抽到期/复错题，并软平衡不同机制。'
-                : `${scopeLabel}里按优先级取10题，同时避免同一机制刷满。`;
+                ? '一页10题，按间隔先抽到期/复错题，并软平衡不同机制。'
+                : `一页10题，${scopeLabel}里按优先级抽取，同时避免同一机制刷满。`;
             const plan = getErrorBookNextDayPlanFromSummary(dueSummary, priorityPracticeCount);
+            const coverage = practiceCoverage || { total: activeCount, practiced: 0, unpracticed: activeCount, pending: 0 };
+            const coverageText = `活跃 ${coverage.total} · 已专项练过 ${coverage.practiced} · 未专项练 ${coverage.unpracticed}${coverage.pending ? ` · 待巩固 ${coverage.pending}` : ''}`;
             const cards = [
                 buildErrorBookPracticeActionCardHTML({
                     student,
-                    title: '今日10题（推荐）',
+                    title: '1页10题（推荐）',
                     subtitle: dailySubtitle,
                     kicker: hasDue ? '到期优先' : '短卷优先',
                     limit: 10,
                     dueOnly: hasDue,
                     recommended: true,
                     disabled,
-                    printLabel: hasDue ? '打印到期复练卷' : '打印10题小卷',
-                    answerLabel: hasDue ? '到期卷+答案' : '10题+答案',
-                    reviewLabel: hasDue ? '批改到期卷' : '批改10题'
+                    printLabel: hasDue ? '打印到期1页' : '打印1页',
+                    answerLabel: hasDue ? '到期1页+答案' : '1页+答案',
+                    reviewLabel: hasDue ? '批改到期1页' : '批改1页'
                 }),
                 buildErrorBookPracticeActionCardHTML({
                     student,
-                    title: '加量20题',
-                    subtitle: '时间充足时使用；按优先级+机制交错，不随机乱抓。',
+                    title: '2页20题',
+                    subtitle: '时间充足时使用；两页纸按优先级+机制交错，不随机乱抓。',
                     kicker: '加量',
                     limit: 20,
                     dueOnly: hasDue,
                     disabled,
-                    printLabel: '打印20题',
-                    answerLabel: '20题+答案',
-                    reviewLabel: '批改20题'
+                    printLabel: '打印2页',
+                    answerLabel: '2页+答案',
+                    reviewLabel: '批改2页'
+                }),
+                buildErrorBookPracticeActionCardHTML({
+                    student,
+                    title: '3页30题',
+                    subtitle: '周末清仓或集中复盘用；仍按机制交错，避免一类题连刷。',
+                    kicker: '清仓',
+                    limit: 30,
+                    dueOnly: hasDue,
+                    disabled,
+                    printLabel: '打印3页',
+                    answerLabel: '3页+答案',
+                    reviewLabel: '批改3页'
                 })
             ];
             if (priorityPracticeCount > 0) {
@@ -10492,7 +10704,7 @@
                 reviewLabel: '批改全部卷'
             }));
             return `
-                <div class="eb-practice-plan-strip"><strong>今天怎么练：</strong>先用10题短卷；20题是加量；全部卷只做阶段清仓。题目、答案、批改页会锁定同一套。<br><strong>第二天安排：</strong>${plan}</div>
+                <div class="eb-practice-plan-strip"><strong>今天怎么练：</strong>先选1页10题；2页20题是加量；3页30题或全部卷只做阶段清仓。题目、答案、批改页会锁定同一套。<br><strong>错题覆盖：</strong>${coverageText}<br><strong>第二天安排：</strong>${plan}</div>
                 <div class="eb-practice-panel">${cards.join('')}</div>`;
         }
         window.buildErrorBookPracticeActionPanel = buildErrorBookPracticeActionPanel;
@@ -11147,7 +11359,8 @@
                 dueSummary,
                 priorityPracticeCount,
                 activeMechanism,
-                activeCount: entries.filter(entry => !entry.mastered).length
+                activeCount: entries.filter(entry => !entry.mastered).length,
+                practiceCoverage: getErrorBookPracticeCoverage(activeDueScopeEntries)
             });
 
             let filterTitle = filter === 'mastered'

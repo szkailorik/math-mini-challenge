@@ -27,6 +27,13 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.266 makes late-stage practice and the error book less repetitive:
+
+- Advanced sets 140+ now follow a new-question-first policy: exact wrong-question replay is capped lower, same-skill variants are preferred, and daily papers keep a healthier balance between fresh retrieval and spaced recovery.
+- Six late-stage high-value fresh slots are injected for decimal division scale checking, boundary fraction/decimal comparison, two-step inverse equations, and fraction-order judgement so uncovered hard points keep appearing as new problems.
+- The error book practice workbench now speaks in paper pages: 1 page / 10 questions, 2 pages / 20 questions, or 3 pages / 30 questions, with coverage counts for active, practiced, unpracticed, and due mistakes.
+- Error-book question, answer, and grading pages stay locked to the same pack code, supporting quick print, concise answer checking, and continued tracking of which mistakes have been practiced.
+
 v23.265 makes error-book entry points student-aware:
 
 - Knowledge map cards and learning archive cards now open the exact learner's error book instead of relying on the previously selected learner.
