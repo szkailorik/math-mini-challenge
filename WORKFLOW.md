@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.267 Iteration Notes
+
+### Iteration 1
+
+- What I changed: added a visible `参考答案打印` menu with KAI-only, Lorik-only, both-learners, and full-grading answer options.
+- Open questions: none.
+- Risks: the quick-check page intentionally omits solution hints to keep each learner on one A4 page.
+- Next steps: use the full grading answer page when a parent wants hints or grading controls.
+
+### Iteration 2
+
+- What I changed: added `printInstantAnswerKeys()` and compact `instant-answer-sheet` pages that print KAI and Lorik separately from the full answer sheets.
+- Open questions: none.
+- Risks: very long fraction or equation answers may wrap, but the page is designed for final-answer checking rather than worked solutions.
+- Next steps: tune font density only after testing a real printed Set with unusually long answers.
+
+### Iteration 3
+
+- What I changed: extended runtime validation to print KAI one-page answers and combined two-learner answers, verifying the print sandbox is answer-only and grading-free.
+- Open questions: none.
+- Risks: browser print margins still depend on local printer settings.
+- Next steps: print one live KAI page and one combined page from GitHub Pages after deployment.
+
 ## Current v23.266 Iteration Notes
 
 ### Iteration 1

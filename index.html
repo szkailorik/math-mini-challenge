@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.266 (140后新题优先)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.267 (答案单页速查)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -99,6 +99,83 @@
             }
             body.print-answers-only #print-root .ans-sheet .ans-answer-num {
                 display: inline-flex !important;
+            }
+            body.print-instant-answers #print-root .sheet.instant-answer-sheet {
+                height: var(--print-sheet-height) !important;
+                max-height: var(--print-sheet-height) !important;
+                overflow: hidden !important;
+                padding: 9mm 10mm 11mm !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-head {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+                gap: 8mm !important;
+                border-bottom: 1.5px solid #123b73 !important;
+                padding-bottom: 4mm !important;
+                margin-bottom: 4mm !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-head h1 {
+                margin: 0 !important;
+                font-size: 20px !important;
+                line-height: 1.1 !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-head p {
+                margin: 2mm 0 0 !important;
+                font-size: 10.5px !important;
+                color: #475569 !important;
+                line-height: 1.35 !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-meta {
+                text-align: right !important;
+                font-size: 10.5px !important;
+                color: #334155 !important;
+                line-height: 1.35 !important;
+                white-space: nowrap !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 4mm 5mm !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-section {
+                border: 1px solid #cbd5e1 !important;
+                border-radius: 6px !important;
+                padding: 3mm !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-section h2 {
+                margin: 0 0 2mm !important;
+                font-size: 11.5px !important;
+                line-height: 1.2 !important;
+                color: #123b73 !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-rows {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 1.4mm 3mm !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-row {
+                display: flex !important;
+                align-items: baseline !important;
+                gap: 1.5mm !important;
+                min-width: 0 !important;
+                font-size: 10.8px !important;
+                line-height: 1.22 !important;
+                border-bottom: 1px dotted #e2e8f0 !important;
+                padding-bottom: 0.8mm !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-num {
+                flex: 0 0 6mm !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-value {
+                min-width: 0 !important;
+                color: #b91c1c !important;
+                font-weight: 800 !important;
+                word-break: break-word !important;
             }
             body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
             body.ipad-shell.print-sandbox-active #print-root .section {
@@ -1326,6 +1403,36 @@
         .ans-tip { margin-left: 25px; font-size: 12px; line-height: 1.3; color: #475569; background: #f8fafc; border-left: 3px solid #94a3b8; padding: 3px 7px; border-radius: 0 4px 4px 0; font-family: 'KaiTi','楷体',sans-serif; }
         .ans-num { font-weight: bold; color: #002D72; width: 25px; flex-shrink: 0; font-family: 'Times New Roman', serif;}
         .highlight { color: #d32f2f; font-weight: bold; margin: 0 4px; }
+        .answer-print-menu {
+            display: grid;
+            grid-template-columns: auto repeat(4, minmax(0, 1fr));
+            gap: 6px;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .answer-print-menu-label {
+            color: #334155;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .answer-print-menu .ctrl-btn {
+            padding: 6px 7px;
+            font-size: 12px;
+            min-height: 32px;
+        }
+        .instant-answer-sheet { font-family: 'Helvetica Neue', Arial, sans-serif; }
+        .instant-answer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; border-bottom: 2px solid #123b73; padding-bottom: 12px; margin-bottom: 14px; }
+        .instant-answer-head h1 { margin: 0; color: #123b73; font-size: 24px; line-height: 1.15; }
+        .instant-answer-head p { margin: 6px 0 0; color: #475569; font-size: 13px; line-height: 1.35; }
+        .instant-answer-meta { text-align: right; color: #334155; font-size: 12px; line-height: 1.45; white-space: nowrap; }
+        .instant-answer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
+        .instant-answer-section { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #fff; }
+        .instant-answer-section h2 { margin: 0 0 8px; color: #123b73; font-size: 13px; line-height: 1.2; }
+        .instant-answer-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px; }
+        .instant-answer-row { display: flex; align-items: baseline; gap: 5px; min-width: 0; font-size: 12px; line-height: 1.25; border-bottom: 1px dotted #e2e8f0; padding-bottom: 3px; }
+        .instant-answer-num { flex: 0 0 24px; font-weight: 800; color: #0f172a; font-family: 'Times New Roman', serif; }
+        .instant-answer-value { min-width: 0; color: #b91c1c; font-weight: 800; word-break: break-word; font-family: 'Times New Roman', 'Songti SC', serif; }
 
         .grade-area { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
         .grade-btn { width: 34px; height: 34px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 16px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
@@ -3456,6 +3563,8 @@
             .export-btn { right: 12px; bottom: 12px; }
             .info-row { grid-template-columns: 1fr; text-align: left; }
             .ctrl-grid { grid-template-columns: 1fr 1fr; }
+            .answer-print-menu { grid-template-columns: 1fr 1fr; }
+            .answer-print-menu-label { grid-column: 1 / -1; }
             .stage-insights { display: none; }
             .eb-review-queue { grid-template-columns: 1fr; }
         }
@@ -3502,7 +3611,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.266</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.267</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3545,7 +3654,14 @@
 
             <div class="ctrl-row" style="margin-top:6px;">
                 <button class="ctrl-btn" style="background:#16a34a; color:white;" onclick="window.printQuestionSheets()">🖨️ 打印AB四页</button>
-                <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printAnswerSheets()">🧾 打印答案</button>
+                <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printInstantAnswerKeys('both')">🧾 两人答案各1页</button>
+            </div>
+            <div class="answer-print-menu" aria-label="参考答案打印菜单">
+                <span class="answer-print-menu-label">参考答案打印</span>
+                <button class="ctrl-btn" style="background:#334155; color:white;" onclick="window.printInstantAnswerKeys('KAI')">KAI一页</button>
+                <button class="ctrl-btn" style="background:#334155; color:white;" onclick="window.printInstantAnswerKeys('Lorik')">Lorik一页</button>
+                <button class="ctrl-btn" style="background:#475569; color:white;" onclick="window.printInstantAnswerKeys('both')">两人各一页</button>
+                <button class="ctrl-btn" style="background:#64748b; color:white;" onclick="window.printAnswerSheets()">完整批改页</button>
             </div>
             <div class="ctrl-grid">
                 <button class="ctrl-btn" style="background:#0f766e; color:white;" onclick="window.checkCurrentSetDuplicates()">🔎 检查重复题</button>
@@ -3598,9 +3714,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.266';
-        const APP_RELEASE_LABEL = '140后新题优先';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.266 140套以后日常卷减少原错题回炉，错题本改成按页打印专项短卷。';
+        const APP_VERSION = 'v23.267';
+        const APP_RELEASE_LABEL = '答案单页速查';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.267 新增参考答案打印菜单：KAI、Lorik 可单独打一页，也可两人各打一张。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -16212,12 +16328,142 @@
             return sheets.length;
         }
 
+        function escapeTextHTML(value = '') {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function stripHTMLForText(value = '') {
+            return String(value || '')
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function normalizeInstantAnswerTargets(studentFilter = 'both') {
+            const raw = String(studentFilter || 'both').trim().toLowerCase();
+            if (raw === 'kai') return ['KAI'];
+            if (raw === 'lorik' || raw === 'lauric') return ['Lorik'];
+            return ['KAI', 'Lorik'];
+        }
+        window.normalizeInstantAnswerTargets = normalizeInstantAnswerTargets;
+
+        function ensureInstantAnswerSourceSheets() {
+            if (document.getElementById('kai-ans-sheet') || document.getElementById('lorik-ans-sheet')) return;
+            if (typeof window.renderPaper === 'function') window.renderPaper();
+        }
+
+        function getAnswerSheetHTMLFromPaper(student = 'KAI') {
+            const normalized = normalizeAnswerStudentName(student);
+            const paperHtml = document.getElementById('paper-container')?.innerHTML || '';
+            const idNeedle = `id="${normalized.toLowerCase()}-ans-sheet"`;
+            const idIndex = paperHtml.indexOf(idNeedle);
+            if (idIndex < 0) return '';
+            const sheetStart = paperHtml.lastIndexOf('<div', idIndex);
+            const nextSheetStart = paperHtml.indexOf('<div class="sheet ans-sheet"', idIndex + idNeedle.length);
+            return paperHtml.slice(Math.max(0, sheetStart), nextSheetStart > -1 ? nextSheetStart : paperHtml.length);
+        }
+
+        function extractInstantAnswerSectionsFromHTML(sheetHtml = '') {
+            const sections = [];
+            const sectionMatches = [...String(sheetHtml || '').matchAll(/<div class="ans-section" data-sec-index="(\d+)"[^>]*>([\s\S]*?)(?=<div class="ans-section" data-sec-index="\d+"|<button class="submit-grades-btn|<div class="sheet-footer"|$)/g)];
+            sectionMatches.forEach((match, sectionIndex) => {
+                const sectionHtml = match[2] || '';
+                const titleHtml = sectionHtml.match(/<div class="ans-section-title">([\s\S]*?)<\/div>/)?.[1] || '';
+                const records = [...sectionHtml.matchAll(/<div class="ans-row[^>]*data-info="([^"]*)"/g)].map((rowMatch, rowIndex) => {
+                    try {
+                        const info = JSON.parse(decodeURIComponent(rowMatch[1] || '%7B%7D'));
+                        return {
+                            num: `${Number(info.num || rowIndex + 1)}.`,
+                            answerHtml: beautifyMathHTML(info.a || '-')
+                        };
+                    } catch (error) {
+                        return null;
+                    }
+                }).filter(Boolean);
+                if (!records.length) return;
+                sections.push({
+                    title: stripHTMLForText(titleHtml) || records[0]?.sec || `第${sectionIndex + 1}大题`,
+                    rows: records
+                });
+            });
+            return sections;
+        }
+
+        function extractInstantAnswerSectionsFromDOM(sheet) {
+            if (!sheet || typeof sheet.querySelectorAll !== 'function') return [];
+            const nodes = Array.from(sheet.querySelectorAll('.ans-section'));
+            if (!nodes.length) return [];
+            return nodes.map((section, sectionIndex) => {
+                const title = section.querySelector('.ans-section-title')?.textContent?.trim() || `第${sectionIndex + 1}大题`;
+                const rows = Array.from(section.querySelectorAll('.ans-row')).map((row, rowIndex) => {
+                    const num = row.querySelector('.ans-answer-num')?.textContent?.trim() || `${rowIndex + 1}.`;
+                    const answerHtml = row.querySelector('.ans-a-line .math-row')?.innerHTML?.trim()
+                        || row.querySelector('.ans-a-line strong')?.innerHTML?.trim()
+                        || '-';
+                    return { num, answerHtml };
+                });
+                return { title, rows };
+            }).filter(section => section.rows.length > 0);
+        }
+
+        function buildInstantAnswerKeyPageHTML(student = 'KAI') {
+            const normalized = normalizeAnswerStudentName(student);
+            const sheet = document.getElementById(`${normalized.toLowerCase()}-ans-sheet`);
+            const domSections = extractInstantAnswerSectionsFromDOM(sheet);
+            const sections = domSections.length ? domSections : extractInstantAnswerSectionsFromHTML(getAnswerSheetHTMLFromPaper(normalized));
+            if (!sections.length) return '';
+            const sectionsHtml = sections.map((section, sectionIndex) => {
+                const rows = section.rows.map(row => `
+                    <div class="instant-answer-row">
+                        <span class="instant-answer-num">${escapeTextHTML(row.num)}</span>
+                        <span class="instant-answer-value math-row">${row.answerHtml}</span>
+                    </div>`).join('');
+                return `
+                    <section class="instant-answer-section" data-instant-answer-section="${sectionIndex + 1}">
+                        <h2>${escapeTextHTML(section.title)}</h2>
+                        <div class="instant-answer-rows">${rows}</div>
+                    </section>`;
+            }).join('');
+            const totalRows = sections.reduce((sum, section) => sum + section.rows.length, 0);
+            const programLabel = getCurrentProgramId() === CLOSURE_PROGRAM_ID ? '第二阶段' : '第一阶段';
+            return `
+                <div class="sheet instant-answer-sheet" data-instant-answer-key="true" data-student="${normalized}">
+                    <div class="instant-answer-head">
+                        <div>
+                            <h1>${normalized} 参考答案速查</h1>
+                            <p>按大题名称和小题号核对；做完一题再看一题，只保留最终答案。</p>
+                        </div>
+                        <div class="instant-answer-meta">
+                            <strong>Mini Challenge Set ${Number(window.currentSetNumber || 0)}</strong><br>
+                            ${programLabel} · ${totalRows}题<br>
+                            打印日期 ${new Date().toLocaleDateString()}
+                        </div>
+                    </div>
+                    <div class="instant-answer-grid">${sectionsHtml}</div>
+                </div>`;
+        }
+        window.buildInstantAnswerKeyPageHTML = buildInstantAnswerKeyPageHTML;
+
+        function buildInstantAnswerKeyPrintHTML(studentFilter = 'both') {
+            ensureInstantAnswerSourceSheets();
+            return normalizeInstantAnswerTargets(studentFilter)
+                .map(student => buildInstantAnswerKeyPageHTML(student))
+                .filter(Boolean)
+                .join('');
+        }
+        window.buildInstantAnswerKeyPrintHTML = buildInstantAnswerKeyPrintHTML;
+
         function clearPrintMode() {
             if (printCleanupTimer) {
                 clearTimeout(printCleanupTimer);
                 printCleanupTimer = null;
             }
-            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-quick-review', 'print-set-review-followup', 'print-set-review-followup-with-answers', 'print-sandbox-active');
+            document.body.classList.remove('print-questions-only', 'print-answers-only', 'print-instant-answers', 'print-quick-review', 'print-set-review-followup', 'print-set-review-followup-with-answers', 'print-sandbox-active');
             const root = getPrintRoot();
             if (root) root.innerHTML = '';
         }
@@ -16381,6 +16627,30 @@ window.addEventListener('afterprint', function () {
 
         window.printAnswerSheets = function() {
             runPrintMode('print-answers-only');
+        };
+
+        window.printInstantAnswerKeys = function(studentFilter = 'both') {
+            ensurePrintLifecycleHooks();
+            clearPrintMode();
+            const root = getPrintRoot();
+            if (!root) {
+                showToast('打印容器还没有准备好，请刷新后再试。', { background: '#dc2626', duration: 2600 });
+                return;
+            }
+            const targets = normalizeInstantAnswerTargets(studentFilter);
+            const html = buildInstantAnswerKeyPrintHTML(studentFilter);
+            if (!html || !html.includes('instant-answer-sheet')) {
+                showToast('当前没有可打印的参考答案，请先回到试卷页。', { background: '#b45309', duration: 2600 });
+                return;
+            }
+            root.innerHTML = html;
+            document.body.classList.add('print-instant-answers', 'print-sandbox-active');
+            showToast(targets.length === 1
+                ? `🧾 打印提示：将输出${targets[0]}一页参考答案速查。`
+                : '🧾 打印提示：将输出KAI和Lorik各一页参考答案速查。',
+                { background: '#0f766e', duration: 2600 }
+            );
+            openPrintDialog({ root, delay: 220, title: '参考答案速查' });
         };
 
         window.printCalculationQuickReview = function() {

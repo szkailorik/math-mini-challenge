@@ -99,6 +99,9 @@ if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交�
 if (!html.includes('function toggleAnswerQuickMode') || !html.includes('answer-only-mode') || !html.includes('答案速查') || !html.includes('ans-answer-num')) {
   throw new Error('Answer-key quick-scan mode is missing from runtime script or styles');
 }
+if (!html.includes('function buildInstantAnswerKeyPrintHTML') || !html.includes('window.printInstantAnswerKeys') || !html.includes('print-instant-answers') || !html.includes('instant-answer-sheet') || !html.includes('参考答案打印') || !html.includes('两人答案各1页') || !html.includes('KAI一页') || !html.includes('Lorik一页')) {
+  throw new Error('One-page instant answer-key print menu is missing from runtime script, styles, or control panel');
+}
 if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
   throw new Error('Post-submit automatic report navigation is missing from runtime script');
 }
@@ -543,7 +546,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.266') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.267') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -1891,6 +1894,35 @@ if (context.document.body.classList.contains('print-questions-only') || context.
 if ((elements.get('print-root')?.innerHTML || '') !== '') {
   throw new Error('Answer-sheet print sandbox did not clear after afterprint');
 }
+context.window.printInstantAnswerKeys('KAI');
+await new Promise(resolve => setTimeout(resolve, 260));
+const kaiInstantAnswerHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-instant-answers') || !context.document.body.classList.contains('print-sandbox-active') || context.__printCalls !== 3) {
+  throw new Error(`KAI instant answer-key print mode did not activate correctly: classes=${Array.from(context.document.body.classList || []).join(',')} printCalls=${context.__printCalls} rootLength=${kaiInstantAnswerHtml.length}`);
+}
+if ((kaiInstantAnswerHtml.match(/class="sheet instant-answer-sheet/g) || []).length !== 1 || !kaiInstantAnswerHtml.includes('data-student="KAI"') || kaiInstantAnswerHtml.includes('data-student="Lorik"')) {
+  throw new Error('KAI instant answer-key print should stage exactly one KAI answer page');
+}
+if (!kaiInstantAnswerHtml.includes('KAI 参考答案速查') || !kaiInstantAnswerHtml.includes('只保留最终答案') || !kaiInstantAnswerHtml.includes('instant-answer-row')) {
+  throw new Error('KAI instant answer-key page is missing compact self-check content');
+}
+if (kaiInstantAnswerHtml.includes('class="ans-row') || kaiInstantAnswerHtml.includes('grade-area') || kaiInstantAnswerHtml.includes('提交 KAI')) {
+  throw new Error('Instant answer-key page should not reuse the full grading answer sheet');
+}
+emit('afterprint');
+context.window.printInstantAnswerKeys('both');
+await new Promise(resolve => setTimeout(resolve, 260));
+const bothInstantAnswerHtml = elements.get('print-root')?.innerHTML || '';
+if (!context.document.body.classList.contains('print-instant-answers') || context.__printCalls !== 4) {
+  throw new Error('Combined instant answer-key print mode did not activate correctly');
+}
+if ((bothInstantAnswerHtml.match(/class="sheet instant-answer-sheet/g) || []).length !== 2 || !bothInstantAnswerHtml.includes('data-student="KAI"') || !bothInstantAnswerHtml.includes('data-student="Lorik"')) {
+  throw new Error('Combined instant answer-key print should stage KAI and Lorik as separate pages');
+}
+if (bothInstantAnswerHtml.includes('class="ans-row') || bothInstantAnswerHtml.includes('grade-area')) {
+  throw new Error('Combined instant answer-key print should stay answer-only and grading-free');
+}
+emit('afterprint');
 context.window.StorageDB.cache.KAI = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.StorageDB.cache.Lorik = { weights: {}, lastSeen: {}, history: [], errorBook: {}, programs: {} };
 context.window.currentProgramId = 'advanced_fluency_v1';

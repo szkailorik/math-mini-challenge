@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.267 adds a child-facing one-page answer check print path:
+
+- The control panel now includes a `参考答案打印` menu with `KAI一页`, `Lorik一页`, `两人各一页`, and the older full grading answer page.
+- The new answer quick-check pages are separate from the full grading answer sheets and keep only section names, question numbers, and final answers.
+- Printing both learners produces two separate A4 pages, one for KAI and one for Lorik, so each child can check immediately after finishing a problem without sharing one long answer packet.
+
 v23.266 makes late-stage practice and the error book less repetitive:
 
 - Advanced sets 140+ now follow a new-question-first policy: exact wrong-question replay is capped lower, same-skill variants are preferred, and daily papers keep a healthier balance between fresh retrieval and spaced recovery.
