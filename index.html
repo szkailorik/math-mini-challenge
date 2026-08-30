@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mini Challenge - 专家私教引擎 v23.267 (答案单页速查)</title>
+    <title>Mini Challenge - 专家私教引擎 v23.268 (题答同页速查)</title>
     <!-- html2canvas 按需加载，避免外部 CDN 阻塞首屏 -->
     <style>
         /* ================= 一、 绝对物理分页与安全打印准则 ================= */
@@ -153,29 +153,42 @@
             }
             body.print-instant-answers #print-root .instant-answer-rows {
                 display: grid !important;
-                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-                gap: 1.4mm 3mm !important;
+                grid-template-columns: 1fr !important;
+                gap: 1.15mm !important;
             }
             body.print-instant-answers #print-root .instant-answer-row {
-                display: flex !important;
-                align-items: baseline !important;
-                gap: 1.5mm !important;
+                display: grid !important;
+                grid-template-columns: 5.5mm minmax(0, 1fr) !important;
+                grid-template-areas: "num question" "num answer" !important;
+                gap: 0.4mm 1.5mm !important;
                 min-width: 0 !important;
-                font-size: 10.8px !important;
-                line-height: 1.22 !important;
+                font-size: 9.6px !important;
+                line-height: 1.16 !important;
                 border-bottom: 1px dotted #e2e8f0 !important;
                 padding-bottom: 0.8mm !important;
             }
             body.print-instant-answers #print-root .instant-answer-num {
-                flex: 0 0 6mm !important;
+                grid-area: num !important;
                 font-weight: 800 !important;
                 color: #0f172a !important;
             }
+            body.print-instant-answers #print-root .instant-answer-question {
+                grid-area: question !important;
+                min-width: 0 !important;
+                color: #334155 !important;
+                word-break: break-word !important;
+            }
             body.print-instant-answers #print-root .instant-answer-value {
+                grid-area: answer !important;
                 min-width: 0 !important;
                 color: #b91c1c !important;
                 font-weight: 800 !important;
                 word-break: break-word !important;
+            }
+            body.print-instant-answers #print-root .instant-answer-label {
+                color: #64748b !important;
+                font-weight: 700 !important;
+                margin-right: 1mm !important;
             }
             body.print-sandbox-active #print-root .section { margin-bottom: 10px !important; }
             body.ipad-shell.print-sandbox-active #print-root .section {
@@ -1429,10 +1442,12 @@
         .instant-answer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px; }
         .instant-answer-section { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; background: #fff; }
         .instant-answer-section h2 { margin: 0 0 8px; color: #123b73; font-size: 13px; line-height: 1.2; }
-        .instant-answer-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px; }
-        .instant-answer-row { display: flex; align-items: baseline; gap: 5px; min-width: 0; font-size: 12px; line-height: 1.25; border-bottom: 1px dotted #e2e8f0; padding-bottom: 3px; }
-        .instant-answer-num { flex: 0 0 24px; font-weight: 800; color: #0f172a; font-family: 'Times New Roman', serif; }
-        .instant-answer-value { min-width: 0; color: #b91c1c; font-weight: 800; word-break: break-word; font-family: 'Times New Roman', 'Songti SC', serif; }
+        .instant-answer-rows { display: grid; grid-template-columns: 1fr; gap: 5px; }
+        .instant-answer-row { display: grid; grid-template-columns: 24px minmax(0, 1fr); grid-template-areas: "num question" "num answer"; gap: 2px 6px; min-width: 0; font-size: 11px; line-height: 1.2; border-bottom: 1px dotted #e2e8f0; padding-bottom: 4px; }
+        .instant-answer-num { grid-area: num; font-weight: 800; color: #0f172a; font-family: 'Times New Roman', serif; }
+        .instant-answer-question { grid-area: question; min-width: 0; color: #334155; word-break: break-word; font-family: 'Times New Roman', 'Songti SC', serif; }
+        .instant-answer-value { grid-area: answer; min-width: 0; color: #b91c1c; font-weight: 800; word-break: break-word; font-family: 'Times New Roman', 'Songti SC', serif; }
+        .instant-answer-label { color: #64748b; font-weight: 700; margin-right: 4px; font-family: 'Helvetica Neue', Arial, sans-serif; }
 
         .grade-area { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
         .grade-btn { width: 34px; height: 34px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 16px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
@@ -3611,7 +3626,7 @@
 
     <div class="control-panel no-print" id="main-control-panel">
         <div class="panel-header">
-            <h3 id="app-version-label">🧠 专家私教引擎 v23.267</h3>
+            <h3 id="app-version-label">🧠 专家私教引擎 v23.268</h3>
             <button class="toggle-btn" onclick="window.togglePanel()">➖ 收起</button>
         </div>
         <div id="cloud-status" onclick="window.showDataModal()" style="cursor:pointer;">正在检查云端状态...</div>
@@ -3714,9 +3729,9 @@
     <div id="print-root" aria-hidden="true"></div>
 
     <script type="module">
-        const APP_VERSION = 'v23.267';
-        const APP_RELEASE_LABEL = '答案单页速查';
-        const APP_RELEASE_NOTE_HTML = '💡 v23.267 新增参考答案打印菜单：KAI、Lorik 可单独打一页，也可两人各打一张。';
+        const APP_VERSION = 'v23.268';
+        const APP_RELEASE_LABEL = '题答同页速查';
+        const APP_RELEASE_NOTE_HTML = '💡 v23.268 参考答案速查页改为题目+答案同格显示，减少核对错行。';
         const ENGINE_STARTUP_SYNC_TIMEOUT_MS = 1600;
         const STARTUP_HEALTH_CHECK_DELAY_MS = 2600;
         const HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
@@ -16377,8 +16392,10 @@
                 const records = [...sectionHtml.matchAll(/<div class="ans-row[^>]*data-info="([^"]*)"/g)].map((rowMatch, rowIndex) => {
                     try {
                         const info = JSON.parse(decodeURIComponent(rowMatch[1] || '%7B%7D'));
+                        const questionPrompt = normalizeQuestionPrompt(info.q || '', '');
                         return {
                             num: `${Number(info.num || rowIndex + 1)}.`,
+                            questionHtml: `${questionPrompt.bodyHtml}${questionPrompt.suffixHtml ? ` ${questionPrompt.suffixHtml}` : ''}` || '-',
                             answerHtml: beautifyMathHTML(info.a || '-')
                         };
                     } catch (error) {
@@ -16402,10 +16419,13 @@
                 const title = section.querySelector('.ans-section-title')?.textContent?.trim() || `第${sectionIndex + 1}大题`;
                 const rows = Array.from(section.querySelectorAll('.ans-row')).map((row, rowIndex) => {
                     const num = row.querySelector('.ans-answer-num')?.textContent?.trim() || `${rowIndex + 1}.`;
+                    const questionHtml = row.querySelector('.ans-q-line .math-row')?.innerHTML?.trim()
+                        || row.querySelector('.ans-q-line .review-question')?.innerHTML?.trim()
+                        || '-';
                     const answerHtml = row.querySelector('.ans-a-line .math-row')?.innerHTML?.trim()
                         || row.querySelector('.ans-a-line strong')?.innerHTML?.trim()
                         || '-';
-                    return { num, answerHtml };
+                    return { num, questionHtml, answerHtml };
                 });
                 return { title, rows };
             }).filter(section => section.rows.length > 0);
@@ -16421,7 +16441,8 @@
                 const rows = section.rows.map(row => `
                     <div class="instant-answer-row">
                         <span class="instant-answer-num">${escapeTextHTML(row.num)}</span>
-                        <span class="instant-answer-value math-row">${row.answerHtml}</span>
+                        <span class="instant-answer-question math-row"><span class="instant-answer-label">题</span>${row.questionHtml || '-'}</span>
+                        <span class="instant-answer-value math-row"><span class="instant-answer-label">答</span>${row.answerHtml}</span>
                     </div>`).join('');
                 return `
                     <section class="instant-answer-section" data-instant-answer-section="${sectionIndex + 1}">
@@ -16436,7 +16457,7 @@
                     <div class="instant-answer-head">
                         <div>
                             <h1>${normalized} 参考答案速查</h1>
-                            <p>按大题名称和小题号核对；做完一题再看一题，只保留最终答案。</p>
+                            <p>题目和答案排在同一格；做完一题再看一题，避免核对错行。</p>
                         </div>
                         <div class="instant-answer-meta">
                             <strong>Mini Challenge Set ${Number(window.currentSetNumber || 0)}</strong><br>

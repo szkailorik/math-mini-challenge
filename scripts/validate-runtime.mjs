@@ -99,7 +99,7 @@ if (!html.includes('buildSubmittedAnswerActionsHTML') || !html.includes('提交�
 if (!html.includes('function toggleAnswerQuickMode') || !html.includes('answer-only-mode') || !html.includes('答案速查') || !html.includes('ans-answer-num')) {
   throw new Error('Answer-key quick-scan mode is missing from runtime script or styles');
 }
-if (!html.includes('function buildInstantAnswerKeyPrintHTML') || !html.includes('window.printInstantAnswerKeys') || !html.includes('print-instant-answers') || !html.includes('instant-answer-sheet') || !html.includes('参考答案打印') || !html.includes('两人答案各1页') || !html.includes('KAI一页') || !html.includes('Lorik一页')) {
+if (!html.includes('function buildInstantAnswerKeyPrintHTML') || !html.includes('window.printInstantAnswerKeys') || !html.includes('print-instant-answers') || !html.includes('instant-answer-sheet') || !html.includes('instant-answer-question') || !html.includes('题目和答案排在同一格') || !html.includes('参考答案打印') || !html.includes('两人答案各1页') || !html.includes('KAI一页') || !html.includes('Lorik一页')) {
   throw new Error('One-page instant answer-key print menu is missing from runtime script, styles, or control panel');
 }
 if (!html.includes('handlePostSubmitReviewNavigation') || !html.includes('回到${student}答案页')) {
@@ -546,7 +546,7 @@ if (!String(startupPaperElement.innerHTML || '').includes('class="sheet')) {
   throw new Error('Startup recovery action did not restore the local worksheet');
 }
 startupPaperElement.innerHTML = startupPaperHtml;
-if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.267') {
+if (localStorage.getItem('MathEngine_LastAppVersion') !== 'v23.268') {
   throw new Error('Startup should persist the current app version for refresh hints');
 }
 
@@ -1903,8 +1903,11 @@ if (!context.document.body.classList.contains('print-instant-answers') || !conte
 if ((kaiInstantAnswerHtml.match(/class="sheet instant-answer-sheet/g) || []).length !== 1 || !kaiInstantAnswerHtml.includes('data-student="KAI"') || kaiInstantAnswerHtml.includes('data-student="Lorik"')) {
   throw new Error('KAI instant answer-key print should stage exactly one KAI answer page');
 }
-if (!kaiInstantAnswerHtml.includes('KAI 参考答案速查') || !kaiInstantAnswerHtml.includes('只保留最终答案') || !kaiInstantAnswerHtml.includes('instant-answer-row')) {
-  throw new Error('KAI instant answer-key page is missing compact self-check content');
+if (!kaiInstantAnswerHtml.includes('KAI 参考答案速查') || !kaiInstantAnswerHtml.includes('题目和答案排在同一格') || !kaiInstantAnswerHtml.includes('instant-answer-row') || !kaiInstantAnswerHtml.includes('instant-answer-question') || !kaiInstantAnswerHtml.includes('instant-answer-value')) {
+  throw new Error('KAI instant answer-key page is missing compact question-answer self-check content');
+}
+if (!kaiInstantAnswerHtml.includes('>题</span>') || !kaiInstantAnswerHtml.includes('>答</span>')) {
+  throw new Error('KAI instant answer-key page should label question and answer in the same item');
 }
 if (kaiInstantAnswerHtml.includes('class="ans-row') || kaiInstantAnswerHtml.includes('grade-area') || kaiInstantAnswerHtml.includes('提交 KAI')) {
   throw new Error('Instant answer-key page should not reuse the full grading answer sheet');
@@ -1918,6 +1921,9 @@ if (!context.document.body.classList.contains('print-instant-answers') || contex
 }
 if ((bothInstantAnswerHtml.match(/class="sheet instant-answer-sheet/g) || []).length !== 2 || !bothInstantAnswerHtml.includes('data-student="KAI"') || !bothInstantAnswerHtml.includes('data-student="Lorik"')) {
   throw new Error('Combined instant answer-key print should stage KAI and Lorik as separate pages');
+}
+if ((bothInstantAnswerHtml.match(/instant-answer-question/g) || []).length < 60 || (bothInstantAnswerHtml.match(/instant-answer-value/g) || []).length < 60) {
+  throw new Error('Combined instant answer-key print should include question and answer rows for both learners');
 }
 if (bothInstantAnswerHtml.includes('class="ans-row') || bothInstantAnswerHtml.includes('grade-area')) {
   throw new Error('Combined instant answer-key print should stay answer-only and grading-free');

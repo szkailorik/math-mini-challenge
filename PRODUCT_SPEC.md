@@ -27,6 +27,12 @@ The app is designed around three learning science principles:
 
 Feedback is immediate after grading. Mistakes are not only counted; they are classified as careless or concept errors, grouped by knowledge tag, and reintroduced through the adaptive weighting system.
 
+v23.268 improves the child-facing answer check page:
+
+- The one-page answer check sheet now prints each item as `题 + 答` in the same compact row.
+- This reduces line-matching errors when a child checks immediately after finishing one problem.
+- The page still omits grading controls and long explanations, preserving the quick self-check purpose.
+
 v23.267 adds a child-facing one-page answer check print path:
 
 - The control panel now includes a `参考答案打印` menu with `KAI一页`, `Lorik一页`, `两人各一页`, and the older full grading answer page.

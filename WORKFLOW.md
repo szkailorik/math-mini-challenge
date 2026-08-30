@@ -29,6 +29,29 @@ Every substantial release should include at least three passes:
 2. Quality pass: fix correctness, persistence, error handling, and adaptive behavior.
 3. Polish pass: improve copy, documentation, deployment, and edge cases.
 
+## Current v23.268 Iteration Notes
+
+### Iteration 1
+
+- What I changed: changed instant answer rows from answer-only to paired question-and-answer rows.
+- Open questions: none.
+- Risks: paired rows are denser than answer-only rows, so very long questions may wrap.
+- Next steps: keep the full answer sheet available for detailed parent checking.
+
+### Iteration 2
+
+- What I changed: added question extraction from both the live DOM and the answer-row `data-info` fallback path.
+- Open questions: none.
+- Risks: fallback uses the stored prompt HTML, so it stays aligned with the generated paper but may be more compact than the full question sheet layout.
+- Next steps: preserve `data-info` as the source of truth for print recovery.
+
+### Iteration 3
+
+- What I changed: extended validation to require `题` / `答` labels and question rows in one-page and combined answer prints.
+- Open questions: none.
+- Risks: browser print margins still affect final physical density.
+- Next steps: print one KAI quick-check page from GitHub Pages and verify the longest row remains readable.
+
 ## Current v23.267 Iteration Notes
 
 ### Iteration 1
